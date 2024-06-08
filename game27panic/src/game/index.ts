@@ -42,6 +42,7 @@ export class BuildCard extends Piece<MyGame> {
   rotated: boolean = false
   letter: string = ""
   damageColumn: number = 0
+  year: number = 0
 }
 
 export class RailCard extends Piece<MyGame> {
@@ -49,14 +50,139 @@ export class RailCard extends Piece<MyGame> {
   letter: string = ""
   routes: Record<string, string> = {}
   flippedRoutes: Record<string, string> = {}
-  unavailable: boolean = false;
-  color: 'red' | 'blue';
+  unavailable: boolean = false;  
+}
+
+export enum MoveResult {
+  Safe,
+  DamagedRail,
+  OffMap,
+  MissingRail,
+  Obstacle,
+  MismatchedRail,
+  Win
 }
 
 export class YearMat extends Space<MyGame> {
   year: number
   movement: number
   building: number
+  
+  isBlocked(number : number) : boolean {
+    return false;
+  }
+
+  noRails(number : number) : boolean {
+    return this.all(YearSpace).find(x => x.space == number)!.all(RailCard).length == 0
+  }
+
+  isDamaged(number : number) : boolean {
+    return false;
+  }
+
+  moveCargo() : MoveResult {
+    let cargo = this.first(Cargo)!
+
+    if(cargo.location == 'none') {
+        cargo.location = 'start';
+        // cargo.setPosition(cargo.x, cargo.y-20, cargo.width, cargo.height);
+    } else if(cargo.location == 'finish') {
+        return MoveResult.Safe;
+    } else if(cargo.location == 'start') {
+        let nl = {number: -1, location: 'none'}
+        switch(this.year) {
+            case 1930: {nl =  {number: 13, location: 'bl'}; break; }
+            case 1957: {nl =  {number: 14, location: 'bl'}; break; }
+            case 1984: {nl =  {number: 14, location: 'br'}; break; }
+            case 2011: {nl =  {number: 15, location: 'br'}; break; }
+        }
+        if(this.isBlocked(nl.number)) return MoveResult.Obstacle;
+        if(this.noRails(nl.number)) return MoveResult.MismatchedRail;
+        if(this.isDamaged(nl.number)) return MoveResult.DamagedRail;
+
+        let rail = this.all(YearSpace).find(x => x.space == nl.number)!.first(RailCard)!
+
+        console.log(rail);
+        console.log(nl.location);
+
+        Array.of
+        if(rail.routes[nl.location] == undefined) {
+            return MoveResult.MissingRail;
+        }
+
+        cargo.location = rail.routes[nl.location];
+        // var pt = rail.getLocationPoint(cargoLocation);
+        // cargo.setPosition(rail.x+pt.x-7, rail.y+pt.y, 15f, 15f);
+        cargo.putInto(rail);
+    } else {
+        let nl = {number: 0, location: 'none'}
+        let cargoSquare = ((cargo._t.parent as RailCard)._t.parent as YearSpace).space;
+
+        console.log(cargoSquare);
+        console.log(cargo.location);
+
+        let column1 = [1, 4, 7, 10, 13];
+        let column3 = [3, 6, 9, 12, 15];
+        if(cargo.location == 'cl') {
+            if(column1.includes(cargoSquare)) {
+                return MoveResult.OffMap;
+            } else {
+                nl.number = cargoSquare-1;
+            }
+        } else if(cargo.location == 'tl' || cargo.location == 'tr') {
+            if(cargoSquare <= 3) {
+                cargo.location = 'finish';
+                // cargo.setPosition(cargo.x, cargo.y-20, cargo.width, cargo.height);
+                return MoveResult.Safe;
+            } else {
+                nl.number = cargoSquare-3;
+            }
+        } else if(cargo.location == 'bl' || cargo.location == 'br') {
+            if(cargoSquare >= 13) {
+                return MoveResult.OffMap;
+            } else {
+                nl.number = cargoSquare+3;
+            }
+        } else if(cargo.location == 'cr') {
+            if(column3.includes(cargoSquare)) {
+                return MoveResult.OffMap;
+            } else {
+                nl.number = cargoSquare+1;
+            }
+        }
+
+        if(this.isBlocked(nl.number)) return MoveResult.Obstacle;
+        if(this.noRails(nl.number)) return MoveResult.MissingRail;
+        if(this.isDamaged(nl.number)) return MoveResult.DamagedRail;
+
+        nl.location = 'none'
+        switch(cargo.location) {
+            case 'bl': {nl.location = 'tl'; break; }
+            case 'br': {nl.location = 'tr'; break; }
+            case 'tl': {nl.location = 'bl'; break; }
+            case 'tr': {nl.location = 'br'; break; }
+            case 'cl': {nl.location = 'cr'; break; }
+            case 'cr': {nl.location = 'cl'; break; }
+        }
+
+        console.log(nl.location);
+
+        let rail = this.all(YearSpace).find(x => x.space == nl.number)!.first(RailCard)!
+
+        console.log(rail);
+
+        if(rail.routes[nl.location] == undefined) {
+            return MoveResult.MismatchedRail;
+        }
+
+        cargo.location = rail.routes[nl.location];
+        
+        // var pt = rail.getLocationPoint(cargoLocation);
+        // cargo.setPosition(rail.x+pt.x-7, rail.y+pt.y, 15f, 15f);
+        cargo.putInto(rail);
+    }
+    return MoveResult.Safe;
+}
 }
 
 export class YearSpace extends Space<MyGame> {
@@ -65,6 +191,10 @@ export class YearSpace extends Space<MyGame> {
 
 export class Pawn extends Piece<MyGame> {
   
+}
+
+export class Cargo extends Piece<MyGame> {
+  location: string //'tl' | 'tr' | 'cl' | 'cr' | 'bl' | 'br' | 'none'
 }
 
 export class PlayerHand extends Space<MyGame> {
@@ -120,8 +250,38 @@ export default createGame(Game27panicPlayer, MyGame, game => {
   for (let j = 0; j < 4; j++) {
     const yearMat = game.create(YearMat, 'year' + years[j], {year: years[j], movement: mvmt[j], building: bldg[j]});
 
-    for (let i = 1; i <= 15; i++) {
+    for (let i = -2; i <= 18; i++) {
       yearMat.create(YearSpace, i.toString(), {space: i})
+    }
+    switch(years[j]) {
+      case 1930: {
+        let start = yearMat.all(YearSpace).find(x => x.space == 16)!.create(RailCard, 'start1930',
+          {rotated: false, letter: "Start", unavailable: false}
+        );
+        start.create(Cargo, 'green', {location: 'none'})
+        break;
+      }
+      case 1957: {
+        let start = yearMat.all(YearSpace).find(x => x.space == 17)!.create(RailCard, 'start1957',
+          {rotated: false, letter: "Start", unavailable: false}
+        );
+        start.create(Cargo, 'red', {location: 'none'})
+        break;
+      }
+      case 1984: {  
+        let start = yearMat.all(YearSpace).find(x => x.space == 17)!.create(RailCard, 'start1984',
+          {rotated: false, letter: "Start", unavailable: false}
+        );
+        start.create(Cargo, 'yellow', {location: 'none'})
+        break;
+      }
+      case 2011: {
+        let start = yearMat.all(YearSpace).find(x => x.space == 18)!.create(RailCard, 'start2011',
+          {rotated: false, letter: "Start", unavailable: false}
+        );
+        start.create(Cargo, 'blue', {location: 'none'})
+        break;
+      }
     }
   }
 
@@ -132,7 +292,7 @@ export default createGame(Game27panicPlayer, MyGame, game => {
     const mat = game.create(PlayerHand, 'player' + playerNum, { player });
     const pawn = game.create(Pawn, 'player' + playerNum)
 
-    pawn.putInto($['year' + years[playerNum-1]].all().at(13)!)
+    pawn.putInto($['year' + years[playerNum-1]].all(YearSpace).find(x => x.space == 14)!)
 
     //mat.onEnter(Token, t => t.showToAll());
     playerNum++;
@@ -143,7 +303,9 @@ export default createGame(Game27panicPlayer, MyGame, game => {
   // build deck
   game.create(Space, 'buildCards');
   for (const buildCard of buildCards) {
-    $.buildCards.create(BuildCard, buildCard.letter! + ',' + buildCard.damageColumn, buildCard)
+    $.buildCards.create(BuildCard, buildCard.type == 'rail' ? buildCard.letter! + ',' + buildCard.damageColumn : 
+      buildCard.year! + '', 
+      buildCard)
   }
   game.create(Space, 'discard');
   game.create(Space, 'scraps');
@@ -156,7 +318,9 @@ export default createGame(Game27panicPlayer, MyGame, game => {
   game.create(Space, 'railCards');
   for (const railCard of railCards) {
     for(let i = 0; i < 4; i++) {
-      $.railCards.create(RailCard, railCard.letter!, railCard)
+      let rc = $.railCards.create(RailCard, railCard.letter!, railCard)
+      Object.entries(rc.routes).forEach(([key, value]) => rc.routes[value] = key);
+      Object.entries(rc.flippedRoutes).forEach(([key, value]) => rc.flippedRoutes[value] = key);
     }
   }
 
@@ -201,7 +365,14 @@ export default createGame(Game27panicPlayer, MyGame, game => {
     ).do(
       ({ buildCard }) => {
         if(buildCard.type == 'move') {
+          // discard and move cargo
+          buildCard.putInto($.discard)
+          let result = game.all(YearMat).find(x => x.year == buildCard.year)?.moveCargo();
+          if (result != MoveResult.Safe) {
+            game.finish(undefined, 'crashed')
+          }
         } else {
+          // add card to hand
           buildCard.putInto(player.hand)
         }
       }
@@ -302,7 +473,7 @@ export default createGame(Game27panicPlayer, MyGame, game => {
         game.all(YearMat).forEach(x => {
           if (x.year >= yearOf(player)) {
             let railCard = $.railCards.all(RailCard).filter(x => x.letter == player.buildLetter).first(RailCard)!
-            railCard.putInto(x.all(YearSpace).at(spaceOf(player)-1)!)
+            railCard.putInto(x.all(YearSpace).find(x => x.space == spaceOf(player))!)
           }
         })
         $.railCards.all(RailCard).filter(x => x.letter == player.buildLetter).forEach(x => x.unavailable = true)
@@ -338,10 +509,11 @@ export default createGame(Game27panicPlayer, MyGame, game => {
       // deal starting hands
       for (const player of game.players) {
         for(let i = 0; i < game.handLimit-1; i++) {
-          $.buildCards.first(BuildCard)?.putInto(player.hand)
+          $.buildCards.all(BuildCard).filter(x => x.type != 'move').first(BuildCard)?.putInto(player.hand)
         }
       }
     },
+    () => $.buildCards.shuffle(),
     loop(
       eachPlayer({
         name: 'turn', do: [

@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, numberSetting, Space } from '@boardzilla/core';
-import setup, { Token, YearMat, YearSpace, RailCard} from '../game/index.js';
+import setup, { Token, YearMat, YearSpace, RailCard, Cargo} from '../game/index.js';
 
 import './style.scss';
 //import '@boardzilla/core/index.css';
@@ -9,6 +9,19 @@ render(setup, {
   settings: {
     tokens: numberSetting('Number of tokens', 4, 24),
   },
+
+  announcements: {
+    crashed: game => {
+      return (
+        <>
+          <h1>
+            Game Over!
+          </h1>
+        </>
+      );
+    }
+  },
+
   layout: game => {
     game.appearance({
       render: () => null
@@ -25,17 +38,15 @@ render(setup, {
     });
 
     game.all(RailCard).appearance({
-      aspectRatio: 1,
-      render: () => (
-        <div className="flipper">
-          <div className="available"></div>
-          <div className="unavailable"></div>
-        </div>
-      )
+      render: x => <div className={'railCard' + (x.unavailable ? 'Unavailable' : 'Available')}>{x.name}</div>
+    });
+
+    game.all(Cargo).appearance({
+      render: x => <div className={x.name + 'Cargo'} />
     });
 
     game.all(YearMat).layout(YearSpace, {
-      rows: {min: 5},
+      rows: {min: 7},
       columns: {min: 3},
     })
 
