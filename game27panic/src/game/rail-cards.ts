@@ -8,12 +8,21 @@ import { RailCard } from './index.js'
 // const cr: string = 'center-right'
 
 export const railCards: Partial<RailCard>[] = [
-    {rotated: false, letter: "A", routes: {'tl': 'bl', 'tr': 'br'}, flippedRoutes: {'tl': 'bl', 'tr': 'br'}, unavailable: false},
-    {rotated: false, letter: "B", routes: {'tl': 'br', 'tr': 'bl'}, flippedRoutes: {'tl': 'br', 'tr': 'bl'}, unavailable: false},
-    {rotated: false, letter: "C", routes: {'tr': 'cl', 'bl': 'cr'}, flippedRoutes: {'tr': 'cl', 'bl': 'cr'}, unavailable: false},
-    {rotated: false, letter: "D", routes: {'tl': 'cr', 'br': 'cl'}, flippedRoutes: {'tl': 'cr', 'br': 'cl'}, unavailable: false},
-    {rotated: false, letter: "E", routes: {'tl': 'cl', 'br': 'cr'}, flippedRoutes: {'tl': 'cl', 'br': 'cr'}, unavailable: false},
-    {rotated: false, letter: "F", routes: {'tr': 'cr', 'bl': 'cl'}, flippedRoutes: {'tr': 'cr', 'bl': 'cl'}, unavailable: false},
-    {rotated: false, letter: "G", routes: {'tr': 'cr', 'bl': 'cl'}, flippedRoutes: {'tl': 'cl', 'tr': 'cr'}, unavailable: false},
-    {rotated: false, letter: "H", routes: {'bl': 'cr', 'br': 'cl'}, flippedRoutes: {'tl': 'cr', 'tr': 'cl'}, unavailable: false},
+    {rotated: false, letter: "A", routes: {'tl': 'bl', 'tr': 'br'}, unavailable: false},
+    {rotated: false, letter: "B", routes: {'tl': 'br', 'tr': 'bl'}, unavailable: false},
+    {rotated: false, letter: "C", routes: {'tr': 'cl', 'bl': 'cr'}, unavailable: false},
+    {rotated: false, letter: "D", routes: {'tl': 'cr', 'br': 'cl'}, unavailable: false},
+    {rotated: false, letter: "E", routes: {'tl': 'cl', 'br': 'cr'}, unavailable: false},
+    {rotated: false, letter: "F", routes: {'tr': 'cr', 'bl': 'cl'}, unavailable: false},
+    {rotated: false, letter: "G", routes: {'br': 'cr', 'bl': 'cl'}, unavailable: false},
+    {rotated: false, letter: "H", routes: {'bl': 'cr', 'br': 'cl'}, unavailable: false},
+
+    {rotated: false, letter: "I", routes: {'tl': 'bl', 'br': 'cr'}, unavailable: false},
+    {rotated: false, letter: "J", routes: {'bl': 'cl', 'br': 'tr'}, unavailable: false},
+    {rotated: false, letter: "K", routes: {'bl': 'tr', 'br': 'cl'}, unavailable: false},
+    {rotated: false, letter: "L", routes: {'bl': 'cr', 'br': 'tl'}, unavailable: false},
+    {rotated: false, letter: "M", routes: {'bl': 'cl', 'br': 'tl'}, unavailable: false},
+    {rotated: false, letter: "N", routes: {'bl': 'tr', 'br': 'cr'}, unavailable: false},
+    {rotated: false, letter: "O", routes: {'bl': 'tl', 'br': 'cl'}, unavailable: false},
+    {rotated: false, letter: "P", routes: {'bl': 'cr', 'br': 'tr'}, unavailable: false},
 ]

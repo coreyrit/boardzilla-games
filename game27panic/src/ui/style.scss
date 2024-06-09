@@ -1,28 +1,27 @@
 #play-area {
-  .railCardAvailable {
-    background: lightblue
-  }
-  .railCardUnavailable {
-    background: coral
-  }
   .RailCard {
-    color: white;
+    color: black;
+    z-index: 100;
     &.selectable {
-      opacity: 0.6;
       border-style: solid;
     }
   }
-  .greenCargo {
-    background-color: green;
+  .YearSpace {
+    &.selectable {
+      filter: brightness(1.1);
+    }
   }
-  .blueCargo {
-    background-color: blue;
+  .Pawn {
+    z-index: 200;
   }
-  .redCargo {
-    background-color: red;
+  .Damage {
+    z-index: 400;
+    &.selectable {
+      border-style: solid;
+    }
   }
-  .yellowCargo {
-    background-color: yellow;
+  .Cargo {
+    z-index: 300;
   }
   .Token {
     perspective: 1000px;

@@ -9,6 +9,7 @@ import {
 
 import { buildCards } from './build-cards.js';
 import { railCards } from './rail-cards.js';
+import { off } from 'process';
 
 export class Game27panicPlayer extends Player<MyGame, Game27panicPlayer> {
   /**
@@ -27,7 +28,47 @@ export class MyGame extends Game<MyGame, Game27panicPlayer> {
   /**
    * Any overall properties of your game go here
    */
-  handLimit: number = 6
+  handLimit: number = 6;
+
+  // valid movements
+  moveArea : Record<number, Record<number, number[]>> = {1: {}, 2: {}};
+  
+  init(): void {
+    for(let i = 1; i <= 15; i++) {
+      let valid1 = []
+      let valid2 = []
+  
+      valid1.push(i-3)
+      valid1.push(i+3)
+
+      valid2.push(i-6)
+      valid2.push(i+6)
+  
+      if(i % 3 == 0 || i % 3 == 2) {
+        valid1.push(i-1)
+    
+        valid2.push(i-4)
+        valid2.push(i+2)
+
+        if(i % 3 == 0) {
+          valid1.push(i-2)
+        }
+      }
+      if(i % 3 == 1 || i % 3 == 2) {
+        valid1.push(i+1)
+    
+        valid2.push(i-2)
+        valid2.push(i+4)
+
+        if(i % 3 == 1) {
+          valid1.push(i+2)
+        }
+      }
+  
+      this.moveArea[1][i] = valid1.filter(x => x >= 1 && x<= 15)
+      this.moveArea[2][i] = valid1.concat(valid2).filter(x => x >= 1 && x<= 15)
+    }
+  }
 }
 
 /**
@@ -45,12 +86,75 @@ export class BuildCard extends Piece<MyGame> {
   year: number = 0
 }
 
+export class Coordinate {
+  x: string
+  y: string
+  constructor(x: number, y: number) {
+    this.x = x + '%'
+    this.y = y + '%'
+  }
+}
+export class CoordinatePair {
+  a: Coordinate
+  b: Coordinate
+  constructor(a: Coordinate, b: Coordinate) {
+    this.a = a;
+    this.b = b;
+  }
+}
+
+function coordsOf(location: string, offsetX: number = 0, offsetY: number = 0) : Coordinate {
+  switch(location) {
+    case 'tl': { return new Coordinate(25-offsetX, 0-offsetY)}
+    case 'tr': { return new Coordinate(75-offsetX, 0-offsetY)}
+    case 'bl': { return new Coordinate(25-offsetX, 100-offsetY)}
+    case 'br': { return new Coordinate(75-offsetX, 100-offsetY)}
+    case 'cl': { return new Coordinate(0-offsetX, 50-offsetY)}
+    case 'cr': { return new Coordinate(100-offsetX, 50-offsetY)}
+    case 'none': { return new Coordinate(50-offsetX, 100-offsetY)}
+    default: { return new Coordinate(0, 0)}
+  }
+}
+
 export class RailCard extends Piece<MyGame> {
   rotated: boolean = false
   letter: string = ""
   routes: Record<string, string> = {}
-  flippedRoutes: Record<string, string> = {}
-  unavailable: boolean = false;  
+  unavailable: boolean = false;
+  pts: CoordinatePair[]  
+
+  updateCoordinates() : void {
+    this.pts = Object.entries(this.routes).map(([key, value]) => new CoordinatePair(coordsOf(key), coordsOf(value)))
+  }
+
+  rotateLocation(location : string) {
+    switch(location) {
+      case 'tl': { return 'br' }
+      case 'tr': { return 'bl' }
+      case 'cl': { return 'cr' }
+      case 'cr': { return 'cl' }
+      case 'bl': { return 'tr' }
+      case 'br': { return 'tl' }
+      default: { return location }
+    }
+  }
+
+  rotate() : void {
+    this.rotated = !this.rotated
+    let newRoutes : Record<string, string> = {}
+    Object.entries(this.routes).forEach(([key, value]) => {
+      let newKey = this.rotateLocation(key)
+      let newValue = this.rotateLocation(value)
+      newRoutes[newKey] = newValue;
+    });
+    this.routes = newRoutes;
+    Object.entries(this.routes).forEach(([key, value]) => this.routes[value] = key);
+    this.updateCoordinates()
+  }
+}
+
+export class RailStack extends Space<MyGame> {
+  stack : RailCard[]
 }
 
 export enum MoveResult {
@@ -69,23 +173,24 @@ export class YearMat extends Space<MyGame> {
   building: number
   
   isBlocked(number : number) : boolean {
-    return false;
+    return this.first(YearSpace, {space: number})!.all(Obstacle).length > 0
   }
 
   noRails(number : number) : boolean {
-    return this.all(YearSpace).find(x => x.space == number)!.all(RailCard).length == 0
+    return this.first(YearSpace, {space: number})!.all(RailCard).length == 0
   }
 
   isDamaged(number : number) : boolean {
-    return false;
+    return this.first(YearSpace, {space: number})!.all(Damage).length > 0
   }
 
   moveCargo() : MoveResult {
     let cargo = this.first(Cargo)!
 
     if(cargo.location == 'none') {
-        cargo.location = 'start';
-        // cargo.setPosition(cargo.x, cargo.y-20, cargo.width, cargo.height);
+        let railCard = cargo.container(RailCard);
+        cargo.location = railCard!.routes['none']
+        cargo.updateCoordinates();
     } else if(cargo.location == 'finish') {
         return MoveResult.Safe;
     } else if(cargo.location == 'start') {
@@ -111,8 +216,7 @@ export class YearMat extends Space<MyGame> {
         }
 
         cargo.location = rail.routes[nl.location];
-        // var pt = rail.getLocationPoint(cargoLocation);
-        // cargo.setPosition(rail.x+pt.x-7, rail.y+pt.y, 15f, 15f);
+        cargo.updateCoordinates();
         cargo.putInto(rail);
     } else {
         let nl = {number: 0, location: 'none'}
@@ -132,7 +236,6 @@ export class YearMat extends Space<MyGame> {
         } else if(cargo.location == 'tl' || cargo.location == 'tr') {
             if(cargoSquare <= 3) {
                 cargo.location = 'finish';
-                // cargo.setPosition(cargo.x, cargo.y-20, cargo.width, cargo.height);
                 return MoveResult.Safe;
             } else {
                 nl.number = cargoSquare-3;
@@ -176,25 +279,39 @@ export class YearMat extends Space<MyGame> {
         }
 
         cargo.location = rail.routes[nl.location];
-        
-        // var pt = rail.getLocationPoint(cargoLocation);
-        // cargo.setPosition(rail.x+pt.x-7, rail.y+pt.y, 15f, 15f);
+        cargo.updateCoordinates();
         cargo.putInto(rail);
     }
+
     return MoveResult.Safe;
 }
 }
 
 export class YearSpace extends Space<MyGame> {
   space: number
+  column: number
 }
 
 export class Pawn extends Piece<MyGame> {
+  color: string
+}
+
+export class Damage extends Piece<MyGame> {
+  
+}
+
+export class Obstacle extends Piece<MyGame> {
   
 }
 
 export class Cargo extends Piece<MyGame> {
   location: string //'tl' | 'tr' | 'cl' | 'cr' | 'bl' | 'br' | 'none'
+  coords: Coordinate = new Coordinate(0, 0);
+
+  updateCoordinates(): void {
+    this.coords = coordsOf(this.location, 10,
+      this.location.startsWith("t") ? -10 : 20);
+  }
 }
 
 export class PlayerHand extends Space<MyGame> {
@@ -210,19 +327,19 @@ function yearOf(player: Game27panicPlayer) : number {
 }
 
 function matYear(space: YearSpace): number {
-  return (space._t.parent as YearMat).year
+  return space.container(YearMat)!.year
 }
 
 function occupied(space : YearSpace) : boolean {
-  return false //space.all().length > 0
+  return space.all(Obstacle).length > 0
 }
 
 function movementOf(space : YearSpace) : number {
-  return (space._t.parent! as YearMat).movement;
+  return space.container(YearMat)!.movement
 }
 
 function buildingOf(player: Game27panicPlayer) : number {
-  return ((player.pawn._t.parent! as YearSpace)._t.parent as YearMat).building;
+  return player.pawn.container(YearMat)!.building
 }
 
 function countBy(list: any, keyGetter: any) : Map<string, number> {
@@ -243,54 +360,74 @@ export default createGame(Game27panicPlayer, MyGame, game => {
   const { action } = game;
   const { playerActions, loop, eachPlayer, whileLoop } = game.flowCommands;
 
+  game.init()
+
   // year mats
   const years: number[] = [1930, 1957, 1984, 2011]
   const mvmt: number[] = [1, 1, 2, 2]
   const bldg: number[] = [3, 2, 2, 1]
+  const colOffset: number[] = [0, 3, 6, 9]
+
   for (let j = 0; j < 4; j++) {
     const yearMat = game.create(YearMat, 'year' + years[j], {year: years[j], movement: mvmt[j], building: bldg[j]});
 
     for (let i = -2; i <= 18; i++) {
-      yearMat.create(YearSpace, i.toString(), {space: i})
+      yearMat.create(YearSpace, i.toString(), {space: i, column: (i % 3 == 0 ? 3 : i % 3) + colOffset[j]})
     }
     switch(years[j]) {
       case 1930: {
-        let start = yearMat.all(YearSpace).find(x => x.space == 16)!.create(RailCard, 'start1930',
-          {rotated: false, letter: "Start", unavailable: false}
+        let start = yearMat.first(YearSpace, {space: 16})!.create(RailCard, 'start1930',
+          {rotated: false, letter: "Start", unavailable: false, routes: {'tl': 'none', 'none': 'tl'}}
         );
-        start.create(Cargo, 'green', {location: 'none'})
+        start.updateCoordinates()
+        let cargo = start.create(Cargo, 'green', {location: 'none'})
+        cargo.updateCoordinates()
         break;
       }
       case 1957: {
-        let start = yearMat.all(YearSpace).find(x => x.space == 17)!.create(RailCard, 'start1957',
-          {rotated: false, letter: "Start", unavailable: false}
+        let start = yearMat.first(YearSpace, {space: 17})!.create(RailCard, 'start1957',
+          {rotated: false, letter: "Start", unavailable: false, routes: {'tl': 'none', 'none': 'tl'}}
         );
-        start.create(Cargo, 'red', {location: 'none'})
+        start.updateCoordinates()
+        let cargo = start.create(Cargo, 'red', {location: 'none'})
+        cargo.updateCoordinates() 
         break;
       }
       case 1984: {  
-        let start = yearMat.all(YearSpace).find(x => x.space == 17)!.create(RailCard, 'start1984',
-          {rotated: false, letter: "Start", unavailable: false}
+        let start = yearMat.first(YearSpace, {space: 17})!.create(RailCard, 'start1984',
+          {rotated: false, letter: "Start", unavailable: false, routes: {'tr': 'none', 'none': 'tr'}}
         );
-        start.create(Cargo, 'yellow', {location: 'none'})
+        start.updateCoordinates()
+        let cargo = start.create(Cargo, 'yellow', {location: 'none'})
+        cargo.updateCoordinates()
         break;
       }
       case 2011: {
-        let start = yearMat.all(YearSpace).find(x => x.space == 18)!.create(RailCard, 'start2011',
-          {rotated: false, letter: "Start", unavailable: false}
+        let start = yearMat.first(YearSpace, {space: 18})!.create(RailCard, 'start2011',
+          {rotated: false, letter: "Start", unavailable: false, routes: {'tr': 'none', 'none': 'tr'}}
         );
-        start.create(Cargo, 'blue', {location: 'none'})
+        start.updateCoordinates()
+        let cargo = start.create(Cargo, 'blue', {location: 'none'})
+        cargo.updateCoordinates()
         break;
       }
     }
   }
 
+  let obs1 = Math.floor(Math.random() * 6) + 1
+  let obs2 = Math.floor(Math.random() * 6) + 7
+  $.year1957.first(YearSpace, {'space': obs1})!.create(Obstacle, 'blocked')
+  $.year1984.first(YearSpace, {'space': obs1})!.create(Obstacle, 'blocked')
+  $.year2011.first(YearSpace, {'space': obs1})!.create(Obstacle, 'blocked')
+  $.year2011.first(YearSpace, {'space': obs2})!.create(Obstacle, 'blocked')
+
 
   // players
   var playerNum = 1;
+  var playerColors = ['green', 'red', 'yellow', 'blue']
   for (const player of game.players) {
     const mat = game.create(PlayerHand, 'player' + playerNum, { player });
-    const pawn = game.create(Pawn, 'player' + playerNum)
+    const pawn = game.create(Pawn, 'player' + playerNum, {color: playerColors[playerNum-1]})
 
     pawn.putInto($['year' + years[playerNum-1]].all(YearSpace).find(x => x.space == 14)!)
 
@@ -308,49 +445,30 @@ export default createGame(Game27panicPlayer, MyGame, game => {
       buildCard)
   }
   game.create(Space, 'discard');
+  game.create(Space, 'move');
   game.create(Space, 'scraps');
   for (let i = 0; i < 5; i++) {
     $.scraps.create(Token, 'Scraps')
   }
   game.create(Space, 'garbage')
+  game.create(Space, 'damage')
+  for (let i = 0; i < 12; i++) {
+    $.damage.create(Damage, 'Damage')
+  }
 
   // rail cards
   game.create(Space, 'railCards');
+  let stacks = new Map<string, RailStack>();
   for (const railCard of railCards) {
     for(let i = 0; i < 4; i++) {
-      let rc = $.railCards.create(RailCard, railCard.letter!, railCard)
+      if(!stacks.has(railCard.letter!)) {
+        let rs = $.railCards.create(RailStack, railCard.letter!)
+        stacks.set(railCard.letter!, rs)
+      }
+      let rc = stacks.get(railCard.letter!)!.create(RailCard, railCard.letter!, railCard)
       Object.entries(rc.routes).forEach(([key, value]) => rc.routes[value] = key);
-      Object.entries(rc.flippedRoutes).forEach(([key, value]) => rc.flippedRoutes[value] = key);
+      rc.updateCoordinates()
     }
-  }
-
-  // valid movements
-  let moveArea : Record<number, Record<number, number[]>> = {1: {}, 2: {}};
-  for(let i = 1; i <= 15; i++) {
-    let valid1 = []
-    let valid2 = []
-    
-    valid1.push(i-3)
-    valid1.push(i+3)
-
-    valid2.push(i-6)
-    valid2.push(i+6)
-    
-    if(i % 3 == 0 || i % 3 == 2) {
-      valid1.push(i-1)
-      
-      valid2.push(i-4)
-      valid2.push(i+2)
-    }
-    if(i % 3 == 1 || i % 3 == 2) {
-      valid1.push(i+1)
-      
-      valid2.push(i-2)
-      valid2.push(i+4)
-    }
-    
-    moveArea[1][i] = valid1.filter(x => x >= 1 && x<= 15)
-    moveArea[2][i] = valid1.concat(valid2).filter(x => x >= 1 && x<= 15)
   }
 
   /**
@@ -366,12 +484,47 @@ export default createGame(Game27panicPlayer, MyGame, game => {
       ({ buildCard }) => {
         if(buildCard.type == 'move') {
           // discard and move cargo
-          buildCard.putInto($.discard)
-          let result = game.all(YearMat).find(x => x.year == buildCard.year)?.moveCargo();
+          buildCard.putInto($.move)
+          let result = game.first(YearMat, {year: buildCard.year})!.moveCargo();
           if (result != MoveResult.Safe) {
             game.finish(undefined, 'crashed')
+          } else if (game.all(Cargo, {location: 'finish'}).length == 4) {
+            game.finish(undefined, 'win')
           }
+
+          // check if 3 move cards
+          if ($.move.all(BuildCard).length >= 3) {
+            $.move.all(BuildCard).forEach(x => {
+              if(game.all(YearMat, {year: x.year}).first(Cargo)!.location == 'finish') {
+                // don't recirulcate this move card
+                x.putInto($.garbage)
+              } else {
+                x.putInto($.buildCards)
+              }
+            })
+          }
+          $.buildCards.shuffle()
+
         } else {
+          game.message('checking for damage in column: ' + buildCard.damageColumn)          
+          // check for damage
+          let rails = game.all(YearSpace, {column: buildCard.damageColumn})
+            .filter(x => x.all(Cargo).length == 0 && x.all(Damage).length == 0)
+          let rail = undefined
+          if(rails.length > 0) {
+            rail = rails.first(RailCard)
+          }
+          if(rail != undefined) {
+            game.message(rail!.toString());
+            if($.damage.all(Damage).length == 0) {
+              game.finish(undefined, 'damaged')
+            } else {
+              $.damage.first(Damage)!.putInto(rail.container(YearSpace)!)
+            }
+          } else {
+            game.message('no rail found')
+          }
+          
           // add card to hand
           buildCard.putInto(player.hand)
         }
@@ -407,7 +560,7 @@ export default createGame(Game27panicPlayer, MyGame, game => {
     move: (player) => action({
       prompt: 'Move'
     }).chooseOnBoard(
-      'space', game.all(YearSpace).filter(x => !occupied(x) && moveArea[movementOf(x)][spaceOf(player)].includes(x.space) && yearOf(player) == matYear(x))
+      'space', game.all(YearSpace).filter(x => !occupied(x) && game.moveArea[movementOf(x)][spaceOf(player)].includes(x.space) && yearOf(player) == matYear(x))
     ).do(({ space }) => {
         player.pawn.putInto(space)
       }
@@ -455,7 +608,8 @@ export default createGame(Game27panicPlayer, MyGame, game => {
     }).chooseOnBoard(
       'card', () => {
         let letterCounts : Map<string, number> = countBy(player.hand.all(BuildCard), (x : BuildCard) => x.letter);
-        return $.railCards.all(RailCard).filter(x => !x.unavailable && letterCounts.get(x.letter)! >= buildingOf(player))
+        return $.railCards.all(RailCard).filter(x => !x.unavailable && 
+          letterCounts.get(x.letter)! + player.hand.all(BuildCard, {type: 'wild'}).length >= buildingOf(player))
       }
     ).do(({ card }) => {
       player.buildLetter = card.letter
@@ -466,14 +620,18 @@ export default createGame(Game27panicPlayer, MyGame, game => {
     chooseBuildCards: (player) => action({
       prompt: 'Choose Build Cards',
     }).chooseOnBoard(
-      'buildCards', player.hand.all(BuildCard).filter(x => x.letter == player.buildLetter), {number: buildingOf(player)}
+      'buildCards', player.hand.all(BuildCard, {letter: player.buildLetter})
+        .concat(player.hand.all(BuildCard, {type: 'wild'})), {number: buildingOf(player)}
     ).do(
       ({ buildCards }) => {
         buildCards.forEach(x => x.putInto($.discard))
         game.all(YearMat).forEach(x => {
           if (x.year >= yearOf(player)) {
+            let yearSpace = x.all(YearSpace).find(x => x.space == spaceOf(player))!
             let railCard = $.railCards.all(RailCard).filter(x => x.letter == player.buildLetter).first(RailCard)!
-            railCard.putInto(x.all(YearSpace).find(x => x.space == spaceOf(player))!)
+            if(yearSpace.all(RailCard).length == 0) {
+              railCard.putInto(yearSpace)
+            }
           }
         })
         $.railCards.all(RailCard).filter(x => x.letter == player.buildLetter).forEach(x => x.unavailable = true)
@@ -493,6 +651,49 @@ export default createGame(Game27panicPlayer, MyGame, game => {
         scraps.putInto(player.pawn._t.parent!)
         $.scraps.first(Token)!.putInto($.garbage)
         player.scrapsLetter = scraps.letter
+      }
+    ),
+
+    repair: (player) => action({
+      prompt: 'Repair Rail',
+      condition: player.pawn.container(YearSpace)!.all(Damage).length > 0
+    }).do(
+      () => { 
+        player.pawn.container(YearSpace)!.first(Damage)!.putInto($.damage)
+      }
+    ),
+
+    rotate: (player) => action({
+      prompt: 'Rotate Rails'
+    }).do(
+      () => {
+        $.railCards.all(RailCard).forEach(x => x.rotate())
+      }
+    ),
+
+    moveAll: (player) => action({
+      prompt: 'Move all Cargo',
+      condition: player.hand.all(BuildCard).length > 0
+    }).do(
+      () => {
+        player.hand.all(BuildCard).forEach(x => x.putInto($.discard))
+        game.all(YearMat).forEach(x => x.moveCargo())
+        if (game.all(Cargo, {location: 'finish'}).length == 4) {
+          game.finish(undefined, 'win')
+        }
+      }
+    ),
+
+    removeRail: (player) => action({
+      prompt: 'Remove Rail',
+      condition: player.pawn.container(YearSpace)!.all(RailCard).length > 0 &&
+        player.pawn.container(YearSpace)!.all(Damage).length == 0 &&
+        player.pawn.container(YearSpace)!.all(Cargo).length == 0
+    }).do(
+      () => {
+        let rail = player.pawn.container(YearSpace)!.first(RailCard)!;
+        rail.unavailable = true
+        rail.putInto($.railCards)
       }
     ),
 
@@ -525,11 +726,11 @@ export default createGame(Game27panicPlayer, MyGame, game => {
           playerActions({ actions: ['move', 'skip']}),
           playerActions({ actions: ['chooseTradePartner', 'skip']}),
           whileLoop({while: () => game.players.current()!.tradePartner != undefined, do: (
-            playerActions({ actions: ['trade', 'finish']})
+            playerActions({ actions: ['trade', 'rotate', 'finish']})
           )}),
-          playerActions({ actions: ['build', 'scraps', 'skip']}),
+          playerActions({ actions: ['build', 'scraps', 'repair', 'removeRail', 'moveAll', 'skip']}),
           whileLoop({while: () => game.players.current()!.buildLetter != undefined, do: (
-            playerActions({ actions: ['chooseBuildCards']})
+            playerActions({ actions: ['chooseBuildCards', 'rotate']})
           )}),
           whileLoop({while: () => game.players.current()!.scrapsLetter != undefined, do: (
             playerActions({ actions: ['discardBuildCard']})
