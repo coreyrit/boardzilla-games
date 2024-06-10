@@ -9,7 +9,7 @@ import tracksAP from './assets/TracksA-P.svg'
 
 render(setup, {
   settings: {
-    tokens: numberSetting('Number of tokens', 4, 24),
+    // tokens: numberSetting('Number of tokens', 4, 24),
   },
 
   announcements: {
@@ -74,16 +74,31 @@ render(setup, {
 
     game.all(PlayerHand).layout(BuildCard, {direction: 'ltr'});
 
+    $.scraps.layout(Token, {
+      direction: 'ttb',
+      alignment: 'center',
+      gap: {x: 0, y: 1},
+    });
+
 
     
 
     game.all(Token).appearance({
-      aspectRatio: 1,
+      aspectRatio: 3/4,
       render: () => (
-        <div className="flipper">
-          <div className="front"></div>
-          <div className="back"></div>
-        </div>
+        // <div className="flipper">
+        //   <div className="front"></div>
+        //   <div className="back"></div>
+        // </div>
+        <svg width="100%" height="50%" xmlns="http://www.w3.org/2000/svg">
+          <rect width="20%" height="100%" x="25%" y="0%" fill='white' />
+          <rect width="20%" height="100%" x="75%" y="0%" fill='white' />
+
+          <rect width="50%" height="10%" x="25%" y="15%" fill='white' />
+          <rect width="50%" height="10%" x="25%" y="35%" fill='white' />
+          <rect width="50%" height="10%" x="25%" y="55%" fill='white' />
+          <rect width="50%" height="10%" x="25%" y="75%" fill='white' />
+        </svg>
       )
     });
 
@@ -194,12 +209,6 @@ render(setup, {
 
     game.all(BuildCard).appearance({
       aspectRatio: 250/350,
-      // render: x => (
-      //   <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-      //     <rect width="100%" height="100%" x="0" y="0" stroke="black" fill="white" />
-      //     <text x="30%" y="30%">{x.container(BuildDeck) == undefined ? (x.type == 'wild' ? 'Wild' : x.type == 'move' ? x.year : x.letter) : ''}</text>
-      //   </svg>
-      // )
       render: () => (
         <div>
           <div className="front"/>

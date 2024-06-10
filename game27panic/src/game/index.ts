@@ -329,7 +329,16 @@ export class Cargo extends Piece<MyGame> {
   coords: Coordinate = new Coordinate(0, 0);
 
   updateCoordinates(next: string = 'none'): void {
-    this.coords = coordsOf(this.location, 10, this.location.startsWith("t") ? -10 : 20, next);
+    let offsetX = 0
+    if(this.location.startsWith("c")) {
+      offsetX = this.location.endsWith("l") ? 0 : 20
+    } else if(this.location.startsWith("t")) {
+      offsetX = this.location.endsWith("l") ? 0 : 15
+    }
+
+    this.coords = coordsOf(this.location, 
+      offsetX,
+      this.location.startsWith("t") ? -10 : 10, next);
   }
 }
 
@@ -583,11 +592,10 @@ export default createGame(Game27panicPlayer, MyGame, game => {
     ).do(
       ({ buildCard }) => {
         buildCard.putInto($.discard)
-        player.scrapsLetter = undefined
       }
     ).message(
       'You discarded {{buildCard}}'
-    ),
+    ),    
 
     timeTravel: (player) => action({
       prompt: 'Time Travel'
@@ -678,8 +686,6 @@ export default createGame(Game27panicPlayer, MyGame, game => {
           }
         })
         $.availableRailCards.all(RailCard).filter(x => x.letter == player.buildLetter).forEach(x => {
-          // x.unavailable = true;
-          // x.face = 'available' + x.letter
           x.putInto($.unavailableRailCards.first(RailStack, {letter: x.letter})!)
         })
         player.buildLetter = undefined
@@ -693,13 +699,30 @@ export default createGame(Game27panicPlayer, MyGame, game => {
     }).chooseOnBoard(
       'scraps', $.unavailableRailCards.all(RailCard) //.filter(x => x.unavailable)
     ).do(
-      ({ scraps }) => {
-        scraps.unavailable = false
-        scraps.face = 'unavailable' + scraps.letter
-        scraps.putInto(player.pawn.container(YearSpace)!)
-        $.scraps.first(Token)!.putInto($.garbage)
-        player.scrapsLetter = scraps.letter
+      ({scraps}) => {
+        player.scrapsLetter = scraps.letter        
       }
+    ),
+
+    discardForScraps: (player) => action({
+      prompt: 'Discard a Build Card',
+    }).chooseOnBoard(
+      'buildCard', player.hand.all(BuildCard)
+    ).do(
+      ({ buildCard }) => {
+        // place the unavailable rail card
+        let scraps = $.unavailableRailCards.first(RailCard, {letter: player.scrapsLetter})!
+        scraps.putInto(player.pawn.container(YearSpace)!)
+
+        // use up a scraps token
+        $.scraps.first(Token)!.putInto($.garbage)
+
+        // discard a build card
+        buildCard.putInto($.discard)
+        player.scrapsLetter = undefined
+      }
+    ).message(
+      'You discarded {{buildCard}}'
     ),
 
     repair: (player) => action({
@@ -799,7 +822,7 @@ export default createGame(Game27panicPlayer, MyGame, game => {
             playerActions({ actions: ['chooseBuildCards', 'rotate']})
           )}),
           whileLoop({while: () => game.players.current()!.scrapsLetter != undefined, do: (
-            playerActions({ actions: ['discardBuildCard']})
+            playerActions({ actions: ['discardForScraps', 'rotate']})
           )}),
         ]
       })
