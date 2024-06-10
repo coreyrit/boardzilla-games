@@ -4,7 +4,7 @@
     z-index: 1;
 
     width: 100%;
-    height: 100%;
+    height: 100%;    
 
     &[data-name="year1930"] .front { background-image: url(./assets/year1930.jpg) }
     &[data-name="year1957"] .front { background-image: url(./assets/year1957.jpg) }
@@ -13,7 +13,7 @@
 
     > div {   
       width: 100%;
-      height: 100%;
+      height: 100%;      
 
       .front {
         position: absolute;
@@ -36,7 +36,7 @@
     height: 100%;
 
     > div {      
-      color: black;
+      color: rgba(0, 0, 0, 0);
       background: rgba(0, 0, 0, 0);
     }
 

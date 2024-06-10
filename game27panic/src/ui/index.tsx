@@ -144,6 +144,16 @@ render(setup, {
       )
     });
 
+    $.buildCards.appearance({ render: x => ( <svg /> ) });
+    $.availableRailCards.appearance({ render: x => ( <svg /> ) });
+    $.unavailableRailCards.appearance({ render: x => ( <svg /> ) });
+    $.damage.appearance({ render: x => ( <svg /> ) });
+    $.discard.appearance({ render: x => ( <svg /> ) });
+    $.move.appearance({ render: x => ( <svg /> ) });
+    $.scraps.appearance({ render: x => ( <svg /> ) });
+
+    game.all(RailStack).appearance({ render: x => ( <svg /> ) });
+
     game.all(YearMat).layout(YearSpace, {
       rows: 7,
       columns: 3,
