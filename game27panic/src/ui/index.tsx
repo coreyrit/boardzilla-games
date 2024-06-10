@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, numberSetting, Space, Piece } from '@boardzilla/core';
-import setup, { Token, YearMat, YearSpace, RailCard, Cargo, Pawn, Damage, PlayerHand, BuildCard, RailStack, BuildDeck} from '../game/index.js';
+import setup, { Token, YearMat, YearSpace, RailCard, Cargo, Pawn, Damage, PlayerHand, BuildCard, RailStack, BuildDeck, Obstacle} from '../game/index.js';
 
 import './style.scss';
 import tracksAP from './assets/TracksA-P.svg'
@@ -135,7 +135,15 @@ render(setup, {
     game.all(Cargo).appearance({
       render: x => (
         <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-          <rect width="10" height="10" x={x.coords.x} y={x.coords.y} fill={x.name} stroke='white' />
+          <rect width="22%" height="16%" x={x.coords.x} y={x.coords.y} fill={x.name} stroke='white' />
+        </svg>
+      )
+    });
+
+    game.all(Obstacle).appearance({
+      render: x => (
+        <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="25,50 50,25 75,50 75,75 25,75" fill='black' stroke='white' strokeWidth='2' />        
         </svg>
       )
     });
@@ -143,9 +151,9 @@ render(setup, {
     game.all(Pawn).appearance({
       aspectRatio: 25/25,
       render: x => (
-        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-          <circle cx={x.color == 'green' ? "35%" : "65%"} cy="15%" r="15%" fill={x.color} stroke='white'/>
-          <rect x={x.color == 'green' ? "20%" : "50%"} y="28%" width="30%" height="20%" fill={x.color} stroke='white' />
+        <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx={x.color == 'green' ? "35" : "65"} cy="15" r="15" fill={x.color} stroke='white' strokeWidth='2' />
+          <rect x={x.color == 'green' ? "20" : "50"} y="28" width="30" height="20" fill={x.color} stroke='white' strokeWidth='2' />
         </svg>
       )
     });

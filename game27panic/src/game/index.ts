@@ -124,13 +124,13 @@ function coordsOf(location: string, offsetX: number = 0, offsetY: number = 0, ne
     case 'none': { 
       switch(next) {
         case 'tl': {
-          return new Coordinate(25-offsetX, 50-offsetY)
+          return new Coordinate(25-offsetX, 40-offsetY)
         }
         case 'tr': {
-
+          return new Coordinate(55+offsetX, 40-offsetY)
         }
         default: {
-          return new Coordinate(75-offsetX, 50-offsetY)
+          return new Coordinate(75-offsetX, 40-offsetY)
         }
       }      
     }
