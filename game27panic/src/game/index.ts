@@ -603,7 +603,7 @@ export default createGame(Game27panicPlayer, MyGame, game => {
             .filter(x => x.all(Cargo).length == 0 && x.all(Damage).length == 0)
           let rail = undefined
           if(rails.length > 0) {
-            rail = rails.first(RailCard)
+            rail = rails.all(RailCard).filter(x => !x.name.startsWith("start") && !x.name.startsWith("finish")).first(RailCard)!
           }
           if(rail != undefined) {
             game.message(rail!.toString());
