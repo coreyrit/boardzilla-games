@@ -72,6 +72,25 @@ export class MyGame extends Game<MyGame, Game27panicPlayer> {
       this.moveArea[2][i] = valid1.concat(valid2).filter(x => x >= 1 && x<= 15)
     }
   }
+
+  canMove(player : Game27panicPlayer, x : YearSpace, numSpaces: number = 0) : boolean {
+    if(occupied(x)) {
+      return false;
+    } else if(x == player.pawn.container(YearSpace)) {
+      return true
+    } else if(numSpaces == 0) {
+      return false
+    } else if(this.moveArea[1][x.space] == undefined) {
+      return false
+    } else {      
+      const year = player.pawn.container(YearMat)!;
+      let result = false;
+      this.moveArea[1][x.space].forEach(space => {
+        result = result || this.canMove(player, year.first(YearSpace, {space: space})!, numSpaces-1)
+      })
+      return result;
+    }    
+  }
 }
 
 // tokens are used for scraps tokens
@@ -611,7 +630,7 @@ export default createGame(Game27panicPlayer, MyGame, game => {
     move: (player) => action({
       prompt: 'Move'
     }).chooseOnBoard(
-      'space', game.all(YearSpace).filter(x => !occupied(x) && game.moveArea[movementOf(x)][spaceOf(player)].includes(x.space) && yearOf(player) == matYear(x))
+      'space', player.pawn.container(YearMat)!.all(YearSpace).filter(x => x.space != spaceOf(player) && game.canMove(player, x, movementOf(x)))
     ).do(({ space }) => {
         player.pawn.putInto(space)
       }
@@ -664,6 +683,19 @@ export default createGame(Game27panicPlayer, MyGame, game => {
       }
     ).do(({ card }) => {
       player.buildLetter = card.letter
+
+      game.all(YearMat).forEach(x => {
+        if (x.year >= yearOf(player)) {
+          let yearSpace = x.first(YearSpace, {space: spaceOf(player)})!
+          let railCard = $.availableRailCards.all(RailCard).filter(x => x.letter == player.buildLetter).first(RailCard)!
+          if(yearSpace.all(RailCard).length == 0 && yearSpace.all(Obstacle).length == 0) {
+            railCard.putInto(yearSpace)
+          }
+        }
+      })
+      $.availableRailCards.all(RailCard).filter(x => x.letter == player.buildLetter).forEach(x => {
+        x.putInto($.unavailableRailCards.first(RailStack, {letter: x.letter})!)
+      })
     }).message(
       'You built {{card}}'
     ),
@@ -675,19 +707,7 @@ export default createGame(Game27panicPlayer, MyGame, game => {
         .concat(player.hand.all(BuildCard, {type: 'wild'})), {number: buildingOf(player)}
     ).do(
       ({ buildCards }) => {
-        buildCards.forEach(x => x.putInto($.discard))
-        game.all(YearMat).forEach(x => {
-          if (x.year >= yearOf(player)) {
-            let yearSpace = x.first(YearSpace, {space: spaceOf(player)})!
-            let railCard = $.availableRailCards.all(RailCard).filter(x => x.letter == player.buildLetter).first(RailCard)!
-            if(yearSpace.all(RailCard).length == 0 && yearSpace.all(Obstacle).length == 0) {
-              railCard.putInto(yearSpace)
-            }
-          }
-        })
-        $.availableRailCards.all(RailCard).filter(x => x.letter == player.buildLetter).forEach(x => {
-          x.putInto($.unavailableRailCards.first(RailStack, {letter: x.letter})!)
-        })
+        buildCards.forEach(x => x.putInto($.discard))        
         player.buildLetter = undefined
       }
     ),
@@ -700,7 +720,14 @@ export default createGame(Game27panicPlayer, MyGame, game => {
       'scraps', $.unavailableRailCards.all(RailCard) //.filter(x => x.unavailable)
     ).do(
       ({scraps}) => {
-        player.scrapsLetter = scraps.letter        
+        player.scrapsLetter = scraps.letter
+
+        // place the unavailable rail card
+        let sc = $.unavailableRailCards.first(RailCard, {letter: player.scrapsLetter})!
+        sc.putInto(player.pawn.container(YearSpace)!)
+
+        // use up a scraps token
+        $.scraps.first(Token)!.putInto($.garbage)
       }
     ),
 
@@ -709,14 +736,7 @@ export default createGame(Game27panicPlayer, MyGame, game => {
     }).chooseOnBoard(
       'buildCard', player.hand.all(BuildCard)
     ).do(
-      ({ buildCard }) => {
-        // place the unavailable rail card
-        let scraps = $.unavailableRailCards.first(RailCard, {letter: player.scrapsLetter})!
-        scraps.putInto(player.pawn.container(YearSpace)!)
-
-        // use up a scraps token
-        $.scraps.first(Token)!.putInto($.garbage)
-
+      ({ buildCard }) => {        
         // discard a build card
         buildCard.putInto($.discard)
         player.scrapsLetter = undefined
@@ -738,8 +758,24 @@ export default createGame(Game27panicPlayer, MyGame, game => {
       prompt: 'Rotate Rails'
     }).do(
       () => {
-        $.availableRailCards.all(RailCard).forEach(x => x.rotate())
-        $.unavailableRailCards.all(RailCard).forEach(x => x.rotate())
+        if(player.buildLetter != undefined) {
+          // rotate now and future
+          game.all(YearMat).forEach(x => {
+            if (x.year >= yearOf(player)) {
+              let yearSpace = x.first(YearSpace, {space: spaceOf(player)})!
+              let railCard = yearSpace.all(RailCard).filter(x => x.letter == player.buildLetter).forEach(y => {
+                y.rotate();
+              })
+            }
+          })
+        } else {
+          // rotate just the scraps
+          let x = player.pawn.container(YearMat)!
+          let yearSpace = x.first(YearSpace, {space: spaceOf(player)})!
+          let railCard = yearSpace.all(RailCard).filter(x => x.letter == player.scrapsLetter).forEach(y => {
+              y.rotate();
+            })
+        }
       }
     ),
 
@@ -813,7 +849,7 @@ export default createGame(Game27panicPlayer, MyGame, game => {
           // 5. Trade cards with ONE player in the same year
           playerActions({ actions: ['chooseTradePartner', 'skip']}),
           whileLoop({while: () => game.players.current()!.tradePartner != undefined, do: (
-            playerActions({ actions: ['trade', 'rotate', 'finish']})
+            playerActions({ actions: ['trade', 'finish']})
           )}),
 
           // Build or Repair or Recycle

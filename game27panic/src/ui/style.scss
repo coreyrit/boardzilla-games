@@ -56,7 +56,8 @@
     &.selectable {
       filter: brightness(1.5);
       &:hover {
-        filter: brightness(2);
+        z-index: 1000;
+        transform: scale(1.6);
       }
     }
 
