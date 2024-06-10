@@ -427,6 +427,7 @@ export default createGame(Game27panicPlayer, MyGame, game => {
   const locations: string[] = ['tl', 'tl', 'tr', 'tr']
   const cargoColors: string[] = ['green', 'yellow', 'red', 'blue']
   const startSpaces: number[] = [16, 17, 17, 18]
+  let column = 1
 
   // loop through the years
   for (let j = 0; j < years.length; j++) {
@@ -449,6 +450,22 @@ export default createGame(Game27panicPlayer, MyGame, game => {
         {rotated: false, letter: "Start", unavailable: false, routes: startRoutes});
     start.face = 'start' + years[j]
     start.updateCoordinates()
+
+    // initialize routes for start rail card
+    let finishRoutes : Record<string, string> = {}
+    finishRoutes['bl'] = 'finish'
+    finishRoutes['br'] = 'finish'
+    finishRoutes['finish'] = 'bl'
+    finishRoutes['finish'] = 'br'
+
+    // create the finish rails
+    for (let i = -2; i <= 0; i++) {
+      let finish = yearMat.first(YearSpace, {space: i})!.create(RailCard, 'finish-' + column,
+        {rotated: false, letter: "Finish", unavailable: false, routes: finishRoutes});
+      finish.face = 'finish-' + column
+      finish.updateCoordinates()
+      column++;
+    }
     
     // place cargo on the start rail
     let cargo = start.container(YearSpace)!.create(Cargo, cargoColors[j], {location: 'none'})
@@ -472,7 +489,10 @@ export default createGame(Game27panicPlayer, MyGame, game => {
  
     const pawn = game.create(Pawn, 'player' + playerNum, {color: playerColors[j]})
     const hand = game.create(PlayerHand, 'player' + playerNum, { player });
-    hand.onEnter(BuildCard, ((x) => { x.showToAll() }))
+    hand.onEnter(BuildCard, ((x) => { 
+      x.showToAll() 
+      hand.sortBy("name")
+    }))
 
     pawn.putInto(game.first(YearMat, {year: playerYears[j]})!.first(YearSpace, {space: 14})!)
     player.hand = hand
