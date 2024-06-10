@@ -1,16 +1,260 @@
 #play-area {
-  .RailCard {
-    color: black;
-    z-index: 100;
-    &.selectable {
-      border-style: solid;
+
+  .YearMat {
+    z-index: 1;
+
+    width: 100%;
+    height: 100%;
+
+    &[data-name="year1930"] .front { background-image: url(./assets/year1930.jpg) }
+    &[data-name="year1957"] .front { background-image: url(./assets/year1957.jpg) }
+    &[data-name="year1984"] .front { background-image: url(./assets/year1984.jpg) }
+    &[data-name="year2011"] .front { background-image: url(./assets/year2011.jpg) }
+
+    > div {   
+      width: 100%;
+      height: 100%;
+
+      .front {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-size: 100% auto;
+        background-repeat: no-repeat;
+        background-size: 90% 78%;
+        background-position: center 54%;
+      }
     }
   }
+
   .YearSpace {
+    z-index: 10;    
+
+    width: 100%;
+    height: 100%;
+
+    > div {      
+      color: black;
+      background: rgba(0, 0, 0, 0);
+    }
+
     &.selectable {
-      filter: brightness(1.1);
+      > div {      
+        border: .3em solid yellow;
+      }
     }
   }
+
+  .RailCard {
+    z-index: 100;
+    
+    width: 100%; 
+    height: 100%;
+
+    &.selectable {
+      filter: brightness(1.5);
+      &:hover {
+        filter: brightness(2);
+      }
+    }
+
+    &[data-face="start1930"] .front { background-image: url(./assets/start1930.jpg) }
+    &[data-face="start1957"] .front { background-image: url(./assets/start1957.jpg) }
+    &[data-face="start1984"] .front { background-image: url(./assets/start1984.jpg) }
+    &[data-face="start2011"] .front { background-image: url(./assets/start2011.jpg) }
+
+    &[data-face="availableA"] .front { background-image: url(./assets/tracks-A.jpg) }
+    &[data-face="availableB"] .front { background-image: url(./assets/tracks-B.jpg) }
+    &[data-face="availableC"] .front { background-image: url(./assets/tracks-C.jpg) }
+    &[data-face="availableD"] .front { background-image: url(./assets/tracks-D.jpg) }
+    &[data-face="availableE"] .front { background-image: url(./assets/tracks-E.jpg) }
+    &[data-face="availableF"] .front { background-image: url(./assets/tracks-F.jpg) }
+    &[data-face="availableG"] .front { background-image: url(./assets/tracks-G.jpg) }
+    &[data-face="availableH"] .front { background-image: url(./assets/tracks-H.jpg) }
+
+    &[data-face="availableI"] .front { background-image: url(./assets/tracks-I.jpg) }
+    &[data-face="availableJ"] .front { background-image: url(./assets/tracks-J.jpg) }
+    &[data-face="availableK"] .front { background-image: url(./assets/tracks-K.jpg) }
+    &[data-face="availableL"] .front { background-image: url(./assets/tracks-L.jpg) }
+    &[data-face="availableM"] .front { background-image: url(./assets/tracks-M.jpg) }
+    &[data-face="availableN"] .front { background-image: url(./assets/tracks-N.jpg) }
+    &[data-face="availableO"] .front { background-image: url(./assets/tracks-O.jpg) }
+    &[data-face="availableP"] .front { background-image: url(./assets/tracks-P.jpg) }
+
+    &[data-face="unavailableA"] .front { background-image: url(./assets/tracks-uA.jpg) }
+    &[data-face="unavailableB"] .front { background-image: url(./assets/tracks-uB.jpg) }
+    &[data-face="unavailableC"] .front { background-image: url(./assets/tracks-uC.jpg) }
+    &[data-face="unavailableD"] .front { background-image: url(./assets/tracks-uD.jpg) }
+    &[data-face="unavailableE"] .front { background-image: url(./assets/tracks-uE.jpg) }
+    &[data-face="unavailableF"] .front { background-image: url(./assets/tracks-uF.jpg) }
+    &[data-face="unavailableG"] .front { background-image: url(./assets/tracks-uG.jpg) }
+    &[data-face="unavailableH"] .front { background-image: url(./assets/tracks-uH.jpg) }
+
+    &[data-face="unavailableI"] .front { background-image: url(./assets/tracks-uI.jpg) }
+    &[data-face="unavailableJ"] .front { background-image: url(./assets/tracks-uJ.jpg) }
+    &[data-face="unavailableK"] .front { background-image: url(./assets/tracks-uK.jpg) }
+    &[data-face="unavailableL"] .front { background-image: url(./assets/tracks-uL.jpg) }
+    &[data-face="unavailableM"] .front { background-image: url(./assets/tracks-uM.jpg) }
+    &[data-face="unavailableN"] .front { background-image: url(./assets/tracks-uN.jpg) }
+    &[data-face="unavailableO"] .front { background-image: url(./assets/tracks-uO.jpg) }
+    &[data-face="unavailableP"] .front { background-image: url(./assets/tracks-uP.jpg) }
+
+    > div {
+      width: 100%;
+      height: 100%;
+
+      transition: 0.6s;
+      transform-style: preserve-3d;
+      position: relative;
+
+      background-size: 90% 78%;
+      background-position: center 52%;
+      background-repeat: no-repeat;
+
+      .front, .back {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: 0.2em;
+        border-color: black;
+        background-size: 100% auto;
+      }
+    }
+  }
+
+
+  .BuildCard {
+    z-index: 100;
+    
+    width: 100%; 
+    height: 100%;
+
+    &.selectable {
+      filter: brightness(1.5);
+      &:hover {
+        filter: brightness(2);
+      }
+    }
+    &.selected {
+      filter: brightness(0.5)
+    }
+
+    &[data-name="A,1"] .front { background-image: url(./assets/build-cards-a1.jpg) }
+    &[data-name="A,2"] .front { background-image: url(./assets/build-cards-a2.jpg) }
+    &[data-name="A,3"] .front { background-image: url(./assets/build-cards-a3.jpg) }
+
+    &[data-name="B,4"] .front { background-image: url(./assets/build-cards-b4.jpg) }
+    &[data-name="B,5"] .front { background-image: url(./assets/build-cards-b5.jpg) }
+    &[data-name="B,6"] .front { background-image: url(./assets/build-cards-b6.jpg) }
+
+    &[data-name="C,7"] .front { background-image: url(./assets/build-cards-c7.jpg) }
+    &[data-name="C,8"] .front { background-image: url(./assets/build-cards-c8.jpg) }
+    &[data-name="C,9"] .front { background-image: url(./assets/build-cards-c9.jpg) }
+
+    &[data-name="D,10"] .front { background-image: url(./assets/build-cards-d10.jpg) }
+    &[data-name="D,11"] .front { background-image: url(./assets/build-cards-d11.jpg) }
+    &[data-name="D,12"] .front { background-image: url(./assets/build-cards-d12.jpg) }
+
+    &[data-name="E,1"] .front { background-image: url(./assets/build-cards-e1.jpg) }
+    &[data-name="E,2"] .front { background-image: url(./assets/build-cards-e2.jpg) }
+    &[data-name="E,3"] .front { background-image: url(./assets/build-cards-e3.jpg) }
+
+    &[data-name="F,4"] .front { background-image: url(./assets/build-cards-f4.jpg) }
+    &[data-name="F,5"] .front { background-image: url(./assets/build-cards-f5.jpg) }
+    &[data-name="F,6"] .front { background-image: url(./assets/build-cards-f6.jpg) }
+
+    &[data-name="G,7"] .front { background-image: url(./assets/build-cards-g7.jpg) }
+    &[data-name="G,8"] .front { background-image: url(./assets/build-cards-g8.jpg) }
+    &[data-name="G,9"] .front { background-image: url(./assets/build-cards-g9.jpg) }
+
+    &[data-name="H,10"] .front { background-image: url(./assets/build-cards-h10.jpg) }
+    &[data-name="H,11"] .front { background-image: url(./assets/build-cards-h11.jpg) }
+    &[data-name="H,12"] .front { background-image: url(./assets/build-cards-h12.jpg) }
+
+    &[data-name="I,1"] .front { background-image: url(./assets/build-cards-i1.jpg) }
+    &[data-name="I,2"] .front { background-image: url(./assets/build-cards-i2.jpg) }
+    &[data-name="I,3"] .front { background-image: url(./assets/build-cards-i3.jpg) }
+
+    &[data-name="J,4"] .front { background-image: url(./assets/build-cards-j4.jpg) }
+    &[data-name="J,5"] .front { background-image: url(./assets/build-cards-j5.jpg) }
+    &[data-name="J,6"] .front { background-image: url(./assets/build-cards-j6.jpg) }
+
+    &[data-name="K,7"] .front { background-image: url(./assets/build-cards-k7.jpg) }
+    &[data-name="K,8"] .front { background-image: url(./assets/build-cards-k8.jpg) }
+    &[data-name="K,9"] .front { background-image: url(./assets/build-cards-k9.jpg) }
+
+    &[data-name="L,10"] .front { background-image: url(./assets/build-cards-l10.jpg) }
+    &[data-name="L,11"] .front { background-image: url(./assets/build-cards-l11.jpg) }
+    &[data-name="L,12"] .front { background-image: url(./assets/build-cards-l12.jpg) }
+
+    &[data-name="M,1"] .front { background-image: url(./assets/build-cards-m1.jpg) }
+    &[data-name="M,2"] .front { background-image: url(./assets/build-cards-m2.jpg) }
+    &[data-name="M,3"] .front { background-image: url(./assets/build-cards-m3.jpg) }
+
+    &[data-name="N,4"] .front { background-image: url(./assets/build-cards-n4.jpg) }
+    &[data-name="N,5"] .front { background-image: url(./assets/build-cards-n5.jpg) }
+    &[data-name="N,6"] .front { background-image: url(./assets/build-cards-n6.jpg) }
+
+    &[data-name="O,7"] .front { background-image: url(./assets/build-cards-o7.jpg) }
+    &[data-name="O,8"] .front { background-image: url(./assets/build-cards-o8.jpg) }
+    &[data-name="O,9"] .front { background-image: url(./assets/build-cards-o9.jpg) }
+
+    &[data-name="P,10"] .front { background-image: url(./assets/build-cards-p10.jpg) }
+    &[data-name="P,11"] .front { background-image: url(./assets/build-cards-p11.jpg) }
+    &[data-name="P,12"] .front { background-image: url(./assets/build-cards-p12.jpg) }
+
+    &[data-name="Wild"] .front { background-image: url(./assets/build-cards-wild.jpg) }
+
+    &[data-name="1930"] .front { background-image: url(./assets/build-cards-move1930.jpg) }
+    &[data-name="1957"] .front { background-image: url(./assets/build-cards-move1957.jpg) }
+    &[data-name="1984"] .front { background-image: url(./assets/build-cards-move1984.jpg) }
+    &[data-name="2011"] .front { background-image: url(./assets/build-cards-move2011.jpg) }
+
+    > div {
+      width: 100%;
+      height: 100%;
+
+      background-repeat: no-repeat;
+
+      .front, .back {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: 0.2em;
+        border-color: black;
+        background-size: 100% auto;
+      }
+
+      /* front pane, placed above back */
+      .front {
+        z-index: 2;
+      }
+
+      /* back, initially hidden pane */
+      .back {
+        background-image: url(./assets/build-cards-back.jpg);
+      }
+    }
+  }
+
+  // .BuildCard {
+  //   color: black;
+  //   z-index: 100;
+  //   &.selectable {
+  //     border-style: solid;
+  //   }
+  //   &.selected {
+  //     border-width: 10px;
+  //   }
+  // }
+
+
   .Pawn {
     z-index: 200;
   }

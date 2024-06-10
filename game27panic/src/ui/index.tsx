@@ -1,8 +1,10 @@
 import React from 'react';
 import { render, numberSetting, Space, Piece } from '@boardzilla/core';
-import setup, { Token, YearMat, YearSpace, RailCard, Cargo, Pawn, Damage, PlayerHand, BuildCard, RailStack} from '../game/index.js';
+import setup, { Token, YearMat, YearSpace, RailCard, Cargo, Pawn, Damage, PlayerHand, BuildCard, RailStack, BuildDeck} from '../game/index.js';
 
 import './style.scss';
+import tracksAP from './assets/TracksA-P.svg'
+
 //import '@boardzilla/core/index.css';
 
 render(setup, {
@@ -56,7 +58,8 @@ render(setup, {
     game.layout('year2011', { area: { left: 66, top: 1, width: 20, height: 50 }});
 
     game.layout('buildCards', { area: { left: 88, top: 55, width: 38, height: 18 }});
-    game.layout('railCards', { area: { left: 88, top: 1, width: 30, height: 50 }});
+    game.layout('availableRailCards', { area: { left: 88, top: 1, width: 30, height: 50 }});
+    game.layout('unavailableRailCards', { area: { left: 88, top: 1, width: 30, height: 50 }});
 
     game.layout('discard', { area: { left: 88, top: 75, width: 38, height: 9 }});
     game.layout('move', { area: { left: 88, top: 84, width: 38, height: 9 }});
@@ -84,44 +87,40 @@ render(setup, {
       )
     });
 
-    // game.all(RailCard).appearance({
-    //   render: x => (
-    //     <div className={'railCard' + (x.unavailable ? 'Unavailable' : 'Available')}>{x.name}
-        
-    //     </div>
-    //   )
-    // });
-
-    // game.all(YearSpace).appearance({
-    //   aspectRatio: 250/350,
-    // });
-
     game.all(RailCard).appearance({
       aspectRatio: 25/35,
-      render: rc => (
+      render: () => (
+        <div>
+          <div className="front"/>
+          <div className="back"/>
+        </div>
+      ),
+    });
+
+    game.all(YearMat).appearance({
+      render: () => (
+        <div>
+          <div className="front"/>
+        </div>
+      ),
+    });
+
+    game.all(PlayerHand).appearance({
+      render: x => (
         <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-          <rect width="100%" height="100%" x="0" y="0" stroke='black' fill={rc.unavailable ? 'coral' : 'lightblue'} />
-          <line x1={rc.pts[0].a.x} y1={rc.pts[0].a.y} x2={rc.pts[0].b.x} y2={rc.pts[0].b.y} stroke="white" stroke-width="1" />
-          <line x1={rc.pts[1].a.x} y1={rc.pts[1].a.y} x2={rc.pts[1].b.x} y2={rc.pts[1].b.y} stroke="white" stroke-width="1" />
-          <text x="50%" y="50%">{rc.letter}</text>
+          <rect width="100%" height="100%" x="0" y="0" stroke="black" fill={x.player!.color} opacity="0.5" />
         </svg>
       )
     });
 
     game.all(YearSpace).appearance({
-      aspectRatio: 25/35,
-      render: x => (
-        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-          <rect width="100%" height="100%" x="0" y="0" stroke="black" fill="lightgray" />
-          <text x="50%" y="50%">{x.space}</text>
-        </svg>
-      )
+      aspectRatio: 25/35
     });
 
     game.all(Cargo).appearance({
       render: x => (
         <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-          <rect width="10" height="10" x={x.coords.x} y={x.coords.y} fill={x.name} />
+          <rect width="10" height="10" x={x.coords.x} y={x.coords.y} fill={x.name} stroke='white' />
         </svg>
       )
     });
@@ -130,8 +129,8 @@ render(setup, {
       aspectRatio: 25/25,
       render: x => (
         <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-          <circle cx={x.color == 'green' ? "35%" : "65%"} cy="15%" r="15%" fill={x.color} />
-          <rect x={x.color == 'green' ? "20%" : "50%"} y="28%" width="30%" height="20%" fill={x.color} />
+          <circle cx={x.color == 'green' ? "35%" : "65%"} cy="15%" r="15%" fill={x.color} stroke='white'/>
+          <rect x={x.color == 'green' ? "20%" : "50%"} y="28%" width="30%" height="20%" fill={x.color} stroke='white' />
         </svg>
       )
     });
@@ -161,6 +160,43 @@ render(setup, {
     game.all(YearSpace).layout(RailCard, {
       scaling: 'fill'
     });
+
+    game.all(PlayerHand).layout(BuildCard, {
+      direction: 'ltr',
+      alignment: 'left',
+      gap: {x: 1, y: 0},
+    });
+
+    $.availableRailCards.layout(RailStack, {
+      gap: {x: 0.25, y: 0.25},
+    });
+    $.unavailableRailCards.layout(RailStack, {
+      gap: {x: 0.25, y: 0.25},
+    });
+
+    $.buildCards.layout(BuildCard, {
+      offsetColumn: {x: 0, y: 0},
+    });
+
+    $.discard.layout(BuildCard, {
+      offsetColumn: {x: 0, y: 0},
+    });
+
+    game.all(BuildCard).appearance({
+      aspectRatio: 250/350,
+      // render: x => (
+      //   <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+      //     <rect width="100%" height="100%" x="0" y="0" stroke="black" fill="white" />
+      //     <text x="30%" y="30%">{x.container(BuildDeck) == undefined ? (x.type == 'wild' ? 'Wild' : x.type == 'move' ? x.year : x.letter) : ''}</text>
+      //   </svg>
+      // )
+      render: () => (
+        <div>
+          <div className="front"/>
+          <div className="back"/>
+        </div>
+      ),
+    })
 
     game.layout(Space, {
       gap: 1,

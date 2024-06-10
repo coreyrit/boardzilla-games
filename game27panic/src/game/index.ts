@@ -78,6 +78,10 @@ export class Token extends Piece<MyGame> { // as an example
   // color: 'red' | 'blue';
 }
 
+export class BuildDeck extends Space<MyGame> {
+
+}
+
 export class BuildCard extends Piece<MyGame> {
   type: 'rail' | 'move' | 'wild'
   rotated: boolean = false
@@ -103,7 +107,7 @@ export class CoordinatePair {
   }
 }
 
-function coordsOf(location: string, offsetX: number = 0, offsetY: number = 0) : Coordinate {
+function coordsOf(location: string, offsetX: number = 0, offsetY: number = 0, next : string = 'none') : Coordinate {
   switch(location) {
     case 'tl': { return new Coordinate(25-offsetX, 0-offsetY)}
     case 'tr': { return new Coordinate(75-offsetX, 0-offsetY)}
@@ -111,7 +115,19 @@ function coordsOf(location: string, offsetX: number = 0, offsetY: number = 0) : 
     case 'br': { return new Coordinate(75-offsetX, 100-offsetY)}
     case 'cl': { return new Coordinate(0-offsetX, 50-offsetY)}
     case 'cr': { return new Coordinate(100-offsetX, 50-offsetY)}
-    case 'none': { return new Coordinate(50-offsetX, 100-offsetY)}
+    case 'none': { 
+      switch(next) {
+        case 'tl': {
+          return new Coordinate(25-offsetX, 50-offsetY)
+        }
+        case 'tr': {
+
+        }
+        default: {
+          return new Coordinate(75-offsetX, 50-offsetY)
+        }
+      }      
+    }
     default: { return new Coordinate(0, 0)}
   }
 }
@@ -122,6 +138,7 @@ export class RailCard extends Piece<MyGame> {
   routes: Record<string, string> = {}
   unavailable: boolean = false;
   pts: CoordinatePair[]  
+  face: String = ""
 
   updateCoordinates() : void {
     this.pts = Object.entries(this.routes).map(([key, value]) => new CoordinatePair(coordsOf(key), coordsOf(value)))
@@ -141,6 +158,8 @@ export class RailCard extends Piece<MyGame> {
 
   rotate() : void {
     this.rotated = !this.rotated
+    this.rotation = this.rotated ? 180 : 0
+
     let newRoutes : Record<string, string> = {}
     Object.entries(this.routes).forEach(([key, value]) => {
       let newKey = this.rotateLocation(key)
@@ -155,6 +174,7 @@ export class RailCard extends Piece<MyGame> {
 
 export class RailStack extends Space<MyGame> {
   stack : RailCard[]
+  letter : string
 }
 
 export enum MoveResult {
@@ -188,7 +208,7 @@ export class YearMat extends Space<MyGame> {
     let cargo = this.first(Cargo)!
 
     if(cargo.location == 'none') {
-        let railCard = cargo.container(RailCard);
+        let railCard = cargo.container(YearSpace)!.first(RailCard);
         cargo.location = railCard!.routes['none']
         cargo.updateCoordinates();
     } else if(cargo.location == 'finish') {
@@ -217,10 +237,10 @@ export class YearMat extends Space<MyGame> {
 
         cargo.location = rail.routes[nl.location];
         cargo.updateCoordinates();
-        cargo.putInto(rail);
+        cargo.putInto(rail.container(YearSpace)!);
     } else {
         let nl = {number: 0, location: 'none'}
-        let cargoSquare = ((cargo._t.parent as RailCard)._t.parent as YearSpace).space;
+        let cargoSquare = cargo.container(YearSpace)!.space
 
         console.log(cargoSquare);
         console.log(cargo.location);
@@ -280,7 +300,7 @@ export class YearMat extends Space<MyGame> {
 
         cargo.location = rail.routes[nl.location];
         cargo.updateCoordinates();
-        cargo.putInto(rail);
+        cargo.putInto(rail.container(YearSpace)!);
     }
 
     return MoveResult.Safe;
@@ -308,9 +328,8 @@ export class Cargo extends Piece<MyGame> {
   location: string //'tl' | 'tr' | 'cl' | 'cr' | 'bl' | 'br' | 'none'
   coords: Coordinate = new Coordinate(0, 0);
 
-  updateCoordinates(): void {
-    this.coords = coordsOf(this.location, 10,
-      this.location.startsWith("t") ? -10 : 20);
+  updateCoordinates(next: string = 'none'): void {
+    this.coords = coordsOf(this.location, 10, this.location.startsWith("t") ? -10 : 20, next);
   }
 }
 
@@ -362,6 +381,8 @@ export default createGame(Game27panicPlayer, MyGame, game => {
 
   game.init()
 
+  // game.disableDefaultAppearance()
+
   // year mats
   const years: number[] = [1930, 1957, 1984, 2011]
   const mvmt: number[] = [1, 1, 2, 2]
@@ -377,38 +398,43 @@ export default createGame(Game27panicPlayer, MyGame, game => {
     switch(years[j]) {
       case 1930: {
         let start = yearMat.first(YearSpace, {space: 16})!.create(RailCard, 'start1930',
-          {rotated: false, letter: "Start", unavailable: false, routes: {'tl': 'none', 'none': 'tl'}}
+          {rotated: false, letter: "Start", unavailable: false, 
+            routes: {'tl': 'none', 'none': 'tl'}}
         );
+        start.face = 'start1930'
         start.updateCoordinates()
-        let cargo = start.create(Cargo, 'green', {location: 'none'})
-        cargo.updateCoordinates()
+        let cargo = start.container(YearSpace)!.create(Cargo, 'green', {location: 'none'})
+        cargo.updateCoordinates('tl')
         break;
       }
       case 1957: {
         let start = yearMat.first(YearSpace, {space: 17})!.create(RailCard, 'start1957',
           {rotated: false, letter: "Start", unavailable: false, routes: {'tl': 'none', 'none': 'tl'}}
         );
+        start.face = 'start1957'
         start.updateCoordinates()
-        let cargo = start.create(Cargo, 'red', {location: 'none'})
-        cargo.updateCoordinates() 
+        let cargo = start.container(YearSpace)!.create(Cargo, 'yellow', {location: 'none'})
+        cargo.updateCoordinates('tl') 
         break;
       }
       case 1984: {  
         let start = yearMat.first(YearSpace, {space: 17})!.create(RailCard, 'start1984',
           {rotated: false, letter: "Start", unavailable: false, routes: {'tr': 'none', 'none': 'tr'}}
         );
+        start.face = 'start1984'
         start.updateCoordinates()
-        let cargo = start.create(Cargo, 'yellow', {location: 'none'})
-        cargo.updateCoordinates()
+        let cargo = start.container(YearSpace)!.create(Cargo, 'red', {location: 'none'})
+        cargo.updateCoordinates('tr')
         break;
       }
       case 2011: {
         let start = yearMat.first(YearSpace, {space: 18})!.create(RailCard, 'start2011',
           {rotated: false, letter: "Start", unavailable: false, routes: {'tr': 'none', 'none': 'tr'}}
         );
+        start.face = 'start2011'
         start.updateCoordinates()
-        let cargo = start.create(Cargo, 'blue', {location: 'none'})
-        cargo.updateCoordinates()
+        let cargo = start.container(YearSpace)!.create(Cargo, 'blue', {location: 'none'})
+        cargo.updateCoordinates('tr')
         break;
       }
     }
@@ -424,28 +450,42 @@ export default createGame(Game27panicPlayer, MyGame, game => {
 
   // players
   var playerNum = 1;
-  var playerColors = ['green', 'red', 'yellow', 'blue']
+  var playerColors = ['red', 'green', 'yellow', 'blue']
+  var playerYears = [1984, 1930, 1957, 2011]
+
   for (const player of game.players) {
     const mat = game.create(PlayerHand, 'player' + playerNum, { player });
     const pawn = game.create(Pawn, 'player' + playerNum, {color: playerColors[playerNum-1]})
 
-    pawn.putInto($['year' + years[playerNum-1]].all(YearSpace).find(x => x.space == 14)!)
+    pawn.putInto($['year' + playerYears[playerNum-1]].all(YearSpace).find(x => x.space == 14)!)
 
-    //mat.onEnter(Token, t => t.showToAll());
     playerNum++;
     player.hand = mat
     player.pawn = pawn
   }
 
   // build deck
-  game.create(Space, 'buildCards');
+  game.create(BuildDeck, 'buildCards');
+  $.buildCards.onEnter(BuildCard, ((x) => {
+    x.hideFromAll()
+  }))
+  game.all(PlayerHand).forEach(hand => {
+    hand.onEnter(BuildCard, ((x) => {
+      x.showToAll()
+    }))
+  })
+
   for (const buildCard of buildCards) {
     $.buildCards.create(BuildCard, buildCard.type == 'rail' ? buildCard.letter! + ',' + buildCard.damageColumn : 
-      buildCard.year! + '', 
+      buildCard.type == 'move' ? buildCard.year! + '' : 'Wild', 
       buildCard)
   }
   game.create(Space, 'discard');
   game.create(Space, 'move');
+  $.move.onEnter(BuildCard, ((x) => {
+    x.showToAll()
+  }))
+  
   game.create(Space, 'scraps');
   for (let i = 0; i < 5; i++) {
     $.scraps.create(Token, 'Scraps')
@@ -457,19 +497,35 @@ export default createGame(Game27panicPlayer, MyGame, game => {
   }
 
   // rail cards
-  game.create(Space, 'railCards');
+  game.create(Space, 'availableRailCards');
+  game.create(Space, 'unavailableRailCards');
+
+  let letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P']
+
   let stacks = new Map<string, RailStack>();
   for (const railCard of railCards) {
     for(let i = 0; i < 4; i++) {
       if(!stacks.has(railCard.letter!)) {
-        let rs = $.railCards.create(RailStack, railCard.letter!)
+        let rs = $.availableRailCards.create(RailStack, railCard.letter!, {letter: railCard.letter})
+        let urs = $.unavailableRailCards.create(RailStack, railCard.letter!, {letter: railCard.letter})
+        urs.onEnter(RailCard, ((x) => {
+          x.unavailable = true;
+          x.face = 'unavailable' + x.letter
+        }))
         stacks.set(railCard.letter!, rs)
       }
       let rc = stacks.get(railCard.letter!)!.create(RailCard, railCard.letter!, railCard)
+      rc.face = 'available' + rc.letter
       Object.entries(rc.routes).forEach(([key, value]) => rc.routes[value] = key);
       rc.updateCoordinates()
     }
   }
+  game.all(YearSpace).forEach(ym => {
+    ym.onEnter(RailCard, ((x) => {
+      x.unavailable = false;
+      x.face = 'available' + x.letter
+    }))
+  });
 
   /**
    * Define all possible game actions, e.g.:
@@ -478,7 +534,7 @@ export default createGame(Game27panicPlayer, MyGame, game => {
     drawBuildCard: (player) => action({
       prompt: 'Draw a Build Card'
     }).chooseOnBoard(
-      'buildCard', [$.buildCards.first(BuildCard)!],
+      'buildCard', [$.buildCards.last(BuildCard)!],
       { skipIf: 'never' }
     ).do(
       ({ buildCard }) => {
@@ -608,7 +664,7 @@ export default createGame(Game27panicPlayer, MyGame, game => {
     }).chooseOnBoard(
       'card', () => {
         let letterCounts : Map<string, number> = countBy(player.hand.all(BuildCard), (x : BuildCard) => x.letter);
-        return $.railCards.all(RailCard).filter(x => !x.unavailable && 
+        return $.availableRailCards.all(RailCard).filter(x =>  //!x.unavailable && 
           letterCounts.get(x.letter)! + player.hand.all(BuildCard, {type: 'wild'}).length >= buildingOf(player))
       }
     ).do(({ card }) => {
@@ -628,13 +684,17 @@ export default createGame(Game27panicPlayer, MyGame, game => {
         game.all(YearMat).forEach(x => {
           if (x.year >= yearOf(player)) {
             let yearSpace = x.all(YearSpace).find(x => x.space == spaceOf(player))!
-            let railCard = $.railCards.all(RailCard).filter(x => x.letter == player.buildLetter).first(RailCard)!
-            if(yearSpace.all(RailCard).length == 0) {
+            let railCard = $.availableRailCards.all(RailCard).filter(x => x.letter == player.buildLetter).first(RailCard)!
+            if(yearSpace.all(RailCard).length == 0 && yearSpace.all(Obstacle).length == 0) {
               railCard.putInto(yearSpace)
             }
           }
         })
-        $.railCards.all(RailCard).filter(x => x.letter == player.buildLetter).forEach(x => x.unavailable = true)
+        $.availableRailCards.all(RailCard).filter(x => x.letter == player.buildLetter).forEach(x => {
+          // x.unavailable = true;
+          // x.face = 'available' + x.letter
+          x.putInto($.unavailableRailCards.first(RailStack, {letter: x.letter})!)
+        })
         player.buildLetter = undefined
       }
     ),
@@ -644,11 +704,12 @@ export default createGame(Game27panicPlayer, MyGame, game => {
       condition: game.players.current()!.pawn._t.parent!.all(RailCard).length == 0 &&
         $.scraps.all(Token).length > 0 && game.players.current()!.hand.all(BuildCard).length > 0
     }).chooseOnBoard(
-      'scraps', $.railCards.all(RailCard).filter(x => x.unavailable)
+      'scraps', $.unavailableRailCards.all(RailCard) //.filter(x => x.unavailable)
     ).do(
       ({ scraps }) => {
         scraps.unavailable = false
-        scraps.putInto(player.pawn._t.parent!)
+        scraps.face = 'unavailable' + scraps.letter
+        scraps.putInto(player.pawn.container(YearSpace)!)
         $.scraps.first(Token)!.putInto($.garbage)
         player.scrapsLetter = scraps.letter
       }
@@ -667,7 +728,8 @@ export default createGame(Game27panicPlayer, MyGame, game => {
       prompt: 'Rotate Rails'
     }).do(
       () => {
-        $.railCards.all(RailCard).forEach(x => x.rotate())
+        $.availableRailCards.all(RailCard).forEach(x => x.rotate())
+        $.unavailableRailCards.all(RailCard).forEach(x => x.rotate())
       }
     ),
 
@@ -692,8 +754,9 @@ export default createGame(Game27panicPlayer, MyGame, game => {
     }).do(
       () => {
         let rail = player.pawn.container(YearSpace)!.first(RailCard)!;
-        rail.unavailable = true
-        rail.putInto($.railCards)
+        // rail.unavailable = true
+        // rail.face = 'unavailable' + rail.letter
+        rail.putInto($.unavailableRailCards.first(RailStack, {letter: rail.letter})!);
       }
     ),
 
