@@ -112,11 +112,11 @@ export class BuildCard extends Piece<MyGame> {
 
 // coordinate by percentage inside of parent
 export class Coordinate {
-  x: string
-  y: string
+  x: number
+  y: number
   constructor(x: number, y: number) {
-    this.x = x + '%'
-    this.y = y + '%'
+    this.x = x
+    this.y = y
   }
 }
 
@@ -134,22 +134,27 @@ export class CoordinatePair {
 // Apply an optional offset.
 function coordsOf(location: string, offsetX: number = 0, offsetY: number = 0, next : string = 'none') : Coordinate {
   switch(location) {
-    case 'tl': { return new Coordinate(25-offsetX, 0-offsetY)}
-    case 'tr': { return new Coordinate(75-offsetX, 0-offsetY)}
-    case 'bl': { return new Coordinate(25-offsetX, 100-offsetY)}
-    case 'br': { return new Coordinate(75-offsetX, 100-offsetY)}
-    case 'cl': { return new Coordinate(0-offsetX, 50-offsetY)}
-    case 'cr': { return new Coordinate(100-offsetX, 50-offsetY)}
+    case 'tl': { return new Coordinate(33-offsetX, 15-offsetY)}
+    case 'tr': { return new Coordinate(66-offsetX, 15-offsetY)}
+
+    case 'bl': { return new Coordinate(33-offsetX, 85-offsetY)}
+    case 'br': { return new Coordinate(66-offsetX, 85-offsetY)}
+
+    case 'cl': { return new Coordinate(15-offsetX, 50-offsetY)}
+    case 'cr': { return new Coordinate(85-offsetX, 50-offsetY)}
+
+    case 'finish': { return new Coordinate(50-offsetX, 75-offsetY)}
+    
     case 'none': { 
       switch(next) {
         case 'tl': {
-          return new Coordinate(25-offsetX, 40-offsetY)
+          return new Coordinate(33-offsetX, 50-offsetY)
         }
         case 'tr': {
-          return new Coordinate(55+offsetX, 40-offsetY)
+          return new Coordinate(66-offsetX, 50-offsetY)
         }
         default: {
-          return new Coordinate(75-offsetX, 40-offsetY)
+          return new Coordinate(50-offsetX, 50-offsetY)
         }
       }      
     }
@@ -270,8 +275,11 @@ export class YearMat extends Space<MyGame> {
                 nl.number = cargoSquare-1;
             }
         } else if(cargo.location == 'tl' || cargo.location == 'tr') {
-            if(cargoSquare <= 3) {
+            if(cargoSquare <= 3) {                
+                let finish = this.first(YearSpace, {space: cargoSquare-3})!
                 cargo.location = 'finish';
+                cargo.updateCoordinates();
+                cargo.putInto(finish);            
                 return MoveResult.Safe;
             } else {
                 nl.number = cargoSquare-3;
@@ -348,16 +356,13 @@ export class Cargo extends Piece<MyGame> {
   coords: Coordinate = new Coordinate(0, 0);
 
   updateCoordinates(next: string = 'none'): void {
-    let offsetX = 0
-    if(this.location.startsWith("c")) {
-      offsetX = this.location.endsWith("l") ? 0 : 20
-    } else if(this.location.startsWith("t")) {
-      offsetX = this.location.endsWith("l") ? 0 : 15
-    }
-
+    let offsetX = 15
+    let offsetY = 15
+    
     this.coords = coordsOf(this.location, 
       offsetX,
-      this.location.startsWith("t") ? -10 : 10, next);
+      offsetY, 
+      next);
   }
 }
 
@@ -473,8 +478,8 @@ export default createGame(Game27panicPlayer, MyGame, game => {
   }
 
   // add obstacles
-  let obs1 = Math.floor(Math.random() * 6) + 1
-  let obs2 = Math.floor(Math.random() * 6) + 7
+  let obs1 = Math.floor(game.random() * 6) + 1
+  let obs2 = Math.floor(game.random() * 6) + 7
   $.year1957.first(YearSpace, {'space': obs1})!.create(Obstacle, 'blocked')
   $.year1984.first(YearSpace, {'space': obs1})!.create(Obstacle, 'blocked')
   $.year2011.first(YearSpace, {'space': obs1})!.create(Obstacle, 'blocked')
@@ -698,8 +703,9 @@ export default createGame(Game27panicPlayer, MyGame, game => {
     }).chooseOnBoard(
       'card', () => {
         let letterCounts : Map<string, number> = countBy(player.hand.all(BuildCard), (x : BuildCard) => x.letter);
-        return $.availableRailCards.all(RailCard).filter(x =>  //!x.unavailable && 
-          letterCounts.get(x.letter)! + player.hand.all(BuildCard, {type: 'wild'}).length >= buildingOf(player))
+        return $.availableRailCards.all(RailCard).filter(x =>
+          (player.hand.all(BuildCard, {type: 'wild'}).length >= buildingOf(player)) ||
+          (letterCounts.get(x.letter)! + player.hand.all(BuildCard, {type: 'wild'}).length >= buildingOf(player)))
       }
     ).do(({ card }) => {
       player.buildLetter = card.letter
