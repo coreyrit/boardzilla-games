@@ -391,6 +391,7 @@ export class YearSpace extends Space<MyGame> {
 // a player's pawn
 export class Pawn extends Piece<MyGame> {
   color: string
+  x: number
 }
 
 // a damage token
@@ -544,11 +545,12 @@ export default createGame(Game27panicPlayer, MyGame, game => {
   const playerArea = game.create(PlayerPane, 'playerArea')
   var playerColors = ['red', 'green', 'blue', 'yellow']
   var playerYears = [1984, 1930, 2011, 1957]
+  var playerXs = [15, 40, 65, 90]
   for (let j = 0; j < game.players.length; j++) {
     const player = game.players[j];
     const playerNum = j+1
  
-    const pawn = game.create(Pawn, 'player' + playerNum, {color: playerColors[j]})    
+    const pawn = game.create(Pawn, 'player' + playerNum, {color: playerColors[j], x: playerXs[j]})    
 
     const hand = playerArea.create(PlayerHand, 'player' + playerNum, { player });
     hand.onEnter(BuildCard, ((x) => { 

@@ -153,8 +153,8 @@ render(setup, {
       aspectRatio: 25/25,
       render: x => (
         <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx={x.color == 'green' ? "35" : "65"} cy="15" r="15" fill={x.color} stroke='white' strokeWidth='2' />
-          <rect x={x.color == 'green' ? "20" : "50"} y="28" width="30" height="20" fill={x.color} stroke='white' strokeWidth='2' />
+          <circle cx={x.x} cy="15" r="15" fill={x.color} stroke='white' strokeWidth='2' />
+          <rect x={x.x-15} y="28" width="30" height="20" fill={x.color} stroke='white' strokeWidth='2' />
         </svg>
       )
     });
