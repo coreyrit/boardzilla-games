@@ -13,6 +13,7 @@ import { railCards } from './rail-cards.js';
 // player
 export class Game27panicPlayer extends Player<MyGame, Game27panicPlayer> {
   scientist: Scientist
+  limit: number
   hand: PlayerHand
   pawn: Pawn
 
@@ -434,6 +435,7 @@ export class Scientist extends Piece<MyGame> {
 
 // the player's hand of build cards
 export class PlayerHand extends Space<MyGame> {
+  player: Game27panicPlayer
 }
 
 // get the space number of the year mat a player's pawn is on
@@ -510,6 +512,7 @@ export default createGame(Game27panicPlayer, MyGame, game => {
 
   // scientist selection
   game.create(ScientistPane, 'scientists')
+
   $.scientists.create(Scientist, 'geologist', {color: 'green', year: 1930})
   $.scientists.create(Scientist, 'astronomer', {color: 'yellow', year: 1957})
   $.scientists.create(Scientist, 'chemist', {color: 'red', year: 1984})
@@ -587,7 +590,7 @@ export default createGame(Game27panicPlayer, MyGame, game => {
  
     const pawn = game.create(Pawn, 'player' + playerNum, {color: playerColors[j], x: playerXs[j]})    
 
-    const hand = playerArea.create(PlayerHand, 'player' + playerNum, { player });
+    const hand = playerArea.create(PlayerHand, 'player' + playerNum, { player : player });
     hand.onEnter(BuildCard, ((x) => { 
       x.showToAll() 
       hand.sortBy("name")
@@ -596,6 +599,7 @@ export default createGame(Game27panicPlayer, MyGame, game => {
     pawn.putInto(game.first(YearMat, {year: playerYears[j]})!.first(YearSpace, {space: 14})!)
     player.hand = hand
     player.pawn = pawn
+    player.limit = game.handLimit
   }
 
   // create build deck
@@ -705,22 +709,35 @@ export default createGame(Game27panicPlayer, MyGame, game => {
 
         } else {
           game.message('checking for damage in column: ' + buildCard.damageColumn)          
-          // check for damage
-          let rails = game.all(YearSpace, {column: buildCard.damageColumn})
-            .filter(x => x.all(Cargo).length == 0 && x.all(Damage).length == 0)
-          let rail = undefined
-          if(rails.length > 0) {
-            rail = rails.all(RailCard).filter(x => !x.name.startsWith("start") && !x.name.startsWith("finish")).first(RailCard)!
+          
+          // ignore for chemist
+          const playerColumn = player.pawn.container(YearSpace)!.column;
+          let centerColumn = playerColumn;
+          if(playerColumn % 3 == 1) {
+            centerColumn++;
+          } else if(playerColumn % 3 == 0) {
+            centerColumn--;
           }
-          if(rail != undefined) {
-            game.message(rail!.toString());
-            if($.damage.all(Damage).length == 0) {
-              game.finish(undefined, 'damaged')
-            } else {
-              $.damage.first(Damage)!.putInto(rail.container(YearSpace)!)
-            }
+          if(player.scientist.name == 'chemist' && buildCard.damageColumn >= centerColumn-4 && buildCard.damageColumn <= centerColumn+4) {
+            game.message("Ignore damage because of Chemist.")
           } else {
-            game.message('no rail found')
+            // check for damage
+            let rails = game.all(YearSpace, {column: buildCard.damageColumn})
+              .filter(x => x.all(Cargo).length == 0 && x.all(Damage).length == 0)
+            let rail = undefined
+            if(rails.length > 0) {
+              rail = rails.all(RailCard).filter(x => !x.name.startsWith("start") && !x.name.startsWith("finish")).first(RailCard)!
+            }
+            if(rail != undefined) {
+              game.message(rail!.toString());
+              if($.damage.all(Damage).length == 0) {
+                game.finish(undefined, 'damaged')
+              } else {
+                $.damage.first(Damage)!.putInto(rail.container(YearSpace)!)
+              }
+            } else {
+              game.message('no rail found')
+            }
           }
           
           // add card to hand
@@ -798,9 +815,13 @@ export default createGame(Game27panicPlayer, MyGame, game => {
       prompt: 'Skip',
     }),
 
-    finish: (player) => action({
+    finishTrading: (player) => action({
       prompt: 'Finish',
-      condition: player.hand.all(BuildCard).length <= game.handLimit && player.tradePartner != undefined && player.tradePartner.all(BuildCard).length <= game.handLimit
+      condition: (
+        player.hand.all(BuildCard).length <= player.limit
+        && 
+        player.tradePartner!.all(BuildCard).length <= player.tradePartner!.player.limit
+      )
     }).do(() => {
       player.tradePartner = undefined
     }),
@@ -946,6 +967,9 @@ export default createGame(Game27panicPlayer, MyGame, game => {
         player.scientist = scientist
         player.pawn.color = scientist.color
         player.pawn.putInto(game.first(YearMat, {year: scientist.year})!.first(YearSpace, {space: 14})!)
+        if(scientist.name == 'geologist') {
+          player.limit = game.handLimit + 1
+        }
         scientist.putInto($.buildCards)
       }
     ).message(
@@ -990,7 +1014,7 @@ export default createGame(Game27panicPlayer, MyGame, game => {
             playerActions({ actions: ['drawBuildCard']}),
           
             // (Discard down to hand limit)
-            whileLoop({while: () => game.players.current()!.hand.all(BuildCard).length > game.handLimit, do: (
+            whileLoop({while: () => game.players.current()!.hand.all(BuildCard).length > game.players.current()!.limit, do: (
               playerActions({ actions: ['discardBuildCard']})
             )}),
 
@@ -1003,7 +1027,7 @@ export default createGame(Game27panicPlayer, MyGame, game => {
             // 5. Trade cards with ONE player in the same year
             playerActions({ actions: ['chooseTradePartner', 'skip']}),
             whileLoop({while: () => game.players.current()!.tradePartner != undefined, do: (
-              playerActions({ actions: ['trade', 'finish']})
+              playerActions({ actions: ['trade', 'finishTrading']})
             )}),
 
             // Build or Repair or Recycle
