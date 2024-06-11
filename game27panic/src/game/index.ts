@@ -91,6 +91,21 @@ export class MyGame extends Game<MyGame, Game27panicPlayer> {
       return result;
     }    
   }
+
+  checkForWin() : boolean {
+    if(this.game.all(Cargo, {location: 'finish'}).length == 4) {
+      return true;
+    }
+    
+    // see if all paths are safe
+    let win = true;
+    this.game.all(YearMat).forEach(x => {
+      const cargo = x.first(Cargo)!
+      win = win && x.testCargo(cargo.container(YearSpace)!, cargo.location, true) == MoveResult.Safe;
+    });
+
+    return win;
+  }
 }
 
 // tokens are used for scraps tokens
@@ -220,7 +235,8 @@ export enum MoveResult {
   MissingRail,
   Obstacle,
   MismatchedRail,
-  Win
+  Win,
+  Unknown
 }
 
 // a mat with spaces
@@ -244,53 +260,70 @@ export class YearMat extends Space<MyGame> {
     return this.first(YearSpace, {space: number})!.all(Damage).length > 0
   }
 
-  // moves cargo in this year to its nesxt space and returns the result
   moveCargo() : MoveResult {
     let cargo = this.first(Cargo)!
+    return this.testCargo(cargo.container(YearSpace)!, cargo.location);
+  }
+
+  // moves cargo in this year to its nesxt space and returns the result
+  testCargo(oldCargoSpace: YearSpace, oldCargoLocation: string, test : boolean = false) : MoveResult {
+    let newCargoLocation = ''
 
     // first check if the cargo has started moving
-    if(cargo.location == 'none') {
-        let railCard = cargo.container(YearSpace)!.first(RailCard);
-        cargo.location = railCard!.routes['none']
-        cargo.updateCoordinates();
+    if(oldCargoLocation == 'none') {
+        let railCard = this.first(RailCard, {name: 'start' + this.year})!;
+        newCargoLocation = railCard!.routes['none']
+
+        if(test) {
+          return this.testCargo(oldCargoSpace, newCargoLocation, test);
+        } else {
+          const cargo = this.first(Cargo)!
+          cargo.location = newCargoLocation;
+          cargo.updateCoordinates();
+          return MoveResult.Safe;
+        }
     } 
     // check if cargo has made it to the finish
-    else if(cargo.location == 'finish') {
+    else if(oldCargoLocation == 'finish') {
         return MoveResult.Safe;
     } 
     // else the cargo is moving
     else {
         let nl = {number: 0, location: 'none'}
-        let cargoSquare = cargo.container(YearSpace)!.space
-
-        console.log(cargoSquare);
-        console.log(cargo.location);
+        let cargoSquare = oldCargoSpace.space
 
         let column1 = [1, 4, 7, 10, 13];
         let column3 = [3, 6, 9, 12, 15];
-        if(cargo.location == 'cl') {
+        if(oldCargoLocation == 'cl') {
             if(column1.includes(cargoSquare)) {
                 return MoveResult.OffMap;
             } else {
                 nl.number = cargoSquare-1;
             }
-        } else if(cargo.location == 'tl' || cargo.location == 'tr') {
+        } else if(oldCargoLocation == 'tl' || oldCargoLocation == 'tr') {
             if(cargoSquare <= 3) {                
                 let finish = this.first(YearSpace, {space: cargoSquare-3})!
-                cargo.location = 'finish';
-                cargo.updateCoordinates();
-                cargo.putInto(finish);            
-                return MoveResult.Safe;
+                newCargoLocation = 'finish';
+
+                if (test) {
+                  return this.testCargo(finish, newCargoLocation, test);
+                } else {
+                  const cargo = this.first(Cargo)!                
+                  cargo.location = newCargoLocation;
+                  cargo.updateCoordinates();
+                  cargo.putInto(finish);            
+                  return MoveResult.Safe;
+                }                
             } else {
                 nl.number = cargoSquare-3;
             }
-        } else if(cargo.location == 'bl' || cargo.location == 'br') {
+        } else if(oldCargoLocation == 'bl' || oldCargoLocation == 'br') {
             if(cargoSquare >= 13) {
                 return MoveResult.OffMap;
             } else {
                 nl.number = cargoSquare+3;
             }
-        } else if(cargo.location == 'cr') {
+        } else if(oldCargoLocation == 'cr') {
             if(column3.includes(cargoSquare)) {
                 return MoveResult.OffMap;
             } else {
@@ -303,7 +336,7 @@ export class YearMat extends Space<MyGame> {
         if(this.isDamaged(nl.number)) return MoveResult.DamagedRail;
 
         nl.location = 'none'
-        switch(cargo.location) {
+        switch(oldCargoLocation) {
             case 'bl': {nl.location = 'tl'; break; }
             case 'br': {nl.location = 'tr'; break; }
             case 'tl': {nl.location = 'bl'; break; }
@@ -312,22 +345,25 @@ export class YearMat extends Space<MyGame> {
             case 'cr': {nl.location = 'cl'; break; }
         }
 
-        console.log(nl.location);
-
         let rail = this.first(YearSpace, {space: nl.number})!.first(RailCard)!
-
-        console.log(rail);
-
         if(rail.routes[nl.location] == undefined) {
             return MoveResult.MismatchedRail;
         }
 
-        cargo.location = rail.routes[nl.location];
-        cargo.updateCoordinates();
-        cargo.putInto(rail.container(YearSpace)!);
+        newCargoLocation = rail.routes[nl.location];
+        if(test) {
+          return this.testCargo(rail.container(YearSpace)!, newCargoLocation, test);
+        } else {      
+          const cargo = this.first(Cargo)!
+          cargo.location = newCargoLocation;
+          cargo.updateCoordinates();
+          cargo.putInto(rail.container(YearSpace)!);           
+          return MoveResult.Safe;
+        }
     }
 
-    return MoveResult.Safe;
+    // should not get here
+    return MoveResult.Unknown;
   }
 }
 
@@ -551,7 +587,8 @@ export default createGame(Game27panicPlayer, MyGame, game => {
           x.unavailable = true;
           x.face = 'unavailable' + x.letter
         }))
-        stacks.set(railCard.letter!, rs)
+        
+        stacks.set(railCard.letter!, rs)    
       }
       let rc = stacks.get(railCard.letter!)!.create(RailCard, railCard.letter!, railCard)
       rc.face = 'available' + rc.letter
@@ -559,6 +596,13 @@ export default createGame(Game27panicPlayer, MyGame, game => {
       rc.updateCoordinates()
     }
   }
+
+  // test moving all rail cards to unavailable
+  // $.availableRailCards.all(RailCard).forEach(x => {
+  //   x.putInto($.unavailableRailCards.first(RailStack, {letter: x.letter})!)
+  // });
+
+
   game.all(YearSpace).forEach(ym => {
     ym.onEnter(RailCard, ((x) => {
       x.unavailable = false;
@@ -584,7 +628,7 @@ export default createGame(Game27panicPlayer, MyGame, game => {
           let result = game.first(YearMat, {year: buildCard.year})!.moveCargo();
           if (result != MoveResult.Safe) {
             game.finish(undefined, 'crashed')
-          } else if (game.all(Cargo, {location: 'finish'}).length == 4) {
+          } else if (game.checkForWin()) {
             game.finish(undefined, 'win')
           }
 
@@ -743,7 +787,7 @@ export default createGame(Game27panicPlayer, MyGame, game => {
       condition: player.pawn.container(YearSpace)!.all(RailCard).length == 0 &&
         $.scraps.all(Token).length > 0 && player.hand.all(BuildCard).length > 0
     }).chooseOnBoard(
-      'scraps', $.unavailableRailCards.all(RailCard) //.filter(x => x.unavailable)
+      'scraps', $.unavailableRailCards.all(RailCard)
     ).do(
       ({scraps}) => {
         player.scrapsLetter = scraps.letter
@@ -834,6 +878,16 @@ export default createGame(Game27panicPlayer, MyGame, game => {
         // rail.unavailable = true
         // rail.face = 'unavailable' + rail.letter
         rail.putInto($.unavailableRailCards.first(RailStack, {letter: rail.letter})!);
+      } 
+    ),
+
+    checkForWin: () => action({
+    }).do(
+      () => {
+        if(game.checkForWin()) {
+          game.finish(undefined, 'win')
+          // game.addDelay()
+        }
       }
     ),
 
@@ -856,38 +910,47 @@ export default createGame(Game27panicPlayer, MyGame, game => {
     },
     () => $.buildCards.shuffle(),
     loop(
-      eachPlayer({
-        name: 'turn', do: [
-          // 1. Draw a build card and 2. Check for Damage
-          playerActions({ actions: ['drawBuildCard']}),
+        eachPlayer({
+          name: 'turn', do: [
+            // 1. Draw a build card and 2. Check for Damage
+            playerActions({ actions: ['drawBuildCard']}),
           
-          // (Discard down to hand limit)
-          whileLoop({while: () => game.players.current()!.hand.all(BuildCard).length > game.handLimit, do: (
-            playerActions({ actions: ['discardBuildCard']})
-          )}),
+            // (Discard down to hand limit)
+            whileLoop({while: () => game.players.current()!.hand.all(BuildCard).length > game.handLimit, do: (
+              playerActions({ actions: ['discardBuildCard']})
+            )}),
 
-          // 3. Travel through time
-          playerActions({ actions: ['timeTravel', 'skip']}),
+            // 3. Travel through time
+            playerActions({ actions: ['timeTravel', 'skip']}),
 
-          // 4. Move within year
-          playerActions({ actions: ['move', 'skip']}),
+            // 4. Move within year
+            playerActions({ actions: ['move', 'skip']}),
 
-          // 5. Trade cards with ONE player in the same year
-          playerActions({ actions: ['chooseTradePartner', 'skip']}),
-          whileLoop({while: () => game.players.current()!.tradePartner != undefined, do: (
-            playerActions({ actions: ['trade', 'finish']})
-          )}),
+            // 5. Trade cards with ONE player in the same year
+            playerActions({ actions: ['chooseTradePartner', 'skip']}),
+            whileLoop({while: () => game.players.current()!.tradePartner != undefined, do: (
+              playerActions({ actions: ['trade', 'finish']})
+            )}),
 
-          // Build or Repair or Recycle
-          playerActions({ actions: ['build', 'scraps', 'repair', 'removeRail', 'moveAll', 'skip']}),
-          whileLoop({while: () => game.players.current()!.buildLetter != undefined, do: (
-            playerActions({ actions: ['chooseBuildCards', 'rotate']})
-          )}),
-          whileLoop({while: () => game.players.current()!.scrapsLetter != undefined, do: (
-            playerActions({ actions: ['discardForScraps', 'rotate']})
-          )}),
-        ]
-      })
+            // Build or Repair or Recycle
+            playerActions({ actions: [
+              'build', 
+              'scraps', 
+              'repair', 
+              'removeRail', 
+              'skip'
+              ]}),
+            whileLoop({while: () => game.players.current()!.buildLetter != undefined, do: (
+              playerActions({ actions: ['chooseBuildCards', 'rotate']})
+            )}),
+            whileLoop({while: () => game.players.current()!.scrapsLetter != undefined, do: (
+              playerActions({ actions: ['discardForScraps', 'rotate']})
+            )}),
+            
+            // Check for win
+            playerActions({ actions: ['checkForWin']}),
+          ]
+        })
     )
   );
 });
