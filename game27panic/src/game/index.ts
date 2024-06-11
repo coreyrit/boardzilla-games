@@ -12,6 +12,7 @@ import { railCards } from './rail-cards.js';
 
 // player
 export class Game27panicPlayer extends Player<MyGame, Game27panicPlayer> {
+  scientist: Scientist
   hand: PlayerHand
   pawn: Pawn
 
@@ -422,6 +423,15 @@ export class PlayerPane extends Space<MyGame> {
 
 }
 
+export class ScientistPane extends Space<MyGame> {
+
+}
+
+export class Scientist extends Piece<MyGame> {
+  color: string
+  year: number
+}
+
 // the player's hand of build cards
 export class PlayerHand extends Space<MyGame> {
 }
@@ -434,6 +444,24 @@ function spaceOf(player: Game27panicPlayer) : number {
 // get the year that the player's pawn is on
 function yearOf(player: Game27panicPlayer) : number {
   return player.pawn.container(YearMat)!.year;
+}
+
+function prevYear(year : number) {
+  switch(year) {
+    case 1957: { return 1930 }
+    case 1984: { return 1957 }
+    case 2011: { return 1984 }
+    default: -1
+  }
+}
+
+function nextYear(year : number) {
+  switch(year) {
+    case 1930: { return 1957 }
+    case 1957: { return 1984 }
+    case 1984: { return 2011 }
+    default: -1
+  }
 }
 
 // get the year of the mat a particular space is in  
@@ -479,6 +507,13 @@ export default createGame(Game27panicPlayer, MyGame, game => {
   game.init()
 
   // game.disableDefaultAppearance()
+
+  // scientist selection
+  game.create(ScientistPane, 'scientists')
+  $.scientists.create(Scientist, 'geologist', {color: 'green', year: 1930})
+  $.scientists.create(Scientist, 'astronomer', {color: 'yellow', year: 1957})
+  $.scientists.create(Scientist, 'chemist', {color: 'red', year: 1984})
+  $.scientists.create(Scientist, 'physicist', {color: 'blue', year: 2011})
 
   // year mats
   const years: number[] = [1930, 1957, 1984, 2011]
@@ -722,7 +757,9 @@ export default createGame(Game27panicPlayer, MyGame, game => {
     move: (player) => action({
       prompt: 'Move'
     }).chooseOnBoard(
-      'space', player.pawn.container(YearMat)!.all(YearSpace).filter(x => x.space != spaceOf(player) && game.canMove(player, x, movementOf(x)))
+      'space', player.pawn.container(YearMat)!.all(YearSpace).filter(x => x.space != spaceOf(player) && 
+        game.canMove(player, x, player.scientist.name == 'physicist' ? movementOf(x) * 2 : movementOf(x))
+      )
     ).do(({ space }) => {
         player.pawn.putInto(space)
       }
@@ -733,7 +770,11 @@ export default createGame(Game27panicPlayer, MyGame, game => {
     chooseTradePartner: (player) => action({
       prompt: 'Choose Trade Partner'
     }).chooseOnBoard(
-      'partner', game.players.map(x => x.hand).filter(x => x != player.hand && yearOf(player) == yearOf(x.player!))
+      'partner', player.scientist.name == 'astronomer' ? 
+        (game.players.map(x => x.hand).filter(x => x != player.hand && yearOf(player) == yearOf(x.player!))).concat
+        (game.players.map(x => x.hand).filter(x => x != player.hand && prevYear(yearOf(player)) == yearOf(x.player!))).concat
+        (game.players.map(x => x.hand).filter(x => x != player.hand && nextYear(yearOf(player)) == yearOf(x.player!))) :    
+        game.players.map(x => x.hand).filter(x => x != player.hand && yearOf(player) == yearOf(x.player!))
     ).do(({ partner }) => {
       player.tradePartner = partner
     }),
@@ -872,24 +913,6 @@ export default createGame(Game27panicPlayer, MyGame, game => {
       }
     ),
 
-    moveAll: (player) => action({
-      prompt: 'Move all Cargo',
-      condition: player.hand.all(BuildCard).length > 0
-    }).do(
-      () => {
-        player.hand.all(BuildCard).forEach(x => x.putInto($.discard))
-        game.all(YearMat).forEach(x => {
-          let result = x.moveCargo()
-          if(result != MoveResult.Safe) {
-            game.finish(undefined, 'crashed')
-          }
-        });
-        if (game.all(Cargo, {location: 'finish'}).length == 4) {
-          game.finish(undefined, 'win')
-        }
-      }
-    ),
-
     removeRail: (player) => action({
       prompt: 'Remove Rail',
       condition: player.pawn.container(YearSpace)!.all(RailCard).length > 0 &&
@@ -914,6 +937,21 @@ export default createGame(Game27panicPlayer, MyGame, game => {
       }
     ),
 
+    chooseScientist: (player) => action({
+      prompt: 'Choose your scientist',
+    }).chooseOnBoard(
+      'scientist', $.scientists.all(Scientist)
+    ).do(
+      ({ scientist }) => {        
+        player.scientist = scientist
+        player.pawn.color = scientist.color
+        player.pawn.putInto(game.first(YearMat, {year: scientist.year})!.first(YearSpace, {space: 14})!)
+        scientist.putInto($.buildCards)
+      }
+    ).message(
+      'You chose {{scientist}}'
+    ),
+
    });
 
    
@@ -923,6 +961,14 @@ export default createGame(Game27panicPlayer, MyGame, game => {
    */
   game.defineFlow(
     () => $.buildCards.shuffle(),
+    eachPlayer({
+      name: 'turn', do: [
+        playerActions({ actions: ['chooseScientist']}),
+      ]
+    }),
+    () => {      
+      $.scientists.all(Scientist).forEach(x => x.putInto($.garbage))
+    },
     () => {
       // deal starting hands
       for (const player of game.players) {
@@ -935,6 +981,11 @@ export default createGame(Game27panicPlayer, MyGame, game => {
     loop(
         eachPlayer({
           name: 'turn', do: [
+            () => { 
+              $.buildCards.all(Scientist).hideFromAll();
+              game.players.current()!.scientist.showToAll();
+            },
+
             // 1. Draw a build card and 2. Check for Damage
             playerActions({ actions: ['drawBuildCard']}),
           

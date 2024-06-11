@@ -1,6 +1,6 @@
 import React from 'react';
-import { render, numberSetting, Space, Piece } from '@boardzilla/core';
-import setup, { Token, YearMat, YearSpace, RailCard, Cargo, Pawn, Damage, PlayerHand, BuildCard, RailStack, BuildDeck, Obstacle, PlayerPane} from '../game/index.js';
+import { render, numberSetting, Space, Piece, toggleSetting, choiceSetting } from '@boardzilla/core';
+import setup, { Token, YearMat, YearSpace, RailCard, Cargo, Pawn, Damage, PlayerHand, BuildCard, RailStack, BuildDeck, Obstacle, PlayerPane, Scientist, ScientistPane} from '../game/index.js';
 
 import './style.scss';
 import tracksAP from './assets/TracksA-P.svg'
@@ -10,6 +10,10 @@ import tracksAP from './assets/TracksA-P.svg'
 render(setup, {
   settings: {
     // tokens: numberSetting('Number of tokens', 4, 24),
+    // scientist1: choiceSetting('Player 1 scientist', {geologist: 'Geologist', astrologist: 'Astrologist', chemist: 'Chemist', phycisist: 'Physicist'}),
+    // scientist2: choiceSetting('Player 2 scientist', {geologist: 'Geologist', astrologist: 'Astrologist', chemist: 'Chemist', phycisist: 'Physicist'}),
+    // scientist3: choiceSetting('Player 3 scientist', {geologist: 'Geologist', astrologist: 'Astrologist', chemist: 'Chemist', phycisist: 'Physicist'}),
+    // scientist4: choiceSetting('Player 4 scientist', {geologist: 'Geologist', astrologist: 'Astrologist', chemist: 'Chemist', phycisist: 'Physicist'}),
   },
 
   announcements: {
@@ -57,7 +61,7 @@ render(setup, {
     game.layout('year1984', { area: { left: 44, top: 1, width: 20, height: 50 }});
     game.layout('year2011', { area: { left: 66, top: 1, width: 20, height: 50 }});
 
-    game.layout('buildCards', { area: { left: 88, top: 55, width: 38, height: 18 }});
+    game.layout('buildCards', { area: { left: 88, top: 55, width: 30, height: 18 }});
     game.layout('availableRailCards', { area: { left: 88, top: 1, width: 30, height: 50 }});
     game.layout('unavailableRailCards', { area: { left: 88, top: 1, width: 30, height: 50 }});
 
@@ -67,12 +71,11 @@ render(setup, {
     game.layout('garbage', { area: { left: 0, top: 0, width: 0, height: 0 }});
     game.layout('scraps', { area: { left: -12, top: 1, width: 10, height: 50 }});
 
-    // game.layout('player1', { area: { left: -12, top: 55, width: 85, height: 18 }});
-    // game.layout('player2', { area: { left: -12, top: 75, width: 85, height: 18 }});    
-
-    game.layout('damage', { area: { left: 75, top: 75, width: 10, height: 18 }});
-
     game.all(PlayerHand).layout(BuildCard, {direction: 'ltr'});
+    game.all(ScientistPane).layout(Scientist, {
+      direction: 'ltr',
+      gap: {x: 1, y: 0},
+    });
 
     $.scraps.layout(Token, {
       direction: 'ttb',
@@ -157,16 +160,7 @@ render(setup, {
           <rect x={x.x-15} y="28" width="30" height="20" fill={x.color} stroke='white' strokeWidth='2' />
         </svg>
       )
-    });
-
-    game.all(Damage).appearance({
-      aspectRatio: 25/25,
-      render: x => (
-        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="50%" cy="75%" r="25%" fill='red' />
-        </svg>
-      )
-    });
+    });    
 
     $.buildCards.appearance({ render: x => ( <svg /> ) });
     $.availableRailCards.appearance({ render: x => ( <svg /> ) });
@@ -176,6 +170,10 @@ render(setup, {
     $.move.appearance({ render: x => ( <svg /> ) });
     $.scraps.appearance({ render: x => ( <svg /> ) });
 
+    $.scientists.appearance({ render: x => ( <svg width="0%" /> ) });
+
+    game.layout('scientists', { area: { left: 0, top: 25, width: 100, height: 50 }});
+
     game.layout('playerArea', { area: { left: -12, top: 55, width: 85, height: 40 }});
     game.all(PlayerPane).appearance({ render: x => ( <svg /> ) });
     $.playerArea.layout(PlayerHand, {
@@ -183,6 +181,20 @@ render(setup, {
       columns: game.players.length > 2 ? 2 : 1,
       gap: 1,
     })
+
+    game.layout('damage', { area: { left: 75, top: 55, width: 10, height: 40 }});
+    $.damage.layout(Damage, {
+      columns: 2,
+      gap: {x: 0, y: 0},
+    })
+    game.all(Damage).appearance({
+      aspectRatio: 1,
+      render: x => (
+        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="50%" cy="75%" r="25%" fill='red' />
+        </svg>
+      )
+    });
 
     game.all(RailStack).appearance({ render: x => ( <svg /> ) });
 
@@ -218,6 +230,12 @@ render(setup, {
 
     $.buildCards.layout(BuildCard, {
       offsetColumn: {x: 0, y: 0},
+      alignment: 'left'
+    });
+
+    $.buildCards.layout(Scientist, {
+      offsetColumn: {x: 0, y: 0},
+      alignment: 'right'
     });
 
     $.discard.layout(BuildCard, {
@@ -225,6 +243,16 @@ render(setup, {
     });
 
     game.all(BuildCard).appearance({
+      aspectRatio: 250/350,
+      render: () => (
+        <div>
+          <div className="front"/>
+          <div className="back"/>
+        </div>
+      ),
+    })
+
+    game.all(Scientist).appearance({
       aspectRatio: 250/350,
       render: () => (
         <div>

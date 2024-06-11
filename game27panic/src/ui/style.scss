@@ -141,6 +141,41 @@
   }
 
 
+  .Scientist {
+    z-index: 100;
+    
+    width: 100%; 
+    height: 100%;
+
+    &[data-name="geologist"] .front { background-image: url(./assets/geologist.jpg) }
+    &[data-name="astronomer"] .front { background-image: url(./assets/astronomer.jpg) }
+    &[data-name="chemist"] .front { background-image: url(./assets/chemist.jpg) }
+    &[data-name="physicist"] .front { background-image: url(./assets/physicist.jpg) }
+
+    > div {
+      width: 100%;
+      height: 100%;
+
+      background-repeat: no-repeat;
+
+      .front, .back {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: 0.25em;
+        border-color: black;
+        background-size: 100% auto;
+      }
+
+      /* front pane, placed above back */
+      .front {
+        z-index: 2;
+      }
+    }
+  }
+
   .BuildCard {
     z-index: 100;
     
@@ -267,11 +302,16 @@
       border-style: solid;
     }
   }
+
   .Cargo {
     z-index: 300;
   }
 
   .Token {
     filter: drop-shadow(0 .2em .05em #0006);
+  }
+
+  .ScientistPane {
+    z-index: 1000;
   }
 }
