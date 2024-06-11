@@ -23,8 +23,8 @@ export class Game27panicPlayer extends Player<MyGame, Game27panicPlayer> {
 
 export class MyGame extends Game<MyGame, Game27panicPlayer> {
   
-  // hand limit for 2 players
-  handLimit: number = 6;
+  // hand limit
+  handLimit: number = 0
 
   // number of scraps
   scrapsCount: number = 5;
@@ -37,6 +37,21 @@ export class MyGame extends Game<MyGame, Game27panicPlayer> {
   
   // initalizes valid movement around the grid
   init(): void {
+    switch(this.players.length) {
+      case 4: {
+        this.handLimit = 3;
+        break;
+      }
+      case 3: {
+        this.handLimit = 4;
+        break;
+      }
+      default: {
+        this.handLimit = 6;
+        break;
+      }
+    }
+
     for(let i = 1; i <= 15; i++) {
       let valid1 = []
       let valid2 = []
@@ -402,6 +417,10 @@ export class Cargo extends Piece<MyGame> {
   }
 }
 
+export class PlayerPane extends Space<MyGame> {
+
+}
+
 // the player's hand of build cards
 export class PlayerHand extends Space<MyGame> {
 }
@@ -522,14 +541,16 @@ export default createGame(Game27panicPlayer, MyGame, game => {
   $.year2011.first(YearSpace, {'space': obs2})!.create(Obstacle, 'blocked')
 
   // add players
-  var playerColors = ['red', 'green', 'yellow', 'blue']
-  var playerYears = [1984, 1930, 1957, 2011]
+  const playerArea = game.create(PlayerPane, 'playerArea')
+  var playerColors = ['red', 'green', 'blue', 'yellow']
+  var playerYears = [1984, 1930, 2011, 1957]
   for (let j = 0; j < game.players.length; j++) {
     const player = game.players[j];
     const playerNum = j+1
  
-    const pawn = game.create(Pawn, 'player' + playerNum, {color: playerColors[j]})
-    const hand = game.create(PlayerHand, 'player' + playerNum, { player });
+    const pawn = game.create(Pawn, 'player' + playerNum, {color: playerColors[j]})    
+
+    const hand = playerArea.create(PlayerHand, 'player' + playerNum, { player });
     hand.onEnter(BuildCard, ((x) => { 
       x.showToAll() 
       hand.sortBy("name")

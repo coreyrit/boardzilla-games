@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, numberSetting, Space, Piece } from '@boardzilla/core';
-import setup, { Token, YearMat, YearSpace, RailCard, Cargo, Pawn, Damage, PlayerHand, BuildCard, RailStack, BuildDeck, Obstacle} from '../game/index.js';
+import setup, { Token, YearMat, YearSpace, RailCard, Cargo, Pawn, Damage, PlayerHand, BuildCard, RailStack, BuildDeck, Obstacle, PlayerPane} from '../game/index.js';
 
 import './style.scss';
 import tracksAP from './assets/TracksA-P.svg'
@@ -67,8 +67,8 @@ render(setup, {
     game.layout('garbage', { area: { left: 0, top: 0, width: 0, height: 0 }});
     game.layout('scraps', { area: { left: -12, top: 1, width: 10, height: 50 }});
 
-    game.layout('player1', { area: { left: -12, top: 55, width: 85, height: 18 }});
-    game.layout('player2', { area: { left: -12, top: 75, width: 85, height: 18 }});
+    // game.layout('player1', { area: { left: -12, top: 55, width: 85, height: 18 }});
+    // game.layout('player2', { area: { left: -12, top: 75, width: 85, height: 18 }});    
 
     game.layout('damage', { area: { left: 75, top: 75, width: 10, height: 18 }});
 
@@ -123,7 +123,7 @@ render(setup, {
     game.all(PlayerHand).appearance({
       render: x => (
         <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-          <rect width="100%" height="100%" x="0" y="0" stroke="black" fill={x.player!.color} opacity="0.5" />
+          <rect width="100%" height="100%" x="0" y="0" strokeWidth="10" stroke={x.player!.color} fill={x.player!.pawn.color} fillOpacity="0.5" />
         </svg>
       )
     });
@@ -175,6 +175,14 @@ render(setup, {
     $.discard.appearance({ render: x => ( <svg /> ) });
     $.move.appearance({ render: x => ( <svg /> ) });
     $.scraps.appearance({ render: x => ( <svg /> ) });
+
+    game.layout('playerArea', { area: { left: -12, top: 55, width: 85, height: 40 }});
+    game.all(PlayerPane).appearance({ render: x => ( <svg /> ) });
+    $.playerArea.layout(PlayerHand, {
+      rows: 2,
+      columns: game.players.length > 2 ? 2 : 1,
+      gap: 1,
+    })
 
     game.all(RailStack).appearance({ render: x => ( <svg /> ) });
 
