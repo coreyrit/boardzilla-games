@@ -26,70 +26,14 @@
       background-position: center 52%;
       background-repeat: no-repeat;
 
-      .kite0front {
-        position: relative;
-        width: 700%;
-        height: 500%;
-        top: -500%;
-        left: -300%;
-        background-size: 100% auto;
-      }
-      .kite45front {
-        position: relative;
-        width: 700%;
-        height: 500%;
-        top: -475%;
-        left: -675%;
-        background-size: 100% auto;
-      }
-      .kite90front {
-        position: relative;
-        width: 700%;
-        height: 500%;
-        top: -215%;
-        left: -700%;
-        background-size: 100% auto;
-      }
-      .kite135front {
-        position: relative;
-        width: 700%;
-        height: 500%;
-        top: 75%;
-        left: -675%;
-        background-size: 100% auto;
-      }
-      .kite180front {
-        position: relative;
-        width: 700%;
-        height: 500%;
-        top: 100%;
-        left: -300%;
-        background-size: 100% auto;
-      }
-      .kite225front {
-        position: relative;
-        width: 700%;
-        height: 500%;
-        top: 75%;
-        left: 75%;
-        background-size: 100% auto;
-      }
-      .kite270front {
-        position: relative;
-        width: 700%;
-        height: 500%;
-        top: -200%;
-        left: 100%;
-        background-size: 100% auto;
-      }
-      .kite315front {
-        position: relative;
-        width: 700%;
-        height: 500%;
-        top: -475%;
-        left: 75%;
-        background-size: 100% auto;
-      }
+      .kite0front {position: relative; width: 700%; height: 500%; top: -500%; left: -300%; background-size: 100% auto;}
+      .kite45front {position: relative; width: 700%; height: 500%; top: -475%; left: -675%; background-size: 100% auto;}
+      .kite90front {position: relative; width: 700%; height: 500%; top: -215%; left: -700%; background-size: 100% auto;}
+      .kite135front {position: relative; width: 700%; height: 500%; top: 75%; left: -675%; background-size: 100% auto;}
+      .kite180front {position: relative; width: 700%; height: 500%; top: 100%; left: -300%; background-size: 100% auto;}
+      .kite225front {position: relative; width: 700%; height: 500%; top: 75%; left: 75%; background-size: 100% auto;}
+      .kite270front {position: relative; width: 700%; height: 500%; top: -200%; left: 100%; background-size: 100% auto;}
+      .kite315front {position: relative; width: 700%; height: 500%; top: -475%; left: 75%; background-size: 100% auto;}
     }
   }
 
@@ -115,6 +59,44 @@
       background-repeat: no-repeat;
 
       .front, .back {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: 0.2em;
+        border-color: black;
+        background-size: 100% auto;
+      }
+    }
+  }
+
+  .WorkerSpace {
+    z-index: 5;
+  }
+
+  .PilotCard {
+    z-index: 0;
+    
+    width: 100%; 
+    height: 100%;
+
+    &[data-name="pilot"] .blue { background-image: url(./assets/pilot-blue.png) }
+    &[data-name="pilot"] .red { background-image: url(./assets/pilot-red.jpg) }
+
+    > div {
+      width: 100%;
+      height: 100%;
+
+      transition: 0.6s;
+      transform-style: preserve-3d;
+      position: relative;
+
+      background-size: 90% 78%;
+      background-position: center 52%;
+      background-repeat: no-repeat;
+
+      .blue, .red {
         position: absolute;
         top: 0;
         left: 0;

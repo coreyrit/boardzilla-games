@@ -1,6 +1,6 @@
 import React from 'react';
 import { render } from '@boardzilla/core';
-import { Card, FlightCard, FlightCell, FlightSpace, KiteCard, LeftHandCard, TrickCard, default as setup } from '../game/index.js';
+import { Card, FlightCard, FlightCell, FlightSpace, HandCard, KiteCard, PilotCard, PilotSpace, TrickCard, WorkerSpace, default as setup } from '../game/index.js';
 
 import './style.scss';
 // import '@boardzilla/core/index.css';
@@ -14,14 +14,55 @@ render(setup, {
       render: () => null
     });
     
+    game.layout('garbage', { area: { left: 0, top: 0, width: 0, height: 0 }});
+    $.garbage.appearance({ render: x => ( <svg /> ) })
 
     // pilot
-    game.layout('pilotSpace', { area: { left: 50, top: 2, width: 20, height: 28 }});
-    $.pilotSpace.appearance({ render: x => ( 
-      <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="100" height="100" x="0" y="0" fill='white' />
-      </svg> 
-    ) });
+    game.layout('pilotSpace', { area: { left: 50, top: 2, width: 20, height: 33.5 }});
+    
+    game.layout('nw1', { area: { left: 50, top: 7.5, width: 4, height: 7 }});
+    game.layout('nw2', { area: { left: 53, top: 7.5, width: 4, height: 7 }});
+    game.layout('w1', { area: { left: 50, top: 15.5, width: 4, height: 7 }});
+    game.layout('w2', { area: { left: 53, top: 15.5, width: 4, height: 7 }});
+    game.layout('sw1', { area: { left: 50, top: 23, width: 4, height: 7 }});
+    game.layout('sw2', { area: { left: 53, top: 23, width: 4, height: 7 }});
+
+    game.layout('ne1', { area: { left: 66, top: 7.5, width: 4, height: 7 }});
+    game.layout('ne2', { area: { left: 63, top: 7.5, width: 4, height: 7 }});
+    game.layout('e1', { area: { left: 66, top: 15.5, width: 4, height: 7 }});
+    game.layout('e2', { area: { left: 63, top: 15.5, width: 4, height: 7 }});
+    game.layout('se1', { area: { left: 66, top: 23, width: 4, height: 7 }});
+    game.layout('se2', { area: { left: 63, top: 23, width: 4, height: 7 }});
+    
+
+    game.all(PilotSpace).layout(WorkerSpace, {
+      offsetColumn: {x: 0, y: 0},
+    })
+
+    $.pilotSpace.appearance({ render: x => ( <svg /> ) })
+
+    game.all(PilotSpace).appearance({ render: x => ( <svg /> ) })
+    game.all(WorkerSpace).appearance({ render: x => ( <svg /> ) })
+    
+    game.all(WorkerSpace, {side: 'left'}).appearance({ 
+      render: x => ( 
+        <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="0,0 100,50 0,100" fill={x.occupiedColor} stroke='black' strokeWidth='5' fillOpacity={x.occupiedColor == 'none' ? 0 : 1} />  
+        </svg> 
+      ) 
+    });
+    game.all(WorkerSpace, {side: 'right'}).appearance({ 
+      render: x => ( 
+        <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="100,0 0,50 100,100" fill={x.occupiedColor} stroke='black' strokeWidth='5' fillOpacity={x.occupiedColor == 'none' ? 0 : 1} />  
+        </svg> 
+      ) 
+    });
+
+    $.pilotSpace.layout(Card, {
+      offsetColumn: {x: 0, y: 0},
+    })
+
 
     // timer
     game.layout('timerSpace', { area: { left: 25, top: 2, width: 20, height: 28 }});
@@ -49,10 +90,7 @@ render(setup, {
         <rect width="100" height="100" x="0" y="0" fill='blue' />
       </svg> 
     ) });
-    $.blueHandLeftSpace.layout(LeftHandCard, {
-      offsetColumn: {x: 0, y: 0}
-    });
-
+    
     game.layout('blueHandRightSpace', { area: { left: 33, top: 80, width: 10, height: 14 }});
     $.blueHandRightSpace.appearance({ render: x => ( 
       <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
@@ -107,11 +145,19 @@ render(setup, {
       </svg> 
     ) });
 
+    // pilot card
+    game.all(PilotCard).appearance({
+      render: x => (
+        <div className='PilotSpace'>
+          <div className={x.color} />
+        </div>
+      ),
+    })
+
     // draw kites
     game.all(KiteCard).appearance({ render: x => ( 
       <div className='KiteCard'>
         <div className={'kite' + x.rotation + (x.flipped ? 'back' : 'front')} />
-        {/* <div className='kite0front' /> */}
       </div>
     ) });
 
