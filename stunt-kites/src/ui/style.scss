@@ -1,0 +1,15 @@
+#play-area {
+  .KiteCard {    
+    z-index: 100;
+
+      .kite0 {
+        background-color: green;
+        
+        position: relative;
+        width: 700%;
+        height: 500%;
+        top: -500%;
+        left: -300%;
+      }
+  }
+}
