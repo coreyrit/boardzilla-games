@@ -47,14 +47,16 @@ render(setup, {
     game.all(WorkerSpace, {side: 'left'}).appearance({ 
       render: x => ( 
         <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-          <polygon points="0,0 100,50 0,100" fill={x.occupiedColor} stroke='black' strokeWidth='5' fillOpacity={x.occupiedColor == 'none' ? 0 : 1} />  
+          <polygon points="0,0 100,50 0,100" fill={x.occupiedColor} stroke='black' strokeWidth='0' fillOpacity={x.occupiedColor.startsWith('none') ? 0 : 1}          />  
+          <polygon points="0,0 100,50 0,100" stroke='black' strokeWidth='5' opacity={x.highlight ? 1 : 0} fillOpacity='0' />  
         </svg> 
       ) 
     });
     game.all(WorkerSpace, {side: 'right'}).appearance({ 
       render: x => ( 
         <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-          <polygon points="100,0 0,50 100,100" fill={x.occupiedColor} stroke='black' strokeWidth='5' fillOpacity={x.occupiedColor == 'none' ? 0 : 1} />  
+          <polygon points="100,0 0,50 100,100" fill={x.occupiedColor} stroke='black' strokeWidth='0' fillOpacity={x.occupiedColor.startsWith('none') ? 0 : 1}          />  
+          <polygon points="100,0 0,50 100,100" stroke='black' strokeWidth='5' opacity={x.highlight ? 1 : 0} fillOpacity='0' />  
         </svg> 
       ) 
     });
@@ -160,6 +162,10 @@ render(setup, {
         <div className={'kite' + x.rotation + (x.flipped ? 'back' : 'front')} />
       </div>
     ) });
+
+    $.pilotSpace.layout(Card, {
+      offsetColumn: {x: 0, y: 0},
+    })
 
     // stack tricks
     $.timerSpace.layout(Card, {

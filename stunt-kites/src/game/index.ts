@@ -12,22 +12,52 @@ export class StuntKitesPlayer extends Player<MyGame, StuntKitesPlayer> {
 }
 
 class MyGame extends Game<MyGame, StuntKitesPlayer> {
-  rotatePilotCard(pilotCard : PilotCard) : void {
-    pilotCard.rotation += 180
-    this.swapSpaces(this.first(WorkerSpace, {name: 'pullLeft1'})!, this.first(WorkerSpace, {name: 'pushRight1'})!)
-    this.swapSpaces(this.first(WorkerSpace, {name: 'pullLeft2'})!, this.first(WorkerSpace, {name: 'pushRight2'})!)
+  getPossibleActions() : void {
+    const player = this.players.current()!
+    this.message("player " + player.playerColor + " is going")
 
-    this.swapSpaces(this.first(WorkerSpace, {name: 'pullRight1'})!, this.first(WorkerSpace, {name: 'pushLeft1'})!)
-    this.swapSpaces(this.first(WorkerSpace, {name: 'pullRight2'})!, this.first(WorkerSpace, {name: 'pushLeft2'})!)
+    // make sure they can click the spaces
+    this.all(PilotSpace).forEach(x => {
+      x.sortBy(player.playerColor + 'Order')
+    })
 
-    this.swapSpaces(this.first(WorkerSpace, {name: 'controlLeftCharge'})!, this.first(WorkerSpace, {name: 'controlRightCharge'})!)
-    this.swapSpaces(this.first(WorkerSpace, {name: 'controlLeftFlip'})!, this.first(WorkerSpace, {name: 'controlRightFlip'})!)
+    // highlight available actions              
+    this.all(WorkerSpace).forEach(x => {
+      x.highlight = false;
+    })
+    const possibleActions = this.all(WorkerSpace, {occupiedColor: 'none'}).filter(
+      x => (x.ownerColor == 'none' || x.ownerColor == player.playerColor) &&
+      this.all(HandSpace).all(HandCard, {color: x.color, side: x.side}).filter(y => !x.requiresCharge || y.charged).length > 0)                  
+    possibleActions.forEach(x => {
+      x.highlight = true
+    })
   }
 
-  swapSpaces(space1: WorkerSpace, space2: WorkerSpace) {
-    const prevColor : string | undefined = space1.occupiedColor;
-    space1.occupiedColor = space2.occupiedColor
-    space2.occupiedColor = prevColor
+  syncPilotCards() : void {
+    // sync the other players board
+    this.all(WorkerSpace, {color: this.players.current()!.playerColor}).forEach(space => {
+      if(space.occupiedColor != 'none') {
+        const otherColor = space.color == 'blue' ? 'red' : 'blue'
+        const otherSide = space.side == 'left' ? 'right' : 'left'
+        const otherAction = space.action
+        let otherTopic = space.topic
+        switch(space.topic) {
+          case 'push': {
+            otherTopic = 'pull'
+            break;
+          }
+          case 'pull': {
+            otherTopic = 'push'
+            break;
+          }
+        }
+        this.first(WorkerSpace, {
+          color: otherColor, 
+          side: otherSide, 
+          topic: otherTopic, 
+          action: otherAction})!.occupiedColor = space.occupiedColor
+      }
+    });
   }
 }
 
@@ -68,10 +98,12 @@ export class HandCard extends Card {
 
 export class FlightCell extends Space<MyGame> {
   rowLetter: string
+  rowNumber: number
   column: number
   cloudFill: boolean
   cloudCount: number
   windCount: number
+  color: string
 }
 
 export class WorkerSpace extends Piece<MyGame> {
@@ -84,6 +116,7 @@ export class WorkerSpace extends Piece<MyGame> {
   redOrder: number
   ownerColor: string = 'none'
   requiresCharge: boolean = false
+  highlight: boolean = false
 }
 
 export class FlightCard extends Card {
@@ -99,6 +132,7 @@ export class TimerCard extends Card {
 }
 
 export class KiteCard extends Card {
+  color: string
 }
 
 export default createGame(StuntKitesPlayer, MyGame, game => {
@@ -154,7 +188,10 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
   game.all(WorkerSpace, {color: 'blue'}).showOnlyTo(1)
   game.all(WorkerSpace, {color: 'red'}).showOnlyTo(2)
 
-  $.pilotSpace.create(PilotCard, 'pilot', {color: 'blue'});
+  const pilotBlue = $.pilotSpace.create(PilotCard, 'pilot', {color: 'blue'});
+  pilotBlue.showOnlyTo(1)
+  const pilotRed = $.pilotSpace.create(PilotCard, 'pilot', {color: 'blue', rotation: 180});
+  pilotRed.showOnlyTo(2)
 
   game.create(TimerSpace, 'timerSpace')
 
@@ -182,40 +219,24 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
   $.redHandRightSpace.create(HandCard, 'redRightHand', {side: 'right', color: 'red', rotation: 315});
 
   $.blueFlightSpace.create(FlightCard, 'flight-1')
+  $.redFlightSpace.create(FlightCard, 'flight-1')
   for (const flightCell of flight1aCells) {
-    $.blueFlightSpace.create(FlightCell, 'blue-' + flightCell.rowLetter + ',' + flightCell.column, flightCell)
+    const blueCell = $.blueFlightSpace.create(FlightCell, 'blue-' + flightCell.rowLetter + ',' + flightCell.column, flightCell)
+    blueCell.color = 'blue'
+    const redCell = $.redFlightSpace.create(FlightCell, 'red-' + flightCell.rowLetter + ',' + flightCell.column, flightCell)
+    redCell.color = 'red'
   }
 
-  $.blueFlightSpace.first(FlightCell, {rowLetter: 'B', column: 6})!.create(KiteCard, 'blueKite', {rotation: 0, flipped: false});
+  $.blueFlightSpace.first(FlightCell, {rowLetter: 'A', column: 4})!.create(KiteCard, 'blueKite', {color: 'blue', rotation: 0, flipped: false});
+  $.redFlightSpace.first(FlightCell, {rowLetter: 'A', column: 4})!.create(KiteCard, 'blueKite', {color: 'red', rotation: 0, flipped: false});
 
 
   game.defineActions({
-    spinLeft: () => action({
-      prompt: 'Spin Left'
-    }).do(
-      () => {
-        const kite = $.blueFlightSpace.first(KiteCard)!
-        kite.rotation = kite.rotation - 45
-      }
-    ),
 
-    spinRight: () => action({
-      prompt: 'Spin Right'
-    }).do(
-      () => {
-        const kite = $.blueFlightSpace.first(KiteCard)!
-        kite.rotation = kite.rotation + 45
-      }
-    ), 
-    
-    chooseWorker: (player) => action({
-      prompt: 'Choose a worker'
+    workerAction: (player) => action({
+      prompt: 'Place worker'
     }).chooseOnBoard(
-      'space', 
-        game.all(WorkerSpace, {occupiedColor: 'none'}).filter(
-          x => (x.ownerColor == 'none' || x.ownerColor == player.playerColor) &&
-            game.all(HandSpace).all(HandCard, {color: x.color, side: x.side}).filter(y => !x.requiresCharge || y.charged).length > 0)                  
-          ,
+      'space', game.all(WorkerSpace, {'highlight': true}),
       { skipIf: 'never' }
     ).do(({ space }) => {  
       const worker = game.first(HandCard, {color: player.playerColor, side: space.side})!;
@@ -224,17 +245,127 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
       // if the player went inside, technically the outside spot is blocked too
       switch(space.action) {
         case '2': {
-          game.first(WorkerSpace, {color: player.playerColor, topic: space.topic, action: '1'})!.occupiedColor = worker.color
+          const inside = game.first(WorkerSpace, {occupiedColor: 'none', side: space.side, color: player.playerColor, topic: space.topic, action: '1'})
+          if(inside != undefined) {
+            inside.occupiedColor = worker.color
+          }
           break;
         }
         case 'flip': {
-          game.first(WorkerSpace, {color: player.playerColor, topic: space.topic, action: 'charge'})!.occupiedColor = worker.color
+          const inside = game.first(WorkerSpace, {occupiedColor: 'none', side: space.side, color: player.playerColor, topic: space.topic, action: 'charge'})
+          if(inside != undefined) {
+            inside.occupiedColor = worker.color
+          }
+          break
+        }
+        case '1': {
+          const outside = game.first(WorkerSpace, {occupiedColor: 'none', side: space.side, color: player.playerColor, topic: space.topic, action: '2'})
+          if(outside != undefined) {
+            outside.occupiedColor = 'none-inside'
+          }
+          break;
+        }
+        case 'charge': {
+          const outside = game.first(WorkerSpace, {occupiedColor: 'none', side: space.side, color: player.playerColor, topic: space.topic, action: 'flip'})
+          if(outside != undefined) {
+            outside.occupiedColor = 'none-inside'
+          }
           break
         }
       }
 
       worker.putInto($.garbage)
+
+      const kite = game.first(KiteCard, {color: player.playerColor})!
+      switch(space.topic) {
+        case 'push': {
+          kite.rotation += space.side == 'left' ? 45 : -45;
+          if(space.action == '2') {
+            kite.rotation += space.side == 'left' ? 45 : -45;
+          }
+          break;
+        }
+        case 'pull': {
+          kite.rotation += space.side == 'right' ? 45 : -45;
+          if(space.action == '2') {
+            kite.rotation += space.side == 'right' ? 45 : -45;
+          }
+          break;
+        }
+      }
     }),
+
+    moveDown: (player) => action({
+      prompt: 'Move down',
+      condition: game.all(WorkerSpace, {occupiedColor: player.playerColor}).length == 2 &&
+        game.first(WorkerSpace, {occupiedColor: player.playerColor, side: 'left'})!.topic == 'push' && 
+        game.first(WorkerSpace, {occupiedColor: player.playerColor, side: 'right'})!.topic == 'push'
+    }).do(() => {  
+      const kite = game.first(KiteCard, {color: player.playerColor})!
+      const space = kite.container(FlightCell)!
+      if(space.rowNumber >= 1) {
+        kite.putInto(game.first(FlightCell, {rowNumber: space.rowNumber-1, column: space.column, color: kite.color})!)
+      } else {
+        // crash!
+      }
+    }),
+
+    moveLeft: (player) => action({
+      prompt: 'Move left',
+      condition: game.all(WorkerSpace, {occupiedColor: player.playerColor}).length == 2 &&
+        game.first(WorkerSpace, {occupiedColor: player.playerColor, side: 'left'})!.topic == 'control' && 
+        game.first(WorkerSpace, {occupiedColor: player.playerColor, side: 'right'})!.topic == 'control'
+    }).do(() => {  
+      const kite = game.first(KiteCard, {color: player.playerColor})!
+      const space = kite.container(FlightCell)!
+      if(space.column >= 1) {
+        kite.putInto(game.first(FlightCell, {rowNumber: space.rowNumber, column: space.column-1, color: kite.color})!)
+      } else {
+        if(space.rowNumber >= 1) {
+          kite.putInto(game.first(FlightCell, {rowNumber: space.rowNumber-1, column: space.column, color: kite.color})!)
+        } else {
+          // crash!
+        }
+      }
+    }),
+
+    moveRight: (player) => action({
+      prompt: 'Move right',
+      condition: game.all(WorkerSpace, {occupiedColor: player.playerColor}).length == 2 &&
+        game.first(WorkerSpace, {occupiedColor: player.playerColor, side: 'left'})!.topic == 'control' && 
+        game.first(WorkerSpace, {occupiedColor: player.playerColor, side: 'right'})!.topic == 'control'
+    }).do(() => {  
+      const kite = game.first(KiteCard, {color: player.playerColor})!
+      const space = kite.container(FlightCell)!
+      if(space.column <= 7) {
+        kite.putInto(game.first(FlightCell, {rowNumber: space.rowNumber, column: space.column+1, color: kite.color})!)
+      } else {
+        if(space.rowNumber >= 1) {
+          kite.putInto(game.first(FlightCell, {rowNumber: space.rowNumber-1, column: space.column, color: kite.color})!)
+        } else {
+          // crash!
+        }
+      }
+    }),
+
+    moveUp: (player) => action({
+      prompt: 'Move up',
+      condition: game.all(WorkerSpace, {occupiedColor: player.playerColor}).length == 2 &&
+        game.first(WorkerSpace, {occupiedColor: player.playerColor, side: 'left'})!.topic == 'pull' && 
+        game.first(WorkerSpace, {occupiedColor: player.playerColor, side: 'right'})!.topic == 'pull'
+    }).do(() => {  
+      const kite = game.first(KiteCard, {color: player.playerColor})!
+      const space = kite.container(FlightCell)!
+      if(space.rowNumber <= 5) {
+        kite.putInto(game.first(FlightCell, {rowNumber: space.rowNumber+1, column: space.column, color: kite.color})!)
+      }
+    }),
+
+    skip: (player) => action({
+      prompt: 'Skip'
+    }).do(() => {
+    }),
+
 
 
   });
@@ -245,46 +376,21 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
         // worker phase
         eachPlayer({          
           name: 'turn', do: [
-            () => {
-              game.message("player " + game.players.current()!.playerColor + " is going")
-
-              // make sure they can click the spaces
-              game.all(PilotSpace).forEach(x => {
-                x.sortBy(game.players.current()!.playerColor + 'Order')
-              })
-            },
-            playerActions({ actions: ['chooseWorker']}),
-            () => {
-              // sync the other players board
-              game.all(WorkerSpace, {color: game.players.current()!.playerColor}).forEach(space => {
-                if(space.occupiedColor != 'none') {
-                  const otherColor = space.color == 'blue' ? 'red' : 'blue'
-                  const otherSide = space.side == 'left' ? 'right' : 'left'
-                  const otherAction = space.action
-                  let otherTopic = space.topic
-                  switch(space.topic) {
-                    case 'push': {
-                      otherTopic = 'pull'
-                      break;
-                    }
-                    case 'pull': {
-                      otherTopic = 'push'
-                      break;
-                    }
-                  }
-                  game.first(WorkerSpace, {
-                    color: otherColor, 
-                    side: otherSide, 
-                    topic: otherTopic, 
-                    action: otherAction})!.occupiedColor = space.occupiedColor
-                }
-              });
-            }
+            () => game.getPossibleActions(),
+            playerActions({ actions: ['workerAction']}),
+            () => game.syncPilotCards(),             
           ]          
-        })
+        })        
       )}),
+
+      // optional combined actions
+      eachPlayer({          
+        name: 'turn', do: [  
+          playerActions({ actions: ['moveDown', 'moveLeft', 'moveRight', 'moveUp', 'skip']}),
+        ]          
+      }),
       
-      playerActions({ actions: ['spinLeft', 'spinRight']}),
+      playerActions({ actions: []}),
     )
   );
 });
