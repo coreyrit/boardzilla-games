@@ -295,11 +295,11 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
       }
     }),
 
-    moveDown: (player) => action({
+    moveKiteDown: (player) => action({
       prompt: 'Move down',
-      condition: game.all(WorkerSpace, {occupiedColor: player.playerColor}).length == 2 &&
-        game.first(WorkerSpace, {occupiedColor: player.playerColor, side: 'left'})!.topic == 'push' && 
-        game.first(WorkerSpace, {occupiedColor: player.playerColor, side: 'right'})!.topic == 'push'
+      condition: game.all(WorkerSpace, {occupiedColor: player.playerColor}).length >= 2 &&
+      game.all(WorkerSpace, {occupiedColor: player.playerColor, side: 'left', topic: 'push'}).length > 0 && 
+      game.all(WorkerSpace, {occupiedColor: player.playerColor, side: 'right', topic: 'push'}).length > 0
     }).do(() => {  
       const kite = game.first(KiteCard, {color: player.playerColor})!
       const space = kite.container(FlightCell)!
@@ -310,11 +310,11 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
       }
     }),
 
-    moveLeft: (player) => action({
+    moveKiteLeft: (player) => action({
       prompt: 'Move left',
-      condition: game.all(WorkerSpace, {occupiedColor: player.playerColor}).length == 2 &&
-        game.first(WorkerSpace, {occupiedColor: player.playerColor, side: 'left'})!.topic == 'control' && 
-        game.first(WorkerSpace, {occupiedColor: player.playerColor, side: 'right'})!.topic == 'control'
+      condition: game.all(WorkerSpace, {occupiedColor: player.playerColor}).length >= 2 &&
+      game.all(WorkerSpace, {occupiedColor: player.playerColor, side: 'left', topic: 'control'}).length > 0 && 
+      game.all(WorkerSpace, {occupiedColor: player.playerColor, side: 'right', topic: 'control'}).length > 0
     }).do(() => {  
       const kite = game.first(KiteCard, {color: player.playerColor})!
       const space = kite.container(FlightCell)!
@@ -329,11 +329,11 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
       }
     }),
 
-    moveRight: (player) => action({
+    moveKiteRight: (player) => action({
       prompt: 'Move right',
-      condition: game.all(WorkerSpace, {occupiedColor: player.playerColor}).length == 2 &&
-        game.first(WorkerSpace, {occupiedColor: player.playerColor, side: 'left'})!.topic == 'control' && 
-        game.first(WorkerSpace, {occupiedColor: player.playerColor, side: 'right'})!.topic == 'control'
+      condition: game.all(WorkerSpace, {occupiedColor: player.playerColor}).length >= 2 &&
+      game.all(WorkerSpace, {occupiedColor: player.playerColor, side: 'left', topic: 'control'}).length > 0 && 
+      game.all(WorkerSpace, {occupiedColor: player.playerColor, side: 'right', topic: 'control'}).length > 0
     }).do(() => {  
       const kite = game.first(KiteCard, {color: player.playerColor})!
       const space = kite.container(FlightCell)!
@@ -348,21 +348,22 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
       }
     }),
 
-    moveUp: (player) => action({
+    moveKiteUp: (player) => action({
       prompt: 'Move up',
-      condition: game.all(WorkerSpace, {occupiedColor: player.playerColor}).length == 2 &&
-        game.first(WorkerSpace, {occupiedColor: player.playerColor, side: 'left'})!.topic == 'pull' && 
-        game.first(WorkerSpace, {occupiedColor: player.playerColor, side: 'right'})!.topic == 'pull'
+      condition: 
+        game.all(WorkerSpace, {occupiedColor: player.playerColor}).length >= 2 &&
+        game.all(WorkerSpace, {occupiedColor: player.playerColor, side: 'left', topic: 'pull'}).length > 0 && 
+        game.all(WorkerSpace, {occupiedColor: player.playerColor, side: 'right', topic: 'pull'}).length > 0
     }).do(() => {  
       const kite = game.first(KiteCard, {color: player.playerColor})!
       const space = kite.container(FlightCell)!
       if(space.rowNumber <= 5) {
         kite.putInto(game.first(FlightCell, {rowNumber: space.rowNumber+1, column: space.column, color: kite.color})!)
       }
-    }),
+    }).message("moved up"),
 
     skip: (player) => action({
-      prompt: 'Skip'
+      prompt: 'Skip',
     }).do(() => {
     }),
 
@@ -386,7 +387,7 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
       // optional combined actions
       eachPlayer({          
         name: 'turn', do: [  
-          playerActions({ actions: ['moveDown', 'moveLeft', 'moveRight', 'moveUp', 'skip']}),
+          playerActions({ actions: ['moveKiteDown', 'moveKiteLeft', 'moveKiteRight', 'moveKiteUp', 'skip']}),
         ]          
       }),
       
