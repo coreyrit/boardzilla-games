@@ -59,6 +59,13 @@ class MyGame extends Game<MyGame, StuntKitesPlayer> {
       }
     });
   }
+
+  returnWorkers() : void {
+    this.message('moving hands')
+    this.all(HandCard).forEach(x => {
+      x.putInto(this.first(HandSpace, {color: x.color, side: x.side})!)
+    })
+  }
 }
 
 export class PilotSpace extends Space<MyGame> {
@@ -71,6 +78,7 @@ export class FlightSpace extends Space<MyGame> {
 
 export class HandSpace extends Space<MyGame> {
   color: string
+  side: string
 }
 
 export class TrickSpace extends Space<MyGame> {
@@ -196,13 +204,13 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
   game.create(TimerSpace, 'timerSpace')
 
   game.create(FlightSpace, 'redFlightSpace')
-  game.create(HandSpace, 'redHandLeftSpace', {color: 'red'})
-  game.create(HandSpace, 'redHandRightSpace', {color: 'red'})
+  game.create(HandSpace, 'redHandLeftSpace', {color: 'red', side: 'left'})
+  game.create(HandSpace, 'redHandRightSpace', {color: 'red', side: 'right'})
   game.create(TrickSpace, 'redTricksSpace')
 
   game.create(FlightSpace, 'blueFlightSpace')
-  game.create(HandSpace, 'blueHandLeftSpace', {color: 'blue'})
-  game.create(HandSpace, 'blueHandRightSpace', {color: 'blue'})
+  game.create(HandSpace, 'blueHandLeftSpace', {color: 'blue', side: 'left'})
+  game.create(HandSpace, 'blueHandRightSpace', {color: 'blue', side: 'right'})
   game.create(TrickSpace, 'blueTricksSpace')  
 
   // 8 trick cards
@@ -367,14 +375,22 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
     }).do(() => {
     }),
 
-
+    useControl: (player) => action({
+      prompt: 'Choose a hand to use control'
+    }).chooseOnBoard(
+      'hand', game.all(HandCard, {color: player.playerColor, charged: true})
+    ).do(({ hand }) => {
+      hand.charged = false
+      hand.flipped = true
+    })
 
   });
 
   game.defineFlow(
     loop(        
-      whileLoop({while: () => game.all(HandSpace).flatMap(x => x.all(HandCard)).length > 0, do: (
-        // worker phase
+      
+      // worker phase
+      whileLoop({while: () => game.all(HandSpace).flatMap(x => x.all(HandCard)).length > 0, do: (        
         eachPlayer({          
           name: 'turn', do: [
             () => game.getPossibleActions(),
@@ -391,6 +407,17 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
         ]          
       }),
       
+      // perform tricks phase
+
+      () => game.returnWorkers(),
+
+      // apply wind phase
+      eachPlayer({          
+        name: 'turn', do: [  
+          playerActions({ actions: ['useControl', 'skip']}),
+        ]          
+      }),
+
       playerActions({ actions: []}),
     )
   );

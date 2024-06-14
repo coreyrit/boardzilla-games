@@ -163,6 +163,7 @@ render(setup, {
       </div>
     ) });
 
+    
     $.pilotSpace.layout(Card, {
       offsetColumn: {x: 0, y: 0},
     })
