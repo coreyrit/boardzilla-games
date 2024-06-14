@@ -6,12 +6,26 @@ import {
   Game,
 } from '@boardzilla/core';
 import { flight1aCells } from './flight-cells.js';
+import { tricks } from './tricks.js';
 
 export class StuntKitesPlayer extends Player<MyGame, StuntKitesPlayer> {
   playerColor : string
 }
 
 class MyGame extends Game<MyGame, StuntKitesPlayer> {
+  planTrick(): void {
+    $.timerSpace.bottom(TrickCard)!.putInto($.trickFrontSpace)
+    $.timerSpace.bottom(TrickCard)!.putInto($.trickBackSpace)
+  }
+
+  clearHighlights(): void {
+    // clear the pilot card
+    this.game.all(WorkerSpace).forEach(x => {
+      x.occupiedColor = 'none'
+      x.highlight = false
+    })
+  }
+
   getPossibleActions() : void {
     const player = this.players.current()!
     this.message("player " + player.playerColor + " is going")
@@ -60,11 +74,120 @@ class MyGame extends Game<MyGame, StuntKitesPlayer> {
     });
   }
 
+  currentPlayerWindCount() : number {
+    const currentPlayer = this.players.current()!
+    const kite = this.first(KiteCard, {color: currentPlayer.playerColor})!
+    switch(kite.rotation) {
+      case 45: {
+        return 1;
+      }
+      case 90: {
+        return 2;
+      }
+      case 135: {
+        return 1;
+      }
+      case 180: {
+        return 1;
+      }
+      case 225: {
+        return 1;
+      }
+      case 270: {
+        return 2;
+      }
+      case 315: {
+        return 1;
+      }
+      default: {
+        return 0;
+      }
+    }
+  }
+
   returnWorkers() : void {
     this.message('moving hands')
     this.all(HandCard).forEach(x => {
       x.putInto(this.first(HandSpace, {color: x.color, side: x.side})!)
     })
+  }
+
+  moveKiteUp(kite: KiteCard): void {
+    const space = kite.container(FlightCell)!
+    if(space.rowNumber <= 5) {
+      kite.putInto(this.first(FlightCell, {rowNumber: space.rowNumber+1, column: space.column, color: kite.color})!)
+    }
+  }
+  moveKiteLeft(kite: KiteCard): void {
+    const space = kite.container(FlightCell)!
+    if(space.column >= 1) {
+      kite.putInto(this.first(FlightCell, {rowNumber: space.rowNumber, column: space.column-1, color: kite.color})!)
+    } else {
+      if(space.rowNumber >= 1) {
+        this.moveKiteDown(kite)
+      }
+    }
+  }
+  moveKiteRight(kite: KiteCard): void {
+    const space = kite.container(FlightCell)!
+    if(space.column <= 7) {
+      kite.putInto(this.first(FlightCell, {rowNumber: space.rowNumber, column: space.column+1, color: kite.color})!)
+    } else {
+      if(space.rowNumber >= 1) {
+        this.moveKiteDown(kite)
+      }
+    }
+  }
+  moveKiteDown(kite: KiteCard): void {
+    const space = kite.container(FlightCell)!
+    if(space.rowNumber >= 1) {
+      kite.putInto(this.first(FlightCell, {rowNumber: space.rowNumber-1, column: space.column, color: kite.color})!)
+    } else {
+      // crash!
+    }
+  }
+  moveKiteWithWind(kite: KiteCard): void {
+    switch(kite.rotation) {
+      case 45: {
+        this.moveKiteRight(kite)
+        break;
+      }
+      case 90: {
+        this.moveKiteRight(kite)
+        break;
+      }
+      case 135: {
+        this.moveKiteRight(kite)
+        break;
+      }
+      case 180: {
+        this.moveKiteDown(kite)
+        break;
+      }
+      case 225: {
+        this.moveKiteLeft(kite)
+        break;
+      }
+      case 270: {
+        this.moveKiteLeft(kite)
+        break;
+      }
+      case 315: {
+        this.moveKiteLeft(kite)
+        break;
+      }
+    }
+  }
+
+  updateTimer(): void {
+    $.timerSpace.rotation += 90
+
+    // const timer = this.first(TimerCard)!
+    // timer.rotation += 90;
+    // if (timer.rotation == 0 || timer.rotation == 360) {
+    //   // remove the bottom card from the deck
+
+    // }
   }
 }
 
@@ -82,6 +205,10 @@ export class HandSpace extends Space<MyGame> {
 }
 
 export class TrickSpace extends Space<MyGame> {
+  color: string
+}
+
+export class TrickChoiceSpace extends Space<MyGame> {
 
 }
 
@@ -132,21 +259,41 @@ export class FlightCard extends Card {
 }
 
 export class TrickCard extends Card {
+  shuffleOrder: number
+  
+  // info
+  nm: string
+  vp: number
 
+  // rewards
+  wind: number
+  xwind: number
+  
+  // requirements
+  reqFill: boolean
+  reqRows: string[]
+  ltReqDeg: number
+  rtReqDeg: number
+
+  // results
+  flip: boolean = false
+  hor: number = 0
+  ver: number = 0
+  spin: number = 0
 }
 
-export class TimerCard extends Card {
+export class TimerCard extends TrickCard {
 
 }
 
 export class KiteCard extends Card {
-  color: string
+  color: string  
 }
 
 export default createGame(StuntKitesPlayer, MyGame, game => {
 
   const { action } = game;
-  const { playerActions, loop, eachPlayer, whileLoop } = game.flowCommands;
+  const { playerActions, loop, eachPlayer, whileLoop, forLoop } = game.flowCommands;
 
   game.players[0].playerColor = 'blue'
   game.players[1].playerColor = 'red'
@@ -202,29 +349,47 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
   pilotRed.showOnlyTo(2)
 
   game.create(TimerSpace, 'timerSpace')
+  game.create(TrickChoiceSpace, 'trickFrontSpace')
+  game.create(TrickChoiceSpace, 'trickBackSpace')
 
   game.create(FlightSpace, 'redFlightSpace')
   game.create(HandSpace, 'redHandLeftSpace', {color: 'red', side: 'left'})
   game.create(HandSpace, 'redHandRightSpace', {color: 'red', side: 'right'})
-  game.create(TrickSpace, 'redTricksSpace')
+  game.create(TrickSpace, 'redTricksSpace', {color: 'red'})
 
   game.create(FlightSpace, 'blueFlightSpace')
   game.create(HandSpace, 'blueHandLeftSpace', {color: 'blue', side: 'left'})
   game.create(HandSpace, 'blueHandRightSpace', {color: 'blue', side: 'right'})
-  game.create(TrickSpace, 'blueTricksSpace')  
+  game.create(TrickSpace, 'blueTricksSpace', {color: 'blue'})  
 
   // 8 trick cards
-  for(let i = 0; i < 8; i++) {
-    $.timerSpace.create(TrickCard, 'trick-' + i);
+  // for(let i = 0; i < 8; i++) {
+    // const shuffleOrder = game.random()
+    // $.timerSpace.create(TrickCard, 'trick-' + i + '-front', {shuffleOrder: shuffleOrder});
+    // $.timerSpace.create(TrickCard, 'trick-' + i + '-back', {shuffleOrder: shuffleOrder});
+  // }
+
+  //for (const trickCard of tricks) {
+  for (let i = 0; i < tricks.length; i+= 2) {
+    const shuffleOrder = game.random()
+    let tempFront = tricks[i]
+    let tempBack = tricks[i+1]
+    tempFront.shuffleOrder = shuffleOrder
+    tempBack.shuffleOrder = shuffleOrder
+    $.timerSpace.create(TrickCard, tempFront.nm!.toLowerCase().replace(' ', '-').replace("'", ""), tempFront);
+    $.timerSpace.create(TrickCard, tempBack.nm!.toLowerCase().replace(' ', '-').replace("'", ""), tempBack);
   }
-  $.timerSpace.create(TimerCard,'timer')
 
 
-  $.blueHandLeftSpace.create(HandCard, 'blueLeftHand', {side: 'left', color: 'blue', rotation: 225});
-  $.blueHandRightSpace.create(HandCard, 'blueRightHand', {side: 'right', color: 'blue', rotation: 135});    
+  $.timerSpace.create(TimerCard, 'timer', {shuffleOrder: -1}) // force timer on top when shuffled
+  $.timerSpace.create(TrickCard, 'final-trick', {shuffleOrder: -0.5});
 
-  $.redHandLeftSpace.create(HandCard, 'redLeftHand', {side: 'left', color: 'red', rotation: 45});
-  $.redHandRightSpace.create(HandCard, 'redRightHand', {side: 'right', color: 'red', rotation: 315});
+
+  $.blueHandLeftSpace.create(HandCard, 'blue-left', {side: 'left', color: 'blue', rotation: 45});
+  $.blueHandRightSpace.create(HandCard, 'blue-right', {side: 'right', color: 'blue', rotation: 315});    
+
+  $.redHandLeftSpace.create(HandCard, 'red-left', {side: 'left', color: 'red', rotation: 45});
+  $.redHandRightSpace.create(HandCard, 'red-right', {side: 'right', color: 'red', rotation: 315});
 
   $.blueFlightSpace.create(FlightCard, 'flight-1')
   $.redFlightSpace.create(FlightCard, 'flight-1')
@@ -310,12 +475,7 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
       game.all(WorkerSpace, {occupiedColor: player.playerColor, side: 'right', topic: 'push'}).length > 0
     }).do(() => {  
       const kite = game.first(KiteCard, {color: player.playerColor})!
-      const space = kite.container(FlightCell)!
-      if(space.rowNumber >= 1) {
-        kite.putInto(game.first(FlightCell, {rowNumber: space.rowNumber-1, column: space.column, color: kite.color})!)
-      } else {
-        // crash!
-      }
+      game.moveKiteDown(kite)
     }),
 
     moveKiteLeft: (player) => action({
@@ -325,16 +485,7 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
       game.all(WorkerSpace, {occupiedColor: player.playerColor, side: 'right', topic: 'control'}).length > 0
     }).do(() => {  
       const kite = game.first(KiteCard, {color: player.playerColor})!
-      const space = kite.container(FlightCell)!
-      if(space.column >= 1) {
-        kite.putInto(game.first(FlightCell, {rowNumber: space.rowNumber, column: space.column-1, color: kite.color})!)
-      } else {
-        if(space.rowNumber >= 1) {
-          kite.putInto(game.first(FlightCell, {rowNumber: space.rowNumber-1, column: space.column, color: kite.color})!)
-        } else {
-          // crash!
-        }
-      }
+      game.moveKiteLeft(kite)
     }),
 
     moveKiteRight: (player) => action({
@@ -344,16 +495,7 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
       game.all(WorkerSpace, {occupiedColor: player.playerColor, side: 'right', topic: 'control'}).length > 0
     }).do(() => {  
       const kite = game.first(KiteCard, {color: player.playerColor})!
-      const space = kite.container(FlightCell)!
-      if(space.column <= 7) {
-        kite.putInto(game.first(FlightCell, {rowNumber: space.rowNumber, column: space.column+1, color: kite.color})!)
-      } else {
-        if(space.rowNumber >= 1) {
-          kite.putInto(game.first(FlightCell, {rowNumber: space.rowNumber-1, column: space.column, color: kite.color})!)
-        } else {
-          // crash!
-        }
-      }
+      game.moveKiteRight(kite)
     }),
 
     moveKiteUp: (player) => action({
@@ -364,15 +506,19 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
         game.all(WorkerSpace, {occupiedColor: player.playerColor, side: 'right', topic: 'pull'}).length > 0
     }).do(() => {  
       const kite = game.first(KiteCard, {color: player.playerColor})!
-      const space = kite.container(FlightCell)!
-      if(space.rowNumber <= 5) {
-        kite.putInto(game.first(FlightCell, {rowNumber: space.rowNumber+1, column: space.column, color: kite.color})!)
-      }
+      game.moveKiteUp(kite);
     }).message("moved up"),
 
     skip: (player) => action({
       prompt: 'Skip',
     }).do(() => {
+    }),
+
+    moveWithWind: (player) => action({
+      prompt: 'Move with wind'
+    }).do(() => {
+      const kite = game.first(KiteCard, {color: player.playerColor})!
+      game.moveKiteWithWind(kite)
     }),
 
     useControl: (player) => action({
@@ -382,12 +528,39 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
     ).do(({ hand }) => {
       hand.charged = false
       hand.flipped = true
-    })
+    }),
+
+    chooseTrick: (player) => action({
+      prompt: 'Choose which trick to plan',
+    }).chooseOnBoard(
+      'side', [$.trickFrontSpace.first(TrickCard)!, $.trickBackSpace.first(TrickCard)!]
+    ).do(({ side }) => {
+      // keep one side and discard the other
+      side.putInto(game.first(TrickSpace, {color: player.playerColor})!);
+
+      // clear choices
+      game.all(TrickChoiceSpace).all(TrickCard).forEach(x => {
+        x.putInto($.garbage)
+      })
+    }),
 
   });
 
   game.defineFlow(
-    loop(        
+    loop(       
+      
+      // shuffle the tricks
+      () => {
+        $.timerSpace.sortBy('shuffleOrder')        
+      },
+
+      // choose initial tricks
+      eachPlayer({          
+        name: 'turn', do: [  
+          () => game.planTrick(),
+          playerActions({ actions: ['chooseTrick']}),
+        ]          
+      }),
       
       // worker phase
       whileLoop({while: () => game.all(HandSpace).flatMap(x => x.all(HandCard)).length > 0, do: (        
@@ -399,6 +572,8 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
           ]          
         })        
       )}),
+
+      () => game.clearHighlights(),
 
       // optional combined actions
       eachPlayer({          
@@ -414,9 +589,17 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
       // apply wind phase
       eachPlayer({          
         name: 'turn', do: [  
-          playerActions({ actions: ['useControl', 'skip']}),
+          forLoop({ name: 'wind', initial: 1, next: wind => wind + 1, while: wind => wind <= game.currentPlayerWindCount(), do: [
+            playerActions({ actions: ['useControl', 'moveWithWind']})
+          ]}),
         ]          
       }),
+
+      // gusts phase
+
+      // update timer
+      () => game.updateTimer(),
+
 
       playerActions({ actions: []}),
     )
