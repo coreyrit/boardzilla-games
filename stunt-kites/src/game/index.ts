@@ -20,8 +20,7 @@ class MyGame extends Game<MyGame, StuntKitesPlayer> {
 
   clearHighlights(): void {
     // clear the pilot card
-    this.game.all(WorkerSpace).forEach(x => {
-      x.occupiedColor = 'none'
+    this.game.all(WorkerSpace).forEach(x => {      
       x.highlight = false
     })
   }
@@ -40,8 +39,33 @@ class MyGame extends Game<MyGame, StuntKitesPlayer> {
       x.highlight = false;
     })
     const possibleActions = this.all(WorkerSpace, {occupiedColor: 'none'}).filter(
-      x => (x.ownerColor == 'none' || x.ownerColor == player.playerColor) &&
-      this.all(HandSpace).all(HandCard, {color: x.color, side: x.side}).filter(y => !x.requiresCharge || y.charged).length > 0)                  
+      x => 
+        // must not be owned or owned by current player
+        (x.ownerColor == 'none' || x.ownerColor == player.playerColor) 
+        &&        
+        (
+          // either doesn't rquire a charge
+          (
+            // no chage needed
+            !x.requiresCharge
+            &&
+            // and its not a flip where the charge is already covered
+            (
+              // either not the flip action
+              x.action != 'flip'
+              ||
+              // or the charge action inside is not covered
+              this.all(WorkerSpace, {color: player.playerColor, side: x.side, action: 'charge', occupiedColor: 'none'}).length > 0
+            )
+          )
+          ||
+          // or a hand is available that IS charged
+          (
+            this.all(HandSpace).all(HandCard, {color: x.color, side: x.side, charged: true}).length > 0
+          )
+        )
+      )
+
     possibleActions.forEach(x => {
       x.highlight = true
     })
@@ -110,17 +134,20 @@ class MyGame extends Game<MyGame, StuntKitesPlayer> {
     this.all(HandCard).forEach(x => {
       x.putInto(this.first(HandSpace, {color: x.color, side: x.side})!)
     })
+    this.all(WorkerSpace).forEach(X => {
+      X.occupiedColor = 'none'
+    })
   }
 
   moveKiteUp(kite: KiteCard): void {
     const space = kite.container(FlightCell)!
-    if(space.rowNumber <= 5) {
+    if(space.rowNumber < 5) {
       kite.putInto(this.first(FlightCell, {rowNumber: space.rowNumber+1, column: space.column, color: kite.color})!)
     }
   }
   moveKiteLeft(kite: KiteCard): void {
     const space = kite.container(FlightCell)!
-    if(space.column >= 1) {
+    if(space.column > 1) {
       kite.putInto(this.first(FlightCell, {rowNumber: space.rowNumber, column: space.column-1, color: kite.color})!)
     } else {
       if(space.rowNumber >= 1) {
@@ -130,7 +157,7 @@ class MyGame extends Game<MyGame, StuntKitesPlayer> {
   }
   moveKiteRight(kite: KiteCard): void {
     const space = kite.container(FlightCell)!
-    if(space.column <= 7) {
+    if(space.column < 7) {
       kite.putInto(this.first(FlightCell, {rowNumber: space.rowNumber, column: space.column+1, color: kite.color})!)
     } else {
       if(space.rowNumber >= 1) {
@@ -140,7 +167,7 @@ class MyGame extends Game<MyGame, StuntKitesPlayer> {
   }
   moveKiteDown(kite: KiteCard): void {
     const space = kite.container(FlightCell)!
-    if(space.rowNumber >= 1) {
+    if(space.rowNumber > 1) {
       kite.putInto(this.first(FlightCell, {rowNumber: space.rowNumber-1, column: space.column, color: kite.color})!)
     } else {
       // crash!
@@ -225,7 +252,7 @@ export class PilotCard extends Card {
 
 }
 
-export class HandCard extends Card {
+export class HandCard extends Piece<MyGame> {
   color: string
   side: string
   charged: boolean = true
@@ -280,6 +307,17 @@ export class TrickCard extends Card {
   hor: number = 0
   ver: number = 0
   spin: number = 0
+
+  inPosition(kite: KiteCard) : boolean {
+    const space = kite.container(FlightCell)!
+    return space.cloudFill == this.reqFill &&
+      this.reqRows.includes(space.rowLetter) &&
+      (
+        (kite.rotation == this.ltReqDeg && space.cloudCount == 1) 
+        || 
+        (kite.rotation == this.rtReqDeg && space.cloudCount == 2)
+      )      
+  }
 }
 
 export class TimerCard extends TrickCard {
@@ -415,11 +453,24 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
       const worker = game.first(HandCard, {color: player.playerColor, side: space.side})!;
       space.occupiedColor = worker.color
 
+      let double = false
+
+      // check for charge
+      if(space.action == 'charge') {
+        worker.charged = true
+      }
+
+      // use charge for inside actions
+      if(space.action == '2' || space.action == 'flip') {
+        worker.charged = false
+      }
+
       // if the player went inside, technically the outside spot is blocked too
       switch(space.action) {
         case '2': {
           const inside = game.first(WorkerSpace, {occupiedColor: 'none', side: space.side, color: player.playerColor, topic: space.topic, action: '1'})
           if(inside != undefined) {
+            double = true
             inside.occupiedColor = worker.color
           }
           break;
@@ -427,40 +478,42 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
         case 'flip': {
           const inside = game.first(WorkerSpace, {occupiedColor: 'none', side: space.side, color: player.playerColor, topic: space.topic, action: 'charge'})
           if(inside != undefined) {
+            double = true
             inside.occupiedColor = worker.color
           }
           break
         }
-        case '1': {
-          const outside = game.first(WorkerSpace, {occupiedColor: 'none', side: space.side, color: player.playerColor, topic: space.topic, action: '2'})
-          if(outside != undefined) {
-            outside.occupiedColor = 'none-inside'
-          }
-          break;
-        }
-        case 'charge': {
-          const outside = game.first(WorkerSpace, {occupiedColor: 'none', side: space.side, color: player.playerColor, topic: space.topic, action: 'flip'})
-          if(outside != undefined) {
-            outside.occupiedColor = 'none-inside'
-          }
-          break
-        }
+        // case '1': {
+        //   const outside = game.first(WorkerSpace, {occupiedColor: 'none', side: space.side, color: player.playerColor, topic: space.topic, action: '2'})
+        //   if(outside != undefined) {
+        //     outside.occupiedColor = 'none-inside'
+        //   }
+        //   break;
+        // }
+        // case 'charge': {
+        //   const outside = game.first(WorkerSpace, {occupiedColor: 'none', side: space.side, color: player.playerColor, topic: space.topic, action: 'flip'})
+        //   if(outside != undefined) {
+        //     outside.occupiedColor = 'none-inside'
+        //   }
+        //   break
+        // }
       }
 
       worker.putInto($.garbage)
 
       const kite = game.first(KiteCard, {color: player.playerColor})!
+
       switch(space.topic) {
         case 'push': {
           kite.rotation += space.side == 'left' ? 45 : -45;
-          if(space.action == '2') {
+          if(space.action == '2' && double) {            
             kite.rotation += space.side == 'left' ? 45 : -45;
           }
           break;
         }
         case 'pull': {
           kite.rotation += space.side == 'right' ? 45 : -45;
-          if(space.action == '2') {
+          if(space.action == '2' && double) {
             kite.rotation += space.side == 'right' ? 45 : -45;
           }
           break;
@@ -527,7 +580,6 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
       'hand', game.all(HandCard, {color: player.playerColor, charged: true})
     ).do(({ hand }) => {
       hand.charged = false
-      hand.flipped = true
     }),
 
     chooseTrick: (player) => action({
@@ -544,11 +596,42 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
       })
     }),
 
+    performTrick: (player) => action({
+      prompt: 'Choose to perform trick',
+    }).chooseOnBoard(
+      'trick', game.first(TrickSpace, {color: player.playerColor})!.all(TrickCard)
+        .filter(x => x.inPosition( game.first(KiteCard, {color: player.playerColor})!))
+    ).do(({ trick }) => {
+      // move the kite based on trick
+      const kite = game.first(KiteCard, {color: player.playerColor})!
+      const space = kite.container(FlightCell)!
+
+      // flip
+      if(trick.flip) {
+        kite.flipped = !kite.flipped
+      }
+
+      // move horizontal
+      for(let x = 0; x < trick.hor; x++) {
+        space.cloudCount == 1 ? game.moveKiteRight(kite) : game.moveKiteLeft(kite)
+      }
+
+      // move vertical
+      for(let y = 0; y <= Math.abs(trick.ver); y++) {
+        trick.ver > 0  ? game.moveKiteUp(kite) : game.moveKiteDown(kite)
+      }
+
+      // rotate
+      kite.rotation += space.cloudCount == 1 ? trick.spin : -trick.spin
+
+      // then store with appropriate lines side up
+      // put in the trash for now
+      trick.putInto($.garbage)
+    }),
+
   });
 
-  game.defineFlow(
-    loop(       
-      
+  game.defineFlow(        
       // shuffle the tricks
       () => {
         $.timerSpace.sortBy('shuffleOrder')        
@@ -561,7 +644,7 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
           playerActions({ actions: ['chooseTrick']}),
         ]          
       }),
-      
+    loop(       
       // worker phase
       whileLoop({while: () => game.all(HandSpace).flatMap(x => x.all(HandCard)).length > 0, do: (        
         eachPlayer({          
@@ -571,18 +654,23 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
             () => game.syncPilotCards(),             
           ]          
         })        
-      )}),
+      )}),      
 
       () => game.clearHighlights(),
-
+      
       // optional combined actions
       eachPlayer({          
         name: 'turn', do: [  
           playerActions({ actions: ['moveKiteDown', 'moveKiteLeft', 'moveKiteRight', 'moveKiteUp', 'skip']}),
         ]          
-      }),
+      }),      
       
       // perform tricks phase
+      eachPlayer({          
+        name: 'turn', do: [  
+          playerActions({ actions: ['performTrick', 'skip']}),
+        ]          
+      }),
 
       () => game.returnWorkers(),
 
@@ -601,7 +689,7 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
       () => game.updateTimer(),
 
 
-      playerActions({ actions: []}),
+      // playerActions({ actions: []}),
     )
   );
 });

@@ -170,7 +170,7 @@ render(setup, {
     game.all(HandCard).appearance({
       render: x => (
         <div className='HandCard'>
-          <div className={x.flipped ? 'back' : 'front'} />
+          <div className={x.charged ? 'front' : 'back'} />
         </div>
       ),
     })
