@@ -14,8 +14,8 @@ export class StuntKitesPlayer extends Player<MyGame, StuntKitesPlayer> {
 
 class MyGame extends Game<MyGame, StuntKitesPlayer> {
   planTrick(): void {
-    $.timerSpace.bottom(TrickCard)!.putInto($.trickFrontSpace)
-    $.timerSpace.bottom(TrickCard)!.putInto($.trickBackSpace)
+    $.timerSpace.top(TrickCard)!.putInto($.trickFrontSpace)
+    $.timerSpace.top(TrickCard)!.putInto($.trickBackSpace)
   }
 
   clearHighlights(): void {
@@ -320,9 +320,9 @@ export class TrickCard extends Card {
   }
 }
 
-export class TimerCard extends TrickCard {
+// export class TimerCard extends TrickCard {
 
-}
+// }
 
 export class KiteCard extends Card {
   color: string  
@@ -418,9 +418,10 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
     $.timerSpace.create(TrickCard, tempBack.nm!.toLowerCase().replace(' ', '-').replace("'", ""), tempBack);
   }
 
-
-  $.timerSpace.create(TimerCard, 'timer', {shuffleOrder: -1}) // force timer on top when shuffled
-  $.timerSpace.create(TrickCard, 'final-trick', {shuffleOrder: -0.5});
+  $.timerSpace.create(TrickCard, 'timer', {shuffleOrder: 1}) // force timer on top when shuffled
+  $.timerSpace.create(TrickCard, 'final-trick', 
+    {nm: "Final Trick", vp: 1, wind: 0, xwind: 0, reqFill: false, reqRows: ["B"], ltReqDeg: 0, 
+      rtReqDeg: 0, flip: true, hor: 0, ver: -1, spin: 0, shuffleOrder: 0.5});
 
 
   $.blueHandLeftSpace.create(HandCard, 'blue-left', {side: 'left', color: 'blue', rotation: 45});
@@ -439,10 +440,27 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
   }
 
   $.blueFlightSpace.first(FlightCell, {rowLetter: 'A', column: 4})!.create(KiteCard, 'blueKite', {color: 'blue', rotation: 0, flipped: false});
-  $.redFlightSpace.first(FlightCell, {rowLetter: 'A', column: 4})!.create(KiteCard, 'blueKite', {color: 'red', rotation: 0, flipped: false});
+  $.redFlightSpace.first(FlightCell, {rowLetter: 'A', column: 4})!.create(KiteCard, 'redKite', {color: 'red', rotation: 0, flipped: false});
 
 
   game.defineActions({
+
+    plan: (player) => action({
+      prompt: 'Plan',
+      condition: $.timerSpace.all(TrickCard).length > 2
+    }).do(() => {
+      game.followUp({name: 'planHand'});
+    }),
+
+    planHand: (player) => action({
+      prompt: 'Choose a hand to plan with'
+    }).chooseOnBoard(
+      'hand', game.all(HandCard, {color: player.playerColor, charged: true})
+    ).do(({ hand }) => {
+      hand.putInto($.garbage)
+      game.planTrick()
+      game.followUp({name: 'chooseTrick'});
+    }),
 
     workerAction: (player) => action({
       prompt: 'Place worker'
@@ -451,13 +469,17 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
       { skipIf: 'never' }
     ).do(({ space }) => {  
       const worker = game.first(HandCard, {color: player.playerColor, side: space.side})!;
-      space.occupiedColor = worker.color
+      const kite = game.first(KiteCard, {color: player.playerColor})!
 
+      // block the space
+      space.occupiedColor = worker.color
       let double = false
 
       // check for charge
       if(space.action == 'charge') {
         worker.charged = true
+      } else if(space.action == 'flip') {
+        kite.flipped = !kite.flipped
       }
 
       // use charge for inside actions
@@ -499,9 +521,7 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
         // }
       }
 
-      worker.putInto($.garbage)
-
-      const kite = game.first(KiteCard, {color: player.playerColor})!
+      worker.putInto($.garbage)      
 
       switch(space.topic) {
         case 'push': {
@@ -617,7 +637,7 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
       }
 
       // move vertical
-      for(let y = 0; y <= Math.abs(trick.ver); y++) {
+      for(let y = 0; y < Math.abs(trick.ver); y++) {
         trick.ver > 0  ? game.moveKiteUp(kite) : game.moveKiteDown(kite)
       }
 
@@ -634,7 +654,8 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
   game.defineFlow(        
       // shuffle the tricks
       () => {
-        $.timerSpace.sortBy('shuffleOrder')        
+        $.timerSpace.sortBy('shuffleOrder')  
+        $.timerSpace.rotation = 270      
       },
 
       // choose initial tricks
@@ -650,7 +671,7 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
         eachPlayer({          
           name: 'turn', do: [
             () => game.getPossibleActions(),
-            playerActions({ actions: ['workerAction']}),
+            playerActions({ actions: ['plan', 'workerAction']}),
             () => game.syncPilotCards(),             
           ]          
         })        

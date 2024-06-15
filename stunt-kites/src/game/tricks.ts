@@ -10,7 +10,7 @@ export const tricks: Partial<TrickCard>[] = [
     {nm: 'Cascade', vp: 2, wind: 1, xwind: 2, reqFill: false, reqRows: ["C", "D"], ltReqDeg: 90, rtReqDeg: 270, flip: false, hor: 2, ver: -1, spin: 315},
     {nm: 'Side Slide', vp: 3, wind: 2, xwind: 3, reqFill: true, reqRows: ["E"], ltReqDeg: 0, rtReqDeg: 0, flip: false, hor: 5, ver: 0, spin: 270},
 
-    {nm: 'Half Axel', vp: 1, wind: 1, xwind: 2, reqFill: false, reqRows: ["A", "B"], ltReqDeg: 45, rtReqDeg: 270, flip: false, hor: 4, ver: 2, spin: 270},
+    {nm: 'Half Axel', vp: 1, wind: 1, xwind: 2, reqFill: false, reqRows: ["A", "B"], ltReqDeg: 45, rtReqDeg: 315, flip: false, hor: 4, ver: 2, spin: 270},
     {nm: 'Axel', vp: 2, wind: 3, xwind: 1, reqFill: false, reqRows: ["B"], ltReqDeg: 90, rtReqDeg: 270, flip: true, hor: 2, ver: 0, spin: 0},
 
     {nm: 'Slot Machine', vp: 2, wind: 2, xwind: 3, reqFill: true, reqRows: ["C", "D"], ltReqDeg: 135, rtReqDeg: 225, flip: true, hor: 3, ver: 1, spin: 315},

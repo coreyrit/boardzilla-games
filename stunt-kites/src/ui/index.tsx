@@ -1,6 +1,6 @@
 import React from 'react';
 import { render } from '@boardzilla/core';
-import { Card, FlightCard, FlightCell, FlightSpace, HandCard, HandSpace, KiteCard, PilotCard, PilotSpace, TrickCard, TrickChoiceSpace, WorkerSpace, default as setup } from '../game/index.js';
+import { Card, FlightCard, FlightCell, FlightSpace, HandCard, HandSpace, KiteCard, PilotCard, PilotSpace, TrickCard, TrickChoiceSpace, TrickSpace, WorkerSpace, default as setup } from '../game/index.js';
 
 import './style.scss';
 // import '@boardzilla/core/index.css';
@@ -22,7 +22,7 @@ render(setup, {
 
     // choices
     game.layout('trickFrontSpace', { area: { left: 20, top: 35, width: 28, height: 20 }});
-    game.layout('trickBackSpace', { area: { left: 50, top: 35, width: 28, height: 20 }});
+    game.layout('trickBackSpace', { area: { left: 60, top: 35, width: 28, height: 20 }});
     
     game.layout('nw1', { area: { left: 50, top: 7.5, width: 4, height: 7 }});
     game.layout('nw2', { area: { left: 53, top: 7.5, width: 4, height: 7 }});
@@ -73,7 +73,7 @@ render(setup, {
 
 
     // timer
-    game.layout('timerSpace', { area: { left: 25, top: 2, width: 20, height: 28 }});
+    game.layout('timerSpace', { area: { left: 20, top: 7, width: 28, height: 20 }});
     $.timerSpace.appearance({ render: x => ( 
       <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
         <rect width="100" height="100" x="0" y="0" fill='white' />
@@ -92,13 +92,19 @@ render(setup, {
       rows: 5
     })
 
+    game.all(TrickSpace).layout(TrickCard, {
+      alignment: 'top',
+      offsetRow: {x: 0, y: 10},
+      direction: 'ttb',
+    });
+
     game.layout('blueHandLeftSpace', { area: { left: -15, top: 80, width: 10, height: 14 }});
     game.layout('blueHandRightSpace', { area: { left: 33, top: 80, width: 10, height: 14 }});
 
-    game.layout('blueTricksSpace', { area: { left: -15, top: 2, width: 28, height: 30 }});
+    game.layout('blueTricksSpace', { area: { left: -15, top: 2, width: 28, height: 70 }});
     $.blueTricksSpace.appearance({ render: x => ( 
       <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="100" height="100" x="0" y="0" fill='blue' />
+        {/* <rect width="100" height="100" x="0" y="0" fill='blue' /> */}
       </svg> 
     ) });
 
@@ -117,10 +123,10 @@ render(setup, {
     game.layout('redHandLeftSpace', { area: { left: 55, top: 80, width: 10, height: 14 }});
     game.layout('redHandRightSpace', { area: { left: 103, top: 80, width: 10, height: 14 }});
 
-    game.layout('redTricksSpace', { area: { left: 92, top: 2, width: 28, height: 30 }});
+    game.layout('redTricksSpace', { area: { left: 92, top: 2, width: 28, height: 70 }});
     $.redTricksSpace.appearance({ render: x => ( 
       <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="100" height="100" x="0" y="0" fill='red' />
+        {/* <rect width="100" height="100" x="0" y="0" fill='red' /> */}
       </svg> 
     ) });
 
@@ -154,7 +160,7 @@ render(setup, {
 
     // stack tricks
     $.timerSpace.layout(Card, {
-      //offsetColumn: {x: 0, y: 0},
+      offsetColumn: {x: 0, y: 0},
     })
 
     // flight cards
