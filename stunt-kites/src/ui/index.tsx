@@ -8,6 +8,29 @@ import './style.scss';
 render(setup, {
   settings: {
   },
+
+  announcements: {
+
+    redWin: game => {
+      return (
+        <>
+          <h1>
+            Red player wins!
+          </h1>
+        </>
+      );
+    },
+    blueWin: game => {
+      return (
+        <>
+          <h1>
+            Blue player wins!
+          </h1>
+        </>
+      );
+    }
+  },
+
   layout: game => {
 
     game.appearance({
@@ -78,7 +101,7 @@ render(setup, {
     game.layout('timerSpace', { area: { left: 20, top: 7, width: 28, height: 20 }});
     $.timerSpace.appearance({ render: x => ( 
       <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="100" height="100" x="0" y="0" fill='white' />
+        {/* <rect width="100" height="100" x="0" y="0" fill='white' /> */}
       </svg> 
     ) });
 

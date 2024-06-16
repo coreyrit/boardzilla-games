@@ -15,9 +15,24 @@ export class StuntKitesPlayer extends Player<MyGame, StuntKitesPlayer> {
 class MyGame extends Game<MyGame, StuntKitesPlayer> {
   firstPlayerColor: string = 'blue'
 
+  playerScore(playerColor: string) : number {
+    let score = 0;
+    this.first(ScoreSpace, {color: playerColor})!.all(TrickCard).forEach(x => score += x.vp);
+    this.first(TrickSpace, {color: playerColor})!.all(TrickCard).forEach(x => score -= x.name == 'final-trick' ? 0 : x.vp);
+    playerColor += Math.min(
+      this.first(TrickSpace, {color: playerColor})!.all(TrickCard, {rotation: 90}).length, 
+      this.first(TrickSpace, {color: playerColor})!.all(TrickCard, {rotation: 270}).length
+    )
+    return score
+  }
+
   planTrick(): void {
     $.timerSpace.top(TrickCard)!.putInto($.trickFrontSpace)
     $.timerSpace.top(TrickCard)!.putInto($.trickBackSpace)
+    
+    if($.timerSpace.all(TrickCard).length == 1) {
+      this.planFinalTrick();    
+    }
   }
 
   clearHighlights(): void {
@@ -214,15 +229,27 @@ class MyGame extends Game<MyGame, StuntKitesPlayer> {
     }
   }
 
+  planFinalTrick() : void {
+    // give both players the final trick
+    $.garbage.first(TrickCard, {name: 'final-trick'})!.putInto(this.first(TrickSpace, {color: 'blue'})!)
+    $.garbage.first(TrickCard, {name: 'final-trick'})!.putInto(this.first(TrickSpace, {color: 'red'})!)
+    this.first(TrickCard, {name: 'timer'})!.putInto($.garbage)
+  }
+
   updateTimer(): void {
     $.timerSpace.rotation += 90
 
-    // const timer = this.first(TimerCard)!
-    // timer.rotation += 90;
-    // if (timer.rotation == 0 || timer.rotation == 360) {
-    //   // remove the bottom card from the deck
-
-    // }
+    if ($.timerSpace.rotation == 270) {
+      // remove the bottom card from the deck
+      if($.timerSpace.all(TrickCard).length >= 3) {
+        $.timerSpace.top(TrickCard)!.putInto($.garbage)
+        $.timerSpace.top(TrickCard)!.putInto($.garbage)
+      }
+      
+      if($.timerSpace.all(TrickCard).length == 1) {
+        this.planFinalTrick();    
+      }
+    }
   }
 
   changeFirstPlayer() : void {
@@ -233,6 +260,15 @@ class MyGame extends Game<MyGame, StuntKitesPlayer> {
     this.firstPlayerColor = this.firstPlayerColor == 'blue' ? 'red' : 'blue'
 
     this.players.reverse()
+  }
+
+  playerHasGust(player: StuntKitesPlayer) : boolean {
+    const kite = this.first(KiteCard, {color: player.playerColor})!
+    const wind : number = kite.container(FlightCell)!.windCount
+    const playerWinds = this.first(ScoreSpace, {color: player.playerColor})!.all(TrickCard).map(x => {
+      return x.rotation == 90 ? x.wind : x.xwind
+    })
+    return playerWinds.includes(wind)
   }
 }
 
@@ -448,10 +484,15 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
     $.timerSpace.create(TrickCard, tempBack.nm!.toLowerCase().replace(' ', '-').replace("'", ""), tempBack);
   }
 
-  $.timerSpace.create(TrickCard, 'timer', {shuffleOrder: 1}) // force timer on top when shuffled
-  $.timerSpace.create(TrickCard, 'final-trick', 
+  $.timerSpace.create(TrickCard, 'timer', {shuffleOrder: 1.5}) // force timer on top when shuffled
+  
+  // 2 final cards one per player
+  $.garbage.create(TrickCard, 'final-trick', 
     {nm: "Final Trick", vp: 1, wind: 0, xwind: 0, reqFill: false, reqRows: ["B"], ltReqDeg: 0, 
-      rtReqDeg: 0, flip: true, hor: 0, ver: -1, spin: 0, shuffleOrder: 0.5});
+      rtReqDeg: 0, flip: true, hor: 0, ver: -1, spin: 0, shuffleOrder: 1});
+  $.garbage.create(TrickCard, 'final-trick', 
+    {nm: "Final Trick", vp: 1, wind: 0, xwind: 0, reqFill: false, reqRows: ["B"], ltReqDeg: 0, 
+      rtReqDeg: 0, flip: true, hor: 0, ver: -1, spin: 0, shuffleOrder: 1});
 
 
   $.blueHandLeftSpace.create(HandCard, 'blue-left', {side: 'left', color: 'blue', rotation: 45});
@@ -477,7 +518,7 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
 
     plan: (player) => action({
       prompt: 'Plan',
-      condition: $.timerSpace.all(TrickCard).length > 2
+      condition: $.timerSpace.all(TrickCard).length >= 3
     }).do(() => {
       game.followUp({name: 'planHand'});
     }),
@@ -601,6 +642,35 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
       game.moveKiteUp(kite);
     }).message("moved up"),
 
+    gustKiteUp: (player) => action({
+      prompt: 'Gust up',
+      condition: game.playerHasGust(player)
+    }).do(() => {  
+      const kite = game.first(KiteCard, {color: player.playerColor})!
+      game.moveKiteUp(kite);
+    }),
+    gustKiteLeft: (player) => action({
+      prompt: 'Gust left',
+      condition: game.playerHasGust(player)
+    }).do(() => {  
+      const kite = game.first(KiteCard, {color: player.playerColor})!
+      game.moveKiteLeft(kite);
+    }),
+    gustKiteRight: (player) => action({
+      prompt: 'Gust right',
+      condition: game.playerHasGust(player)
+    }).do(() => {  
+      const kite = game.first(KiteCard, {color: player.playerColor})!
+      game.moveKiteRight(kite);
+    }),
+    gustKiteDown: (player) => action({
+      prompt: 'Gust down',
+      condition: game.playerHasGust(player)
+    }).do(() => {  
+      const kite = game.first(KiteCard, {color: player.playerColor})!
+      game.moveKiteDown(kite);
+    }),
+
     skip: (player) => action({
       prompt: 'Skip',
     }).do(() => {
@@ -679,6 +749,27 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
 
       trick.rotation = kite.flipped ? 270 : 90
       trick.putInto(game.first(ScoreSpace, {color: player.playerColor})!)
+
+      // check for game end
+      if(trick.name == 'final-trick') {
+        let blueScore = game.playerScore('blue')
+        let redScore = game.playerScore('red')
+
+        game.message('Blue player scored ' + blueScore)
+        game.message('Red player scored ' + redScore)
+
+        if(blueScore > redScore) {
+          game.finish(undefined, 'blueWin')
+        } else if(redScore > blueScore) {
+          game.finish(undefined, 'redWin')
+        } else {
+          if(player.playerColor == 'red') {
+            game.finish(undefined, 'redWin')
+          } else {
+            game.finish(undefined, 'blueWin')
+          }
+        }
+      }
     }),
 
   });
@@ -739,6 +830,11 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
       }),
 
       // gusts phase
+      eachPlayer({          
+        name: 'turn', do: [  
+          playerActions({ actions: ['gustKiteDown', 'gustKiteLeft', 'gustKiteRight', 'gustKiteUp', 'skip']}),
+        ]          
+      }),
 
       // update timer
       () => game.updateTimer(),
