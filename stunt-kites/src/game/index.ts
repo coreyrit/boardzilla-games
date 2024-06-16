@@ -16,14 +16,21 @@ class MyGame extends Game<MyGame, StuntKitesPlayer> {
   firstPlayerColor: string = 'blue'
 
   playerScore(playerColor: string) : number {
-    let score = 0;
-    this.first(ScoreSpace, {color: playerColor})!.all(TrickCard).forEach(x => score += x.vp);
-    this.first(TrickSpace, {color: playerColor})!.all(TrickCard).forEach(x => score -= x.name == 'final-trick' ? 0 : x.vp);
-    playerColor += Math.min(
-      this.first(TrickSpace, {color: playerColor})!.all(TrickCard, {rotation: 90}).length, 
-      this.first(TrickSpace, {color: playerColor})!.all(TrickCard, {rotation: 270}).length
+    let performedTricks = 0;
+    this.first(ScoreSpace, {color: playerColor})!.all(TrickCard).forEach(x => performedTricks += x.vp);
+    // this.message(playerColor + ' players gains ' + performedTricks + ' points from performed tricks')
+
+    let plannedTricks = 0
+    this.first(TrickSpace, {color: playerColor})!.all(TrickCard).forEach(x => plannedTricks += (x.name == 'final-trick' ? 0 : x.vp));
+    // this.message(playerColor + ' players loses ' + plannedTricks + ' points from planned tricks')
+  
+    const stringPairs = Math.min(
+      this.first(ScoreSpace, {color: playerColor})!.all(TrickCard, {status: 'cross'}).length, 
+      this.first(ScoreSpace, {color: playerColor})!.all(TrickCard, {status: 'uncross'}).length
     )
-    return score
+    // this.message(playerColor + ' players gains ' + stringPairs + ' points from string pairs')
+
+    return performedTricks - plannedTricks + stringPairs
   }
 
   planTrick(): void {
@@ -269,6 +276,34 @@ class MyGame extends Game<MyGame, StuntKitesPlayer> {
       return x.rotation == 90 ? x.wind : x.xwind
     })
     return playerWinds.includes(wind)
+  }
+
+  checkForGameEnd() : void {
+    const blueFinalTrick = this.first(ScoreSpace, {color: 'blue'})!.all(TrickCard, {name: 'final-trick'}).length > 0
+    const redFinalTrick = this.first(ScoreSpace, {color: 'red'})!.all(TrickCard, {name: 'final-trick'}).length > 0
+
+    // check for game end
+    if(blueFinalTrick || redFinalTrick) {
+      let blueScore = this.playerScore('blue')
+      let redScore = this.playerScore('red')
+  
+      this.message('Blue player scored ' + blueScore)
+      this.message('Red player scored ' + redScore)
+    
+      if(blueScore > redScore) {
+        this.finish(this.players.filter(x => x.playerColor == 'blue'), 'blueWin')
+      } else if(redScore > blueScore) {
+        this.finish(this.players.filter(x => x.playerColor == 'red'), 'redWin')
+      } else {
+        if (blueFinalTrick && !redFinalTrick) {
+          this.finish(this.players.filter(x => x.playerColor == 'blue'), 'blueWin')
+        } else if(!blueFinalTrick && redFinalTrick) {
+          this.finish(this.players.filter(x => x.playerColor == 'red'), 'redWin')
+        } else {
+          this.finish(undefined, 'tie')
+        }
+      }
+    }
   }
 }
 
@@ -749,30 +784,10 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
 
       trick.rotation = kite.flipped ? 270 : 90
       trick.putInto(game.first(ScoreSpace, {color: player.playerColor})!)
-
-      // check for game end
-      if(trick.name == 'final-trick') {
-        let blueScore = game.playerScore('blue')
-        let redScore = game.playerScore('red')
-
-        game.message('Blue player scored ' + blueScore)
-        game.message('Red player scored ' + redScore)
-
-        if(blueScore > redScore) {
-          game.finish(undefined, 'blueWin')
-        } else if(redScore > blueScore) {
-          game.finish(undefined, 'redWin')
-        } else {
-          if(player.playerColor == 'red') {
-            game.finish(undefined, 'redWin')
-          } else {
-            game.finish(undefined, 'blueWin')
-          }
-        }
-      }
     }),
 
   });
+  
 
   game.defineFlow(        
       // shuffle the tricks
@@ -835,6 +850,9 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
           playerActions({ actions: ['gustKiteDown', 'gustKiteLeft', 'gustKiteRight', 'gustKiteUp', 'skip']}),
         ]          
       }),
+
+      // check for game end
+      () => game.checkForGameEnd(),
 
       // update timer
       () => game.updateTimer(),

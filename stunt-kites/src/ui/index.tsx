@@ -28,6 +28,15 @@ render(setup, {
           </h1>
         </>
       );
+    },
+    tie: game => {
+      return (
+        <>
+          <h1>
+            Tie!
+          </h1>
+        </>
+      );
     }
   },
 
