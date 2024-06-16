@@ -1,10 +1,14 @@
 #play-area {
   .TrickChoiceSpace {
-    z-index: 1000;
+    z-index: 100;
+  }
+
+  .TrickSpace {
+    z-index: 0;
   }
 
   .KiteCard {    
-    z-index: 100;
+    z-index: 0;
     
     width: 100%; 
     height: 100%;
@@ -119,66 +123,49 @@
   }
 
   .TrickCard {
-    z-index: 0;
-    
-    width: 100%; 
-    height: 100%;
 
     &[data-name="flapjack"] .front { background-image: url(./assets/flapjack.jpg) }
     &[data-name="jacobs-ladder"] .front { background-image: url(./assets/jacobs-ladder.jpg) }
-
     &[data-name="backflip"] .front { background-image: url(./assets/backflip.jpg) }
     &[data-name="rolling-susan"] .front { background-image: url(./assets/rolling-susan.jpg) }
-
     &[data-name="lazy-susan"] .front { background-image: url(./assets/lazy-susan.jpg) }
     &[data-name="fade"] .front { background-image: url(./assets/fade.jpg) }
-
     &[data-name="yo-fade"] .front { background-image: url(./assets/yo-fade.jpg) }
     &[data-name="taz-machine"] .front { background-image: url(./assets/taz-machine.jpg) }
-
     &[data-name="slot-machine"] .front { background-image: url(./assets/slot-machine.jpg) }
     &[data-name="axel"] .front { background-image: url(./assets/axel.jpg) }
-
     &[data-name="half-axel"] .front { background-image: url(./assets/half-axel.jpg) }
     &[data-name="side-slide"] .front { background-image: url(./assets/side-slide.jpg) }
-
     &[data-name="cascade"] .front { background-image: url(./assets/cascade.jpg) }
     &[data-name="comet"] .front { background-image: url(./assets/comet.jpg) }
-
     &[data-name="stall"] .front { background-image: url(./assets/stall.jpg) }
     &[data-name="combo"] .front { background-image: url(./assets/combo.jpg) }
-
     &[data-name="final-trick"] .front { background-image: url(./assets/final-trick.jpg) }
     &[data-name="timer"] .front { background-image: url(./assets/timer.jpg) }
 
-    &:hover {
-      transform: scale(1.25) translate(0%, 10%);
-      z-index: 2000;
-    }
-
     > div {
-      width: 100%;
-      height: 100%;
-
       transition: 0.6s;
-      transform-style: preserve-3d;
-      position: absolute;
-
-      // background-size: 90% 78%;
-      // background-position: center 52%;
       background-repeat: no-repeat;
+      background-position: center 50%;
 
       .front {
-        // position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
+        top: 0%; left: 0%; width: 100%; height: 100%;
+        
         border-radius: 0.2em;
         border-color: black;
         background-size: 100% auto;
+
+        &:hover {
+          position: absolute; 
+          transform: scale(1.5);
+          z-index: 1000;
+        }
       }
     }
+  }
+
+  .ScoreCell {
+    z-index: 20
   }
 
   .FlightCard {
@@ -199,7 +186,7 @@
       position: relative;
 
       background-size: 90% 78%;
-      background-position: center 52%;
+      background-position: center 50%;
       background-repeat: no-repeat;
 
       .front, .back {
@@ -226,7 +213,7 @@
     height: 100%;
 
     &[data-name="pilot"] .blue { background-image: url(./assets/pilot-blue.png) }
-    &[data-name="pilot"] .red { background-image: url(./assets/pilot-red.jpg) }
+    &[data-name="pilot"] .red { background-image: url(./assets/pilot-red.png) }
 
     > div {
       width: 100%;

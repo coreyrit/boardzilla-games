@@ -1,6 +1,6 @@
 import React from 'react';
 import { render } from '@boardzilla/core';
-import { Card, FlightCard, FlightCell, FlightSpace, HandCard, HandSpace, KiteCard, PilotCard, PilotSpace, TrickCard, TrickChoiceSpace, TrickSpace, WorkerSpace, default as setup } from '../game/index.js';
+import { Card, FlightCard, FlightCell, FlightSpace, HandCard, HandSpace, KiteCard, PilotCard, PilotSpace, ScoreCell, ScoreSpace, TrickCard, TrickChoiceSpace, TrickSpace, WorkerSpace, default as setup } from '../game/index.js';
 
 import './style.scss';
 // import '@boardzilla/core/index.css';
@@ -55,6 +55,7 @@ render(setup, {
         <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
           <polygon points="0,0 100,50 0,100" fill={x.occupiedColor} stroke='black' strokeWidth='0' fillOpacity={x.occupiedColor.startsWith('none') ? 0 : 1}          />  
           <polygon points="0,0 100,50 0,100" stroke='black' strokeWidth='5' opacity={x.highlight ? 1 : 0} fillOpacity='0' />  
+          <text x="25" y="65" fontSize="50" fill="white">{x.occupiedCharge}</text>
         </svg> 
       ) 
     });
@@ -63,6 +64,7 @@ render(setup, {
         <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
           <polygon points="100,0 0,50 100,100" fill={x.occupiedColor} stroke='black' strokeWidth='0' fillOpacity={x.occupiedColor.startsWith('none') ? 0 : 1}          />  
           <polygon points="100,0 0,50 100,100" stroke='black' strokeWidth='5' opacity={x.highlight ? 1 : 0} fillOpacity='0' />  
+          <text x="50" y="65" fontSize="50" fill="white">{x.occupiedCharge}</text>
         </svg> 
       ) 
     });
@@ -81,7 +83,7 @@ render(setup, {
     ) });
 
     // blue player
-    game.layout('blueFlightSpace', { area: { left: 0, top: 60, width: 28, height: 20 }});
+    game.layout('blueFlightSpace', { area: { left: 10, top: 60, width: 28, height: 20 }});
     $.blueFlightSpace.appearance({ render: x => ( 
       <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
         <rect width="100" height="100" x="0" y="0" fill='blue' />
@@ -93,23 +95,59 @@ render(setup, {
     })
 
     game.all(TrickSpace).layout(TrickCard, {
+      // alignment: 'top',
+      // offsetRow: {x: 0, y: 15},
+      // direction: 'ttb',
+      columns: 1,
+      offsetRow: 15,
       alignment: 'top',
-      offsetRow: {x: 0, y: 10},
       direction: 'ttb',
     });
 
-    game.layout('blueHandLeftSpace', { area: { left: -15, top: 80, width: 10, height: 14 }});
-    game.layout('blueHandRightSpace', { area: { left: 33, top: 80, width: 10, height: 14 }});
+    game.all(ScoreCell).appearance({ render: x => ( 
+      <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        {/* <rect width="100" height="100" x="0" y="0" fillOpacity="0" stroke="black" strokeWidth="5" /> */}
+      </svg>  
+    )})
+    game.all(ScoreSpace).layout(ScoreCell, {
+      columns: 1,
+      offsetRow: 15,
+      alignment: 'top',
+      direction: 'ttb',
+    });
 
-    game.layout('blueTricksSpace', { area: { left: -15, top: 2, width: 28, height: 70 }});
+    game.all(ScoreSpace).layout(TrickCard, {
+      columns: 1,
+      offsetRow: 12,
+      alignment: 'top',
+      direction: 'ttb',
+    });
+
+    game.layout('blueHandLeftSpace', { area: { left: 0, top: 80, width: 10, height: 14 }});
+    game.layout('blueHandRightSpace', { area: { left: 38, top: 80, width: 10, height: 14 }});
+
+    game.layout('blueTricksSpace', { area: { left: -10, top: 2, width: 28, height: 35 }});
     $.blueTricksSpace.appearance({ render: x => ( 
       <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
         {/* <rect width="100" height="100" x="0" y="0" fill='blue' /> */}
       </svg> 
     ) });
+    game.layout('blueScoreSpace', { area: { left: -17, top: 45, width: 20, height: 28 }});
+    $.blueScoreSpace.appearance({ render: x => ( 
+      <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        {/* <rect width="100" height="100" x="0" y="0" fill='blue' /> */}
+      </svg> 
+    ) });
+    game.layout('redScoreSpace', { area: { left: 100, top: 45, width: 20, height: 40 }});
+    $.redScoreSpace.appearance({ render: x => ( 
+      <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        {/* <rect width="100" height="100" x="0" y="0" fill='red' /> */}
+      </svg> 
+    ) });
+
 
     // red player
-    game.layout('redFlightSpace', { area: { left: 70, top: 60, width: 28, height: 20 }});
+    game.layout('redFlightSpace', { area: { left: 65, top: 60, width: 28, height: 20 }});
     $.redFlightSpace.layout(FlightCell, {
       columns: 7,
       rows: 5
@@ -121,14 +159,16 @@ render(setup, {
     )});
 
     game.layout('redHandLeftSpace', { area: { left: 55, top: 80, width: 10, height: 14 }});
-    game.layout('redHandRightSpace', { area: { left: 103, top: 80, width: 10, height: 14 }});
+    game.layout('redHandRightSpace', { area: { left: 93, top: 80, width: 10, height: 14 }});
 
-    game.layout('redTricksSpace', { area: { left: 92, top: 2, width: 28, height: 70 }});
+    game.layout('redTricksSpace', { area: { left: 82, top: 2, width: 28, height: 35 }});
     $.redTricksSpace.appearance({ render: x => ( 
       <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
         {/* <rect width="100" height="100" x="0" y="0" fill='red' /> */}
       </svg> 
     ) });
+    
+
 
     // pilot card
     game.all(PilotCard).appearance({
@@ -149,6 +189,7 @@ render(setup, {
     // draw tricks
     game.all(TrickCard).appearance({ render: x => ( 
       <div className='TrickCard'>
+        {/* <div className={x.status == 'cross' || x.status == 'uncross' ? 'frontTap' : 'front'} /> */}
         <div className='front' />
       </div>
     ) });
