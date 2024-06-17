@@ -95,7 +95,7 @@ render(setup, {
     $.garbage.appearance({ render: x => ( <svg /> ) })
 
     // pilot
-    game.layout('pilotSpace', { area: { left: 50, top: 2, width: 20, height: 33.5 }});
+    game.layout('pilotSpace', { area: { left: 50, top: 2, width: 20, height: 33.5 }});    
 
     // choices
     game.layout('trickFrontSpace', { area: { left: 20, top: 35, width: 28, height: 20 }});
@@ -160,9 +160,15 @@ render(setup, {
 
     // timer
     game.layout('timerSpace', { area: { left: 20, top: 7, width: 28, height: 20 }});
+    game.layout('trickCountSpace', { area: { left: 16, top: 32, width: 28, height: 10 }});
     $.timerSpace.appearance({ render: x => ( 
       <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
         {/* <rect width="100" height="100" x="0" y="0" fill='white' /> */}
+      </svg> 
+    ) });
+    $.trickCountSpace.appearance({ render: x => ( 
+      <svg width="100%" height="100%" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <text x="0" y="20" fontSize="20" fill="black">{game.tricksRemaining()}</text>
       </svg> 
     ) });
 
@@ -216,7 +222,7 @@ render(setup, {
         {/* <rect width="100" height="100" x="0" y="0" fill='blue' /> */}
       </svg> 
     ) });
-    game.layout('blueScoreSpace', { area: { left: -17, top: 45, width: 20, height: 28 }});
+    game.layout('blueScoreSpace', { area: { left: -17, top: 45, width: 20, height: 40 }});
     $.blueScoreSpace.appearance({ render: x => ( 
       <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
         {/* <rect width="100" height="100" x="0" y="0" fill='blue' /> */}

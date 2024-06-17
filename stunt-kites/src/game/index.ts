@@ -15,6 +15,17 @@ export class StuntKitesPlayer extends Player<MyGame, StuntKitesPlayer> {
 class MyGame extends Game<MyGame, StuntKitesPlayer> {
   firstPlayerColor: string = 'blue'
 
+  tricksRemaining() : string {
+    const tricks = ($.timerSpace.all(TrickCard).length-1)/2
+    if(tricks <= 0) {
+      return ""
+    } else if(tricks == 1) {
+      return "1 trick remaining"
+    } else {
+      return tricks + " tricks remaining"
+    }
+  }
+
   soloWorkers() : void {
 
     // check for solo play and block some spaces
@@ -25,6 +36,7 @@ class MyGame extends Game<MyGame, StuntKitesPlayer> {
 
       hands.forEach(hand => {
         const worker = Math.floor(this.game.random() * 6) + 1
+        this.message('The AI rolled a ' + worker + '.')
         switch(worker) {
           case 1: {          
             this.first(WorkerSpace, {color: 'blue', side: hand, topic: 'push', action: '1'})!.occupiedColor = 'red'
@@ -55,11 +67,18 @@ class MyGame extends Game<MyGame, StuntKitesPlayer> {
           }
           case 6: {
             if(!plannedTrick && $.timerSpace.all(TrickCard).length >= 3) {
-              const side1 = $.timerSpace.top(TrickCard)!; side1.putInto($.garbage)
-              const side2 = $.timerSpace.top(TrickCard)!; side2.putInto($.garbage)
-              plannedTrick = true
               this.message('The AI used their ' + hand + ' worker to plan.');
-              this.message(side1.nm + '/'  + side2.nm + ' is removed from the game');
+
+              const sides = $.timerSpace.topN(2, TrickCard);          
+              if(sides[0].vp > sides[1].vp) {
+                sides[0].putInto(this.first(TrickSpace, {color: 'red'})!);
+                sides[1].putInto($.garbage)
+              } else {
+                sides[1].putInto(this.first(TrickSpace, {color: 'red'})!);
+                sides[0].putInto($.garbage)
+              }
+              this.message('The AI removed ' + sides[0].nm + '/' + sides[1].nm + '.')
+              plannedTrick = true
             } else if(!plannedTrick && this.first(TrickSpace, {color: 'red'})!.all(TrickCard).length > 0) {
               this.first(TrickSpace, {color: 'red'})!.first(TrickCard)!.putInto(this.first(ScoreSpace, {color: 'red'})!);
             }
@@ -150,7 +169,7 @@ class MyGame extends Game<MyGame, StuntKitesPlayer> {
       x.highlight = true
     })
 
-    this.first(WorkerSpace, {name: 'plan'})!.highlight = true
+    this.first(WorkerSpace, {name: 'plan'})!.highlight = $.timerSpace.all(TrickCard).length > 0
   }
 
   syncPilotCards() : void {
@@ -196,7 +215,7 @@ class MyGame extends Game<MyGame, StuntKitesPlayer> {
         return 1;
       }
       case 180: {
-        return 1;
+        return kite.flipped ? 2 : 1;
       }
       case 225: {
         return 1;
@@ -261,30 +280,37 @@ class MyGame extends Game<MyGame, StuntKitesPlayer> {
     switch(kite.rotation) {
       case 45: {
         this.moveKiteRight(kite)
+        this.message('The wind pushed the ' + kite.color + ' kite right.')
         break;
       }
       case 90: {
         this.moveKiteRight(kite)
+        this.message('The wind pushed the ' + kite.color + ' kite right.')
         break;
       }
       case 135: {
         this.moveKiteRight(kite)
+        this.message('The wind pushed the ' + kite.color + ' kite right.')
         break;
       }
       case 180: {
         this.moveKiteDown(kite)
+        this.message('The wind pushed the ' + kite.color + ' kite down.')
         break;
       }
       case 225: {
         this.moveKiteLeft(kite)
+        this.message('The wind pushed the ' + kite.color + ' kite left.')
         break;
       }
       case 270: {
         this.moveKiteLeft(kite)
+        this.message('The wind pushed the ' + kite.color + ' kite left.')
         break;
       }
       case 315: {
         this.moveKiteLeft(kite)
+        this.message('The wind pushed the ' + kite.color + ' kite left.')
         break;
       }
     }
@@ -295,20 +321,48 @@ class MyGame extends Game<MyGame, StuntKitesPlayer> {
     $.garbage.first(TrickCard, {name: 'final-trick'})!.putInto(this.first(TrickSpace, {color: 'blue'})!)
     $.garbage.first(TrickCard, {name: 'final-trick'})!.putInto(this.first(TrickSpace, {color: 'red'})!)
     this.first(TrickCard, {name: 'timer'})!.putInto($.garbage)
+    this.message('The final trick has been revealed.')
   }
 
   updateTimer(): void {
-    $.timerSpace.rotation += 90
+    if($.timerSpace.all(TrickCard).length > 0) {
+      $.timerSpace.rotation += 90
+      switch($.timerSpace.rotation) {
+        case 0: {
+          this.message('The timer has rotated to 0:15.')
+          break;
+        } 
+        case 90: {
+          this.message('The timer has rotated to 0:30.')
+          break;
+        }
+        case 180: {
+          this.message('The timer has rotated to 0:45.')
+          break;
+        }
+        case 270: {
+          this.message('The timer has rotated to 0:00.')
+          break;
+        }
+        case 360: {
+          this.message('The timer has rotated to 0:15.')
+          break;
+        }
+      }    
 
-    if ($.timerSpace.rotation == 270) {
-      // remove the bottom card from the deck
-      if($.timerSpace.all(TrickCard).length >= 3) {
-        $.timerSpace.top(TrickCard)!.putInto($.garbage)
-        $.timerSpace.top(TrickCard)!.putInto($.garbage)
-      }
+      if ($.timerSpace.rotation == 270) {
+        this.message('A minute has elapsed.')
+
+        // remove the bottom card from the deck
+        if($.timerSpace.all(TrickCard).length >= 3) {
+          const side1 = $.timerSpace.top(TrickCard)!; side1.putInto($.garbage)
+          const side2 = $.timerSpace.top(TrickCard)!; side2.putInto($.garbage)
+          this.message(side1.nm + '/' + side2.nm + ' has been removed from play.')
+        }      
       
-      if($.timerSpace.all(TrickCard).length == 1) {
-        this.planFinalTrick();    
+        if($.timerSpace.all(TrickCard).length == 1) {
+          this.planFinalTrick();    
+        }
       }
     }
   }
@@ -510,6 +564,7 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
 
   game.create(Space, 'garbage')
   game.create(Space, 'pilotSpace')
+  game.create(Space, 'trickCountSpace')
   
   game.create(PilotSpace, 'nw1', {side: 'left'})
   game.create(PilotSpace, 'nw2', {side: 'left'})
@@ -729,44 +784,46 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
     }),
 
     moveKiteDown: (player) => action({
-      prompt: 'Move down',
+      prompt: 'Use combined control',
       condition: game.all(WorkerSpace, {occupiedColor: player.playerColor}).length >= 2 &&
       game.all(WorkerSpace, {occupiedColor: player.playerColor, side: 'left', topic: 'push'}).length > 0 && 
       game.all(WorkerSpace, {occupiedColor: player.playerColor, side: 'right', topic: 'push'}).length > 0
-    }).do(() => {  
+    }).chooseFrom(
+      "direction", ["Down"]
+    ).do(() => {  
       const kite = game.first(KiteCard, {color: player.playerColor})!
       game.moveKiteDown(kite)
+      game.message(player.name + ' used combined push to move their kite down.')
     }),
 
-    moveKiteLeft: (player) => action({
-      prompt: 'Move left',
+    moveKiteHorizontal: (player) => action({
+      prompt: 'Use combined control',
       condition: game.all(WorkerSpace, {occupiedColor: player.playerColor}).length >= 2 &&
       game.all(WorkerSpace, {occupiedColor: player.playerColor, side: 'left', topic: 'control'}).length > 0 && 
       game.all(WorkerSpace, {occupiedColor: player.playerColor, side: 'right', topic: 'control'}).length > 0
-    }).do(() => {  
+    }).chooseFrom(
+      "direction", ["Left", "Right"]
+    ).do(({direction}) => {  
       const kite = game.first(KiteCard, {color: player.playerColor})!
-      game.moveKiteLeft(kite)
-    }),
-
-    moveKiteRight: (player) => action({
-      prompt: 'Move right',
-      condition: game.all(WorkerSpace, {occupiedColor: player.playerColor}).length >= 2 &&
-      game.all(WorkerSpace, {occupiedColor: player.playerColor, side: 'left', topic: 'control'}).length > 0 && 
-      game.all(WorkerSpace, {occupiedColor: player.playerColor, side: 'right', topic: 'control'}).length > 0
-    }).do(() => {  
-      const kite = game.first(KiteCard, {color: player.playerColor})!
-      game.moveKiteRight(kite)
+      switch(direction) {
+        case 'Left': {game.moveKiteLeft(kite); break}
+        case 'Right': {game.moveKiteRight(kite); break}
+      }
+      game.message(player.name + ' used combined control to move their kite ' + direction.toLowerCase() + '.')
     }),
 
     moveKiteUp: (player) => action({
-      prompt: 'Move up',
+      prompt: 'Use combined pull',
       condition: 
         game.all(WorkerSpace, {occupiedColor: player.playerColor}).length >= 2 &&
         game.all(WorkerSpace, {occupiedColor: player.playerColor, side: 'left', topic: 'pull'}).length > 0 && 
         game.all(WorkerSpace, {occupiedColor: player.playerColor, side: 'right', topic: 'pull'}).length > 0
-    }).do(() => {  
+    }).chooseFrom(
+      "direction", ["Up"]
+    ).do(() => {  
       const kite = game.first(KiteCard, {color: player.playerColor})!
       game.moveKiteUp(kite);
+      game.message(player.name + ' used combined pull to move their kite up.')
     }).message("moved up"),
 
     gustKite: (player) => action({
@@ -797,7 +854,7 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
     }),
 
     useControl: (player) => action({
-      prompt: 'Choose a hand to use control'
+      prompt: 'Choose a control hand to ignore wind'
     }).chooseOnBoard(
       'hand', game.all(HandCard, {color: player.playerColor, charged: true})
     ).do(({ hand }) => {
@@ -873,7 +930,20 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
       // shuffle the tricks
       () => {
         $.timerSpace.sortBy('shuffleOrder')  
-        $.timerSpace.rotation = 270      
+        $.timerSpace.rotation = 270
+
+        if(game.players.length == 1) {
+          // remove a trick for the first player
+          const sides = $.timerSpace.topN(2, TrickCard);          
+          if(sides[0].vp > sides[1].vp) {
+            sides[0].putInto(game.first(TrickSpace, {color: 'red'})!);
+            sides[1].putInto($.garbage)
+          } else {
+            sides[1].putInto(game.first(TrickSpace, {color: 'red'})!);
+            sides[0].putInto($.garbage)
+          }
+          game.message('The AI removed ' + sides[0].nm + '/' + sides[1].nm + '.')
+        }
       },
 
       // choose initial tricks
@@ -906,7 +976,7 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
       // optional combined actions
       eachPlayer({          
         name: 'turn', do: [  
-          playerActions({ actions: ['moveKiteDown', 'moveKiteLeft', 'moveKiteRight', 'moveKiteUp', 'skip']}),
+          playerActions({ actions: ['moveKiteDown', 'moveKiteHorizontal', 'moveKiteUp', 'skip']}),
         ]          
       }),      
       
