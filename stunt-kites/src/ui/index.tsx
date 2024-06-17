@@ -37,7 +37,52 @@ render(setup, {
           </h1>
         </>
       );
-    }
+    },
+    keepPracticing: game => {
+      return (
+        <>
+        <h1>
+          You need to keep practicing.
+        </h1>
+        </>
+      );
+    },
+    justForFun: game => {
+      return (
+        <>
+        <h1>
+          This is just for fun.
+        </h1>
+        </>
+      );
+    },
+    competitive: game => {
+      return (
+        <>
+        <h1>
+          You are getting competitive.
+        </h1>
+        </>
+      );
+    },
+    challenger: game => {
+      return (
+        <>
+        <h1>
+          You are becoming a challenger.
+        </h1>
+        </>
+      );
+    },
+    champion: game => {
+      return (
+        <>
+        <h1>
+          You are the champion!
+        </h1>
+        </>
+      );
+    },
   },
 
   layout: game => {
@@ -118,7 +163,7 @@ render(setup, {
     game.layout('blueFlightSpace', { area: { left: 10, top: 60, width: 28, height: 20 }});
     $.blueFlightSpace.appearance({ render: x => ( 
       <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="100" height="100" x="0" y="0" fill='blue' />
+        {/* <rect width="100" height="100" x="0" y="0" fill='blue' /> */}
       </svg> 
     ) });
     $.blueFlightSpace.layout(FlightCell, {
@@ -186,7 +231,7 @@ render(setup, {
     })
     $.redFlightSpace.appearance({ render: x => ( 
       <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="100" height="100" x="0" y="0" fill='red' />
+        {/* <rect width="100" height="100" x="0" y="0" fill='red' /> */}
       </svg> 
     )});
 

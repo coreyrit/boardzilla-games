@@ -15,6 +15,54 @@ export class StuntKitesPlayer extends Player<MyGame, StuntKitesPlayer> {
 class MyGame extends Game<MyGame, StuntKitesPlayer> {
   firstPlayerColor: string = 'blue'
 
+  soloWorkers() : void {
+
+    // check for solo play and block some spaces
+    if (this.players.length == 1) {
+
+      const hands = ['left', 'right']
+      let plannedTrick = false
+
+      hands.forEach(hand => {
+        const worker = Math.floor(this.game.random() * 6) + 1
+        switch(worker) {
+          case 1: {          
+            this.first(WorkerSpace, {color: 'blue', side: hand, topic: 'push', action: '1'})!.occupiedColor = 'red'
+            break;
+          }
+          case 2: {
+            this.first(WorkerSpace, {color: 'blue', side: hand, topic: 'push', action: '1'})!.occupiedColor = 'red'
+            this.first(WorkerSpace, {color: 'blue', side: hand, topic: 'push', action: '2'})!.occupiedColor = 'red'
+            break;
+          }
+          case 3: {
+            this.first(WorkerSpace, {color: 'blue', side: hand, topic: 'control', action: 'charge'})!.occupiedColor = 'red'
+            break;
+          }
+          case 4: {
+            this.first(WorkerSpace, {color: 'blue', side: hand, topic: 'control', action: 'charge'})!.occupiedColor = 'red'
+            this.first(WorkerSpace, {color: 'blue', side: hand, topic: 'control', action: 'flip'})!.occupiedColor = 'red'
+            break;
+          }
+          case 5: {
+            this.first(WorkerSpace, {color: 'blue', side: hand, topic: 'pull', action: '1'})!.occupiedColor = 'red'
+            break;
+          }
+          case 6: {
+            if(!plannedTrick && $.timerSpace.all(TrickCard).length >= 3) {
+              $.timerSpace.top(TrickCard)!.putInto($.garbage)
+              $.timerSpace.top(TrickCard)!.putInto($.garbage)
+              plannedTrick = true
+            } else if(!plannedTrick && this.first(TrickSpace, {color: 'red'})!.all(TrickCard).length > 0) {
+              this.first(TrickSpace, {color: 'red'})!.first(TrickCard)!.putInto(this.first(ScoreSpace, {color: 'red'})!);
+            }
+            break;
+          }
+        }
+      })
+    }
+  }
+
   playerScore(playerColor: string) : number {
     let performedTricks = 0;
     this.first(ScoreSpace, {color: playerColor})!.all(TrickCard).forEach(x => performedTricks += x.vp);
@@ -260,13 +308,13 @@ class MyGame extends Game<MyGame, StuntKitesPlayer> {
   }
 
   changeFirstPlayer() : void {
-    this.game.all(PilotCard).forEach(x => {
-      x.color = x.color == 'blue' ? 'red' : 'blue'
-    })
-
-    this.firstPlayerColor = this.firstPlayerColor == 'blue' ? 'red' : 'blue'
-
-    this.players.reverse()
+    if(this.players.length > 1) {
+      this.game.all(PilotCard).forEach(x => {
+        x.color = x.color == 'blue' ? 'red' : 'blue'
+      })
+      this.firstPlayerColor = this.firstPlayerColor == 'blue' ? 'red' : 'blue'
+      this.players.reverse()
+    }
   }
 
   playerHasGust(player: StuntKitesPlayer) : boolean {
@@ -284,24 +332,40 @@ class MyGame extends Game<MyGame, StuntKitesPlayer> {
 
     // check for game end
     if(blueFinalTrick || redFinalTrick) {
-      let blueScore = this.playerScore('blue')
-      let redScore = this.playerScore('red')
+      if(this.players.length > 1) {
+        let blueScore = this.playerScore('blue')
+        let redScore = this.playerScore('red')
   
-      this.message('Blue player scored ' + blueScore)
-      this.message('Red player scored ' + redScore)
+        this.message('Blue player scored ' + blueScore)
+        this.message('Red player scored ' + redScore)
     
-      if(blueScore > redScore) {
-        this.finish(this.players.filter(x => x.playerColor == 'blue'), 'blueWin')
-      } else if(redScore > blueScore) {
-        this.finish(this.players.filter(x => x.playerColor == 'red'), 'redWin')
-      } else {
-        if (blueFinalTrick && !redFinalTrick) {
+        if(blueScore > redScore) {
           this.finish(this.players.filter(x => x.playerColor == 'blue'), 'blueWin')
-        } else if(!blueFinalTrick && redFinalTrick) {
+        } else if(redScore > blueScore) {
           this.finish(this.players.filter(x => x.playerColor == 'red'), 'redWin')
         } else {
-          this.finish(undefined, 'tie')
+          if (blueFinalTrick && !redFinalTrick) {
+            this.finish(this.players.filter(x => x.playerColor == 'blue'), 'blueWin')
+          } else if(!blueFinalTrick && redFinalTrick) {
+            this.finish(this.players.filter(x => x.playerColor == 'red'), 'redWin')
+          } else {
+            this.finish(undefined, 'tie')
+         }
         }
+      } else {
+        let blueScore = this.playerScore('blue')
+        this.message('Blue player scored ' + blueScore)
+        if(blueScore <= 8) {
+          this.finish(this.players[0], 'keepPracticing')
+        } else if(blueScore >= 9 && blueScore <= 12) {
+          this.finish(this.players[0], 'justForFun')
+        } else if(blueScore >= 13 && blueScore <= 16) {
+          this.finish(this.players[0], 'competitive')
+        } else if(blueScore >= 17 && blueScore <= 20) {
+          this.finish(this.players[0], 'challenger')
+        } else [
+          this.finish(this.players[0], 'champion')
+        ]
       }
     }
   }
@@ -430,10 +494,13 @@ export class KiteCard extends Card {
 export default createGame(StuntKitesPlayer, MyGame, game => {
 
   const { action } = game;
-  const { playerActions, loop, eachPlayer, whileLoop, forLoop } = game.flowCommands;
+  const { playerActions, loop, eachPlayer, whileLoop, forLoop } = game.flowCommands;  
 
+  // set up players
   game.players[0].playerColor = 'blue'
-  game.players[1].playerColor = 'red'
+  if(game.players.length > 1) {
+    game.players[1].playerColor = 'red'
+  }
 
   game.create(Space, 'garbage')
   game.create(Space, 'pilotSpace')
@@ -533,21 +600,28 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
   $.blueHandLeftSpace.create(HandCard, 'blue-left', {side: 'left', color: 'blue', rotation: 45});
   $.blueHandRightSpace.create(HandCard, 'blue-right', {side: 'right', color: 'blue', rotation: 315});    
 
-  $.redHandLeftSpace.create(HandCard, 'red-left', {side: 'left', color: 'red', rotation: 45});
-  $.redHandRightSpace.create(HandCard, 'red-right', {side: 'right', color: 'red', rotation: 315});
+  if(game.players.length > 1) {
+    $.redHandLeftSpace.create(HandCard, 'red-left', {side: 'left', color: 'red', rotation: 45});
+    $.redHandRightSpace.create(HandCard, 'red-right', {side: 'right', color: 'red', rotation: 315});
+  }
 
   $.blueFlightSpace.create(FlightCard, 'flight-1')
-  $.redFlightSpace.create(FlightCard, 'flight-1')
+  if(game.players.length > 1) {
+    $.redFlightSpace.create(FlightCard, 'flight-1')
+  }
   for (const flightCell of flight1aCells) {
     const blueCell = $.blueFlightSpace.create(FlightCell, 'blue-' + flightCell.rowLetter + ',' + flightCell.column, flightCell)
     blueCell.color = 'blue'
-    const redCell = $.redFlightSpace.create(FlightCell, 'red-' + flightCell.rowLetter + ',' + flightCell.column, flightCell)
-    redCell.color = 'red'
+    if(game.players.length > 1) {
+      const redCell = $.redFlightSpace.create(FlightCell, 'red-' + flightCell.rowLetter + ',' + flightCell.column, flightCell)
+      redCell.color = 'red'
+    }
   }
 
   $.blueFlightSpace.first(FlightCell, {rowLetter: 'A', column: 4})!.create(KiteCard, 'blueKite', {color: 'blue', rotation: 0, flipped: false});
-  $.redFlightSpace.first(FlightCell, {rowLetter: 'A', column: 4})!.create(KiteCard, 'redKite', {color: 'red', rotation: 0, flipped: false});
-
+  if(game.players.length > 1) {
+    $.redFlightSpace.first(FlightCell, {rowLetter: 'A', column: 4})!.create(KiteCard, 'redKite', {color: 'red', rotation: 0, flipped: false});
+  }
 
   game.defineActions({
 
@@ -805,7 +879,11 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
       }),
 
     // start the game  
-    loop(       
+    loop(
+      
+      // solo placement
+      () => game.soloWorkers(),
+      
       // worker phase
       whileLoop({while: () => game.all(HandSpace).flatMap(x => x.all(HandCard)).length > 0, do: (        
         eachPlayer({          
