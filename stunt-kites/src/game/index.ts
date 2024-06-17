@@ -83,8 +83,10 @@ class MyGame extends Game<MyGame, StuntKitesPlayer> {
               if($.timerSpace.all(TrickCard).length == 1) {
                 this.planFinalTrick();    
               }
-            } else if(!plannedTrick && this.first(TrickSpace, {color: 'red'})!.all(TrickCard).length > 0) {
-              this.first(TrickSpace, {color: 'red'})!.first(TrickCard)!.putInto(this.first(ScoreSpace, {color: 'red'})!);
+            } else if(!plannedTrick && this.first(TrickSpace, {color: 'red'})!.all(TrickCard, {name: 'final-trick'}).length > 0) {              
+              this.first(TrickSpace, {color: 'red'})!.first(TrickCard, {name: 'final-trick'})!.putInto(this.first(ScoreSpace, {color: 'red'})!);
+              this.message('The AI landed the final trick!')
+              plannedTrick = true
             }
             break;
           }
