@@ -28,31 +28,38 @@ class MyGame extends Game<MyGame, StuntKitesPlayer> {
         switch(worker) {
           case 1: {          
             this.first(WorkerSpace, {color: 'blue', side: hand, topic: 'push', action: '1'})!.occupiedColor = 'red'
+            this.message('The AI placed their ' + hand + ' worker on push 1.');
             break;
           }
           case 2: {
             this.first(WorkerSpace, {color: 'blue', side: hand, topic: 'push', action: '1'})!.occupiedColor = 'red'
             this.first(WorkerSpace, {color: 'blue', side: hand, topic: 'push', action: '2'})!.occupiedColor = 'red'
+            this.message('The AI placed their ' + hand + ' worker on push 2.');
             break;
           }
           case 3: {
             this.first(WorkerSpace, {color: 'blue', side: hand, topic: 'control', action: 'charge'})!.occupiedColor = 'red'
+            this.message('The AI placed their ' + hand + ' worker on control charge.');
             break;
           }
           case 4: {
             this.first(WorkerSpace, {color: 'blue', side: hand, topic: 'control', action: 'charge'})!.occupiedColor = 'red'
             this.first(WorkerSpace, {color: 'blue', side: hand, topic: 'control', action: 'flip'})!.occupiedColor = 'red'
+            this.message('The AI placed their ' + hand + ' worker on control flip.');
             break;
           }
           case 5: {
             this.first(WorkerSpace, {color: 'blue', side: hand, topic: 'pull', action: '1'})!.occupiedColor = 'red'
+            this.message('The AI placed their ' + hand + ' worker on pull 1.');
             break;
           }
           case 6: {
             if(!plannedTrick && $.timerSpace.all(TrickCard).length >= 3) {
-              $.timerSpace.top(TrickCard)!.putInto($.garbage)
-              $.timerSpace.top(TrickCard)!.putInto($.garbage)
+              const side1 = $.timerSpace.top(TrickCard)!; side1.putInto($.garbage)
+              const side2 = $.timerSpace.top(TrickCard)!; side2.putInto($.garbage)
               plannedTrick = true
+              this.message('The AI used their ' + hand + ' worker to plan.');
+              this.message(side1.nm + '/'  + side2.nm + ' is removed from the game');
             } else if(!plannedTrick && this.first(TrickSpace, {color: 'red'})!.all(TrickCard).length > 0) {
               this.first(TrickSpace, {color: 'red'})!.first(TrickCard)!.putInto(this.first(ScoreSpace, {color: 'red'})!);
             }
@@ -66,24 +73,22 @@ class MyGame extends Game<MyGame, StuntKitesPlayer> {
   playerScore(playerColor: string) : number {
     let performedTricks = 0;
     this.first(ScoreSpace, {color: playerColor})!.all(TrickCard).forEach(x => performedTricks += x.vp);
-    // this.message(playerColor + ' players gains ' + performedTricks + ' points from performed tricks')
-
+    
     let plannedTricks = 0
     this.first(TrickSpace, {color: playerColor})!.all(TrickCard).forEach(x => plannedTricks += (x.name == 'final-trick' ? 0 : x.vp));
-    // this.message(playerColor + ' players loses ' + plannedTricks + ' points from planned tricks')
-  
+    
     const stringPairs = Math.min(
       this.first(ScoreSpace, {color: playerColor})!.all(TrickCard, {status: 'cross'}).length, 
       this.first(ScoreSpace, {color: playerColor})!.all(TrickCard, {status: 'uncross'}).length
     )
-    // this.message(playerColor + ' players gains ' + stringPairs + ' points from string pairs')
-
     return performedTricks - plannedTricks + stringPairs
   }
 
-  planTrick(): void {
-    $.timerSpace.top(TrickCard)!.putInto($.trickFrontSpace)
-    $.timerSpace.top(TrickCard)!.putInto($.trickBackSpace)
+  planTrick(player: StuntKitesPlayer): void {
+    const side1 = $.timerSpace.top(TrickCard)!; side1.putInto($.trickFrontSpace);
+    const side2 = $.timerSpace.top(TrickCard)!; side2.putInto($.trickBackSpace);
+
+    this.game.message(player.name +  ' is choosing between ' + side1.nm + ' and ' + side2.nm + '.')
     
     if($.timerSpace.all(TrickCard).length == 1) {
       this.planFinalTrick();    
@@ -99,7 +104,7 @@ class MyGame extends Game<MyGame, StuntKitesPlayer> {
 
   getPossibleActions() : void {
     const player = this.players.current()!
-    this.message("player " + player.playerColor + " is going")
+    // this.message("player " + player.playerColor + " is going")
 
     // make sure they can click the spaces
     this.all(PilotSpace).forEach(x => {
@@ -144,6 +149,8 @@ class MyGame extends Game<MyGame, StuntKitesPlayer> {
     possibleActions.forEach(x => {
       x.highlight = true
     })
+
+    this.first(WorkerSpace, {name: 'plan'})!.highlight = true
   }
 
   syncPilotCards() : void {
@@ -207,7 +214,6 @@ class MyGame extends Game<MyGame, StuntKitesPlayer> {
   }
 
   returnWorkers() : void {
-    this.message('moving hands')
     this.all(HandCard).forEach(x => {
       x.putInto(this.first(HandSpace, {color: x.color, side: x.side})!)
     })
@@ -537,7 +543,7 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
 
     $.se1.create(WorkerSpace, 'pull_right_1_' + color, {color: color, side: 'right', topic: 'pull', action: '1', requiresCharge : false})
     $.se2.create(WorkerSpace, 'pull_right_2_' + color, {color: color, side: 'right', topic: 'pull', action: '2', requiresCharge : true, ownerColor: color})
-  })
+  })  
 
   game.all(WorkerSpace).forEach(x => {
     x.blueOrder = x.color == 'blue' ? 2 : 1
@@ -553,6 +559,8 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
   pilotRed.showOnlyTo(2)
 
   game.create(TimerSpace, 'timerSpace')
+  $.timerSpace.create(WorkerSpace, 'plan', {color: 'none', side: 'none', topic: 'none', action: 'plan', requiresCharge: false})
+
   game.create(TrickChoiceSpace, 'trickFrontSpace')
   game.create(TrickChoiceSpace, 'trickBackSpace')
 
@@ -625,12 +633,12 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
 
   game.defineActions({
 
-    plan: (player) => action({
-      prompt: 'Plan',
-      condition: $.timerSpace.all(TrickCard).length >= 3
-    }).do(() => {
-      game.followUp({name: 'planHand'});
-    }),
+    // plan: (player) => action({
+    //   prompt: 'Plan',
+    //   condition: $.timerSpace.all(TrickCard).length >= 3
+    // }).do(() => {
+    //   game.followUp({name: 'planHand'});
+    // }),
 
     planHand: (player) => action({
       prompt: 'Choose a hand to plan with'
@@ -638,16 +646,24 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
       'hand', game.all(HandCard, {color: player.playerColor})
     ).do(({ hand }) => {
       hand.putInto($.garbage)
-      game.planTrick()
+      game.message(player.name + ' used their ' + hand.side + ' worker to plan.');
+
+      game.planTrick(player)
       game.followUp({name: 'chooseTrick'});
     }),
 
     workerAction: (player) => action({
-      prompt: 'Place worker'
+      prompt: 'Choose a highlighted triangle to place a worker'
     }).chooseOnBoard(
       'space', game.all(WorkerSpace, {'highlight': true}),
       { skipIf: 'never' }
     ).do(({ space }) => {  
+
+      if (space.name == 'plan') {        
+        game.followUp({name: 'planHand'});
+        return;
+      }
+
       const worker = game.first(HandCard, {color: player.playerColor, side: space.side})!;
       const kite = game.first(KiteCard, {color: player.playerColor})!
 
@@ -708,6 +724,8 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
 
       // update the charged symbol on the space
       space.occupiedCharge = worker.charged ? "+" : "-"
+
+      game.message(player.name + ' placed their ' + worker.side + ' worker on ' + space.topic + ' ' + space.action + '.');
     }),
 
     moveKiteDown: (player) => action({
@@ -751,33 +769,19 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
       game.moveKiteUp(kite);
     }).message("moved up"),
 
-    gustKiteUp: (player) => action({
-      prompt: 'Gust up',
-      condition: game.playerHasGust(player)
-    }).do(() => {  
+    gustKite: (player) => action({
+      prompt: 'Use gust',
+      condition: game.playerHasGust(player),
+    }).chooseFrom(
+      "direction", ["Up", "Down", "Left", "Right"]
+    ).do(({direction}) => {  
       const kite = game.first(KiteCard, {color: player.playerColor})!
-      game.moveKiteUp(kite);
-    }),
-    gustKiteLeft: (player) => action({
-      prompt: 'Gust left',
-      condition: game.playerHasGust(player)
-    }).do(() => {  
-      const kite = game.first(KiteCard, {color: player.playerColor})!
-      game.moveKiteLeft(kite);
-    }),
-    gustKiteRight: (player) => action({
-      prompt: 'Gust right',
-      condition: game.playerHasGust(player)
-    }).do(() => {  
-      const kite = game.first(KiteCard, {color: player.playerColor})!
-      game.moveKiteRight(kite);
-    }),
-    gustKiteDown: (player) => action({
-      prompt: 'Gust down',
-      condition: game.playerHasGust(player)
-    }).do(() => {  
-      const kite = game.first(KiteCard, {color: player.playerColor})!
-      game.moveKiteDown(kite);
+      switch(direction) {
+        case 'Up': {game.moveKiteUp(kite); break}
+        case 'Down': {game.moveKiteDown(kite); break}
+        case 'Left': {game.moveKiteLeft(kite); break}
+        case 'Right': {game.moveKiteRight(kite); break}
+      }
     }),
 
     skip: (player) => action({
@@ -806,7 +810,9 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
       'side', [$.trickFrontSpace.first(TrickCard)!, $.trickBackSpace.first(TrickCard)!]
     ).do(({ side }) => {
       // keep one side and discard the other
-      side.putInto(game.first(TrickSpace, {color: player.playerColor})!);
+      side.putInto(game.first(TrickSpace, {color: player.playerColor})!);  
+      
+      game.message(player.name +  ' chose ' + side.nm + '.')
 
       // clear choices
       game.all(TrickChoiceSpace).all(TrickCard).forEach(x => {
@@ -873,7 +879,7 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
       // choose initial tricks
       eachPlayer({          
         name: 'turn', do: [  
-          () => game.planTrick(),
+          ({turn}) => game.planTrick(turn),
           playerActions({ actions: ['chooseTrick']}),
         ]          
       }),
@@ -889,7 +895,7 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
         eachPlayer({          
           name: 'turn', do: [
             () => game.getPossibleActions(),
-            playerActions({ actions: ['plan', 'workerAction']}),
+            playerActions({ actions: ['workerAction']}),
             () => game.syncPilotCards(),             
           ]          
         })        
@@ -917,7 +923,8 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
       eachPlayer({          
         name: 'turn', do: [  
           forLoop({ name: 'wind', initial: 1, next: wind => wind + 1, while: wind => wind <= game.currentPlayerWindCount(), do: [
-            playerActions({ actions: ['useControl', 'moveWithWind']})
+            playerActions({ 
+              actions: ['useControl', 'moveWithWind']})
           ]}),
         ]          
       }),
@@ -925,7 +932,8 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
       // gusts phase
       eachPlayer({          
         name: 'turn', do: [  
-          playerActions({ actions: ['gustKiteDown', 'gustKiteLeft', 'gustKiteRight', 'gustKiteUp', 'skip']}),
+          playerActions({ 
+            actions: ['gustKite', 'skip']}),
         ]          
       }),
 

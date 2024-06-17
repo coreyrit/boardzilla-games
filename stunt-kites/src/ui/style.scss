@@ -1,4 +1,5 @@
 #play-area {
+
   .TrickChoiceSpace {
     z-index: 100;
   }
@@ -61,23 +62,23 @@
       background-position: center 52%;
       background-repeat: no-repeat;
 
-      .kite0front {position: relative; width: 700%; height: 500%; top: -500%; left: -300%; background-size: 100% auto;}
-      .kite45front {position: relative; width: 700%; height: 500%; top: -475%; left: -675%; background-size: 100% auto;}
-      .kite90front {position: relative; width: 700%; height: 500%; top: -215%; left: -700%; background-size: 100% auto;}
-      .kite135front {position: relative; width: 700%; height: 500%; top: 75%; left: -675%; background-size: 100% auto;}
-      .kite180front {position: relative; width: 700%; height: 500%; top: 100%; left: -300%; background-size: 100% auto;}
-      .kite225front {position: relative; width: 700%; height: 500%; top: 75%; left: 75%; background-size: 100% auto;}
-      .kite270front {position: relative; width: 700%; height: 500%; top: -200%; left: 100%; background-size: 100% auto;}
-      .kite315front {position: relative; width: 700%; height: 500%; top: -475%; left: 75%; background-size: 100% auto;}
+      .kite0front {position: relative; width: 700%; height: 500%; top: -500%; left: -300%; background-size: 100% auto; &:hover {opacity: 0.25;}}
+      .kite45front {position: relative; width: 700%; height: 500%; top: -475%; left: -675%; background-size: 100% auto; &:hover {opacity: 0.25;}}
+      .kite90front {position: relative; width: 700%; height: 500%; top: -215%; left: -700%; background-size: 100% auto; &:hover {opacity: 0.25;}}
+      .kite135front {position: relative; width: 700%; height: 500%; top: 75%; left: -675%; background-size: 100% auto; &:hover {opacity: 0.25;}}
+      .kite180front {position: relative; width: 700%; height: 500%; top: 100%; left: -300%; background-size: 100% auto; &:hover {opacity: 0.25;}}
+      .kite225front {position: relative; width: 700%; height: 500%; top: 75%; left: 75%; background-size: 100% auto; &:hover {opacity: 0.25;}}
+      .kite270front {position: relative; width: 700%; height: 500%; top: -200%; left: 100%; background-size: 100% auto; &:hover {opacity: 0.25;}}
+      .kite315front {position: relative; width: 700%; height: 500%; top: -475%; left: 75%; background-size: 100% auto; &:hover {opacity: 0.25;}}
 
-      .kite0back {position: relative; width: 700%; height: 500%; top: -500%; left: -300%; background-size: 100% auto;}
-      .kite45back {position: relative; width: 700%; height: 500%; top: -475%; left: -675%; background-size: 100% auto;}
-      .kite90back {position: relative; width: 700%; height: 500%; top: -215%; left: -700%; background-size: 100% auto;}
-      .kite135back {position: relative; width: 700%; height: 500%; top: 75%; left: -675%; background-size: 100% auto;}
-      .kite180back {position: relative; width: 700%; height: 500%; top: 100%; left: -300%; background-size: 100% auto;}
-      .kite225back {position: relative; width: 700%; height: 500%; top: 75%; left: 75%; background-size: 100% auto;}
-      .kite270back {position: relative; width: 700%; height: 500%; top: -200%; left: 100%; background-size: 100% auto;}
-      .kite315back {position: relative; width: 700%; height: 500%; top: -475%; left: 75%; background-size: 100% auto;}
+      .kite0back {position: relative; width: 700%; height: 500%; top: -500%; left: -300%; background-size: 100% auto; &:hover {opacity: 0.25;}}
+      .kite45back {position: relative; width: 700%; height: 500%; top: -475%; left: -675%; background-size: 100% auto; &:hover {opacity: 0.25;}}
+      .kite90back {position: relative; width: 700%; height: 500%; top: -215%; left: -700%; background-size: 100% auto; &:hover {opacity: 0.25;}}
+      .kite135back {position: relative; width: 700%; height: 500%; top: 75%; left: -675%; background-size: 100% auto; &:hover {opacity: 0.25;}}
+      .kite180back {position: relative; width: 700%; height: 500%; top: 100%; left: -300%; background-size: 100% auto; &:hover {opacity: 0.25;}}
+      .kite225back {position: relative; width: 700%; height: 500%; top: 75%; left: 75%; background-size: 100% auto; &:hover {opacity: 0.25;}}
+      .kite270back {position: relative; width: 700%; height: 500%; top: -200%; left: 100%; background-size: 100% auto; &:hover {opacity: 0.25;}}
+      .kite315back {position: relative; width: 700%; height: 500%; top: -475%; left: 75%; background-size: 100% auto; &:hover {opacity: 0.25;}}
     }
   }
 
@@ -240,3 +241,28 @@
     }
   }
 }
+
+.player-controls {
+  font-size: .4em;
+  // position: absolute;
+  // // top: 50%; 
+  // right: 50%;
+  // transform: translate(50%,0%);
+  // background-color: rgb(0,0,0,0);
+
+      button {
+        // width: 100%;
+      background: #448;
+      color: #fffcdc;
+      html.dark & {
+        background: #114;
+        color: #cc9;
+      }
+      box-shadow: inset -0.2em -0.2em 0.5em -0.2em #000c, inset 0.2em 0.2em 0.5em -0.2em #fffc;
+      &.cancel {
+        background: #666;
+      }
+    }
+}
+
+

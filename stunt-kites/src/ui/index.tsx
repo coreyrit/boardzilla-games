@@ -131,7 +131,7 @@ render(setup, {
       render: x => ( 
         <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
           <polygon points="0,0 100,50 0,100" fill={x.occupiedColor} stroke='black' strokeWidth='0' fillOpacity={x.occupiedColor.startsWith('none') ? 0 : 1}          />  
-          <polygon points="0,0 100,50 0,100" stroke='black' strokeWidth='5' opacity={x.highlight ? 1 : 0} fillOpacity='0' />  
+          <polygon points="0,0 100,50 0,100" stroke='black' strokeWidth='8' opacity={x.highlight ? 1 : 0} fillOpacity='0' />  
           <text x="25" y="65" fontSize="50" fill="white">{x.occupiedCharge}</text>
         </svg> 
       ) 
@@ -140,8 +140,15 @@ render(setup, {
       render: x => ( 
         <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
           <polygon points="100,0 0,50 100,100" fill={x.occupiedColor} stroke='black' strokeWidth='0' fillOpacity={x.occupiedColor.startsWith('none') ? 0 : 1}          />  
-          <polygon points="100,0 0,50 100,100" stroke='black' strokeWidth='5' opacity={x.highlight ? 1 : 0} fillOpacity='0' />  
+          <polygon points="100,0 0,50 100,100" stroke='black' strokeWidth='8' opacity={x.highlight ? 1 : 0} fillOpacity='0' />  
           <text x="50" y="65" fontSize="50" fill="white">{x.occupiedCharge}</text>
+        </svg> 
+      ) 
+    });
+    game.all(WorkerSpace, {side: 'none'}).appearance({ 
+      render: x => ( 
+        <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="38,75 50,55 62,75" stroke='black' strokeWidth='2' opacity={x.highlight ? 1 : 0} fillOpacity='0' />  
         </svg> 
       ) 
     });
@@ -176,7 +183,7 @@ render(setup, {
       // offsetRow: {x: 0, y: 15},
       // direction: 'ttb',
       columns: 1,
-      offsetRow: 15,
+      offsetRow: -25,
       alignment: 'top',
       direction: 'ttb',
     });
@@ -203,7 +210,7 @@ render(setup, {
     game.layout('blueHandLeftSpace', { area: { left: 0, top: 80, width: 10, height: 14 }});
     game.layout('blueHandRightSpace', { area: { left: 38, top: 80, width: 10, height: 14 }});
 
-    game.layout('blueTricksSpace', { area: { left: -10, top: 2, width: 28, height: 35 }});
+    game.layout('blueTricksSpace', { area: { left: -10, top: 2, width: 28, height: 45 }});
     $.blueTricksSpace.appearance({ render: x => ( 
       <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
         {/* <rect width="100" height="100" x="0" y="0" fill='blue' /> */}
