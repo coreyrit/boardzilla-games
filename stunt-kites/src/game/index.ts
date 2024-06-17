@@ -79,6 +79,10 @@ class MyGame extends Game<MyGame, StuntKitesPlayer> {
               }
               this.message('The AI removed ' + sides[0].nm + '/' + sides[1].nm + '.')
               plannedTrick = true
+
+              if($.timerSpace.all(TrickCard).length == 1) {
+                this.planFinalTrick();    
+              }
             } else if(!plannedTrick && this.first(TrickSpace, {color: 'red'})!.all(TrickCard).length > 0) {
               this.first(TrickSpace, {color: 'red'})!.first(TrickCard)!.putInto(this.first(ScoreSpace, {color: 'red'})!);
             }
