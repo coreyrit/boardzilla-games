@@ -115,6 +115,7 @@ class MyGame extends Game<MyGame, StuntKitesPlayer> {
 
     this.game.message(player.name +  ' is choosing between ' + side1.nm + ' and ' + side2.nm + '.')
     
+    
     if($.timerSpace.all(TrickCard).length == 1) {
       this.planFinalTrick();    
     }
@@ -717,6 +718,8 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
 
       game.planTrick(player)
       game.followUp({name: 'chooseTrick'});
+      game.message('The timer resets to 0:00.');
+      $.timerSpace.rotation = 270
     }),
 
     workerAction: (player) => action({
