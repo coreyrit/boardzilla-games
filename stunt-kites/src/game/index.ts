@@ -252,6 +252,8 @@ class MyGame extends Game<MyGame, StuntKitesPlayer> {
     const space = kite.container(FlightCell)!
     if(space.rowNumber < 5) {
       kite.putInto(this.first(FlightCell, {rowNumber: space.rowNumber+1, column: space.column, color: kite.color})!)
+    } else {
+      this.message('The kite can not move any farther up.');
     }
   }
   moveKiteLeft(kite: KiteCard): void {
@@ -259,9 +261,8 @@ class MyGame extends Game<MyGame, StuntKitesPlayer> {
     if(space.column > 1) {
       kite.putInto(this.first(FlightCell, {rowNumber: space.rowNumber, column: space.column-1, color: kite.color})!)
     } else {
-      if(space.rowNumber >= 1) {
-        this.moveKiteDown(kite)
-      }
+      this.message('The kite moved passed the edge of the card.  Moving down.');
+      this.moveKiteDown(kite);
     }
   }
   moveKiteRight(kite: KiteCard): void {
@@ -269,9 +270,8 @@ class MyGame extends Game<MyGame, StuntKitesPlayer> {
     if(space.column < 7) {
       kite.putInto(this.first(FlightCell, {rowNumber: space.rowNumber, column: space.column+1, color: kite.color})!)
     } else {
-      if(space.rowNumber >= 1) {
-        this.moveKiteDown(kite)
-      }
+      this.message('The kite moved passed the edge of the card.  Moving down.');
+      this.moveKiteDown(kite);
     }
   }
   moveKiteDown(kite: KiteCard): void {
@@ -280,43 +280,49 @@ class MyGame extends Game<MyGame, StuntKitesPlayer> {
       kite.putInto(this.first(FlightCell, {rowNumber: space.rowNumber-1, column: space.column, color: kite.color})!)
     } else {
       // crash!
+      this.message('The kite crashed into the ground!');
+      if(kite.color == 'blue') {
+        this.finish(this.players.filter(x => x.playerColor == 'red'), 'redWin')
+      } else {
+        this.finish(this.players.filter(x => x.playerColor == 'blue'), 'blueWin')
+      }
     }
   }
   moveKiteWithWind(kite: KiteCard): void {
     switch(kite.rotation) {
       case 45: {
-        this.moveKiteRight(kite)
         this.message('The wind pushed the ' + kite.color + ' kite right.')
+        this.moveKiteRight(kite)        
         break;
       }
       case 90: {
-        this.moveKiteRight(kite)
         this.message('The wind pushed the ' + kite.color + ' kite right.')
+        this.moveKiteRight(kite)        
         break;
       }
       case 135: {
-        this.moveKiteRight(kite)
         this.message('The wind pushed the ' + kite.color + ' kite right.')
+        this.moveKiteRight(kite)        
         break;
       }
       case 180: {
-        this.moveKiteDown(kite)
         this.message('The wind pushed the ' + kite.color + ' kite down.')
+        this.moveKiteDown(kite)        
         break;
       }
       case 225: {
-        this.moveKiteLeft(kite)
         this.message('The wind pushed the ' + kite.color + ' kite left.')
+        this.moveKiteLeft(kite)        
         break;
       }
       case 270: {
-        this.moveKiteLeft(kite)
         this.message('The wind pushed the ' + kite.color + ' kite left.')
+        this.moveKiteLeft(kite)        
         break;
       }
       case 315: {
-        this.moveKiteLeft(kite)
         this.message('The wind pushed the ' + kite.color + ' kite left.')
+        this.moveKiteLeft(kite)        
         break;
       }
     }
