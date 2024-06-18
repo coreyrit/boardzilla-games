@@ -198,8 +198,14 @@
     width: 100%; 
     height: 100%;
 
-    &[data-name="flight-1"] .front { background-image: url(./assets/flight-1a.jpg) }
-    &[data-name="flight-1"] .back { background-image: url(./assets/flight-1b.jpg) }
+    &[data-name="flight-1a"] .front { background-image: url(./assets/flight-1a.jpg) }
+    &[data-name="flight-1a"] .back { background-image: url(./assets/flight-1a.jpg) }
+    &[data-name="flight-1b"] .front { background-image: url(./assets/flight-1b.jpg) }
+    &[data-name="flight-1b"] .back { background-image: url(./assets/flight-1b.jpg) }
+    &[data-name="flight-2a"] .front { background-image: url(./assets/flight-2a.jpg) }
+    &[data-name="flight-2a"] .back { background-image: url(./assets/flight-2a.jpg) }
+    &[data-name="flight-2b"] .front { background-image: url(./assets/flight-2b.jpg) }
+    &[data-name="flight-2b"] .back { background-image: url(./assets/flight-2b.jpg) }
 
     > div {
       width: 100%;

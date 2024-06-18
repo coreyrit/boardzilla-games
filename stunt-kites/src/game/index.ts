@@ -6,6 +6,10 @@ import {
   Game,
 } from '@boardzilla/core';
 import { flight1aCells } from './flight-cells.js';
+import { flight1bCells } from './flight-cells.js';
+import { flight2aCells } from './flight-cells.js';
+import { flight2bCells } from './flight-cells.js';
+
 import { tricks } from './tricks.js';
 
 export class StuntKitesPlayer extends Player<MyGame, StuntKitesPlayer> {
@@ -681,14 +685,39 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
     $.redHandRightSpace.create(HandCard, 'red-right', {side: 'right', color: 'red', rotation: 315});
   }
 
-  $.blueFlightSpace.create(FlightCard, 'flight-1')
-  if(game.players.length > 1) {
-    $.redFlightSpace.create(FlightCard, 'flight-1')
+  // randomly choose flight cards
+  var flightCellsAll : Record<string, Partial<FlightCell>[]>  = {
+    'flight-1a': flight1aCells, 
+    'flight-1b': flight1bCells,
+    'flight-2a': flight2aCells, 
+    'flight-2b': flight2bCells
   }
-  for (const flightCell of flight1aCells) {
+  
+  let flightBlue : string = ''
+  let flightRed : string = ''
+  if(game.random() < 0.5) {
+    flightBlue = game.random() < 0.5 ? 'flight-1a' : 'flight-1b'
+    flightRed = game.random() < 0.5 ? 'flight-2a' : 'flight-2b'
+  } else {
+    flightBlue = game.random() < 0.5 ? 'flight-2a' : 'flight-2b'
+    flightRed = game.random() < 0.5 ? 'flight-1a' : 'flight-1b'
+  }
+
+  game.message('blue is using ' + flightBlue)
+  game.message('red is using ' + flightRed)
+
+  $.blueFlightSpace.create(FlightCard, flightBlue)
+  if(game.players.length > 1) {
+    $.redFlightSpace.create(FlightCard, flightRed)
+  }
+
+  for (const flightCell of flightCellsAll[flightBlue]) {
     const blueCell = $.blueFlightSpace.create(FlightCell, 'blue-' + flightCell.rowLetter + ',' + flightCell.column, flightCell)
     blueCell.color = 'blue'
-    if(game.players.length > 1) {
+  }
+
+  if(game.players.length > 1) {
+    for (const flightCell of flightCellsAll[flightRed]) {
       const redCell = $.redFlightSpace.create(FlightCell, 'red-' + flightCell.rowLetter + ',' + flightCell.column, flightCell)
       redCell.color = 'red'
     }
