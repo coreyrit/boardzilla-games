@@ -1,7 +1,7 @@
 #play-area {
 
   .TrickChoiceSpace {
-    z-index: 100;
+    z-index: 1;
   }
 
   .TrickSpace {
@@ -128,7 +128,20 @@
     }
   }
 
-  .TrickCard {
+  .TrickCard {    
+    
+    // z-index: 5;
+
+    &.selectable {
+      filter: brightness(1.15);
+      z-index: 6;
+    }
+
+    &:hover {
+      position: absolute; 
+      transform: scale(1.25);
+      z-index: 7;
+    }
 
     &[data-name="flapjack"] .front { background-image: url(./assets/flapjack.jpg) }
     &[data-name="jacobs-ladder"] .front { background-image: url(./assets/jacobs-ladder.jpg) }
@@ -161,11 +174,16 @@
         border-color: black;
         background-size: 100% auto;
 
-        &:hover {
-          position: absolute; 
-          transform: scale(1.5);
-          z-index: 1000;
-        }
+        // &:hover {
+        //   position: absolute; 
+        //   transform: scale(1.5);
+        //   z-index: 1000;
+        // }
+
+        // &.selectable {
+        //   filter: brightness(1.15);
+        //   z-index: 6;
+        // }
       }
     }
   }

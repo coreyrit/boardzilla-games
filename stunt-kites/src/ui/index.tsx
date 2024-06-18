@@ -99,7 +99,7 @@ render(setup, {
 
     // choices
     game.layout('trickFrontSpace', { area: { left: 20, top: 35, width: 28, height: 20 }});
-    game.layout('trickBackSpace', { area: { left: 60, top: 35, width: 28, height: 20 }});
+    game.layout('trickBackSpace', { area: { left: 52, top: 35, width: 28, height: 20 }});
     
     game.layout('nw1', { area: { left: 50, top: 7.5, width: 4, height: 7 }});
     game.layout('nw2', { area: { left: 53, top: 7.5, width: 4, height: 7 }});
@@ -251,7 +251,7 @@ render(setup, {
     game.layout('redHandLeftSpace', { area: { left: 55, top: 80, width: 10, height: 14 }});
     game.layout('redHandRightSpace', { area: { left: 93, top: 80, width: 10, height: 14 }});
 
-    game.layout('redTricksSpace', { area: { left: 82, top: 2, width: 28, height: 35 }});
+    game.layout('redTricksSpace', { area: { left: 82, top: 2, width: 28, height: 45 }});
     $.redTricksSpace.appearance({ render: x => ( 
       <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
         {/* <rect width="100" height="100" x="0" y="0" fill='red' /> */}

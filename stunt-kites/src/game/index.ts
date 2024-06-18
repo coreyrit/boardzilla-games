@@ -402,8 +402,8 @@ class MyGame extends Game<MyGame, StuntKitesPlayer> {
         let blueScore = this.playerScore('blue')
         let redScore = this.playerScore('red')
   
-        this.message('Blue player scored ' + blueScore)
-        this.message('Red player scored ' + redScore)
+        this.message(this.players.filter(x => x.playerColor == 'blue')[0].name + ' scored ' + blueScore + ' points.');
+        this.message(this.players.filter(x => x.playerColor == 'red')[0].name + ' scored ' + blueScore + ' points.');
     
         if(blueScore > redScore) {
           this.finish(this.players.filter(x => x.playerColor == 'blue'), 'blueWin')
@@ -420,7 +420,7 @@ class MyGame extends Game<MyGame, StuntKitesPlayer> {
         }
       } else {
         let blueScore = this.playerScore('blue')
-        this.message('Blue player scored ' + blueScore)
+        this.message(this.players.filter(x => x.playerColor == 'blue')[0].name + ' scored ' + blueScore + ' points.');
         if(blueScore <= 8) {
           this.finish(this.players[0], 'keepPracticing')
         } else if(blueScore >= 9 && blueScore <= 12) {
@@ -920,13 +920,10 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
         trick.status = 'uncross'
       }
       
-      // const cell = game.first(ScoreSpace, {color: player.playerColor})!.first(ScoreCell, {filled: false})!
-      // cell.filled = true
-      // cell.rotation = 90
-      // trick.putInto(cell)
-
       trick.rotation = kite.flipped ? 270 : 90
       trick.putInto(game.first(ScoreSpace, {color: player.playerColor})!)
+
+      game.message(player.name + ' performed ' + trick.nm + '.')
     }),
 
   });
