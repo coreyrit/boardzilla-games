@@ -397,6 +397,10 @@ class MyGame extends Game<MyGame, StuntKitesPlayer> {
   playerHasGust(player: StuntKitesPlayer) : boolean {
     const kite = this.first(KiteCard, {color: player.playerColor})!
     const wind : number = kite.container(FlightCell)!.windCount
+    if(wind == 0) {
+      // center column has no gusts
+      return false;
+    }
     const playerWinds = this.first(ScoreSpace, {color: player.playerColor})!.all(TrickCard).map(x => {
       return x.rotation == 90 ? x.wind : x.xwind
     })
