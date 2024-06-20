@@ -287,9 +287,9 @@ class MyGame extends Game<MyGame, StuntKitesPlayer> {
       // crash!
       this.message('The kite crashed into the ground!');
       if(kite.color == 'blue') {
-        this.finish(this.players.filter(x => x.playerColor == 'red'), 'redWin')
+        this.finish(this.players.filter(x => x.playerColor == 'red'))
       } else {
-        this.finish(this.players.filter(x => x.playerColor == 'blue'), 'blueWin')
+        this.finish(this.players.filter(x => x.playerColor == 'blue'))
       }
     }
   }
@@ -421,29 +421,29 @@ class MyGame extends Game<MyGame, StuntKitesPlayer> {
         this.message(this.players.filter(x => x.playerColor == 'red')[0].name + ' scored ' + blueScore + ' points.');
     
         if(blueScore > redScore) {
-          this.finish(this.players.filter(x => x.playerColor == 'blue'), 'blueWin')
+          this.finish(this.players.filter(x => x.playerColor == 'blue'))
         } else if(redScore > blueScore) {
-          this.finish(this.players.filter(x => x.playerColor == 'red'), 'redWin')
+          this.finish(this.players.filter(x => x.playerColor == 'red'))
         } else {
           if (blueFinalTrick && !redFinalTrick) {
-            this.finish(this.players.filter(x => x.playerColor == 'blue'), 'blueWin')
+            this.finish(this.players.filter(x => x.playerColor == 'blue'))
           } else if(!blueFinalTrick && redFinalTrick) {
-            this.finish(this.players.filter(x => x.playerColor == 'red'), 'redWin')
+            this.finish(this.players.filter(x => x.playerColor == 'red'))
           } else {
-            this.finish(undefined, 'tie')
+            this.finish(undefined)
          }
         }
       } else {
         let blueScore = this.playerScore('blue')
         this.message(this.players.filter(x => x.playerColor == 'blue')[0].name + ' scored ' + blueScore + ' points.');
         if(blueScore <= 8) {
-          this.finish(this.players[0], 'keepPracticing')
+          this.finish(undefined, 'keepPracticing')
         } else if(blueScore >= 9 && blueScore <= 12) {
-          this.finish(this.players[0], 'justForFun')
+          this.finish(undefined, 'justForFun')
         } else if(blueScore >= 13 && blueScore <= 16) {
-          this.finish(this.players[0], 'competitive')
+          this.finish(undefined, 'competitive')
         } else if(blueScore >= 17 && blueScore <= 20) {
-          this.finish(this.players[0], 'challenger')
+          this.finish(undefined, 'challenger')
         } else [
           this.finish(this.players[0], 'champion')
         ]
