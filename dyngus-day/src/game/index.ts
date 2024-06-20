@@ -8,6 +8,19 @@ import {
 
 export class DyngusDayPlayer extends Player<MyGame, DyngusDayPlayer> {
   space: PlayerSpace
+  collections: Collection[]
+
+  getBestScore() : number {
+    return this.collections
+      .map(x => x.first(Score)!.getBestScore())
+      .reduce((acc, cur) => cur > acc ? cur : acc, -1000)
+  }
+
+  getWorstScore() : number {
+    return this.collections
+      .map(x => x.first(Score)!.getBestScore())
+      .reduce((acc, cur) => cur < acc ? cur : acc, 1000)
+  }
 }
 
 export class PlayerSpace extends Space<MyGame> {
@@ -108,13 +121,14 @@ export class Score extends Piece<MyGame> {
   }
 
   override toString(): string {    
-    return this.name + ': ' + this.getBestScore().toString()
+    return  this.getBestScore().toString()
   }
 }
 
 
 export class Card extends Piece<MyGame> {
   order: number = 0.0  
+  flipped: boolean = false
 }
 
 enum Food {
@@ -151,14 +165,50 @@ export default createGame(DyngusDayPlayer, MyGame, game => {
 
   for(let i = 1; i <= game.players.length; i++) {
     const space = game.players[i-1].space = game.create(PlayerSpace, 'player-' + i)
+    space.onEnter(Card, x => {
+      x.flipped = true;
+    })
     space.player = game.players[i-1]    
   }
 
   for(let i = 1; i <= 4; i++) {
     const col = game.create(Collection, 'collection-' + i)
     col.create(Score, 'score-' + i)
+    col.onEnter(Card, x => {
+      x.flipped = true;
+    })
   }
+
+  // assign collections
+  switch(game.players.length) {
+    case 1: {
+      game.players[0].collections = game.all(Collection)
+      break;
+    }
+    case 2: {
+      game.players[0].collections = [game.first(Collection, {name: 'collection-1'})!, game.first(Collection, {name: 'collection-2'})!]
+      game.players[1].collections = [game.first(Collection, {name: 'collection-3'})!, game.first(Collection, {name: 'collection-4'})!]
+      break;
+    }
+    case 3: {
+      game.players[0].collections = [game.first(Collection, {name: 'collection-1'})!, game.first(Collection, {name: 'collection-2'})!]
+      game.players[1].collections = [game.first(Collection, {name: 'collection-2'})!, game.first(Collection, {name: 'collection-3'})!]
+      game.players[2].collections = [game.first(Collection, {name: 'collection-3'})!, game.first(Collection, {name: 'collection-1'})!]
+      break;
+    }
+    case 4: {
+      game.players[0].collections = [game.first(Collection, {name: 'collection-1'})!, game.first(Collection, {name: 'collection-2'})!]
+      game.players[1].collections = [game.first(Collection, {name: 'collection-2'})!, game.first(Collection, {name: 'collection-3'})!]
+      game.players[2].collections = [game.first(Collection, {name: 'collection-3'})!, game.first(Collection, {name: 'collection-4'})!]
+      game.players[3].collections = [game.first(Collection, {name: 'collection-4'})!, game.first(Collection, {name: 'collection-1'})!]
+      break;
+    }
+  }
+
   game.create(Deck, 'deck')  
+  $.deck.onEnter(Card, x => {
+    x.flipped = false;
+  })
 
   // create all combinations of food
   game.createSplashCard(Food.Pierogi, Food.Kielbasa)
@@ -187,7 +237,7 @@ export default createGame(DyngusDayPlayer, MyGame, game => {
     drawCard: (player) => action({
       prompt: 'Draw next card',
     }).chooseOnBoard(
-      'card', [$.deck.top(Card)!],
+      'card', [$.deck.bottom(Card)!],
       { skipIf: 'never' }
     ).do(({ card }) => {
       card.putInto(player.space)
@@ -254,9 +304,46 @@ export default createGame(DyngusDayPlayer, MyGame, game => {
       },
 
       // print final scores
-      () => {
-        game.all(Score).forEach(x => x.getBestScore(true));
-      }
+      // () => {
+        // game.all(Score).forEach(x => x.getBestScore(true));
+      // }
      ]}),  
+
+     () => {
+              // find the winner
+              let winners : DyngusDayPlayer[] = []
+              const winningScore = game.players
+                .map(x => x.getWorstScore())
+                .reduce((acc, cur) => cur > acc ? cur : acc, -1000)
+
+              game.players.forEach(x => {
+                const score = x.getWorstScore()                
+                game.message('The best score for ' + x.name + ' is ' + score + '.');
+                if(score == winningScore) {
+                  winners.push(x)
+                }
+              })
+      
+              // tie breaker        
+              if(winners.length > 1) {
+                // reset the winners
+                const tied = winners
+                winners = []
+                const otherWinningScore = tied
+                  .map(x => x.getBestScore())
+                  .reduce((acc, cur) => cur > acc ? cur : acc, -1000)
+
+                tied.forEach(x => {
+                  const score = x.getBestScore()
+                  game.message('The other score for ' + x.name + ' is ' + score + '.');
+                  if(score == otherWinningScore) {
+                    winners.push(x)
+                  }
+                })
+              }
+      
+              // end the game
+              game.finish(winners)
+     },
     )
 });

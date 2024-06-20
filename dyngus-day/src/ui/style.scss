@@ -1,2 +1,137 @@
 #play-area {
+
+    .Score {
+        z-index: 100;
+    }
+
+    .FirstPlayerCard {
+        &[data-name="first-player"] .front { background-image: url(./assets/card-10.jpg) }
+
+        z-index: 102;
+        
+
+        > div {
+            transition: 0.6s;
+            background-repeat: no-repeat;
+            background-position: center 50%;
+      
+            .front {
+              top: 0%; left: 0%; width: 100%; height: 100%;
+              
+              border-radius: 0.2em;
+              border-color: black;
+              background-size: contain;
+
+              &:hover {
+                z-index: 1000;
+                transform: scale(2.0);
+                background-image: url(./assets/scoring.jpg)
+              }
+            }
+          }
+    }
+
+    .PolkaCard {
+        z-index: 102;
+
+        &[data-name="polka"] .front { background-image: url(./assets/card-11.jpg) }
+
+        > div {
+            transition: 0.6s;
+            background-repeat: no-repeat;
+            background-position: center 50%;
+      
+            .front {
+              top: 0%; left: 0%; width: 100%; height: 100%;
+              
+              border-radius: 0.2em;
+              border-color: black;
+              background-size: contain;
+            }
+            .back {
+              top: 0%; left: 0%; width: 100%; height: 100%;
+              
+              background-image: url(./assets/back.jpg);
+
+              border-radius: 0.2em;
+              border-color: black;
+              background-size: contain;
+            }
+          }
+    }
+
+    .PussyWillowCard {
+        z-index: 102;
+
+        &[data-name="pussy-willow"] .front { background-image: url(./assets/card-9.jpg) }
+
+        > div {
+            transition: 0.6s;
+            background-repeat: no-repeat;
+            background-position: center 50%;
+      
+            .front {
+              top: 0%; left: 0%; width: 100%; height: 100%;
+              
+              border-radius: 0.2em;
+              border-color: black;
+              background-size: contain;
+            }
+            .back {
+              top: 0%; left: 0%; width: 100%; height: 100%;
+              
+              background-image: url(./assets/back.jpg);
+
+              border-radius: 0.2em;
+              border-color: black;
+              background-size: contain;
+            }
+          }
+    }
+
+    .SplashCard {    
+        z-index: 102;
+    
+        &[data-name="pierogi-kielbasa"] .front { background-image: url(./assets/card-0.jpg) }
+        &[data-name="kielbasa-piwo"] .front { background-image: url(./assets/card-1.jpg) }
+        &[data-name="kielbasa-bigos"] .front { background-image: url(./assets/card-2.jpg) }
+        &[data-name="bigos-piwo"] .front { background-image: url(./assets/card-3.jpg) }
+        &[data-name="sauerkraut-bigos"] .front { background-image: url(./assets/card-4.jpg) }
+        &[data-name="bigos-kolacky"] .front { background-image: url(./assets/card-5.jpg) }
+        &[data-name="pierogi-bigos"] .front { background-image: url(./assets/card-6.jpg) }        
+        &[data-name="pierogi-sauerkraut"] .front { background-image: url(./assets/card-7.jpg) }
+        &[data-name="pierogi-kolacky"] .front { background-image: url(./assets/card-8.jpg) }
+
+            
+        &[data-name="kielbasa-sauerkraut"] .front { background-image: url(./assets/card-12.jpg) }                
+        &[data-name="kielbasa-kolacky"] .front { background-image: url(./assets/card-13.jpg) }
+        &[data-name="pierogi-piwo"] .front { background-image: url(./assets/card-14.jpg) }        
+        &[data-name="sauerkraut-piwo"] .front { background-image: url(./assets/card-15.jpg) }
+        &[data-name="piwo-kolacky"] .front { background-image: url(./assets/card-16.jpg) }
+        &[data-name="sauerkraut-kolacky"] .front { background-image: url(./assets/card-17.jpg) }        
+
+        > div {
+            transition: 0.6s;
+            background-repeat: no-repeat;
+            background-position: center 50%;
+      
+            .front {
+              top: 0%; left: 0%; width: 100%; height: 100%;
+              
+              border-radius: 0.2em;
+              border-color: black;
+              background-size: contain;
+            }
+            .back {
+              top: 0%; left: 0%; width: 100%; height: 100%;
+              
+              background-image: url(./assets/back.jpg);
+
+              border-radius: 0.2em;
+              border-color: black;
+              background-size: contain;
+            }
+          }
+    }
+
 }
