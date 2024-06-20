@@ -4,6 +4,36 @@
         z-index: 100;
     }
 
+    .ScoringCard {
+      z-index: 2200;
+      background-image: url(./assets/scoring.jpg);
+
+      top: 0%; left: 0%; width: 100%; height: 100%;
+
+      transition: 0.6s;
+      background-repeat: no-repeat;
+      background-position: center 50%;
+              
+      border-radius: 0.2em;
+      border-color: black;
+      background-size: contain;
+
+      // &:hover {
+      //   z-index: 1000;
+      //   transform: scale(2.0);
+      // }
+    }
+
+    .drawer {
+      z-index: 2000;
+    }
+    .drawer-tab {
+      z-index: 2000;
+    }
+    .drawer-content {
+      z-index: 2100;
+    }
+
     .FirstPlayerCard {
         &[data-name="first-player"] .front { background-image: url(./assets/card-10.jpg) }
 
@@ -22,11 +52,6 @@
               border-color: black;
               background-size: contain;
 
-              &:hover {
-                z-index: 1000;
-                transform: scale(2.0);
-                background-image: url(./assets/scoring.jpg)
-              }
             }
           }
     }

@@ -151,6 +151,9 @@ export class PolkaCard extends Card {
 export class FirstPlayerCard extends Piece<MyGame> {
 }
 
+export class ScoringCard extends Space<MyGame> {
+}
+
 class MyGame extends Game<MyGame, DyngusDayPlayer> {
   createSplashCard(f1: Food, f2: Food) {
     const fc = $.deck.create(SplashCard, f1 + '-' + f2)
@@ -163,6 +166,8 @@ export default createGame(DyngusDayPlayer, MyGame, game => {
   const { action } = game;
   const { playerActions, loop, eachPlayer, forLoop, whileLoop } = game.flowCommands;
 
+  game.create(ScoringCard, 'scoring')
+  
   for(let i = 1; i <= game.players.length; i++) {
     const space = game.players[i-1].space = game.create(PlayerSpace, 'player-' + i)
     space.onEnter(Card, x => {

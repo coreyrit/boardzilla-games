@@ -1,6 +1,6 @@
 import React from 'react';
 import { Piece, render } from '@boardzilla/core';
-import { Card, Collection, FirstPlayerCard, PlayerSpace, PolkaCard, PussyWillowCard, Score, SplashCard, default as setup } from '../game/index.js';
+import { Card, Collection, FirstPlayerCard, PlayerSpace, PolkaCard, PussyWillowCard, Score, ScoringCard, SplashCard, default as setup } from '../game/index.js';
 
 import './style.scss';
 // import '@boardzilla/core/index.css';
@@ -22,6 +22,22 @@ render(setup, {
 
     $.deck.appearance({
       render: () => null
+    });
+    game.all(ScoringCard).appearance({ render: x => ( 
+      <div className='ScoringCard' />
+    ) });
+
+    game.layout('scoring', {
+      area: {
+        top: 0,
+        left: 30,
+        width: 40,
+        height: 45
+      },
+      drawer: {
+        closeDirection: 'up',
+        tab: () => 'Scoring Reference',
+      },
     });
 
     game.all(SplashCard).appearance({ render: x => ( 
@@ -101,14 +117,14 @@ render(setup, {
       case 3: {
         game.layout('collection-1', { area: { left: 0, top: 35, width: 40, height: 18 }});
         game.layout('collection-2', { area: { left: 60, top: 35, width: 40, height: 18 }});
-        game.layout('collection-3', { area: { left: 30, top: 82, width: 40, height: 18 }});
-        game.layout('collection-4', { area: { left: 30, top: 0, width: 40, height: 18 }});
+        game.layout('collection-3', { area: { left: 30, top: 77, width: 40, height: 18 }});
+        game.layout('collection-4', { area: { left: 30, top: 5, width: 40, height: 18 }});
 
-        game.layout('player-1', { area: { left: 44, top: 20, width: 12, height: 18 }});        
-        game.layout('player-2', { area: { left: 80, top: 65, width: 12, height: 18 }});
-        game.layout('player-3', { area: { left: 8, top: 65, width: 12, height: 18 }});
+        game.layout('player-1', { area: { left: 44, top: 25, width: 12, height: 18 }});        
+        game.layout('player-2', { area: { left: 80, top: 60, width: 12, height: 18 }});
+        game.layout('player-3', { area: { left: 8, top: 60, width: 12, height: 18 }});
 
-        game.layout('deck', { area: { left: 40, top: 58, width: 20, height: 20 }});
+        game.layout('deck', { area: { left: 40, top: 55, width: 20, height: 20 }});
         break;
       }
       case 4: {
