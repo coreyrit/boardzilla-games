@@ -10,35 +10,16 @@ render(setup, {
   },
 
   announcements: {
-
-    redWin: game => {
+    finalTrickLanded: () => {
       return (
         <>
-          <h1>
-            Red player wins!
-          </h1>
+        <h1>
+          You final trick has been landed.
+        </h1>
         </>
       );
     },
-    blueWin: game => {
-      return (
-        <>
-          <h1>
-            Blue player wins!
-          </h1>
-        </>
-      );
-    },
-    tie: game => {
-      return (
-        <>
-          <h1>
-            Tie!
-          </h1>
-        </>
-      );
-    },
-    keepPracticing: game => {
+    keepPracticing: () => {
       return (
         <>
         <h1>
@@ -47,7 +28,7 @@ render(setup, {
         </>
       );
     },
-    justForFun: game => {
+    justForFun: () => {
       return (
         <>
         <h1>
@@ -56,7 +37,7 @@ render(setup, {
         </>
       );
     },
-    competitive: game => {
+    competitive: () => {
       return (
         <>
         <h1>
@@ -65,7 +46,7 @@ render(setup, {
         </>
       );
     },
-    challenger: game => {
+    challenger: () => {
       return (
         <>
         <h1>
@@ -74,7 +55,7 @@ render(setup, {
         </>
       );
     },
-    champion: game => {
+    champion: () => {
       return (
         <>
         <h1>

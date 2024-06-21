@@ -89,7 +89,8 @@ class MyGame extends Game<MyGame, StuntKitesPlayer> {
               }
             } else if(!plannedTrick && this.first(TrickSpace, {color: 'red'})!.all(TrickCard, {name: 'final-trick'}).length > 0) {              
               this.first(TrickSpace, {color: 'red'})!.first(TrickCard, {name: 'final-trick'})!.putInto(this.first(ScoreSpace, {color: 'red'})!);
-              this.message('The AI landed the final trick!')
+              this.message('The AI landed the final trick!')              
+              this._ctx.gameManager.announcements.push('finalTrickLanded'),
               plannedTrick = true
             }
             break;
@@ -390,7 +391,8 @@ class MyGame extends Game<MyGame, StuntKitesPlayer> {
         x.color = x.color == 'blue' ? 'red' : 'blue'
       })
       this.firstPlayerColor = this.firstPlayerColor == 'blue' ? 'red' : 'blue'
-      this.players.reverse()
+      // this.players.reverse()
+      this.players.setCurrent(this.players.filter(x => x.playerColor == this.firstPlayerColor))
     }
   }
 
@@ -414,11 +416,12 @@ class MyGame extends Game<MyGame, StuntKitesPlayer> {
     // check for game end
     if(blueFinalTrick || redFinalTrick) {
       if(this.players.length > 1) {
+
         let blueScore = this.playerScore('blue')
         let redScore = this.playerScore('red')
   
         this.message(this.players.filter(x => x.playerColor == 'blue')[0].name + ' scored ' + blueScore + ' points.');
-        this.message(this.players.filter(x => x.playerColor == 'red')[0].name + ' scored ' + blueScore + ' points.');
+        this.message(this.players.filter(x => x.playerColor == 'red')[0].name + ' scored ' + redScore + ' points.');
     
         if(blueScore > redScore) {
           this.finish(this.players.filter(x => x.playerColor == 'blue'))
@@ -433,20 +436,26 @@ class MyGame extends Game<MyGame, StuntKitesPlayer> {
             this.finish(undefined)
          }
         }
-      } else {
+      } else {        
         let blueScore = this.playerScore('blue')
         this.message(this.players.filter(x => x.playerColor == 'blue')[0].name + ' scored ' + blueScore + ' points.');
+
         if(blueScore <= 8) {
           this.finish(undefined, 'keepPracticing')
+          this.followUp({name: 'end'});
         } else if(blueScore >= 9 && blueScore <= 12) {
           this.finish(undefined, 'justForFun')
+          this.followUp({name: 'end'});
         } else if(blueScore >= 13 && blueScore <= 16) {
           this.finish(undefined, 'competitive')
+          this.followUp({name: 'end'});
         } else if(blueScore >= 17 && blueScore <= 20) {
           this.finish(undefined, 'challenger')
-        } else [
-          this.finish(this.players[0], 'champion')
-        ]
+          this.followUp({name: 'end'});
+        } else {
+          this.finish(undefined, 'champion')
+          this.followUp({name: 'end'});
+        }
       }
     }
   }
@@ -893,6 +902,12 @@ export default createGame(StuntKitesPlayer, MyGame, game => {
       prompt: 'Skip',
     }).do(() => {
     }),
+
+    end: () => action({
+      prompt: 'Game over'
+    }).chooseOnBoard(
+      'none', []
+    ),
 
     moveWithWind: (player) => action({
       prompt: 'Move with wind'
