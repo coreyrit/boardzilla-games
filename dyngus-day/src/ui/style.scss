@@ -18,10 +18,6 @@
       border-color: black;
       background-size: contain;
 
-      // &:hover {
-      //   z-index: 1000;
-      //   transform: scale(2.0);
-      // }
     }
 
     .drawer {
@@ -67,6 +63,11 @@
             background-position: center 50%;
       
             .front {
+              &:hover {
+                z-index: 1000;
+                transform: scale(2.0);
+              }
+
               top: 0%; left: 0%; width: 100%; height: 100%;
               
               border-radius: 0.2em;
@@ -96,6 +97,12 @@
             background-position: center 50%;
       
             .front {
+
+              &:hover {
+                z-index: 1000;
+                transform: scale(2.0);
+              }
+
               top: 0%; left: 0%; width: 100%; height: 100%;
               
               border-radius: 0.2em;
@@ -115,8 +122,8 @@
     }
 
     .SplashCard {    
-        z-index: 102;
-    
+        z-index: 102;  
+
         &[data-name="pierogi-kielbasa"] .front { background-image: url(./assets/card-0.jpg) }
         &[data-name="kielbasa-piwo"] .front { background-image: url(./assets/card-1.jpg) }
         &[data-name="kielbasa-bigos"] .front { background-image: url(./assets/card-2.jpg) }
@@ -141,6 +148,12 @@
             background-position: center 50%;
       
             .front {
+
+              &:hover {
+                z-index: 1000;
+                transform: scale(2.0);
+              }
+
               top: 0%; left: 0%; width: 100%; height: 100%;
               
               border-radius: 0.2em;
