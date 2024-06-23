@@ -3,14 +3,20 @@ import {
   Player,
   Space,
   Piece,
-  Game
+  Game,
+  GameElement,
+  Action
 } from '@boardzilla/core';
 import { skip } from 'node:test';
 import { Handler } from 'puppeteer/internal/types.js';
 
 
 import { Phase1, HandlerSpace } from './phase1.js'
-import { Phase2 } from './phase2.js'
+import { BotSpace, Phase2, StarborgSpace } from './phase2.js'
+import { PhaseAll } from './phaseAll.js'
+
+export type SingleArgument = string | number | boolean | GameElement | Player;
+export type Argument = SingleArgument | SingleArgument[];
 
 export class StarborgVsBot10Player extends Player<MyGame, StarborgVsBot10Player> {
 }
@@ -19,8 +25,10 @@ export class Starborg extends Piece<MyGame> {
   isHandler: boolean = true;
   color: 'red' | 'blue' | 'green' | 'black' | 'yellow'
 
-  dieActions : Record<number, string>
-  formation: number
+  phase1DieActions : Record<number, string>
+  phase2DieActions : Record<number, string>
+
+  formation: number  
 
   getX() : number {
     if(this.color == 'black') {
@@ -78,9 +86,15 @@ export class Bot10 extends Piece<MyGame> {
   phase2: 'nw' | 'ne' | 'sw' | 'se'
 
   arrowColor: 'black' | 'white'
+  unblockedAttack: number
 
   topMovement: Movement;
   bottomMovement: Movement;
+
+  lowAttack: 'kick' | 'bite' | 'punch'
+  highAttack: 'kick' | 'bite' | 'punch'
+
+  damaged: boolean = false
 }
 
 
@@ -93,6 +107,74 @@ export class Die extends Piece<MyGame> {
   }
   override toString(): string {
     return this.face.toString()
+  }
+
+  getClockwiseBot10() : BotSpace {
+    const myBot10 = this.container(BotSpace)!
+    return this.getNextClockwiseBot10(myBot10)
+  }
+
+  getNextClockwiseBot10(myBot10: BotSpace) : BotSpace {
+    let nextSpace = undefined
+
+    switch(myBot10.name) {
+      case 'nw': { nextSpace = this.game.first(BotSpace, {name: 'ne'})!; break; }
+      case 'ne': { nextSpace = this.game.first(BotSpace, {name: 'se'})!; break; }
+      case 'sw': { nextSpace = this.game.first(BotSpace, {name: 'nw'})!; break; }
+      case 'se': { nextSpace = this.game.first(BotSpace, {name: 'sw'})!; break; }
+    }
+    
+    if(nextSpace!.first(Bot10)!.damaged) {
+      return this.getNextClockwiseBot10(nextSpace!)
+    } else {
+      return nextSpace!
+    }
+  }
+
+  getCounterClockwiseBot10() : BotSpace {
+    const myBot10 = this.container(BotSpace)!
+    return this.getNextCounterClockwiseBot10(myBot10)
+  }
+
+  getNextCounterClockwiseBot10(myBot10: BotSpace) : BotSpace {
+    let nextSpace = undefined
+
+    switch(myBot10.name) {
+      case 'nw': { nextSpace =  this.game.first(BotSpace, {name: 'sw'})!; break; }
+      case 'ne': { nextSpace =  this.game.first(BotSpace, {name: 'nw'})!; break; }
+      case 'sw': { nextSpace =  this.game.first(BotSpace, {name: 'se'})!; break; }
+      case 'se': { nextSpace =  this.game.first(BotSpace, {name: 'ne'})!; break; }
+    }
+    if(nextSpace!.first(Bot10)!.damaged) {
+      return this.getNextCounterClockwiseBot10(nextSpace!)
+    } else {
+      return nextSpace!
+    }
+  }
+
+
+  getClockwiseStarborg() : StarborgSpace {
+    const myStarborg = this.container(StarborgSpace)!
+    switch(myStarborg.color) {
+      case 'black': { return this.game.first(StarborgSpace, {color: 'green'})! }
+      case 'red': { return this.game.first(StarborgSpace, {color: 'black'})! }
+      case 'green': { return this.game.first(StarborgSpace, {color: 'yellow'})! }
+      case 'yellow': { return this.game.first(StarborgSpace, {color: 'blue'})! }
+      case 'blue': { return this.game.first(StarborgSpace, {color: 'red'})! }
+    }
+    return myStarborg
+  }
+
+  getCounterClockwiseStarborg() : StarborgSpace {
+    const myStarborg = this.container(StarborgSpace)!
+    switch(myStarborg.color) {
+      case 'black': { return this.game.first(StarborgSpace, {color: 'red'})! }
+      case 'red': { return this.game.first(StarborgSpace, {color: 'blue'})! }
+      case 'green': { return this.game.first(StarborgSpace, {color: 'black'})! }
+      case 'yellow': { return this.game.first(StarborgSpace, {color: 'green'})! }
+      case 'blue': { return this.game.first(StarborgSpace, {color: 'yellow'})! }
+    }
+    return myStarborg
   }
 
   getLeftHandler() : HandlerSpace {
@@ -115,18 +197,26 @@ export class Die extends Piece<MyGame> {
 export class MyGame extends Game<MyGame, StarborgVsBot10Player> {
   nextAction : string = 'none'
 
-  bot10damage : number = 0
+  bot10damage : number = 5
   phase: number = 1
 
   selectedDie: Die | undefined = undefined
   selectedHandler: HandlerSpace | undefined = undefined
+  selectedBot10: BotSpace | undefined = undefined
+  selectedStarborg: StarborgSpace | undefined = undefined
 
   clearSelectionsAndMove() : void {
     if(this.selectedDie != undefined && this.selectedHandler != undefined) {
       this.selectedDie.putInto(this.selectedHandler)
+    } else if(this.selectedDie != undefined && this.selectedBot10 != undefined) {
+      this.selectedDie.putInto(this.selectedBot10)
+    } else if(this.selectedDie != undefined && this.selectedStarborg != undefined) {
+      this.selectedDie.putInto(this.selectedStarborg)
     }
     this.selectedDie = undefined
     this.selectedHandler = undefined
+    this.selectedBot10 = undefined
+    this.selectedStarborg = undefined
   }
 }
 
@@ -141,7 +231,10 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
   const phase2 = new Phase2(game)
   phase2.setup()
 
-  game.defineActions(phase1.getActions());
+  const phaseAll = new PhaseAll(game)
+
+  const allActions = Object.assign({}, phaseAll.getActions(phase1, phase2), phase1.getActions(), phase2.getActions());
+  game.defineActions(allActions);
 
   game.defineFlow(
 
@@ -154,7 +247,7 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
       // HANDLER TURN
 
       // 1. Remove 2 dice from cards.
-      playerActions({ actions: ['chooseDice', 'chooseDie', 'chooseNone']}),
+      playerActions({ actions: ['choose2DiceFromHandlers', 'choose1DieFromHandlers', 'chooseNoDiceFromHandlers']}),
 
       // 2. Roll the dice. 
       () => $.player.all(Die).forEach(x => x.roll()),
@@ -200,6 +293,41 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
     () => phase2.begin(),
 
     // PHASE II
+    whileLoop({while: () => game.phase == 2, do: ([
+
+      // HANDLER TURN
+
+      // 1. Remove 2 dice from cards.
+      playerActions({ actions: ['choose2DiceFromStarborg', 'choose1DieFromStarborg', 'chooseNoDiceFromStarborg']}),
+
+      // 2. Roll the dice. 
+      () => $.player.all(Die).forEach(x => x.roll()),
+      // () => phase2.checkBot10Attack(),
+
+      // 3. Place both dice, one at a time on a Handler card and perform cactions.
+      forLoop({ name: 'd', initial: 1, next: d => d + 1, while: d => d <= 2, do: [
+        
+        // place a die on a handler
+        playerActions({ actions: ['choosePlayerDie']}),
+        playerActions({ actions: ['chooseStarborg']}),
+
+        // perform chain of actions
+        whileLoop({while: () => game.nextAction != 'none', do: ([
+          () => game.message('Next action is: ' + game.nextAction),
+          playerActions({ actions: ['nextAction']}),
+          () => game.clearSelectionsAndMove(),
+        ])}),
+      ]}),
+
+      // 4. Check for Bot-10 Damage
+      () => phase2.checkForDamage(),
+
+      // BOT-10 TURN
+
+      // 1. Roll dice on Bot-10
+      () => { phase2.rollDiceAndAttack() },
+
+    ])}),
 
 
     playerActions({ actions: []}),

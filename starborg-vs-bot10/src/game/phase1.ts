@@ -9,6 +9,7 @@ import {
     Action,
     GameElement
 } from '@boardzilla/core';
+import { StarborgSpace } from './phase2.js';
 
 
 export type SingleArgument = string | number | boolean | GameElement | Player;
@@ -45,7 +46,6 @@ export class Phase1 {
 
     game: MyGame
 
-
     constructor(game: MyGame) {
         this.game = game
     }
@@ -55,7 +55,7 @@ export class Phase1 {
         const { action } = game;
 
         return {
-            chooseDice: (player) => action({
+            choose2DiceFromHandlers: (player) => action({
                 prompt: 'Choose 2 dice to remove',
                 condition: $.player.all(Die).length == 0
             }).chooseOnBoard(
@@ -67,7 +67,7 @@ export class Phase1 {
                 });
             }),
 
-            chooseDie: (player) => action({
+            choose1DieFromHandlers: (player) => action({
                 prompt: 'Choose 1 die to remove',
                 condition: $.player.all(Die).length == 1
             }).chooseOnBoard(
@@ -79,7 +79,7 @@ export class Phase1 {
                 });
             }),
 
-            chooseNone: (player) => action({
+            chooseNoDiceFromHandlers: (player) => action({
                 condition: $.player.all(Die).length == 2
             }).message('Already have 2 dice.'),
 
@@ -128,129 +128,14 @@ export class Phase1 {
                 game.nextAction = 'none'
             }),
 
-            // SET
-            roll: () => action({
-                prompt: 'Choose a die to roll',
-            }).chooseOnBoard(
-                'die', game.all(HandlerSpace).all(Die)
-            ).do(({ die }) => {
-                die.roll()
-                if (!this.handlerInjured(die.container(HandlerSpace)!)) {
-                    game.nextAction = this.getAction(die.container(HandlerSpace)!, die)
-                } else {
-                    game.nextAction = 'none'
-                }
-            }),
-
-            sub1: (player) => action({
-                prompt: 'Choose a die to decrease by 1',
-                condition: game.all(HandlerSpace).all(Die).filter(x => x.face > 1).length > 0
-            }).chooseOnBoard(
-                'die', game.all(HandlerSpace).all(Die).filter(x => x.face > 1),
-                { skipIf: 'never' }
-            ).do(({ die }) => {
-                die.face = die.face - 1
-                if (!this.handlerInjured(die.container(HandlerSpace)!)) {
-                    game.nextAction = this.getAction(die.container(HandlerSpace)!, die)
-                } else {
-                    game.nextAction = 'none'
-                }
-            }),
-            add1: (player) => action({
-                prompt: 'Choose a die to increase by 1',
-                condition: game.all(HandlerSpace).all(Die).filter(x => x.face < 6).length > 0
-            }).chooseOnBoard(
-                'die', game.all(HandlerSpace).all(Die).filter(x => x.face < 6),
-                { skipIf: 'never' }
-            ).do(({ die }) => {
-                die.face = die.face + 1
-                if (!this.handlerInjured(die.container(HandlerSpace)!)) {
-                    game.nextAction = this.getAction(die.container(HandlerSpace)!, die)
-                } else {
-                    game.nextAction = 'none'
-                }
-            }),
-            addSub1: (player) => action({
-                prompt: 'Choose a die to increase or decrease by 1',
-            }).chooseOnBoard('die', game.all(HandlerSpace).all(Die)
-            ).do(({ die }) => {
-                game.selectedDie = die;
-                if (die.face == 1) {
-                    game.followUp({ name: 'addSubFollowUp1' })
-                } else if (die.face == 6) {
-                    game.followUp({ name: 'addSubFollowUp6' })
-                } else {
-                    game.followUp({ name: 'addSubFollowUp' })
-                }
-            }),
-
-            set: (player) => action({
-                prompt: 'Choose a die to set',
-            }).chooseOnBoard('die', game.all(HandlerSpace).all(Die)
-            ).do(({ die }) => { game.selectedDie = die; game.followUp({ name: 'setFollowUp' }) }),
-
-            setFollowUp: (player) => action({
-                prompt: 'Set a value',
-            }).chooseFrom(
-                "value", ["1", "2", "3", "4", "5", "6"]
-            ).do(({ value }) => {
-                const val = +value
-                if (game.selectedDie!.face == val) {
-                    game.nextAction = 'none'
-                } else {
-                    game.selectedDie!.face = val
-                    if (!this.handlerInjured(game.selectedDie!.container(HandlerSpace)!)) {
-                        game.nextAction = this.getAction(game.selectedDie!.container(HandlerSpace)!, game.selectedDie!)
-                    } else {
-                        game.nextAction = 'none'
-                    }
-                }
-            }),
-            addSubFollowUp1: (player) => action({
-                prompt: 'Increase',
-            }).chooseFrom(
-                "value", ["+1"], { skipIf: 'never' }
-            ).do(({ value }) => {
-                const val = game.selectedDie!.face + 1
-                game.selectedDie!.face = val
-                if (!this.handlerInjured(game.selectedDie!.container(HandlerSpace)!)) {
-                    game.nextAction = this.getAction(game.selectedDie!.container(HandlerSpace)!, game.selectedDie!)
-                } else {
-                    game.nextAction = 'none'
-                }
-            }),
-            addSubFollowUp6: (player) => action({
-                prompt: 'Decrease',
-            }).chooseFrom(
-                "value", ["-1"], { skipIf: 'never' }
-            ).do(({ value }) => {
-                const val = game.selectedDie!.face - 1
-                game.selectedDie!.face = val
-                if (!this.handlerInjured(game.selectedDie!.container(HandlerSpace)!)) {
-                    game.nextAction = this.getAction(game.selectedDie!.container(HandlerSpace)!, game.selectedDie!)
-                } else {
-                    game.nextAction = 'none'
-                }
-            }),
-            addSubFollowUp: (player) => action({
-                prompt: 'Decrease or Increase',
-            }).chooseFrom(
-                "value", ["-1", "+1"]
-            ).do(({ value }) => {
-                const val = game.selectedDie!.face + (value == "-1" ? -1 : 1)
-                game.selectedDie!.face = val
-                if (!this.handlerInjured(game.selectedDie!.container(HandlerSpace)!)) {
-                    game.nextAction = this.getAction(game.selectedDie!.container(HandlerSpace)!, game.selectedDie!)
-                } else {
-                    game.nextAction = 'none'
-                }
-            }),
-
             // MOVE
             move: (player) => action({
                 prompt: 'Choose a die to move',
             }).chooseOnBoard('die', game.all(HandlerSpace).all(Die)
-            ).do(({ die }) => { game.selectedDie = die; game.followUp({ name: 'moveFollowUp' }) }),
+            ).do(({ die }) => { 
+                game.selectedDie = die; 
+                game.followUp({ name: 'moveFollowUp' }) 
+            }),
 
             moveFollowUp: (player) => action({
                 prompt: 'Choose a handler to move to',
@@ -508,7 +393,7 @@ export class Phase1 {
     }
 
     getAction(handler: HandlerSpace, die: Die): string {
-        return handler.first(Starborg)!.dieActions[die.face]
+        return handler.first(Starborg)!.phase1DieActions[die.face]
     }
 
     handlerInjured(space: HandlerSpace): boolean {
@@ -609,19 +494,22 @@ export class Phase1 {
 
         $.move1.create(Bot10, 'move-1_and_bot10nw',
             {
-                phase1: 'move-left', phase2: 'nw',
+                phase1: 'move-left', phase2: 'nw', unblockedAttack: 6,
+                lowAttack: 'kick', highAttack: 'bite',
                 topMovement: { handlerColor: 'red', moveDirection: 'left' },
                 bottomMovement: { handlerColor: 'green', moveDirection: 'left' }
             })
         $.move2.create(Bot10, 'move-2_and_bot10ne',
             {
-                phase1: 'attack', phase2: 'ne',
+                phase1: 'attack', phase2: 'ne', unblockedAttack: 5,
+                lowAttack: 'bite', highAttack: 'kick',
                 topMovement: { handlerColor: 'black', moveDirection: 'right' },
                 bottomMovement: { handlerColor: 'black', moveDirection: 'left' }
             })
         $.move3.create(Bot10, 'move-3_and_bot10sw',
             {
-                phase1: 'move-right', phase2: 'sw',
+                phase1: 'move-right', phase2: 'sw', unblockedAttack: 8,
+                lowAttack: 'bite', highAttack: 'punch',
                 topMovement: { handlerColor: 'yellow', moveDirection: 'right' },
                 bottomMovement: { handlerColor: 'blue', moveDirection: 'right' }
             })
@@ -632,7 +520,10 @@ export class Phase1 {
         $.vehicles.create(VehicleSpace, 'vehicle4', { index: 4 })
         $.vehicles.create(VehicleSpace, 'vehicle5', { index: 5 })
 
-        const vehicle = $.vehicle3.create(Bot10, 'vehicle_and_bot10se', { phase1: 'vehicle', phase2: 'se' })
+        const vehicle = $.vehicle3.create(Bot10, 'vehicle_and_bot10se', { 
+            phase1: 'vehicle', phase2: 'se', unblockedAttack: 9,
+            lowAttack: 'punch', highAttack: 'bite'
+        })
         vehicle.rotation = 270
 
         $.handlers.create(HandlerSpace, 'handler1', { index: 1 })
@@ -642,31 +533,31 @@ export class Phase1 {
         $.handlers.create(HandlerSpace, 'handler5', { index: 5 })
 
         $.handler1.create(Starborg, 'green-handler_and_left-arm', {
-            color: 'green', formation: 11, dieActions: {
+            color: 'green', formation: 11, phase1DieActions: {
                 1: 'add1', 2: 'swap', 3: 'shiftRight', 4: 'addSub1', 5: 'roll', 6: 'set'
             }
         })
 
         $.handler2.create(Starborg, 'red-handler_and_right-arm', {
-            color: 'red', formation: 10, dieActions: {
+            color: 'red', formation: 10, phase1DieActions: {
                 1: 'shiftLeft', 2: 'addSub1', 3: 'roll', 4: 'sub1', 5: 'swap', 6: 'set'
             }
         })
 
         $.handler3.create(Starborg, 'black-handler_and_head', {
-            color: 'black', formation: 7, dieActions: {
+            color: 'black', formation: 7, phase1DieActions: {
                 1: 'shiftRight', 2: 'move', 3: 'swap', 4: 'set', 5: 'shiftLeft', 6: 'heal'
             }
         })
 
         $.handler4.create(Starborg, 'yellow-handler_and_left-leg', {
-            color: 'yellow', formation: 4, dieActions: {
+            color: 'yellow', formation: 4, phase1DieActions: {
                 1: 'moveLeftRight', 2: 'rotate', 3: 'shiftLeft', 4: 'swap', 5: 'moveLeft', 6: 'move'
             }
         })
 
         $.handler5.create(Starborg, 'blue-handler_and_right-leg', {
-            color: 'blue', formation: 3, dieActions: {
+            color: 'blue', formation: 3, phase1DieActions: {
                 1: 'swap', 2: 'shiftRight', 3: 'moveRight', 4: 'rotate', 5: 'moveLeftRight', 6: 'move'
             }
         })

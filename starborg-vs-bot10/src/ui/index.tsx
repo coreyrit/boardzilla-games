@@ -32,6 +32,7 @@ render(setup, {
     game.layout('leftLeg', { area: { left: 84, top: 55, width: 34, height: 25 }});
 
     game.all(StarborgSpace).layout(Die, {offsetColumn: {x: 0, y: 0} });
+    game.all(BotSpace).layout(Die, {offsetColumn: {x: 0, y: 0} });
 
     game.layout('nw', { area: { left: 0, top: 11, width: 25, height: 34 }});
     game.layout('ne', { area: { left: 25, top: 11, width: 25, height: 34 }});
@@ -79,6 +80,8 @@ render(setup, {
           <rect width="12" height="10" x="25" y={game.bot10damage * 10 + 5} fill="red" stroke="black" 
             strokeWidth={game.phase == 1 && x.phase1 == 'vehicle' ? '1' : '0'}
             fillOpacity={game.phase == 1 && x.phase1 == 'vehicle' ? '1' : '0'} />
+
+          <rect width="100" height="100" x="0" y="0" fill="black" fillOpacity={x.damaged ? 0.5 : 0} />
         </svg>
         </div>         
       </div>
