@@ -28,7 +28,7 @@ render(setup, {
       <div className='Bot10'>
         <div className={x.phase1 == 'vehicle' ? 'vehicle' : 'movement'}>
         <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-          <rect width="12" height="10" x="25" y={game.bot10damge * 10 + 5} fill="red" stroke="black" 
+          <rect width="12" height="10" x="25" y={game.bot10damage * 10 + 5} fill="red" stroke="black" 
             strokeWidth={x.phase1 == 'vehicle' ? '1' : '0'}
             fillOpacity={x.phase1 == 'vehicle' ? '1' : '0'} />
         </svg>

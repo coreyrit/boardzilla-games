@@ -3,7 +3,7 @@ import {
   Player,
   Space,
   Piece,
-  Game,
+  Game
 } from '@boardzilla/core';
 import { skip } from 'node:test';
 import { Handler } from 'puppeteer/internal/types.js';
@@ -17,17 +17,19 @@ export class Starborg extends Piece<MyGame> {
   color: 'red' | 'blue' | 'green' | 'black' | 'yellow'
 
   dieActions : Record<number, string>
+  formation: number
 }
 
-export class Movement {
+export class Movement {  
   moveDirection: 'right' | 'left'
   handlerColor: 'red' | 'blue' | 'green' | 'black' | 'yellow'
 }
 
 export class Bot10 extends Piece<MyGame> {
   phase1: 'vehicle' | 'move-left' | 'move-right' | 'attack'
+  arrowColor: 'black' | 'white'
 
-  topMovmeent: Movement;
+  topMovement: Movement;
   bottomMovement: Movement;
 }
 
@@ -75,16 +77,37 @@ export class Die extends Piece<MyGame> {
   }
 }
 
+
+const START = 0
+const DOUBLE_RIGHT = 1
+const DOUBLE_LEFT = 2
+const DOUBLE_BOTH = 3
+const ATTACK_ADJACENT = 4
+const DOUBLE_ATTACK = 5
+const DOUBLE_ATTACK_ADJACENT = 6
+const ATTACK_ALL_NO_DIE = 7
+const FORM_STARBORG = 8
+
 class MyGame extends Game<MyGame, StarborgVsBot10Player> {
   nextAction : string = 'none'
 
-  bot10damge : number = 0
+  bot10damage : number = START
 
   selectedDie: Die | undefined = undefined
   selectedHandler: HandlerSpace | undefined = undefined
 
+  handlerInjured(space: HandlerSpace) : boolean{
+    const handler = space.first(Starborg)!
+    return handler.rotation == 90
+  }
+
   getAction(handler: HandlerSpace, die: Die) : string {
     return handler.first(Starborg)!.dieActions[die.face]
+  }
+
+  getVehicleIndex() : number {
+    const vehicle = this.first(Bot10, {phase1: 'vehicle'})!;
+    return vehicle.container(VehicleSpace)!.index;
   }
 
   clearSelectionsAndMove() : void {
@@ -95,36 +118,109 @@ class MyGame extends Game<MyGame, StarborgVsBot10Player> {
     this.selectedHandler = undefined
   }
 
+  checkForDamage() : void {
+    this.message('Check for damage.')
+
+    const move1 = $.move1.first(Bot10)!
+    const move2 = $.move2.first(Bot10)!
+    const move3 = $.move3.first(Bot10)!
+    const color1 = move1.rotation == 180 ? move1.topMovement.handlerColor : move1.bottomMovement.handlerColor
+    const color2 = move2.rotation == 180 ? move2.topMovement.handlerColor : move2.bottomMovement.handlerColor
+    const color3 = move3.rotation == 180 ? move3.topMovement.handlerColor : move3.bottomMovement.handlerColor
+    const index1 = this.first(Starborg, {color: color1})!.container(HandlerSpace)!.index
+    const index2 = this.first(Starborg, {color: color2})!.container(HandlerSpace)!.index
+    const index3 = this.first(Starborg, {color: color3})!.container(HandlerSpace)!.index
+
+    this.message(color1 + ' < ' + color2 + ' < ' + color3)
+    this.message(index1 + ' < ' + index2 + ' < ' + index3)
+    if(index1 < index2 && index2 < index3) {
+      this.bot10damage++
+      this.all(Bot10).filter(x => x.phase1 != 'vehicle').forEach(x => x.rotation += 180)
+      this.message('Bot-10 has been damaged!')
+      
+      if(this.bot10damage == FORM_STARBORG) {
+        this.message('TRANSFORM!')
+      }
+    }
+  }
+
+  moveLeft() : void {
+    const vehicle = this.first(Bot10, {phase1: 'vehicle'})!
+    const space = vehicle.container(VehicleSpace)!
+    if(space.index == 1) {
+      vehicle.putInto(this.first(VehicleSpace, {index: 5})!);
+    } else {
+      vehicle.putInto(this.first(VehicleSpace, {index: space.index-1})!);
+    }
+  }
+
+  moveRight() : void {
+    const vehicle = this.first(Bot10, {phase1: 'vehicle'})!
+    const space = vehicle.container(VehicleSpace)!
+    if(space.index == 5) {
+      vehicle.putInto(this.first(VehicleSpace, {index: 1})!);
+    } else {
+      vehicle.putInto(this.first(VehicleSpace, {index: space.index+1})!);
+    }
+  }
+
+  attackPosition(handler: HandlerSpace) : void{
+    const die = handler.first(Die)
+    if(die != undefined) {
+      // dice protect handlers
+      die.putInto($.player)
+    } else {
+      const card = handler.first(Starborg)!
+      if(card.rotation == 90) {
+        this.finish(undefined)
+      } else {
+        card.rotation = 90
+      }
+    }
+  }
+
   performMove(move: Bot10) : void {
-    const movemment = move.rotation == 180 ? move.topMovmeent : move.bottomMovement
+    const movemment = move.rotation == 180 ? move.topMovement : move.bottomMovement
     const vehicle = this.first(Bot10, {phase1: 'vehicle'})!
     const space = vehicle.container(VehicleSpace)!
     if(movemment.moveDirection == 'left') {
-      if(space.index == 1) {
-        vehicle.putInto(this.first(VehicleSpace, {index: 5})!);
-      } else {
-        vehicle.putInto(this.first(VehicleSpace, {index: space.index-1})!);
+      this.moveLeft()      
+      if((this.bot10damage == DOUBLE_LEFT && move.arrowColor == 'black' ||
+        this.bot10damage == DOUBLE_BOTH && move.arrowColor == 'white')) {
+        this.moveLeft()
       }
     } else {
-      if(space.index == 5) {
-        vehicle.putInto(this.first(VehicleSpace, {index: 1})!);
-      } else {
-        vehicle.putInto(this.first(VehicleSpace, {index: space.index+1})!);
+      this.moveRight()
+      if((this.bot10damage == DOUBLE_RIGHT && move.arrowColor == 'black' ||
+        this.bot10damage == DOUBLE_BOTH && move.arrowColor == 'white')) {
+        this.moveRight()
       }
     }
     if(move.phase1 == 'attack') {
+
       // find the handler in the same column
       const handler = this.first(HandlerSpace, {index: space.index})!
-      const die = handler.first(Die)
-      if(die != undefined) {
-        // dice protect handlers
-        die.putInto($.player)
-      } else {
-        const card = handler.first(Starborg)!
-        if(card.rotation == 90) {
-          this.finish(undefined)
-        } else {
-          card.rotation = 90
+      this.attackPosition(handler)
+
+      if(this.bot10damage == ATTACK_ALL_NO_DIE) {
+        this.all(HandlerSpace).forEach(x => {
+          if(x.all(Die).length == 0) {
+            this.attackPosition(x)
+          }
+        })
+      } else {        
+        if(this.bot10damage == DOUBLE_ATTACK || this.bot10damage == DOUBLE_ATTACK_ADJACENT) {
+          this.attackPosition(handler)
+        }
+
+        if(this.bot10damage == ATTACK_ADJACENT) {
+          if(handler.index == 1) {
+            this.attackPosition(this.first(HandlerSpace, {index: handler.index+1})!)
+          } else if(handler.index == 5) {
+            this.attackPosition(this.first(HandlerSpace, {index: handler.index-1})!)
+          } else {
+            this.followUp({name: 'attackAdjacent'})
+          }
         }
       }
     }
@@ -149,15 +245,15 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
 
   $.move1.create(Bot10, 'move-1_and_bot10nw', 
     {phase1: 'move-left',
-     topMovmeent: {handlerColor: 'red', moveDirection: 'left'},
+      topMovement: {handlerColor: 'red', moveDirection: 'left'},
      bottomMovement: {handlerColor: 'green', moveDirection: 'left'}})
   $.move2.create(Bot10, 'move-2_and_bot10ne', 
     {phase1: 'attack', 
-     topMovmeent: {handlerColor: 'black', moveDirection: 'right'},
+      topMovement: {handlerColor: 'black', moveDirection: 'right'},
      bottomMovement: {handlerColor: 'black', moveDirection: 'left'}})
   $.move3.create(Bot10, 'move-3_and_bot10sw', 
     {phase1: 'move-right',
-     topMovmeent: {handlerColor: 'yellow', moveDirection: 'right'},
+      topMovement: {handlerColor: 'yellow', moveDirection: 'right'},
      bottomMovement: {handlerColor: 'blue', moveDirection: 'right'}})
 
   $.vehicles.create(VehicleSpace, 'vehicle1', {index: 1})
@@ -176,7 +272,7 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
   $.handlers.create(HandlerSpace, 'handler4', {index: 4})
   $.handlers.create(HandlerSpace, 'handler5', {index: 5})
 
-  $.handler1.create(Starborg, 'green-handler_and_left-arm', {color: 'green', dieActions: {
+  $.handler1.create(Starborg, 'green-handler_and_left-arm', {color: 'green', formation: 11, dieActions: {
     1: 'add1',
     2: 'swap',
     3: 'shiftRight',
@@ -185,7 +281,7 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
     6: 'set'
   }})
   
-  $.handler2.create(Starborg, 'red-handler_and_right-arm', {color: 'red', dieActions: {
+  $.handler2.create(Starborg, 'red-handler_and_right-arm', {color: 'red', formation: 10, dieActions: {
     1: 'shiftLeft',
     2: 'addSub1',
     3: 'roll',
@@ -194,7 +290,7 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
     6: 'set'
   }})
 
-  $.handler3.create(Starborg, 'black-handler_and_head', {color: 'black', dieActions: {
+  $.handler3.create(Starborg, 'black-handler_and_head', {color: 'black', formation: 7, dieActions: {
     1: 'shiftRight',
     2: 'move',
     3: 'swap',
@@ -203,7 +299,7 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
     6: 'heal'
   }})
 
-  $.handler4.create(Starborg, 'yellow-handler_and_left-leg', {color: 'yellow', dieActions: {
+  $.handler4.create(Starborg, 'yellow-handler_and_left-leg', {color: 'yellow', formation: 4, dieActions: {
     1: 'moveLeftRight',
     2: 'rotate',
     3: 'shiftLeft',
@@ -212,7 +308,7 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
     6: 'move'
   }})
 
-  $.handler5.create(Starborg, 'blue-handler_and_right-leg', {color: 'blue', dieActions: {
+  $.handler5.create(Starborg, 'blue-handler_and_right-leg', {color: 'blue', formation: 3, dieActions: {
     1: 'swap',
     2: 'shiftRight',
     3: 'moveRight',
@@ -255,6 +351,10 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
       });
     }),
 
+    chooseNone: (player) => action({
+      condition: $.player.all(Die).length == 2
+    }).message('Already have 2 dice.'),
+
     choosePlayerDie: (player) => action({
       prompt: 'Choose a die to place',      
     }).chooseOnBoard(
@@ -263,7 +363,6 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
     ).do(({ die }) => {
       game.selectedDie = die
     }),
-
 
     chooseHandler: (player) => action({
       prompt: 'Choose a handler for this die',
@@ -280,6 +379,26 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
       game.selectedDie = undefined
     }),
 
+    attackAdjacent: (player) => action({
+      prompt: 'Choose an adjacent handler to be attacked',
+    }).chooseOnBoard(
+      'handler', [game.first(HandlerSpace, {index: game.getVehicleIndex()-1})!, game.first(HandlerSpace, {index: game.getVehicleIndex()+1})!]
+    ).do(({ handler }) => {      
+      game.attackPosition(handler)
+      if(game.bot10damage == DOUBLE_ATTACK_ADJACENT) {
+        game.attackPosition(handler)
+      }
+    }),
+
+    // HEAL
+    heal: (player) => action({
+      prompt: 'Choose a handler to heal'
+    }).chooseOnBoard(
+      'handler', game.all(Starborg)
+    ).do(({ handler }) => {      
+      handler.rotation = 0
+      game.nextAction = 'none'
+    }),
 
     // SET
     roll: () => action({
@@ -288,7 +407,11 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
       'die', game.all(HandlerSpace).all(Die)
     ).do(({ die }) => {
       die.roll()
-      game.nextAction = game.getAction(die.container(HandlerSpace)!, die)
+      if(!game.handlerInjured(die.container(HandlerSpace)!)) {
+        game.nextAction = game.getAction(die.container(HandlerSpace)!, die)
+      } else {
+        game.nextAction = 'none'
+      }
     }),
 
     sub1: (player) => action({
@@ -299,7 +422,11 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
       {skipIf: 'never'}
     ).do(({ die }) => {
       die.face = die.face - 1
-      game.nextAction = game.getAction(die.container(HandlerSpace)!, die)
+      if(!game.handlerInjured(die.container(HandlerSpace)!)) {
+        game.nextAction = game.getAction(die.container(HandlerSpace)!, die)
+      } else {
+        game.nextAction = 'none'
+      }
     }),
     add1: (player) => action({
       prompt: 'Choose a die to increase by 1',
@@ -309,7 +436,11 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
       {skipIf: 'never'}
     ).do(({ die }) => {
       die.face = die.face + 1
-      game.nextAction = game.getAction(die.container(HandlerSpace)!, die)
+      if(!game.handlerInjured(die.container(HandlerSpace)!)) {
+        game.nextAction = game.getAction(die.container(HandlerSpace)!, die)
+      } else {
+        game.nextAction = 'none'
+      }
     }),
     addSub1: (player) => action({
       prompt: 'Choose a die to increase or decrease by 1',
@@ -339,8 +470,12 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
       if (game.selectedDie!.face == val) {
         game.nextAction = 'none'
       } else {
-        game.selectedDie!.face = val      
-        game.nextAction = game.getAction(game.selectedDie!.container(HandlerSpace)!, game.selectedDie!)
+        game.selectedDie!.face = val
+        if(!game.handlerInjured(game.selectedDie!.container(HandlerSpace)!)) {    
+          game.nextAction = game.getAction(game.selectedDie!.container(HandlerSpace)!, game.selectedDie!)
+        } else {
+          game.nextAction = 'none'
+        }
       }
     }),
     addSubFollowUp1: (player) => action({
@@ -350,7 +485,11 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
     ).do(({ value }) => {
       const val = game.selectedDie!.face + 1
       game.selectedDie!.face = val
-      game.nextAction = game.getAction(game.selectedDie!.container(HandlerSpace)!, game.selectedDie!)
+      if(!game.handlerInjured(game.selectedDie!.container(HandlerSpace)!)) {
+        game.nextAction = game.getAction(game.selectedDie!.container(HandlerSpace)!, game.selectedDie!)
+      } else {
+        game.nextAction = 'none'
+      }
     }),
     addSubFollowUp6: (player) => action({
       prompt: 'Decrease',
@@ -359,7 +498,11 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
     ).do(({ value }) => {
       const val = game.selectedDie!.face -1
       game.selectedDie!.face = val
-      game.nextAction = game.getAction(game.selectedDie!.container(HandlerSpace)!, game.selectedDie!)
+      if(!game.handlerInjured(game.selectedDie!.container(HandlerSpace)!)) {
+        game.nextAction = game.getAction(game.selectedDie!.container(HandlerSpace)!, game.selectedDie!)
+      } else {
+        game.nextAction = 'none'
+      }
     }),
     addSubFollowUp: (player) => action({
       prompt: 'Decrease or Increase',
@@ -368,7 +511,11 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
     ).do(({ value }) => {
       const val = game.selectedDie!.face + (value == "-1" ? -1 : 1)
       game.selectedDie!.face = val
-      game.nextAction = game.getAction(game.selectedDie!.container(HandlerSpace)!, game.selectedDie!)
+      if(!game.handlerInjured(game.selectedDie!.container(HandlerSpace)!)) {
+        game.nextAction = game.getAction(game.selectedDie!.container(HandlerSpace)!, game.selectedDie!)
+      } else {
+        game.nextAction = 'none'
+      }
     }),
 
     // MOVE
@@ -389,7 +536,11 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
         game.nextAction = 'none'
       } else {
         game.selectedHandler = handler
-        game.nextAction = game.getAction(handler, game.selectedDie!)
+        if(!game.handlerInjured(handler)) {
+          game.nextAction = game.getAction(handler, game.selectedDie!)
+        } else {
+          game.nextAction = 'none'
+        }
       }
     }),
 
@@ -421,7 +572,11 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
     ).do(({ direction }) => {
       const leftHandler = game.selectedDie!.getLeftHandler()
       game.selectedHandler = leftHandler
-      game.nextAction = game.getAction(leftHandler, game.selectedDie!)
+      if(!game.handlerInjured(leftHandler)) {
+        game.nextAction = game.getAction(leftHandler, game.selectedDie!)
+      } else {
+        game.nextAction = 'none'
+      }
     }),
     leftRightFollowUpRight: (player) => action({
       prompt: 'Move right',
@@ -430,7 +585,11 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
     ).do(({ direction }) => {
       const rightHandler = game.selectedDie!.getRightHandler()
       game.selectedHandler = rightHandler
-      game.nextAction = game.getAction(rightHandler, game.selectedDie!)
+      if(!game.handlerInjured(rightHandler)) {
+        game.nextAction = game.getAction(rightHandler, game.selectedDie!)
+      } else {
+        game.nextAction = 'none'
+      }
     }),
     leftRightFollowUp: (player) => action({
       prompt: 'Move left or right',
@@ -439,7 +598,11 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
     ).do(({ direction }) => {
       const handler = direction == 'Left' ? game.selectedDie!.getLeftHandler() : game.selectedDie!.getRightHandler()
       game.selectedHandler = handler
-      game.nextAction = game.getAction(handler, game.selectedDie!)
+      if(!game.handlerInjured(handler)) {
+        game.nextAction = game.getAction(handler, game.selectedDie!)
+      } else {
+        game.nextAction = 'none'
+      }
     }),
 
     moveLeft: (player) => action({
@@ -451,7 +614,11 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
     ).do(({ die }) => {
       const leftHandler = die.getLeftHandler()
       die.putInto(leftHandler)
-      game.nextAction = game.getAction(leftHandler, die)
+      if(!game.handlerInjured(leftHandler)) {
+        game.nextAction = game.getAction(leftHandler, die)
+      } else {
+        game.nextAction = 'none'
+      }
     }),
 
     moveRight: (player) => action({
@@ -463,7 +630,11 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
     ).do(({ die }) => {
       const rightHandler = die.getRightHandler()
       die.putInto(rightHandler)
-      game.nextAction = game.getAction(rightHandler, die)
+      if(!game.handlerInjured(rightHandler)) {
+        game.nextAction = game.getAction(rightHandler, die)
+      } else {
+        game.nextAction = 'none'
+      }
     }),
 
     swap: (player) => action({
@@ -512,21 +683,28 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
     ),
     rotate: () => action().do(
       () =>{
-        const attack = game.first(Bot10, {phase1: 'vehicle'})!
+        const attack = game.first(Bot10, {phase1: 'attack'})!
         attack.rotation += 180
-        game.nextAction = 'none'
-      }
-    ),
-    heal: () => action().do(
-      () =>{
-        game.message('nothing yet')
         game.nextAction = 'none'
       }
     ),
 
     nextAction: () => action().do(
       () => game.followUp({name: game.nextAction})      
-    )
+    ),
+
+    transform: (player) => action({
+      prompt: 'Transform into Starborg',
+      condition: game.all(Starborg, {rotation: 0}).map(x => x.formation)
+        .includes($.player.all(Die).reduce((acc, cur) => acc + cur.face, 0))
+    }).do(() => {
+      game.message('TRANSFORM!')
+    }),
+    skip: (player) => action({
+      prompt: 'Skip'
+    }).do(() => {      
+      game.nextAction = 'none'
+    }),
 
   });
 
@@ -547,10 +725,11 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
       // HANDLER TURN
 
       // 1. Remove 2 dice from cards.
-      playerActions({ actions: ['chooseDice', 'chooseDie']}),
+      playerActions({ actions: ['chooseDice', 'chooseDie', 'chooseNone']}),
 
       // 2. Roll the dice. 
       () => $.player.all(Die).forEach(x => x.roll()),
+      playerActions({ actions: ['transform', 'skip']}),
 
       // 3. Place both dice, one at a time on a Handler card and perform cactions.
       forLoop({ name: 'd', initial: 1, next: d => d + 1, while: d => d <= 2, do: [
@@ -569,11 +748,17 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
       ]}),
 
       // 4. Check for Bot-10 Damage
+      () => game.checkForDamage(),
 
       // BOT-10 TURN
 
       // 1. Shuffle the 3 movemvent cards
-      () => $.movement.shuffle(),
+      () => {
+        const shuffle = $.movement.all(Bot10).sortBy(x => game.random())
+        shuffle[0].putInto($.move1)
+        shuffle[1].putInto($.move2)
+        shuffle[2].putInto($.move3)
+      },
 
       // 2. Follow bottom actions
       () => {
