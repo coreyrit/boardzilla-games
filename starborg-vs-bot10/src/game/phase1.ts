@@ -1,5 +1,5 @@
 
-import { StarborgVsBot10Player, MyGame, PlayerSpace, MovementSpace, VehicleSpace, HandlerSpace, Bot10, Starborg, Die } from '../game/index.js';
+import { StarborgVsBot10Player, MyGame, Bot10, Starborg, Die } from '../game/index.js';
 import {
     createGame,
     Player,
@@ -14,6 +14,21 @@ import {
 export type SingleArgument = string | number | boolean | GameElement | Player;
 export type Argument = SingleArgument | SingleArgument[];
 
+export class VehicleSpace extends Space<MyGame> {
+  index: number
+}
+
+export class MovementSpace extends Space<MyGame> {
+
+}
+
+export class HandlerSpace extends Space<MyGame> {
+  index: number
+}
+
+export class PlayerSpace extends Space<MyGame> {
+
+}
 
 const START = 0
 const DOUBLE_RIGHT = 1
@@ -586,7 +601,7 @@ export class Phase1 {
         $.phase1.create(Space, 'movement')
         $.phase1.create(Space, 'vehicles')
         $.phase1.create(Space, 'handlers')
-        $.phase1.create(PlayerSpace, 'player')
+        this.game.create(PlayerSpace, 'player')
 
         $.movement.create(MovementSpace, 'move1')
         $.movement.create(MovementSpace, 'move2')
@@ -594,19 +609,19 @@ export class Phase1 {
 
         $.move1.create(Bot10, 'move-1_and_bot10nw',
             {
-                phase1: 'move-left',
+                phase1: 'move-left', phase2: 'nw',
                 topMovement: { handlerColor: 'red', moveDirection: 'left' },
                 bottomMovement: { handlerColor: 'green', moveDirection: 'left' }
             })
         $.move2.create(Bot10, 'move-2_and_bot10ne',
             {
-                phase1: 'attack',
+                phase1: 'attack', phase2: 'ne',
                 topMovement: { handlerColor: 'black', moveDirection: 'right' },
                 bottomMovement: { handlerColor: 'black', moveDirection: 'left' }
             })
         $.move3.create(Bot10, 'move-3_and_bot10sw',
             {
-                phase1: 'move-right',
+                phase1: 'move-right', phase2: 'sw',
                 topMovement: { handlerColor: 'yellow', moveDirection: 'right' },
                 bottomMovement: { handlerColor: 'blue', moveDirection: 'right' }
             })
@@ -617,7 +632,7 @@ export class Phase1 {
         $.vehicles.create(VehicleSpace, 'vehicle4', { index: 4 })
         $.vehicles.create(VehicleSpace, 'vehicle5', { index: 5 })
 
-        const vehicle = $.vehicle3.create(Bot10, 'vehicle_and_bot10se', { phase1: 'vehicle' })
+        const vehicle = $.vehicle3.create(Bot10, 'vehicle_and_bot10se', { phase1: 'vehicle', phase2: 'se' })
         vehicle.rotation = 270
 
         $.handlers.create(HandlerSpace, 'handler1', { index: 1 })

@@ -9,9 +9,8 @@ import { skip } from 'node:test';
 import { Handler } from 'puppeteer/internal/types.js';
 
 
-import {
-  Phase1
-} from './phase1.js'
+import { Phase1, HandlerSpace } from './phase1.js'
+import { Phase2 } from './phase2.js'
 
 export class StarborgVsBot10Player extends Player<MyGame, StarborgVsBot10Player> {
 }
@@ -22,6 +21,51 @@ export class Starborg extends Piece<MyGame> {
 
   dieActions : Record<number, string>
   formation: number
+
+  getX() : number {
+    if(this.color == 'black') {
+      return 45
+    } else if(this.color == 'red') {
+      return 42
+    } else if(this.color == 'green') {
+      return 44
+    } else if(this.color == 'blue') {
+      return this.game.bot10damage == 5 ? 72 : 84
+    } else if(this.color == 'yellow') {
+      return this.game.bot10damage == 7 ? 6 : 18
+    } else {
+      return 0
+    }
+  }
+
+  getY() : number {
+    if(this.color == 'black') {
+      return this.game.bot10damage == 1 ? 18 : 36
+    } else if(this.color == 'red' || this.color == 'green') {
+      return 10
+    } else if(this.color == 'blue' || this.color == 'yellow') {
+      return 79
+    } else {
+      return 0
+    }
+  }
+
+  showCube() : boolean {
+    if(this.game.phase == 2) {
+      if(this.color == 'black' && this.game.bot10damage <= 2) {
+        return true;
+      } else if(this.color == 'red' && this.game.bot10damage == 3) {
+        return true;
+      } else if(this.color == 'green' && this.game.bot10damage == 4) {
+        return true;
+      } else if(this.color == 'blue' && this.game.bot10damage >= 5 && this.game.bot10damage <= 6) {
+        return true;
+      } else if(this.color == 'yellow' && this.game.bot10damage >= 7) {
+        return true;
+      }
+    }
+    return false;
+  }
 }
 
 export class Movement {  
@@ -31,27 +75,14 @@ export class Movement {
 
 export class Bot10 extends Piece<MyGame> {
   phase1: 'vehicle' | 'move-left' | 'move-right' | 'attack'
+  phase2: 'nw' | 'ne' | 'sw' | 'se'
+
   arrowColor: 'black' | 'white'
 
   topMovement: Movement;
   bottomMovement: Movement;
 }
 
-export class VehicleSpace extends Space<MyGame> {
-  index: number
-}
-
-export class MovementSpace extends Space<MyGame> {
-
-}
-
-export class HandlerSpace extends Space<MyGame> {
-  index: number
-}
-
-export class PlayerSpace extends Space<MyGame> {
-
-}
 
 export class Die extends Piece<MyGame> {
   face: number = 1
@@ -106,6 +137,9 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
 
   const phase1 = new Phase1(game)
   phase1.setup()
+
+  const phase2 = new Phase2(game)
+  phase2.setup()
 
   game.defineActions(phase1.getActions());
 
@@ -162,8 +196,12 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
         ]})
     ])}),
 
+    // set up for phase 2
+    () => phase2.begin(),
 
-    // PHASE I
+    // PHASE II
+
+
     playerActions({ actions: []}),
 
   );

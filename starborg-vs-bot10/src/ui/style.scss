@@ -1,9 +1,8 @@
 #play-area {
 
-
     .Die {
         z-index: 5;
-        top: 75%; left: 70%; width: 30%; height: 25%;
+        top: 55%; left: 38%; width: 20%; height: 20%;
     }
 
     .Bot10 {
@@ -13,6 +12,11 @@
         &[data-phase1="move-left"] .movement { background-image: url(./assets/move-red-green.jpg) }
         &[data-phase1="attack"] .movement { background-image: url(./assets/move-black.jpg) }
         &[data-phase1="move-right"] .movement { background-image: url(./assets/move-yellow-blue.jpg) }
+
+        &[data-phase2="nw"] .bot10 { background-image: url(./assets/bot10-nw.jpg) }
+        &[data-phase2="ne"] .bot10 { background-image: url(./assets/bot10-ne.jpg) }
+        &[data-phase2="sw"] .bot10 { background-image: url(./assets/bot10-sw.jpg) }
+        &[data-phase2="se"] .bot10 { background-image: url(./assets/bot10-se.jpg) }
 
         > div {
             transition: 0.6s;
@@ -28,12 +32,20 @@
             }
 
             .movement {
-                top: 0%; left: 0%; width: 100%; height: 100%;
+              top: 0%; left: 0%; width: 100%; height: 100%;
                 
-                border-radius: 0.2em;
-                border-color: black;
-                background-size: contain;
-              }
+              border-radius: 0.2em;
+              border-color: black;
+              background-size: contain;
+            }
+
+            .bot10 {
+              top: 0%; left: 0%; width: 100%; height: 100%;
+                
+              border-radius: 0.2em;
+              border-color: black;
+              background-size: contain;
+            }
           }
     }
 
@@ -46,10 +58,13 @@
         &[data-color="yellow"] .handler { background-image: url(./assets/handler-yellow.jpg) }
         &[data-color="black"] .handler { background-image: url(./assets/handler-black.jpg) }
 
-        &:hover {
-            z-index: 1000;
-            transform: scale(1.5) translate(0%, -25%);
-          }
+        &[data-color="green"] .starborg { background-image: url(./assets/starborg-left-arm.jpg) }
+        &[data-color="red"] .starborg { background-image: url(./assets/starborg-right-arm.jpg) }
+        &[data-color="blue"] .starborg { background-image: url(./assets/starborg-right-leg.jpg) }
+        &[data-color="yellow"] .starborg { background-image: url(./assets/starborg-left-leg.jpg) }
+        &[data-color="black"] .starborg { background-image: url(./assets/starborg-head.jpg) }
+
+        
 
         > div {
             transition: 0.6s;
@@ -62,7 +77,20 @@
               border-radius: 0.2em;
               border-color: black;
               background-size: contain;
+
+              &:hover {
+                z-index: 1000;
+                transform: scale(1.5) translate(0%, -25%);
+              }
             }
+
+            .starborg {
+                top: 0%; left: 0%; width: 100%; height: 100%;
+                
+                border-radius: 0.2em;
+                border-color: black;
+                background-size: contain;
+              }
           }
     }
 
