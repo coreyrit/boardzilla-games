@@ -85,6 +85,7 @@ export class MyGame extends Game<MyGame, StarborgVsBot10Player> {
   nextAction : string = 'none'
 
   bot10damage : number = 0
+  phase: number = 1
 
   selectedDie: Die | undefined = undefined
   selectedHandler: HandlerSpace | undefined = undefined
@@ -101,7 +102,7 @@ export class MyGame extends Game<MyGame, StarborgVsBot10Player> {
 export default createGame(StarborgVsBot10Player, MyGame, game => {
 
   const { action } = game;
-  const { playerActions, loop, eachPlayer, whileLoop, forLoop } = game.flowCommands;
+  const { playerActions, loop, eachPlayer, whileLoop, forLoop, ifElse } = game.flowCommands;
 
   const phase1 = new Phase1(game)
   phase1.setup()
@@ -114,7 +115,7 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
     () => phase1.begin(),
 
     // PHASE I
-    loop(
+    whileLoop({while: () => game.phase == 1, do: ([
 
       // HANDLER TURN
 
@@ -125,33 +126,45 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
       () => $.player.all(Die).forEach(x => x.roll()),
       playerActions({ actions: ['transform', 'skip']}),
 
-      // 3. Place both dice, one at a time on a Handler card and perform cactions.
-      forLoop({ name: 'd', initial: 1, next: d => d + 1, while: d => d <= 2, do: [
-        // place a die on a handler
-        playerActions({ actions: ['choosePlayerDie']}),
-        playerActions({ actions: ['chooseHandler']}),
+      // only if not transformred
+      ifElse({
+        if: () => game.phase == 1,
+        do: [
+          // 3. Place both dice, one at a time on a Handler card and perform cactions.
+          forLoop({ name: 'd', initial: 1, next: d => d + 1, while: d => d <= 2, do: [
+        
+          // place a die on a handler
+          playerActions({ actions: ['choosePlayerDie']}),
+          playerActions({ actions: ['chooseHandler']}),
 
-        // perform chain of actions
-        whileLoop({while: () => game.nextAction != 'none', do: ([
-          () => game.message('Next action is: ' + game.nextAction),
-          playerActions({ actions: ['nextAction']}),
-          () => game.clearSelectionsAndMove(),
-        ])}),
-      ]}),
+          // perform chain of actions
+          whileLoop({while: () => game.nextAction != 'none', do: ([
+            () => game.message('Next action is: ' + game.nextAction),
+            playerActions({ actions: ['nextAction']}),
+            () => game.clearSelectionsAndMove(),
+          ])}),
+        ]}),
 
-      // 4. Check for Bot-10 Damage
-      () => phase1.checkForDamage(),
+        // 4. Check for Bot-10 Damage
+        () => phase1.checkForDamage(),
 
-      // BOT-10 TURN
+        // BOT-10 TURN
+        // only if not transformred
+        ifElse({
+          if: () => game.phase == 1,
+          do: [
+            // 1. Shuffle the 3 movemvent cards
+            () => { phase1.shuffleMovementCards() },
 
-      // 1. Shuffle the 3 movemvent cards
-      () => { phase1.shuffleMovementCards() },
+            // 2. Follow bottom actions
+            () => { phase1.followBot10Actions() },
+          ]})
+        ]})
+    ])}),
 
-      // 2. Follow bottom actions
-      () => { phase1.followBot10Actions() },
 
-    ),
-
+    // PHASE I
     playerActions({ actions: []}),
+
   );
 });

@@ -424,6 +424,7 @@ export class Phase1 {
                     .includes($.player.all(Die).reduce((acc, cur) => acc + cur.face, 0))
             }).do(() => {
                 game.message('TRANSFORM!')
+                game.phase = 2
             }),
             skip: (player) => action({
                 prompt: 'Skip'
@@ -527,6 +528,7 @@ export class Phase1 {
 
             if (this.game.bot10damage == FORM_STARBORG) {
                 this.game.message('TRANSFORM!')
+                this.game.phase = 2
             }
         }
     }
