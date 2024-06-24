@@ -48,6 +48,18 @@ export class PhaseAll {
         const { action } = game;
 
         return {
+
+            bot10turn: (player) => action({
+            }).message('<b>Bot-10</b> is taking its turn.'),
+
+            rollDice: (player) => action({
+            }).chooseOnBoard(
+                'dice', $.player.all(Die),
+                { number: 2 }
+            ).do(({dice}) => {
+                dice.forEach(x => x.roll())
+            }).message('You roll a {{dice}}.'),
+
             // SET
             add1: (player) => action({
                 prompt: 'Choose a die to increase by 1',
@@ -60,7 +72,7 @@ export class PhaseAll {
             ).do(({ die }) => {
                 die.face = die.face + 1
                 game.performAction(this.getNextAction(game, phase1, phase2, die))
-            }),
+            }).message('You increased the die to {{die}}.'),
 
             addSub1: (player) => action({
                 prompt: 'Choose a die to increase or decrease by 1',
@@ -139,7 +151,7 @@ export class PhaseAll {
             ).do(({ die }) => {
                 die.face = die.face - 1
                 game.performAction(this.getNextAction(game, phase1, phase2, die))
-            }),
+            }).message('You decreaesed the die to {{die}}.'),
 
             roll: () => action({
                 prompt: 'Choose a die to roll',
@@ -148,9 +160,15 @@ export class PhaseAll {
                 'die', game.all(HandlerSpace).all(Die).concat(game.all(StarborgSpace).all(Die)),
                 {skipIf: 'never'}
             ).do(({ die }) => {
+                const prevFace = die.face
                 die.roll()
-                game.performAction(this.getNextAction(game, phase1, phase2, die))
-            }),
+                const newFace = die.face
+                if(prevFace != newFace) {
+                    game.performAction(this.getNextAction(game, phase1, phase2, die))
+                } else {
+                    game.clearAction()
+                }
+            }).message('You rolled a {{die}}.'),
         }
     }
 }

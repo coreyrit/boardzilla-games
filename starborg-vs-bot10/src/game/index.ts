@@ -27,6 +27,10 @@ export class Starborg extends Piece<MyGame> {
 
   formation: number  
 
+  override toString(): string {
+      return this.game.phase == 1 ? this.color : '?'
+  }
+
   getX() : number {
     if(this.color == 'black') {
       return 45
@@ -196,7 +200,7 @@ export class MyGame extends Game<MyGame, StarborgVsBot10Player> {
   performingAction : boolean = false
   theNextAction : string = 'none'
 
-  bot10damage : number = 0
+  bot10damage : number = 4
   phase: number = 1
 
   selectedDie: Die | undefined = undefined
@@ -263,7 +267,7 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
       playerActions({ actions: ['choose2DiceFromHandlers', 'choose1DieFromHandlers', 'chooseNoDiceFromHandlers']}),
 
       // 2. Roll the dice. 
-      () => $.player.all(Die).forEach(x => x.roll()),
+      playerActions({ actions: ['rollDice']}),
       playerActions({ actions: ['transform', 'skip']}),
 
       // only if not transformred
@@ -280,7 +284,7 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
           // perform chain of actions
           () => game.performingAction = false,
           whileLoop({while: () => game.theNextAction != 'none' && !game.performingAction, do: ([
-            () => game.message('Next action is: ' + game.theNextAction),
+            // () => game.message('Next action is: ' + game.theNextAction),
             () => game.performingAction = true,
             // performing any sort of action (or even none) should set performing to false
             playerActions({ actions: phase1.allActions(), continueIfImpossible: true}),
@@ -289,9 +293,11 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
         ]}),
 
         // 4. Check for Bot-10 Damage
-        () => phase1.checkForDamage(),
+        playerActions({ actions: ['checkForDamage']}),
 
         // BOT-10 TURN
+        playerActions({ actions: ['bot10turn']}),
+
         // only if not transformred
         ifElse({
           if: () => game.phase == 1,
@@ -330,7 +336,7 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
         // perform chain of actions
         () => game.performingAction = false,
         whileLoop({while: () => game.theNextAction != 'none' && !game.performingAction, do: ([
-          () => game.message('Next action is: ' + game.theNextAction),
+          // () => game.message('Next action is: ' + game.theNextAction),
           () => game.performingAction = true,
           // performing any sort of action (or even none) should set performing to false
           playerActions({ actions: phase2.allActions(), continueIfImpossible: true}),
