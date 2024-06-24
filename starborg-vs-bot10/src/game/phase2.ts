@@ -232,7 +232,9 @@ export class Phase2 {
                 { skipIf: 'never' }
             ).do(({ die }) => {
                 die.putInto($.player)
-                // game.bot10damage++;
+                if(game.bot10damage < 8) {
+                    game.bot10damage++;
+                }
                 game.clearAction()
             }),
 
