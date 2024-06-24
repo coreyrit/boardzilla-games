@@ -50,6 +50,25 @@ export class Phase1 {
         this.game = game
     }
 
+    allActions() : string[] {
+        return [
+            'add1',
+            'sub1',
+            'addSub1',
+            'shiftLeft',
+            'shiftRight',
+            'swap',
+            'roll',
+            'set',
+            'move',
+            'heal',
+            'moveLeft',
+            'moveRight',
+            'rotate',
+            'moveLeftRight'
+        ]
+    }
+
     getActions(): Record<string, (player: StarborgVsBot10Player) => Action<Record<string, Argument>>> {
         const game = this.game
         const { action } = game;
@@ -100,9 +119,9 @@ export class Phase1 {
                 game.selectedDie!.putInto(handler)
                 const h = handler.first(Starborg)!
                 if (h.rotation != 90) {
-                    game.nextAction = this.getAction(handler, game.selectedDie!)
+                    game.performAction(this.getAction(handler, game.selectedDie!))
                 } else {
-                    game.nextAction = 'none'
+                    game.clearAction()
                 }
                 game.selectedDie = undefined
             }),
@@ -110,7 +129,10 @@ export class Phase1 {
             attackAdjacent: (player) => action({
                 prompt: 'Choose an adjacent handler to be attacked',
             }).chooseOnBoard(
-                'handler', [game.first(HandlerSpace, { index: this.getVehicleIndex() - 1 })!, game.first(HandlerSpace, { index: this.getVehicleIndex() + 1 })!]
+                'handler', [
+                    game.first(HandlerSpace, { index: this.getVehicleIndex() - 1 })!, 
+                    game.first(HandlerSpace, { index: this.getVehicleIndex() + 1 })!
+                ]
             ).do(({ handler }) => {
                 this.attackPosition(handler)
                 if (game.bot10damage == DOUBLE_ATTACK_ADJACENT) {
@@ -120,17 +142,19 @@ export class Phase1 {
 
             // HEAL
             heal: (player) => action({
-                prompt: 'Choose a handler to heal'
+                prompt: 'Choose a handler to heal',
+                condition: this.game.nextActionIs('heal')
             }).chooseOnBoard(
                 'handler', game.all(Starborg)
             ).do(({ handler }) => {
                 handler.rotation = 0
-                game.nextAction = 'none'
+                game.clearAction()
             }),
 
             // MOVE
             move: (player) => action({
                 prompt: 'Choose a die to move',
+                condition: this.game.nextActionIs('move')
             }).chooseOnBoard('die', game.all(HandlerSpace).all(Die)
             ).do(({ die }) => { 
                 game.selectedDie = die; 
@@ -146,23 +170,23 @@ export class Phase1 {
                 const dieHandler = game.selectedDie!.container(HandlerSpace)!
                 if (handler == dieHandler) {
                     // didn't move
-                    game.nextAction = 'none'
+                    game.clearAction()
                 } else {
                     game.selectedHandler = handler
                     if (!this.handlerInjured(handler)) {
-                        game.nextAction = this.getAction(handler, game.selectedDie!)
+                        game.performAction(this.getAction(handler, game.selectedDie!))
                     } else {
-                        game.nextAction = 'none'
+                        game.clearAction()
                     }
                 }
             }),
 
             moveLeftRight: (player) => action({
                 prompt: 'Choose a die to move left or right',
-                condition: (
+                condition: this.game.nextActionIs('moveLeftRight') && (                    
                     game.all(HandlerSpace).all(Die).filter(x => x.getLeftHandler().all(Die).length == 0).length +
                     game.all(HandlerSpace).all(Die).filter(x => x.getRightHandler().all(Die).length == 0).length
-                ) > 0
+                    ) > 0
             }).chooseOnBoard(
                 'die', game.all(HandlerSpace).all(Die).filter(x => x.getLeftHandler().all(Die).length == 0).concat(
                     game.all(HandlerSpace).all(Die).filter(x => x.getRightHandler().all(Die).length == 0)),
@@ -181,58 +205,59 @@ export class Phase1 {
             leftRightFollowUpLeft: (player) => action({
                 prompt: 'Move left',
             }).chooseFrom(
-                "direction", ["Left", "Skip"], { skipIf: 'never' }
+                "direction", ["Left"], { skipIf: 'never' }
             ).do(({ direction }) => {
-                if (direction != 'Skip') {
+                // if (direction != 'Skip') {
                     const leftHandler = game.selectedDie!.getLeftHandler()
                     game.selectedHandler = leftHandler
                     if (!this.handlerInjured(leftHandler)) {
-                        game.nextAction = this.getAction(leftHandler, game.selectedDie!)
+                        game.performAction(this.getAction(leftHandler, game.selectedDie!))
                     } else {
-                        game.nextAction = 'none'
+                        game.clearAction()
                     }
-                } else {
-                    game.nextAction = 'none'
-                }
+                // } else {
+                    // game.clearAction()
+                // }
             }),
             leftRightFollowUpRight: (player) => action({
                 prompt: 'Move right',
             }).chooseFrom(
-                "direction", ["Right", "Skip"], { skipIf: 'never' }
+                "direction", ["Right"], { skipIf: 'never' }
             ).do(({ direction }) => {
-                if (direction != 'Skip') {
+                // if (direction != 'Skip') {
                     const rightHandler = game.selectedDie!.getRightHandler()
                     game.selectedHandler = rightHandler
                     if (!this.handlerInjured(rightHandler)) {
-                        game.nextAction = this.getAction(rightHandler, game.selectedDie!)
+                        game.performAction(this.getAction(rightHandler, game.selectedDie!))
                     } else {
-                        game.nextAction = 'none'
+                        game.clearAction()
                     }
-                } else {
-                    game.nextAction = 'none'
-                }
+                // } else {
+                    // game.clearAction()
+                // }
             }),
             leftRightFollowUp: (player) => action({
                 prompt: 'Move left or right',
             }).chooseFrom(
-                "direction", ["Left", "Right", "Skip"]
+                "direction", ["Left", "Right"]
             ).do(({ direction }) => {
-                if (direction != 'Skip') {
+                // if (direction != 'Skip') {
                     const handler = direction == 'Left' ? game.selectedDie!.getLeftHandler() : game.selectedDie!.getRightHandler()
                     game.selectedHandler = handler
                     if (!this.handlerInjured(handler)) {
-                        game.nextAction = this.getAction(handler, game.selectedDie!)
+                        game.performAction(this.getAction(handler, game.selectedDie!))
                     } else {
-                        game.nextAction = 'none'
+                        game.clearAction()
                     }
-                } else {
-                    game.nextAction = 'none'
-                }
+                // } else {
+                    // game.clearAction()
+                // }
             }),
 
             moveLeft: (player) => action({
                 prompt: 'Choose a die to move left',
-                condition: game.all(HandlerSpace).all(Die).filter(x => x.getLeftHandler().all(Die).length == 0).length > 0
+                condition: this.game.nextActionIs('moveLeft') &&
+                    game.all(HandlerSpace).all(Die).filter(x => x.getLeftHandler().all(Die).length == 0).length > 0
             }).chooseOnBoard(
                 'die', game.all(HandlerSpace).all(Die).filter(x => x.getLeftHandler().all(Die).length == 0),
                 { skipIf: 'never' }
@@ -240,15 +265,16 @@ export class Phase1 {
                 const leftHandler = die.getLeftHandler()
                 die.putInto(leftHandler)
                 if (!this.handlerInjured(leftHandler)) {
-                    game.nextAction = this.getAction(leftHandler, die)
+                    game.performAction(this.getAction(leftHandler, die))
                 } else {
-                    game.nextAction = 'none'
+                    game.clearAction()
                 }
             }),
 
             moveRight: (player) => action({
                 prompt: 'Choose a die to move right',
-                condition: game.all(HandlerSpace).all(Die).filter(x => x.getRightHandler().all(Die).length == 0).length > 0
+                condition: this.game.nextActionIs('moveRight') &&
+                    game.all(HandlerSpace).all(Die).filter(x => x.getRightHandler().all(Die).length == 0).length > 0
             }).chooseOnBoard(
                 'die', game.all(HandlerSpace).all(Die).filter(x => x.getRightHandler().all(Die).length == 0),
                 { skipIf: 'never' }
@@ -256,14 +282,15 @@ export class Phase1 {
                 const rightHandler = die.getRightHandler()
                 die.putInto(rightHandler)
                 if (!this.handlerInjured(rightHandler)) {
-                    game.nextAction = this.getAction(rightHandler, die)
+                    game.performAction(this.getAction(rightHandler, die))
                 } else {
-                    game.nextAction = 'none'
+                    game.clearAction()
                 }
             }),
 
             swap: (player) => action({
                 prompt: 'Choose 2 Handlers to swap',
+                condition: this.game.nextActionIs('swap')
             }).chooseOnBoard(
                 'handlers', game.all(Starborg),
                 { number: 2 }
@@ -281,10 +308,12 @@ export class Phase1 {
                 if (d2 != undefined) {
                     d2.putInto(h1)
                 }
-                game.nextAction = 'none'
+                game.clearAction()
             }),
 
-            shiftLeft: () => action().do(
+            shiftLeft: () => action({
+                condition: this.game.nextActionIs('shiftLeft')
+            }).do(
                 () => {
                     const move1 = $.move1.first(Bot10)!
                     const move2 = $.move2.first(Bot10)!
@@ -292,10 +321,12 @@ export class Phase1 {
                     move1.putInto($.move3)
                     move3.putInto($.move2)
                     move2.putInto($.move1)
-                    game.nextAction = 'none'
+                    game.clearAction()
                 }
             ),
-            shiftRight: () => action().do(
+            shiftRight: () => action({
+                condition: this.game.nextActionIs('shiftRight')
+            }).do(
                 () => {
                     const move1 = $.move1.first(Bot10)!
                     const move2 = $.move2.first(Bot10)!
@@ -303,20 +334,22 @@ export class Phase1 {
                     move3.putInto($.move1)
                     move1.putInto($.move2)
                     move2.putInto($.move3)
-                    game.nextAction = 'none'
+                    game.clearAction()                
                 }
             ),
-            rotate: () => action().do(
+            rotate: () => action({
+                condition: this.game.nextActionIs('rotate')
+            }).do(
                 () => {
                     const attack = game.first(Bot10, { phase1: 'attack' })!
                     attack.rotation += 180
-                    game.nextAction = 'none'
+                    game.clearAction()
                 }
             ),
 
-            nextAction: () => action().do(
-                () => game.followUp({ name: game.nextAction })
-            ),
+            // nextAction: () => action().do(
+            //     () => game.followUp({ name: game.nextAction })
+            // ),
 
             transform: (player) => action({
                 prompt: 'Transform into Starborg',
@@ -326,10 +359,12 @@ export class Phase1 {
                 game.message('TRANSFORM!')
                 game.phase = 2
             }),
+            
             skip: (player) => action({
-                prompt: 'Skip'
+                prompt: 'Skip',
+                // condition: this.game._ctx.gameManager.getPendingMoves(this.game.players[0]) == undefined
             }).do(() => {
-                game.nextAction = 'none'
+                game.clearAction()
             }),
         }
 
@@ -352,12 +387,17 @@ export class Phase1 {
     }
 
     followBot10Actions(): void {
+        this.game.message('Bot-10 level is: ' + this.game.bot10damage)
+
         this.performMove($.move1.first(Bot10)!)
         this.performMove($.move2.first(Bot10)!)
         this.performMove($.move3.first(Bot10)!)
+
+        this.game.message('Bot-10 finished turn.')
     }
 
     moveLeft(): void {
+        this.game.message('Bot-10 moves left.')
         const vehicle = this.game.first(Bot10, { phase1: 'vehicle' })!
         const space = vehicle.container(VehicleSpace)!
         if (space.index == 1) {
@@ -368,6 +408,7 @@ export class Phase1 {
     }
 
     moveRight(): void {
+        this.game.message('Bot-10 moves right.')
         const vehicle = this.game.first(Bot10, { phase1: 'vehicle' })!
         const space = vehicle.container(VehicleSpace)!
         if (space.index == 5) {
@@ -378,9 +419,12 @@ export class Phase1 {
     }
 
     attackPosition(handler: HandlerSpace): void {
+        this.game.message('Bot-10 attacks: ' + handler.index)
+
         const die = handler.first(Die)
         if (die != undefined) {
             // dice protect handlers
+            this.game.message('Handler is protected and discards die.')
             die.putInto($.player)
         } else {
             const card = handler.first(Starborg)!
@@ -437,19 +481,7 @@ export class Phase1 {
         const movemment = move.rotation == 180 ? move.topMovement : move.bottomMovement
         const vehicle = this.game.first(Bot10, { phase1: 'vehicle' })!
         const space = vehicle.container(VehicleSpace)!
-        if (movemment.moveDirection == 'left') {
-            this.moveLeft()
-            if ((this.game.bot10damage == DOUBLE_LEFT && move.arrowColor == 'black' ||
-                this.game.bot10damage == DOUBLE_BOTH && move.arrowColor == 'white')) {
-                this.moveLeft()
-            }
-        } else {
-            this.moveRight()
-            if ((this.game.bot10damage == DOUBLE_RIGHT && move.arrowColor == 'black' ||
-                this.game.bot10damage == DOUBLE_BOTH && move.arrowColor == 'white')) {
-                this.moveRight()
-            }
-        }
+
         if (move.phase1 == 'attack') {
 
             // find the handler in the same column
@@ -468,6 +500,7 @@ export class Phase1 {
                 }
 
                 if (this.game.bot10damage == ATTACK_ADJACENT) {
+                    this.game.message('Bot-10 is attacking adjacent.')
                     if (handler.index == 1) {
                         this.attackPosition(this.game.first(HandlerSpace, { index: handler.index + 1 })!)
                     } else if (handler.index == 5) {
@@ -476,6 +509,24 @@ export class Phase1 {
                         this.game.followUp({ name: 'attackAdjacent' })
                     }
                 }
+            }
+
+            // then flip
+            this.game.message('The attack card flips.')
+            move.rotation += 180
+        }
+
+        if (movemment.moveDirection == 'left') {
+            this.moveLeft()
+            if ((this.game.bot10damage == DOUBLE_LEFT && move.arrowColor == 'black' ||
+                this.game.bot10damage == DOUBLE_BOTH && move.arrowColor == 'white')) {
+                this.moveLeft()
+            }
+        } else {
+            this.moveRight()
+            if ((this.game.bot10damage == DOUBLE_RIGHT && move.arrowColor == 'black' ||
+                this.game.bot10damage == DOUBLE_BOTH && move.arrowColor == 'white')) {
+                this.moveRight()
             }
         }
     }

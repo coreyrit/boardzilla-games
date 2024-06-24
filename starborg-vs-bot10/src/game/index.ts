@@ -195,15 +195,31 @@ export class Die extends Piece<MyGame> {
 }
 
 export class MyGame extends Game<MyGame, StarborgVsBot10Player> {
-  nextAction : string = 'none'
+  
+  performingAction : boolean = false
+  theNextAction : string = 'none'
 
-  bot10damage : number = 5
+  bot10damage : number = 4
   phase: number = 1
 
   selectedDie: Die | undefined = undefined
   selectedHandler: HandlerSpace | undefined = undefined
   selectedBot10: BotSpace | undefined = undefined
   selectedStarborg: StarborgSpace | undefined = undefined
+
+  clearAction() : void {
+    this.performingAction = false
+    this.theNextAction = 'none'
+  }
+
+  nextActionIs(action: string) : boolean {
+    return this.theNextAction == action
+  }
+
+  performAction(nextAction: string) {
+    this.performingAction = false
+    this.theNextAction = nextAction    
+  }
 
   clearSelectionsAndMove() : void {
     if(this.selectedDie != undefined && this.selectedHandler != undefined) {
@@ -265,9 +281,12 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
           playerActions({ actions: ['chooseHandler']}),
 
           // perform chain of actions
-          whileLoop({while: () => game.nextAction != 'none', do: ([
-            () => game.message('Next action is: ' + game.nextAction),
-            playerActions({ actions: ['nextAction']}),
+          () => game.performingAction = false,
+          whileLoop({while: () => game.theNextAction != 'none' && !game.performingAction, do: ([
+            () => game.message('Next action is: ' + game.theNextAction),
+            () => game.performingAction = true,
+            // performing any sort of action (or even none) should set performing to false
+            playerActions({ actions: phase1.allActions(), continueIfImpossible: true}),
             () => game.clearSelectionsAndMove(),
           ])}),
         ]}),
@@ -302,7 +321,7 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
 
       // 2. Roll the dice. 
       () => $.player.all(Die).forEach(x => x.roll()),
-      // () => phase2.checkBot10Attack(),
+      () => phase2.checkBot10Attack(),
 
       // 3. Place both dice, one at a time on a Handler card and perform cactions.
       forLoop({ name: 'd', initial: 1, next: d => d + 1, while: d => d <= 2, do: [
@@ -312,9 +331,12 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
         playerActions({ actions: ['chooseStarborg']}),
 
         // perform chain of actions
-        whileLoop({while: () => game.nextAction != 'none', do: ([
-          () => game.message('Next action is: ' + game.nextAction),
-          playerActions({ actions: ['nextAction']}),
+        () => game.performingAction = false,
+        whileLoop({while: () => game.theNextAction != 'none' && !game.performingAction, do: ([
+          () => game.message('Next action is: ' + game.theNextAction),
+          () => game.performingAction = true,
+          // performing any sort of action (or even none) should set performing to false
+          playerActions({ actions: phase2.allActions(), continueIfImpossible: true}),
           () => game.clearSelectionsAndMove(),
         ])}),
       ]}),
@@ -325,6 +347,7 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
       // BOT-10 TURN
 
       // 1. Roll dice on Bot-10
+      // 2. Target ares on Starborg
       () => { phase2.rollDiceAndAttack() },
 
     ])}),

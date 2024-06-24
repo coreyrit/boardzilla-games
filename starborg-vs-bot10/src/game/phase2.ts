@@ -29,6 +29,26 @@ export class Phase2 {
         this.game = game
     }
 
+    allActions() : string[] {
+        return [
+            'add1',
+            'sub1',
+            'addSub1',
+            'moveCwBot10',
+            'moveCcwBot10',
+            'moveCwCcwStarborg',
+            'moveCwStarborg',
+            'moveCcwStarborg',
+            'moveAny',
+            'set',
+            'placeDie',
+            'removeDieBot10',
+            'swapDice',
+            'roll'
+        ]
+    }
+
+
     setup() : void {
         this.game.create(StarborgSpace, 'head', {color: 'black', attackType: 'bite'})
         this.game.create(StarborgSpace, 'leftArm', {color: 'green', attackType: 'punch'})
@@ -69,6 +89,7 @@ export class Phase2 {
     
     transformHandler(handlerColor: 'red' | 'blue' | 'black' | 'yellow' | 'green', spaceName: string) {
         const card = this.game.first(Starborg, {color: handlerColor})!
+        card.rotation = 0
         const handler = card.container(HandlerSpace)!
         const space = this.game.first(StarborgSpace, {name: spaceName})!
         card.isHandler = false
@@ -97,6 +118,7 @@ export class Phase2 {
     getAction(starborg: StarborgSpace, die: Die): string {
         const action = starborg.first(Starborg)!.phase2DieActions[die.face]
         if(action.endsWith('Bot10') && this.game.all(BotSpace).all(Die).length == 0) {
+            this.game.clearAction()
             return 'none'
         } else {
             return action;
@@ -111,6 +133,7 @@ export class Phase2 {
     rollDiceAndAttack() : void {
         this.game.all(BotSpace).all(Die).forEach(x => {
             x.roll()
+            this.game.message('Bot-10 rolled a ' + x.face + '.')
             const attackColor = x.container(BotSpace)!.attackColors[x.face]
             const starborg = this.game.first(StarborgSpace, {color: attackColor})!
             if(starborg.all(Die).length > 0) {
@@ -129,7 +152,7 @@ export class Phase2 {
     checkBot10Attack() : void {
         const sum = $.player.all(Die).reduce((acc, cur) => acc + cur.face, 0)
         if(this.game.all(Bot10, {rotation: 0}).map(x => x.unblockedAttack).includes(sum)) {
-            this.game.message('Bot-10 dealt Starborg 2 unblockable damage!')
+            this.game.message('Bot-10 rolled a ' + sum + ' and dealt Starborg 2 unblockable damage!')
             this.game.bot10damage -= 2
             if(this.game.bot10damage <= 0) {
                 this.game.finish(undefined)
@@ -171,6 +194,7 @@ export class Phase2 {
         return {
             moveAny: (player) => action({
                 prompt: 'Choose a die to move',
+                condition: game.nextActionIs('moveAny')
             }).chooseOnBoard(
                 'die', game.all(StarborgSpace).all(Die),
                 {skipIf: 'never'}
@@ -188,32 +212,34 @@ export class Phase2 {
                 const dieSpace = game.selectedDie!.container(Space<MyGame>)!
                 if (space == dieSpace) {
                     // didn't move
-                    game.nextAction = 'none'
+                    game.clearAction()
                 } else {
                     game.selectedStarborg = space
                     if(!this.partDamaged(game.selectedStarborg)) {
-                        game.nextAction = this.getAction(game.selectedStarborg, game.selectedDie!)
+                        game.performAction(this.getAction(game.selectedStarborg, game.selectedDie!))
                     } else {
-                        game.nextAction = 'none'
+                        game.clearAction()
                     }
                 }
             }),
             
             removeDieBot10: (player) => action({
                 prompt: 'Choose a die on Bot-10 to remove',
-                condition: game.all(BotSpace).all(Die).length > 0
+                condition: game.nextActionIs('removeDieBot10') &&
+                    game.all(BotSpace).all(Die).length > 0
             }).chooseOnBoard(
                 'die', game.all(BotSpace).all(Die),
                 { skipIf: 'never' }
             ).do(({ die }) => {
                 die.putInto($.player)
-                game.bot10damage++;
-                game.nextAction = 'none'
+                // game.bot10damage++;
+                game.clearAction()
             }),
 
             swapDice: (player) => action({
                 prompt: 'Choose 2 dice to swap',
-                condition: game.all(StarborgSpace).all(Die).length + game.all(BotSpace).all(Die).length >= 2
+                condition: game.nextActionIs('swapDice') &&
+                    game.all(StarborgSpace).all(Die).length + game.all(BotSpace).all(Die).length >= 2
             }).chooseOnBoard(
                 'dice', game.all(StarborgSpace).all(Die).concat(game.all(BotSpace).all(Die)),
                 { skipIf: 'never', number: 2 }
@@ -222,12 +248,12 @@ export class Phase2 {
                 const space2 = dice[1].container(Space)!
                 dice[0].putInto(space2)
                 dice[1].putInto(space1)
-                game.nextAction = 'none'
+                game.clearAction()
             }),
 
             moveCwCcwStarborg: (player) => action({
                 prompt: 'Choose a die on Starborg to move clockwise or counter-clockwise',
-                condition: (
+                condition: game.nextActionIs('moveCwCcwStarborg') &&  (
                     game.all(StarborgSpace).all(Die).filter(x => x.getClockwiseStarborg().all(Die).length == 0).length +
                     game.all(StarborgSpace).all(Die).filter(x => x.getCounterClockwiseStarborg().all(Die).length == 0).length
                 ) > 0
@@ -254,9 +280,9 @@ export class Phase2 {
                 const ccwStarborg = game.selectedDie!.getCounterClockwiseStarborg()
                 game.selectedStarborg = ccwStarborg
                 if (!this.partDamaged(ccwStarborg)) {
-                    game.nextAction = this.getAction(ccwStarborg, game.selectedDie!)
+                    game.performAction(this.getAction(ccwStarborg, game.selectedDie!))
                 } else {
-                    game.nextAction = 'none'
+                    game.clearAction()
                 }
             }),
             cwCcwFollowUpCw: (player) => action({
@@ -267,9 +293,9 @@ export class Phase2 {
                 const cwStarborg = game.selectedDie!.getClockwiseStarborg()
                 game.selectedStarborg = cwStarborg
                 if (!this.partDamaged(cwStarborg)) {
-                    game.nextAction = this.getAction(cwStarborg, game.selectedDie!)
+                    game.performAction(this.getAction(cwStarborg, game.selectedDie!))
                 } else {
-                    game.nextAction = 'none'
+                    game.clearAction()
                 }
             }),
             cwCcwFollowUp: (player) => action({
@@ -280,14 +306,15 @@ export class Phase2 {
                 const starborg = direction == 'Clockwise' ? game.selectedDie!.getClockwiseStarborg() : game.selectedDie!.getCounterClockwiseStarborg()
                 game.selectedStarborg = starborg
                 if (!this.partDamaged(starborg)) {
-                    game.nextAction = this.getAction(starborg, game.selectedDie!)
+                    game.performAction(this.getAction(starborg, game.selectedDie!))
                 } else {
-                    game.nextAction = 'none'
+                    game.clearAction()
                 }
             }),
             
             placeDie: (player) => action({
                 prompt: 'Choose a die to place on Bot-10',
+                condition: game.nextActionIs('placeDie')
             }).chooseOnBoard(
                 'die', game.all(StarborgSpace).all(Die).concat(game.all(BotSpace).all(Die)),
                 { skipIf: 'never' }
@@ -302,12 +329,13 @@ export class Phase2 {
                 'bot10', game.all(BotSpace).filter(x => x.all(Die).length == 0 && !x.first(Bot10)!.damaged)
             ).do(({ bot10 }) => {
                 game.selectedBot10 = bot10
-                game.nextAction = 'none'
+                game.clearAction()
             }),
 
             moveCwBot10: (player) => action({
                 prompt: 'Choose a die on Bot-10 to move clockwise',
-                condition: game.all(BotSpace).all(Die).length > 0,
+                condition: game.nextActionIs('moveCwBot10') &&
+                    game.all(BotSpace).all(Die).length > 0,
             }).chooseOnBoard(
                 'die',
                      game.all(BotSpace).all(Die).filter(x => x.getClockwiseBot10().all(Die).length == 0)
@@ -318,24 +346,26 @@ export class Phase2 {
             ).do(({ die }) => {
                 const cwBot10 = die.getClockwiseBot10()
                 die.putInto(cwBot10)
-                game.nextAction = 'none'
+                game.clearAction()
             }),
 
             moveCcwBot10: (player) => action({
                 prompt: 'Choose a die on Bot-10 to move counter-clockwise',
-                condition: game.all(BotSpace).all(Die).length > 0
+                condition: game.nextActionIs('moveCcwBot10') &&
+                    game.all(BotSpace).all(Die).length > 0
             }).chooseOnBoard(
                 'die', game.all(BotSpace).all(Die).filter(x => x.getCounterClockwiseBot10().all(Die).length == 0),
                 { skipIf: 'never' }
             ).do(({ die }) => {
                 const cwBot10 = die.getCounterClockwiseBot10()
                 die.putInto(cwBot10)
-                game.nextAction = 'none'
+                game.clearAction()
             }),
 
 
             moveCwStarborg: (player) => action({
                 prompt: 'Choose a die on Starborg to move clockwise',
+                condition: game.nextActionIs('moveCwStarborg')
             }).chooseOnBoard(
                 'die', game.all(StarborgSpace).all(Die).filter(x => x.getClockwiseStarborg().all(Die).length == 0),
                 { skipIf: 'never' }
@@ -343,14 +373,15 @@ export class Phase2 {
                 const cwStarborg = die.getClockwiseStarborg()
                 die.putInto(cwStarborg)
                 if (!this.partDamaged(cwStarborg)) {
-                    game.nextAction = this.getAction(cwStarborg, die)
+                    game.performAction(this.getAction(cwStarborg, die))
                 } else {
-                    game.nextAction = 'none'
+                    game.clearAction()
                 }
             }),
 
             moveCcwStarborg: (player) => action({
                 prompt: 'Choose a die on Starborg to move counter-clockwise',
+                condition: game.nextActionIs('moveCcwStarborg')
             }).chooseOnBoard(
                 'die', game.all(StarborgSpace).all(Die).filter(x => x.getCounterClockwiseStarborg().all(Die).length == 0),
                 { skipIf: 'never' }
@@ -358,9 +389,9 @@ export class Phase2 {
                 const cwStarborg = die.getCounterClockwiseStarborg()
                 die.putInto(cwStarborg)
                 if (!this.partDamaged(cwStarborg)) {
-                    game.nextAction = this.getAction(cwStarborg, die)
+                    game.performAction(this.getAction(cwStarborg, die))
                 } else {
-                    game.nextAction = 'none'
+                    game.clearAction()
                 }
             }),
 
@@ -400,9 +431,9 @@ export class Phase2 {
                 game.selectedDie!.putInto(starborg)
                 const h = starborg.first(Starborg)!
                 if (!h.showCube()) {
-                    game.nextAction = this.getAction(starborg, game.selectedDie!)
+                    game.performAction(this.getAction(starborg, game.selectedDie!))
                 } else {
-                    game.nextAction = 'none'
+                    game.clearAction()
                 }
                 game.selectedDie = undefined
             }),

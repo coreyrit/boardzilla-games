@@ -38,6 +38,7 @@ export class PhaseAll {
             return game.phase == 1 ? phase1.getAction(die.container(HandlerSpace)!, die) :
                         phase2.getAction(die.container(StarborgSpace)!, die)
         } else {
+            game.clearAction()
             return 'none'
         }
     }
@@ -50,18 +51,20 @@ export class PhaseAll {
             // SET
             add1: (player) => action({
                 prompt: 'Choose a die to increase by 1',
-                condition: game.all(HandlerSpace).all(Die).filter(x => x.face < 6).length +
+                condition: game.nextActionIs('add1') && 
+                    game.all(HandlerSpace).all(Die).filter(x => x.face < 6).length +
                     game.all(StarborgSpace).all(Die).filter(x => x.face < 6).length > 0
             }).chooseOnBoard(
                 'die', game.all(HandlerSpace).all(Die).concat(game.all(StarborgSpace).all(Die)).filter(x => x.face < 6),
                 { skipIf: 'never' }
             ).do(({ die }) => {
                 die.face = die.face + 1
-                game.nextAction = this.getNextAction(game, phase1, phase2, die)
+                game.performAction(this.getNextAction(game, phase1, phase2, die))
             }),
 
             addSub1: (player) => action({
                 prompt: 'Choose a die to increase or decrease by 1',
+                condition: game.nextActionIs('addSub1')
             }).chooseOnBoard(
                 'die', game.all(HandlerSpace).all(Die).concat(game.all(StarborgSpace).all(Die)),
                 {skipIf: 'never'}
@@ -78,7 +81,9 @@ export class PhaseAll {
 
             set: (player) => action({
                 prompt: 'Choose a die to set',
-            }).chooseOnBoard('die', game.all(HandlerSpace).all(Die).concat(game.all(StarborgSpace).all(Die))
+                condition: game.nextActionIs('set')
+            }).chooseOnBoard(
+                'die', game.all(HandlerSpace).all(Die).concat(game.all(StarborgSpace).all(Die))
             ).do(({ die }) => { game.selectedDie = die; game.followUp({ name: 'setFollowUp' }) }),
 
             setFollowUp: (player) => action({
@@ -88,10 +93,10 @@ export class PhaseAll {
             ).do(({ value }) => {
                 const val = +value                
                 if (game.selectedDie!.face == val) {
-                    game.nextAction = 'none'
+                    game.clearAction()
                 } else {
                     game.selectedDie!.face = val
-                    game.nextAction = this.getNextAction(game, phase1, phase2, game.selectedDie!)
+                    game.performAction(this.getNextAction(game, phase1, phase2, game.selectedDie!))
                 }
             }),
             addSubFollowUp1: (player) => action({
@@ -101,7 +106,7 @@ export class PhaseAll {
             ).do(({ value }) => {
                 const val = game.selectedDie!.face + 1
                 game.selectedDie!.face = val
-                game.nextAction = this.getNextAction(game, phase1, phase2, game.selectedDie!)            
+                game.performAction(this.getNextAction(game, phase1, phase2, game.selectedDie!))
             }),
             addSubFollowUp6: (player) => action({
                 prompt: 'Decrease',
@@ -110,7 +115,7 @@ export class PhaseAll {
             ).do(({ value }) => {
                 const val = game.selectedDie!.face - 1
                 game.selectedDie!.face = val
-                game.nextAction = this.getNextAction(game, phase1, phase2, game.selectedDie!)
+                game.performAction(this.getNextAction(game, phase1, phase2, game.selectedDie!))
             }),
             addSubFollowUp: (player) => action({
                 prompt: 'Decrease or Increase',
@@ -119,12 +124,13 @@ export class PhaseAll {
             ).do(({ value }) => {
                 const val = game.selectedDie!.face + (value == "-1" ? -1 : 1)
                 game.selectedDie!.face = val
-                game.nextAction = this.getNextAction(game, phase1, phase2, game.selectedDie!)
+                game.performAction(this.getNextAction(game, phase1, phase2, game.selectedDie!))
             }),
 
             sub1: (player) => action({
                 prompt: 'Choose a die to decrease by 1',
-                condition: game.all(HandlerSpace).all(Die).filter(x => x.face > 1).length +
+                condition: game.nextActionIs('sub1') &&
+                    game.all(HandlerSpace).all(Die).filter(x => x.face > 1).length +
                     game.all(StarborgSpace).all(Die).filter(x => x.face > 1).length > 0
             }).chooseOnBoard(
                 'die', game.all(HandlerSpace).all(Die).concat(
@@ -132,17 +138,18 @@ export class PhaseAll {
                 { skipIf: 'never' }
             ).do(({ die }) => {
                 die.face = die.face - 1
-                game.nextAction = this.getNextAction(game, phase1, phase2, die)
+                game.performAction(this.getNextAction(game, phase1, phase2, die))
             }),
 
             roll: () => action({
                 prompt: 'Choose a die to roll',
+                condition: game.nextActionIs('roll')
             }).chooseOnBoard(
                 'die', game.all(HandlerSpace).all(Die).concat(game.all(StarborgSpace).all(Die)),
                 {skipIf: 'never'}
             ).do(({ die }) => {
                 die.roll()
-                game.nextAction = this.getNextAction(game, phase1, phase2, die)
+                game.performAction(this.getNextAction(game, phase1, phase2, die))
             }),
         }
     }
