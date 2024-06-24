@@ -353,7 +353,8 @@ export class Phase1 {
 
             transform: (player) => action({
                 prompt: 'Transform into Starborg',
-                condition: game.all(Starborg, { rotation: 0 }).map(x => x.formation)
+                condition: game.bot10damage != 0 &&
+                    game.all(Starborg, { rotation: 0 }).map(x => x.formation)
                     .includes($.player.all(Die).reduce((acc, cur) => acc + cur.face, 0))
             }).do(() => {
                 game.message('TRANSFORM!')
