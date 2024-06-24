@@ -199,7 +199,7 @@ export class MyGame extends Game<MyGame, StarborgVsBot10Player> {
   performingAction : boolean = false
   theNextAction : string = 'none'
 
-  bot10damage : number = 4
+  bot10damage : number = 0
   phase: number = 1
 
   selectedDie: Die | undefined = undefined
