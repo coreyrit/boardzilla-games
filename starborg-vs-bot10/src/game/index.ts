@@ -60,7 +60,7 @@ export class Starborg extends Piece<MyGame> {
 
   showCube() : boolean {
     if(this.game.phase == 2) {
-      if(this.color == 'black' && this.game.bot10damage <= 2) {
+      if(this.color == 'black' && this.game.bot10damage >= 1 && this.game.bot10damage <= 2) {
         return true;
       } else if(this.color == 'red' && this.game.bot10damage == 3) {
         return true;
