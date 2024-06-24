@@ -519,14 +519,16 @@ export class Phase1 {
 
         if (movemment.moveDirection == 'left') {
             this.moveLeft()
-            if ((this.game.bot10damage == DOUBLE_LEFT && move.arrowColor == 'black' ||
-                this.game.bot10damage == DOUBLE_BOTH && move.arrowColor == 'white')) {
+            if ((this.game.bot10damage == DOUBLE_LEFT && move.arrowColor == 'black') ||
+                (this.game.bot10damage == DOUBLE_BOTH && move.arrowColor == 'white')) {
+                this.game.message('Moving double!')
                 this.moveLeft()
             }
         } else {
             this.moveRight()
-            if ((this.game.bot10damage == DOUBLE_RIGHT && move.arrowColor == 'black' ||
-                this.game.bot10damage == DOUBLE_BOTH && move.arrowColor == 'white')) {
+            if ((this.game.bot10damage == DOUBLE_RIGHT && move.arrowColor == 'black') ||
+                (this.game.bot10damage == DOUBLE_BOTH && move.arrowColor == 'white')) {
+                this.game.message('Moving double!')
                 this.moveRight()
             }
         }
@@ -547,21 +549,21 @@ export class Phase1 {
         $.move1.create(Bot10, 'move-1_and_bot10nw',
             {
                 phase1: 'move-left', phase2: 'nw', unblockedAttack: 6,
-                lowAttack: 'kick', highAttack: 'bite',
+                lowAttack: 'kick', highAttack: 'bite', arrowColor: 'black',
                 topMovement: { handlerColor: 'red', moveDirection: 'left' },
                 bottomMovement: { handlerColor: 'green', moveDirection: 'left' }
             })
         $.move2.create(Bot10, 'move-2_and_bot10ne',
             {
                 phase1: 'attack', phase2: 'ne', unblockedAttack: 5,
-                lowAttack: 'bite', highAttack: 'kick',
+                lowAttack: 'bite', highAttack: 'kick', arrowColor: 'white',
                 topMovement: { handlerColor: 'black', moveDirection: 'right' },
                 bottomMovement: { handlerColor: 'black', moveDirection: 'left' }
             })
         $.move3.create(Bot10, 'move-3_and_bot10sw',
             {
                 phase1: 'move-right', phase2: 'sw', unblockedAttack: 8,
-                lowAttack: 'bite', highAttack: 'punch',
+                lowAttack: 'bite', highAttack: 'punch', arrowColor: 'black',
                 topMovement: { handlerColor: 'yellow', moveDirection: 'right' },
                 bottomMovement: { handlerColor: 'blue', moveDirection: 'right' }
             })
