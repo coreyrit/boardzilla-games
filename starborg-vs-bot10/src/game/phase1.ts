@@ -318,9 +318,9 @@ export class Phase1 {
                     const move1 = $.move1.first(Bot10)!
                     const move2 = $.move2.first(Bot10)!
                     const move3 = $.move3.first(Bot10)!
-                    move1.putInto($.move3)
-                    move3.putInto($.move2)
-                    move2.putInto($.move1)
+                    move3.putInto($.move1)
+                    move1.putInto($.move2)
+                    move2.putInto($.move3)
                     game.clearAction()
                 }
             ),
@@ -331,9 +331,9 @@ export class Phase1 {
                     const move1 = $.move1.first(Bot10)!
                     const move2 = $.move2.first(Bot10)!
                     const move3 = $.move3.first(Bot10)!
-                    move3.putInto($.move1)
-                    move1.putInto($.move2)
-                    move2.putInto($.move3)
+                    move1.putInto($.move3)
+                    move2.putInto($.move1)
+                    move3.putInto($.move2)
                     game.clearAction()                
                 }
             ),
