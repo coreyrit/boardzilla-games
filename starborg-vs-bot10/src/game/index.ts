@@ -7,9 +7,6 @@ import {
   GameElement,
   Action
 } from '@boardzilla/core';
-import { skip } from 'node:test';
-import { Handler } from 'puppeteer/internal/types.js';
-
 
 import { Phase1, HandlerSpace } from './phase1.js'
 import { BotSpace, Phase2, StarborgSpace } from './phase2.js'
