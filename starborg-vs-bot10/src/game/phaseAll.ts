@@ -9,7 +9,7 @@ import {
     GameElement
 } from '@boardzilla/core';
 import { HandlerSpace, Phase1 } from './phase1.js';
-import { Phase2, StarborgSpace } from './phase2.js';
+import { BotSpace, Phase2, StarborgSpace } from './phase2.js';
 
 export type SingleArgument = string | number | boolean | GameElement | Player;
 export type Argument = SingleArgument | SingleArgument[];
@@ -26,7 +26,7 @@ export class PhaseAll {
     canDoNextAction(game: MyGame, phase1: Phase1, phase2: Phase2, die: Die) : boolean {
         if (this.game.phase == 2 && phase2.partDamaged(die.container(StarborgSpace)!)) {
             return false
-        } else if (this.game.phase == 1 && phase1.handlerInjured(die.container(HandlerSpace)!)) {
+        } else if (this.game.phase == 1 && die.container(HandlerSpace) != undefined && phase1.handlerInjured(die.container(HandlerSpace)!)) {
             return false
         } else {
             return true
@@ -65,9 +65,9 @@ export class PhaseAll {
                 prompt: 'Choose a die to increase by 1',
                 condition: game.nextActionIs('add1') && 
                     game.all(HandlerSpace).all(Die).filter(x => x.face < 6).length +
-                    game.all(StarborgSpace).all(Die).filter(x => x.face < 6).length > 0
+                    game.all(StarborgSpace).all(Die).concat(game.all(BotSpace).all(Die)).filter(x => x.face < 6).length > 0
             }).chooseOnBoard(
-                'die', game.all(HandlerSpace).all(Die).concat(game.all(StarborgSpace).all(Die)).filter(x => x.face < 6),
+                'die', game.all(HandlerSpace).all(Die).concat(game.all(StarborgSpace).all(Die)).concat(game.all(BotSpace).all(Die)).filter(x => x.face < 6),
                 { skipIf: 'never' }
             ).do(({ die }) => {
                 die.face = die.face + 1
@@ -78,7 +78,7 @@ export class PhaseAll {
                 prompt: 'Choose a die to increase or decrease by 1',
                 condition: game.nextActionIs('addSub1')
             }).chooseOnBoard(
-                'die', game.all(HandlerSpace).all(Die).concat(game.all(StarborgSpace).all(Die)),
+                'die', game.all(HandlerSpace).all(Die).concat(game.all(StarborgSpace).all(Die)).concat(game.all(BotSpace).all(Die)),
                 {skipIf: 'never'}
             ).do(({ die }) => {
                 game.selectedDie = die;
@@ -95,7 +95,7 @@ export class PhaseAll {
                 prompt: 'Choose a die to set',
                 condition: game.nextActionIs('set')
             }).chooseOnBoard(
-                'die', game.all(HandlerSpace).all(Die).concat(game.all(StarborgSpace).all(Die))
+                'die', game.all(HandlerSpace).all(Die).concat(game.all(StarborgSpace).all(Die)).concat(game.all(BotSpace).all(Die))
             ).do(({ die }) => { game.selectedDie = die; game.followUp({ name: 'setFollowUp' }) }),
 
             setFollowUp: (player) => action({
@@ -143,7 +143,8 @@ export class PhaseAll {
                 prompt: 'Choose a die to decrease by 1',
                 condition: game.nextActionIs('sub1') &&
                     game.all(HandlerSpace).all(Die).filter(x => x.face > 1).length +
-                    game.all(StarborgSpace).all(Die).filter(x => x.face > 1).length > 0
+                    game.all(StarborgSpace).all(Die).filter(x => x.face > 1).length +
+                    game.all(BotSpace).all(Die).filter(x => x.face > 1).length > 0
             }).chooseOnBoard(
                 'die', game.all(HandlerSpace).all(Die).concat(
                     game.all(StarborgSpace).all(Die)).filter(x => x.face > 1),
@@ -157,13 +158,13 @@ export class PhaseAll {
                 prompt: 'Choose a die to roll',
                 condition: game.nextActionIs('roll')
             }).chooseOnBoard(
-                'die', game.all(HandlerSpace).all(Die).concat(game.all(StarborgSpace).all(Die)),
+                'die', game.all(HandlerSpace).all(Die).concat(game.all(StarborgSpace).all(Die)).concat(game.all(BotSpace).all(Die)),
                 {skipIf: 'never'}
             ).do(({ die }) => {
                 const prevFace = die.face
                 die.roll()
                 const newFace = die.face
-                if(prevFace != newFace) {
+                if(die.container(Starborg) != undefined && prevFace != newFace) {
                     game.performAction(this.getNextAction(game, phase1, phase2, die))
                 } else {
                     game.clearAction()

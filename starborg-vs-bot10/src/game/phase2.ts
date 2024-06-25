@@ -211,7 +211,7 @@ export class Phase2 {
                 prompt: 'Choose a die to move',
                 condition: game.nextActionIs('moveAny')
             }).chooseOnBoard(
-                'die', game.all(StarborgSpace).all(Die),
+                'die', game.all(StarborgSpace).all(Die).concat(game.all(BotSpace).all(Die)),
                 {skipIf: 'never'}
             ).do(({ die }) => { 
                 game.selectedDie = die; 
@@ -221,8 +221,9 @@ export class Phase2 {
             moveAnyFollowUp: (player) => action({
                 prompt: 'Choose a space to move to',
             }).chooseOnBoard(
-                'space', game.all(StarborgSpace).filter(x => x.all(Die).length == 0)
-                    .concat(game.selectedDie!.container(StarborgSpace)!)
+                'space', game.all(StarborgSpace).filter(x => x.all(Die).length == 0).map(x => x as Space<MyGame>)
+                    .concat(game.all(BotSpace).filter(x => x.all(Die).length == 0).map(x => x as Space<MyGame>))
+                    .concat(game.selectedDie!.container(Space<MyGame>)!)
             ).do(({ space }) => {
                 const dieSpace = game.selectedDie!.container(Space<MyGame>)!
                 if (space == dieSpace) {
@@ -230,10 +231,15 @@ export class Phase2 {
                     game.clearAction()
                     this.game.message('The ' + game.selectedDie! + ' did not move.')
                 } else {
-                    game.selectedStarborg = space
-                    if(!this.partDamaged(game.selectedStarborg)) {
-                        game.performAction(this.getAction(game.selectedStarborg, game.selectedDie!))
-                    } else {
+                    if(space instanceof StarborgSpace) {
+                        game.selectedStarborg = space
+                        if(!this.partDamaged(game.selectedStarborg)) {
+                            game.performAction(this.getAction(game.selectedStarborg, game.selectedDie!))
+                        } else {
+                            game.clearAction()
+                        }
+                    } else if(space instanceof BotSpace) {
+                        game.selectedBot10 = space
                         game.clearAction()
                     }
                     this.game.message('You moved the ' + game.selectedDie! + ' to ' + 
