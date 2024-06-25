@@ -79,6 +79,16 @@ export class Phase1 {
         const { action } = game;
 
         return {
+            performMove1: (player) => action({}).do(() => {
+                this.performMove($.move1.first(Bot10)!)
+            }),
+            performMove2: (player) => action({}).do(() => {
+                this.performMove($.move2.first(Bot10)!)
+            }),
+            performMove3: (player) => action({}).do(() => {
+                this.performMove($.move3.first(Bot10)!)
+            }),
+
             choose2DiceFromHandlers: (player) => action({
                 prompt: 'Choose 2 dice to remove',
                 condition: $.player.all(Die).length == 0
@@ -135,13 +145,19 @@ export class Phase1 {
                 prompt: 'Choose an adjacent handler to be attacked',
             }).chooseOnBoard(
                 'handler', [
-                    game.first(HandlerSpace, { index: this.getVehicleIndex() - 1 })!, 
-                    game.first(HandlerSpace, { index: this.getVehicleIndex() + 1 })!
+                    game.first(HandlerSpace, { index: this.game.doAttackAdjacent - 1 })!, 
+                    game.first(HandlerSpace, { index: this.game.doAttackAdjacent + 1 })!
                 ]
             ).do(({ handler }) => {
                 this.attackPosition(handler)
                 if (game.bot10damage == DOUBLE_ATTACK_ADJACENT) {
                     this.attackPosition(handler)
+                }
+                game.doAttackAdjacent = 0
+                if(game.moveAfterAttack == 'left') {
+                    this.moveLeft()
+                } else {
+                    this.moveRight()
                 }
             }), //.message('You selected {{handler}} to be attacked.'),
 
@@ -522,7 +538,9 @@ export class Phase1 {
                     } else if (handler.index == 5) {
                         this.attackPosition(this.game.first(HandlerSpace, { index: handler.index - 1 })!)
                     } else {
-                        this.game.followUp({ name: 'attackAdjacent' })
+                        // this.game.followUp({ name: 'attackAdjacent' })
+                        this.game.doAttackAdjacent = handler.index
+                        this.game.moveAfterAttack = movemment.moveDirection
                     }
                 }
             }
@@ -532,19 +550,22 @@ export class Phase1 {
             move.rotation += 180
         }
 
-        if (movemment.moveDirection == 'left') {
-            this.moveLeft()
-            if ((this.game.bot10damage == DOUBLE_LEFT && move.arrowColor == 'black') ||
-                (this.game.bot10damage == DOUBLE_BOTH && move.arrowColor == 'white')) {
-                this.game.message('Moving double!')
+        // if attack adjacent, we'll finish the move later
+        if(this.game.doAttackAdjacent == 0) {
+            if (movemment.moveDirection == 'left') {
                 this.moveLeft()
-            }
-        } else {
-            this.moveRight()
-            if ((this.game.bot10damage == DOUBLE_RIGHT && move.arrowColor == 'black') ||
-                (this.game.bot10damage == DOUBLE_BOTH && move.arrowColor == 'white')) {
-                this.game.message('Moving double!')
+                if ((this.game.bot10damage == DOUBLE_LEFT && move.arrowColor == 'black') ||
+                    (this.game.bot10damage == DOUBLE_BOTH && move.arrowColor == 'white')) {
+                    this.game.message('Moving double!')
+                    this.moveLeft()
+                }
+            } else {
                 this.moveRight()
+                if ((this.game.bot10damage == DOUBLE_RIGHT && move.arrowColor == 'black') ||
+                    (this.game.bot10damage == DOUBLE_BOTH && move.arrowColor == 'white')) {
+                    this.game.message('Moving double!')
+                    this.moveRight()
+                }
             }
         }
     }

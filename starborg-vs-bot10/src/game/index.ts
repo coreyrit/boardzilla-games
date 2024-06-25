@@ -199,10 +199,11 @@ export class MyGame extends Game<MyGame, StarborgVsBot10Player> {
   
   performingAction : boolean = false
   theNextAction : string = 'none'
+  doAttackAdjacent : number = 0
+  moveAfterAttack : 'left' | 'right'
 
   bot10damage : number = 0
   phase: number = 1
-  doAdjacentAttack: boolean = false;
 
   selectedDie: Die | undefined = undefined
   selectedHandler: HandlerSpace | undefined = undefined
@@ -307,7 +308,13 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
             () => { phase1.shuffleMovementCards() },
 
             // 2. Follow bottom actions
-            () => { phase1.followBot10Actions() },
+            // () => { phase1.followBot10Actions() },
+            playerActions({ actions: ['performMove1']}),
+            ifElse({if: () => game.doAttackAdjacent > 0, do: [playerActions({ actions: ['attackAdjacent']})]}),
+            playerActions({ actions: ['performMove2']}),
+            ifElse({if: () => game.doAttackAdjacent > 0, do: [playerActions({ actions: ['attackAdjacent']})]}),
+            playerActions({ actions: ['performMove3']}),
+            ifElse({if: () => game.doAttackAdjacent > 0, do: [playerActions({ actions: ['attackAdjacent']})]}),
           ]})
         ]})
     ])}),
