@@ -50,7 +50,7 @@ export class PhaseAll {
         return {
 
             bot10turn: (player) => action({
-            }).message('<b>Bot-10</b> is taking its turn.'),
+            }).message('Bot-10 is taking its turn.'),
 
             rollDice: (player) => action({
             }).chooseOnBoard(
@@ -110,7 +110,7 @@ export class PhaseAll {
                     game.selectedDie!.face = val
                     game.performAction(this.getNextAction(game, phase1, phase2, game.selectedDie!))
                 }
-            }).message('You changed the die to <b>' + game.selectedDie! + '</b>.'),
+            }).message('You changed the die to ' + game.selectedDie! + '.'),
             addSubFollowUp1: (player) => action({
                 prompt: 'Increase',
             }).chooseFrom(
@@ -119,7 +119,7 @@ export class PhaseAll {
                 const val = game.selectedDie!.face + 1
                 game.selectedDie!.face = val
                 game.performAction(this.getNextAction(game, phase1, phase2, game.selectedDie!))
-            }).message('You increased the die to <b>' + game.selectedDie! + '</b>.'),
+            }).message('You increased the die to ' + game.selectedDie! + '.'),
             addSubFollowUp6: (player) => action({
                 prompt: 'Decrease',
             }).chooseFrom(
@@ -128,7 +128,7 @@ export class PhaseAll {
                 const val = game.selectedDie!.face - 1
                 game.selectedDie!.face = val
                 game.performAction(this.getNextAction(game, phase1, phase2, game.selectedDie!))
-            }).message('You decreased the die to <b>' + game.selectedDie! + '</b>.'),
+            }).message('You decreased the die to ' + game.selectedDie! + '.'),
             addSubFollowUp: (player) => action({
                 prompt: 'Decrease or Increase',
             }).chooseFrom(
@@ -137,7 +137,7 @@ export class PhaseAll {
                 const val = game.selectedDie!.face + (value == "-1" ? -1 : 1)
                 game.selectedDie!.face = val
                 game.performAction(this.getNextAction(game, phase1, phase2, game.selectedDie!))
-            }).message('You changed the die to <b>' + game.selectedDie! + '</b>.'),
+            }).message('You changed the die to ' + game.selectedDie! + '.'),
 
             sub1: (player) => action({
                 prompt: 'Choose a die to decrease by 1',

@@ -139,7 +139,7 @@ export class Phase1 {
                     game.clearAction()
                 }
                 game.selectedDie = undefined
-            }).message('You placed the <b>' + game.selectedDie! + '</b> on {{handler}}.'),
+            }).message('You placed the ' + game.selectedDie! + ' on {{handler}}.'),
 
             attackAdjacent: (player) => action({
                 prompt: 'Choose an adjacent handler to be attacked',
@@ -192,7 +192,7 @@ export class Phase1 {
                 if (handler == dieHandler) {
                     // didn't move
                     game.clearAction()
-                    this.game.message('The <b>' + game.selectedDie! + '</b> did not move.')
+                    this.game.message('The ' + game.selectedDie! + ' did not move.')
                 } else {
                     game.selectedHandler = handler
                     if (!this.handlerInjured(handler)) {
@@ -200,8 +200,8 @@ export class Phase1 {
                     } else {
                         game.clearAction()
                     }
-                    this.game.message('You moved the <b>' + game.selectedDie! + '</b> to <b>' + 
-                        game.selectedDie!.container(HandlerSpace)! + '</b>.')
+                    this.game.message('You moved the ' + game.selectedDie! + ' to ' + 
+                        game.selectedDie!.container(HandlerSpace)! + '.')
                 }
             }),
 
@@ -238,7 +238,7 @@ export class Phase1 {
                 } else {
                     game.clearAction()
                 }
-            }).message('You moved the <b>' + game.selectedDie! + '</b> to the <b>{{direction}}</b> onto <b>' + game.selectedDie!.getLeftHandler()! + '</b>.'),
+            }).message('You moved the ' + game.selectedDie! + ' to the {{direction}} onto ' + game.selectedDie!.getLeftHandler()! + '.'),
 
             leftRightFollowUpRight: (player) => action({
                 prompt: 'Move right',
@@ -256,7 +256,7 @@ export class Phase1 {
                 // } else {
                     // game.clearAction()
                 // }
-            }).message('You moved the <b>' + game.selectedDie! + '</b> to the <b>{{direction}}</b>.'),
+            }).message('You moved the ' + game.selectedDie! + ' to the {{direction}}.'),
 
             leftRightFollowUp: (player) => action({
                 prompt: 'Move left or right',
@@ -274,7 +274,7 @@ export class Phase1 {
                 // } else {
                     // game.clearAction()
                 // }
-            }).message('You moved the <b>' + game.selectedDie! + '</b> to the <b>{{direction}}</b>.'),
+            }).message('You moved the ' + game.selectedDie! + ' to the {{direction}}.'),
 
             moveLeft: (player) => action({
                 prompt: 'Choose a die to move left',
@@ -291,7 +291,7 @@ export class Phase1 {
                 } else {
                     game.clearAction()
                 }
-            }).message('You moved the {{die}} to the <b>left</b> onto {{die.getLeftHandler().'),
+            }).message('You moved the {{die}} to the left onto {{die.getLeftHandler().'),
 
             moveRight: (player) => action({
                 prompt: 'Choose a die to move right',
@@ -308,7 +308,7 @@ export class Phase1 {
                 } else {
                     game.clearAction()
                 }
-            }).message('You moved the {{die}} to the <b>right</b> onto {{rightHandler}}.', 
+            }).message('You moved the {{die}} to the right onto {{rightHandler}}.', 
                 ({ die }) => ({ rightHandler: die.getRightHandler() })),
 
             swap: (player) => action({
@@ -346,7 +346,7 @@ export class Phase1 {
                     move2.putInto($.move3)
                     game.clearAction()
                 }
-            ).message('The movement cards shifted <b>left</b>.'),
+            ).message('The movement cards shifted left.'),
             
             shiftRight: () => action({
                 condition: this.game.nextActionIs('shiftRight')
@@ -360,7 +360,7 @@ export class Phase1 {
                     move3.putInto($.move2)
                     game.clearAction()                
                 }
-            ).message('The movement cards shifted <b>right</b>.'),
+            ).message('The movement cards shifted right.'),
             
             rotate: () => action({
                 condition: this.game.nextActionIs('rotate')
@@ -382,7 +382,7 @@ export class Phase1 {
                     game.all(Starborg, { rotation: 0 }).map(x => x.formation)
                     .includes($.player.all(Die).reduce((acc, cur) => acc + cur.face, 0))
             }).do(() => {
-                game.message('You transformed into <b>Starborg</b>!')
+                game.message('You transformed into Starborg!')
                 game.phase = 2
             }),
 
@@ -402,12 +402,12 @@ export class Phase1 {
                 // this.game.message(color1 + ' < ' + color2 + ' < ' + color3)
                 // this.game.message(index1 + ' < ' + index2 + ' < ' + index3)
                 
-                this.game.message('The required order is <b>' + color1 + '</b> then <b>' + color2 + '</b> then <b>' + color3 + '</b>.')
+                this.game.message('The required order is ' + color1 + ' then ' + color2 + ' then ' + color3 + '.')
         
                 if (index1 < index2 && index2 < index3) {
                     this.game.bot10damage++
                     this.game.all(Bot10).filter(x => x.phase1 != 'vehicle').forEach(x => x.rotation += 180)
-                    this.game.message('<b>Bot-10</b> has been dealt <b>1</b> damage!')
+                    this.game.message('Bot-10 has been dealt 1 damage!')
         
                     if (this.game.bot10damage == FORM_STARBORG) {
                         this.game.message('TRANSFORM!')
@@ -420,7 +420,7 @@ export class Phase1 {
                 prompt: 'Skip',
             }).do(() => {
                 game.clearAction()
-            }).message('<b>Not</b> transforming.'),
+            }).message('Not transforming.'),
         }
 
     }
@@ -444,17 +444,17 @@ export class Phase1 {
     }
 
     followBot10Actions(): void {
-        this.game.message('<b>Bot-10</b> level is <b>' + this.game.bot10damage + '</b>.')
+        this.game.message('Bot-10 level is ' + this.game.bot10damage + '.')
 
         this.performMove($.move1.first(Bot10)!)
         this.performMove($.move2.first(Bot10)!)
         this.performMove($.move3.first(Bot10)!)
 
-        this.game.message('<b>Bot-10</b> finishes turn.')
+        this.game.message('Bot-10 finishes turn.')
     }
 
     moveLeft(): void {
-        this.game.message('<b>Bot-10</b> moves <b>left</b>.')
+        this.game.message('Bot-10 moves left.')
         const vehicle = this.game.first(Bot10, { phase1: 'vehicle' })!
         const space = vehicle.container(VehicleSpace)!
         if (space.index == 1) {
@@ -465,7 +465,7 @@ export class Phase1 {
     }
 
     moveRight(): void {
-        this.game.message('<b>Bot-10</b> moves <b>right</b>.')
+        this.game.message('Bot-10 moves right.')
         const vehicle = this.game.first(Bot10, { phase1: 'vehicle' })!
         const space = vehicle.container(VehicleSpace)!
         if (space.index == 5) {
@@ -476,20 +476,20 @@ export class Phase1 {
     }
 
     attackPosition(handler: HandlerSpace): void {
-        this.game.message('<b>Bot-10</b> attacks <b>' + handler.first(Starborg)! + '</b>.')
+        this.game.message('Bot-10 attacks ' + handler.first(Starborg)! + '.')
 
         const die = handler.first(Die)
         if (die != undefined) {
             // dice protect handlers
-            this.game.message('The <b>' + handler + '</b> handler is protected and discards a die.')
+            this.game.message('The ' + handler + ' handler is protected and discards a die.')
             die.putInto($.player)
         } else {            
             const card = handler.first(Starborg)!
             if (card.rotation == 90) {
-                this.game.message('The <b>' + handler + '</b> handler is <b>defeated</b>!.')
+                this.game.message('The ' + handler + ' handler is defeated!.')
                 this.game.finish(undefined)
             } else {
-                this.game.message('The <b>' + handler + '</b> handler is <b>injured</b>.')
+                this.game.message('The ' + handler + ' handler is injured.')
                 card.rotation = 90
             }
         }
@@ -532,7 +532,7 @@ export class Phase1 {
                 }
 
                 if (this.game.bot10damage == ATTACK_ADJACENT) {
-                    this.game.message('<b>Bot-10</b> is attacking adjacent.')
+                    this.game.message('Bot-10 is attacking adjacent.')
                     if (handler.index == 1) {
                         this.attackPosition(this.game.first(HandlerSpace, { index: handler.index + 1 })!)
                     } else if (handler.index == 5) {
