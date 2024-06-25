@@ -200,8 +200,9 @@ export class MyGame extends Game<MyGame, StarborgVsBot10Player> {
   performingAction : boolean = false
   theNextAction : string = 'none'
 
-  bot10damage : number = 4
+  bot10damage : number = 0
   phase: number = 1
+  doAdjacentAttack: boolean = false;
 
   selectedDie: Die | undefined = undefined
   selectedHandler: HandlerSpace | undefined = undefined
@@ -293,7 +294,7 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
         ]}),
 
         // 4. Check for Bot-10 Damage
-        playerActions({ actions: ['checkForDamage']}),
+        playerActions({ actions: ['checkForDamagePhase1']}),
 
         // BOT-10 TURN
         playerActions({ actions: ['bot10turn']}),
@@ -345,9 +346,10 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
       ]}),
 
       // 4. Check for Bot-10 Damage
-      () => phase2.checkForDamage(),
+      playerActions({ actions: ['checkForDamagePhase2']}),
 
       // BOT-10 TURN
+      playerActions({ actions: ['bot10turn']}),
 
       // 1. Roll dice on Bot-10
       // 2. Target ares on Starborg

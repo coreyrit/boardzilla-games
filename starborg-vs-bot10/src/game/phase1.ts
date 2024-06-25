@@ -101,11 +101,11 @@ export class Phase1 {
                 dice.forEach(x => {
                     x.putInto($.player)
                 });
-            }).message('You chose to pick up {{dice}}.'),
+            }).message('You chose to pick up a {{dice}}.'),
 
             chooseNoDiceFromHandlers: (player) => action({
                 condition: $.player.all(Die).length == 2
-            }).message('Already have 2 dice.'),
+            }).message('You already have 2 dice.'),
 
             choosePlayerDie: (player) => action({
                 prompt: 'Choose a die to place',
@@ -366,11 +366,11 @@ export class Phase1 {
                     game.all(Starborg, { rotation: 0 }).map(x => x.formation)
                     .includes($.player.all(Die).reduce((acc, cur) => acc + cur.face, 0))
             }).do(() => {
-                game.message('TRANSFORM!')
+                game.message('You transformed into <b>Starborg</b>!')
                 game.phase = 2
             }),
 
-            checkForDamage: (player) => action({}).do(() => {
+            checkForDamagePhase1: (player) => action({}).do(() => {
                 // this.game.message('Check for damage.')
         
                 const move1 = $.move1.first(Bot10)!

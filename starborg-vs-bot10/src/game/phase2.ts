@@ -16,6 +16,10 @@ export type Argument = SingleArgument | SingleArgument[];
 export class StarborgSpace extends Space<MyGame> {
     color: 'red' | 'green' | 'yellow' | 'blue' | 'black'
     attackType: 'bite' | 'kick' | 'punch'
+
+    override toString(): string {
+        return this.color.toString()
+    }
 }
 
 export class BotSpace extends Space<MyGame> {
@@ -133,17 +137,20 @@ export class Phase2 {
     rollDiceAndAttack() : void {
         this.game.all(BotSpace).all(Die).forEach(x => {
             x.roll()
-            this.game.message('Bot-10 rolled a ' + x.face + '.')
+            this.game.message('<b>Bot-10</b> rolled a <b>' + x.face + '</>.')
             const attackColor = x.container(BotSpace)!.attackColors[x.face]
             const starborg = this.game.first(StarborgSpace, {color: attackColor})!
             if(starborg.all(Die).length > 0) {
-                this.game.message('Starborg blocked the attack')
+                this.game.message('<b>Starborg</b> blocked the attack')
                 starborg.first(Die)!.putInto($.player)
             } else {
-                this.game.message('Bot-10 dealt Starborg 1 damage!')
+                this.game.message('<b>Bot-10</b> dealt Starborg <b>1</b> damage!')
                 this.game.bot10damage--;
                 if(this.game.bot10damage <= 0) {
+                    this.game.message('<b>Starborg</b> has been <b>defeated</b>!')
                     this.game.finish(undefined)
+                } else {
+                    this.game.message('<b>Starborg</b> has <b>' + this.game.bot10damage + '</b> health.')
                 }
             }
         })
@@ -152,38 +159,14 @@ export class Phase2 {
     checkBot10Attack() : void {
         const sum = $.player.all(Die).reduce((acc, cur) => acc + cur.face, 0)
         if(this.game.all(Bot10, {rotation: 0}).map(x => x.unblockedAttack).includes(sum)) {
-            this.game.message('Bot-10 rolled a ' + sum + ' and dealt Starborg 2 unblockable damage!')
+            this.game.message('<b>Bot-10</b> rolled a <b>' + sum + '</b> and dealt Starborg <b>2</b> unblockable damage!')
             this.game.bot10damage -= 2
             if(this.game.bot10damage <= 0) {
+                this.game.message('<b>Starborg</b> has been <b>defeated</b>!')
                 this.game.finish(undefined)
+            } else {
+                this.game.message('<b>Starborg</b> has <b>' + this.game.bot10damage + '</b> health.')
             }
-        }
-    }
-
-    checkForDamage(): void {
-        this.game.message('Check for damage.')
-        // only possible with a single die on Bot-10
-        if(this.game.all(BotSpace).all(Die).length == 1) {
-            const die = this.game.all(BotSpace).first(Die)!
-            const space = die.container(BotSpace)!
-            const bot10 = space.first(Bot10)!
-            const lowest = this.game.all(StarborgSpace, {attackType: bot10.lowAttack}).all(Die)
-                .map(x => x.face).reduce((acc, cur) => cur < acc ? cur : acc, 1000)
-            const highest = this.game.all(StarborgSpace, {attackType: bot10.highAttack}).all(Die)
-                .map(x => x.face).reduce((acc, cur) => cur > acc ? cur : acc, -1000)
-            const middle = die.face
-
-            this.game.message(lowest + ' < '  + middle + ' < ' + highest)
-            if(lowest <= middle && middle <= highest) {
-                this.game.message('Bot-10 has been damaged!')
-                bot10.damaged = true
-                die.putInto($.player)
-
-                if(this.game.all(Bot10, {damaged: true}).length == 4) {
-                    this.game.finish(this.game.players[0])
-                }
-            }
-
         }
     }
 
@@ -192,6 +175,38 @@ export class Phase2 {
         const { action } = game;
 
         return {
+            checkForDamagePhase2: (player) => action({}).do(() => {
+                // this.game.message('Check for damage.')
+                // only possible with a single die on Bot-10
+                if(this.game.all(BotSpace).all(Die).length == 1) {
+                    const die = this.game.all(BotSpace).first(Die)!
+                    const space = die.container(BotSpace)!
+                    const bot10 = space.first(Bot10)!
+                    const lowest = this.game.all(StarborgSpace, {attackType: bot10.lowAttack}).all(Die)
+                        .map(x => x.face).reduce((acc, cur) => cur < acc ? cur : acc, 1000)
+                    const highest = this.game.all(StarborgSpace, {attackType: bot10.highAttack}).all(Die)
+                        .map(x => x.face).reduce((acc, cur) => cur > acc ? cur : acc, -1000)
+                    const middle = die.face
+        
+                    // this.game.message(lowest + ' < '  + middle + ' < ' + highest)
+                    this.game.message('The required attack is a <b>' + bot10.lowAttack + 
+                        '</b> is less or equal to <b>Bot-10</b> which is less or equal to a <b>' + 
+                        bot10.highAttack + '</b>.')
+        
+                    if(lowest <= middle && middle <= highest) {
+                        this.game.message('<b>Bot-10</b> has been <b>damaged</b>!')
+        
+                        bot10.damaged = true
+                        die.putInto($.player)
+        
+                        if(this.game.all(Bot10, {damaged: true}).length == 4) {
+                            this.game.finish(this.game.players[0])
+                        }
+                    }
+        
+                }
+            }),
+
             moveAny: (player) => action({
                 prompt: 'Choose a die to move',
                 condition: game.nextActionIs('moveAny')
@@ -201,7 +216,7 @@ export class Phase2 {
             ).do(({ die }) => { 
                 game.selectedDie = die; 
                 game.followUp({ name: 'moveAnyFollowUp' }) 
-            }),
+            }).message('You are moving {{die}}.'),
 
             moveAnyFollowUp: (player) => action({
                 prompt: 'Choose a space to move to',
@@ -213,6 +228,7 @@ export class Phase2 {
                 if (space == dieSpace) {
                     // didn't move
                     game.clearAction()
+                    this.game.message('The <b>' + game.selectedDie! + '</b> did not move.')
                 } else {
                     game.selectedStarborg = space
                     if(!this.partDamaged(game.selectedStarborg)) {
@@ -220,6 +236,8 @@ export class Phase2 {
                     } else {
                         game.clearAction()
                     }
+                    this.game.message('You moved the <b>' + game.selectedDie! + '</b> to <b>' + 
+                        game.selectedDie!.container(StarborgSpace)! + '</b>.')
                 }
             }),
             
@@ -235,6 +253,7 @@ export class Phase2 {
                 if(game.bot10damage < 8) {
                     game.bot10damage++;
                 }
+                this.game.message('<b>Starborg</b> has <b>' + this.game.bot10damage + '</b> health.')
                 game.clearAction()
             }),
 
@@ -323,7 +342,7 @@ export class Phase2 {
             ).do(({ die }) => {
                 game.selectedDie = die; 
                 game.followUp({ name: 'placeFollowUp' }) 
-            }),
+            }).message('You are placing a {{die}}.'),
 
             placeFollowUp: (player) => action({
                 prompt: 'Choose a Bot-10 part to place on',
@@ -332,7 +351,7 @@ export class Phase2 {
             ).do(({ bot10 }) => {
                 game.selectedBot10 = bot10
                 game.clearAction()
-            }),
+            }).message('You placed the <b>' + game.selectedDie! + '</b> on <b>Bot-10</b>.'),
 
             moveCwBot10: (player) => action({
                 prompt: 'Choose a die on Bot-10 to move clockwise',
@@ -407,7 +426,7 @@ export class Phase2 {
                 dice.forEach(x => {
                     x.putInto($.player)
                 });
-            }),
+            }).message('You chose to pick up {{dice}}.'),
 
             choose1DieFromStarborg: (player) => action({
                 prompt: 'Choose 1 die to remove',
@@ -419,11 +438,11 @@ export class Phase2 {
                 dice.forEach(x => {
                     x.putInto($.player)
                 });
-            }),
+            }).message('You chose to pick up a {{dice}}.'),
 
             chooseNoDiceFromStarborg: (player) => action({
                 condition: $.player.all(Die).length == 2
-            }).message('Already have 2 dice.'),
+            }).message('You already have 2 dice.'),
 
             chooseStarborg: (player) => action({
                 prompt: 'Choose a Starborg part for this die',
@@ -438,7 +457,7 @@ export class Phase2 {
                     game.clearAction()
                 }
                 game.selectedDie = undefined
-            }),
+            }).message('You placed the <b>' + game.selectedDie! + '</b> on {{starborg}}.'),
         }
     }
 }
