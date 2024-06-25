@@ -270,7 +270,7 @@ export class Phase2 {
                 dice[0].putInto(space2)
                 dice[1].putInto(space1)
                 game.clearAction()
-            }),
+            }).message('You swapped {{dice}}.'),
 
             moveCwCcwStarborg: (player) => action({
                 prompt: 'Choose a die on Starborg to move clockwise or counter-clockwise',
@@ -291,7 +291,7 @@ export class Phase2 {
                 } else {
                     game.followUp({ name: 'cwCcwFollowUp' })
                 }
-            }),
+            }).message('You are moving a {{die}}.'),
             
             cwCcwFollowUpCcw: (player) => action({
                 prompt: 'Move counter-clockwise',
@@ -305,7 +305,7 @@ export class Phase2 {
                 } else {
                     game.clearAction()
                 }
-            }),
+            }).message('You moved the <b>' + game.selectedDie! + '</b> on <b>Starborg</b> {{direction}}.'),
             cwCcwFollowUpCw: (player) => action({
                 prompt: 'Move clockwise',
             }).chooseFrom(
@@ -318,7 +318,7 @@ export class Phase2 {
                 } else {
                     game.clearAction()
                 }
-            }),
+            }).message('You moved the <b>' + game.selectedDie! + '</b> on <b>Starborg</b> {{direction}}.'),
             cwCcwFollowUp: (player) => action({
                 prompt: 'Move clockwise or counter-clockwise',
             }).chooseFrom(
@@ -331,7 +331,7 @@ export class Phase2 {
                 } else {
                     game.clearAction()
                 }
-            }),
+            }).message('You moved the <b>' + game.selectedDie! + '</b> on <b>Starborg</b> {{direction}}.'),
             
             placeDie: (player) => action({
                 prompt: 'Choose a die to place on Bot-10',
@@ -368,7 +368,7 @@ export class Phase2 {
                 const cwBot10 = die.getClockwiseBot10()
                 die.putInto(cwBot10)
                 game.clearAction()
-            }),
+            }).message('You moved the {{die}} on <b>Bot-10</b> <b>clockwise</b>.'),
 
             moveCcwBot10: (player) => action({
                 prompt: 'Choose a die on Bot-10 to move counter-clockwise',
@@ -381,7 +381,7 @@ export class Phase2 {
                 const cwBot10 = die.getCounterClockwiseBot10()
                 die.putInto(cwBot10)
                 game.clearAction()
-            }),
+            }).message('You moved the {{die}} on <b>Bot-10</b> <b>counter-clockwise</b>.'),
 
 
             moveCwStarborg: (player) => action({
@@ -398,7 +398,7 @@ export class Phase2 {
                 } else {
                     game.clearAction()
                 }
-            }),
+            }).message('You moved the {{die}} on <b>Starborg</b> <b>clockwise</b>.'),
 
             moveCcwStarborg: (player) => action({
                 prompt: 'Choose a die on Starborg to move counter-clockwise',
@@ -414,7 +414,7 @@ export class Phase2 {
                 } else {
                     game.clearAction()
                 }
-            }),
+            }).message('You moved the {{die}} on <b>Starborg</b> <b>counter-clockwise</b>.'),
 
             choose2DiceFromStarborg: (player) => action({
                 prompt: 'Choose 2 dice to remove',

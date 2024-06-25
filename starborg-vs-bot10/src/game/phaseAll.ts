@@ -89,7 +89,7 @@ export class PhaseAll {
                 } else {
                     game.followUp({ name: 'addSubFollowUp' })
                 }
-            }),
+            }).message('You are changing {{die}}.'),
 
             set: (player) => action({
                 prompt: 'Choose a die to set',
@@ -110,7 +110,7 @@ export class PhaseAll {
                     game.selectedDie!.face = val
                     game.performAction(this.getNextAction(game, phase1, phase2, game.selectedDie!))
                 }
-            }),
+            }).message('You changed the die to <b>' + game.selectedDie! + '</b>.'),
             addSubFollowUp1: (player) => action({
                 prompt: 'Increase',
             }).chooseFrom(
@@ -119,7 +119,7 @@ export class PhaseAll {
                 const val = game.selectedDie!.face + 1
                 game.selectedDie!.face = val
                 game.performAction(this.getNextAction(game, phase1, phase2, game.selectedDie!))
-            }),
+            }).message('You increased the die to <b>' + game.selectedDie! + '</b>.'),
             addSubFollowUp6: (player) => action({
                 prompt: 'Decrease',
             }).chooseFrom(
@@ -128,7 +128,7 @@ export class PhaseAll {
                 const val = game.selectedDie!.face - 1
                 game.selectedDie!.face = val
                 game.performAction(this.getNextAction(game, phase1, phase2, game.selectedDie!))
-            }),
+            }).message('You decreased the die to <b>' + game.selectedDie! + '</b>.'),
             addSubFollowUp: (player) => action({
                 prompt: 'Decrease or Increase',
             }).chooseFrom(
@@ -137,7 +137,7 @@ export class PhaseAll {
                 const val = game.selectedDie!.face + (value == "-1" ? -1 : 1)
                 game.selectedDie!.face = val
                 game.performAction(this.getNextAction(game, phase1, phase2, game.selectedDie!))
-            }),
+            }).message('You changed the die to <b>' + game.selectedDie! + '</b>.'),
 
             sub1: (player) => action({
                 prompt: 'Choose a die to decrease by 1',
