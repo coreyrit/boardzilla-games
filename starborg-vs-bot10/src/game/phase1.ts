@@ -1,5 +1,5 @@
 
-import { StarborgVsBot10Player, MyGame, Bot10, Starborg, Die } from '../game/index.js';
+import { StarborgVsBot10Player, MyGame, Bot10, Starborg } from '../game/index.js';
 import {
     createGame,
     Player,
@@ -9,6 +9,7 @@ import {
     Action,
     GameElement
 } from '@boardzilla/core';
+import { D6 } from '@boardzilla/core/components';
 import { StarborgSpace } from './phase2.js';
 
 
@@ -74,6 +75,23 @@ export class Phase1 {
         ]
     }
 
+    getLeftHandler(die : D6) : HandlerSpace {
+        const myHandler = die.container(HandlerSpace)!
+        const leftHandler = myHandler.index == 1 ? 
+          myHandler : 
+          this.game.first(HandlerSpace, {index: myHandler.index-1})!
+        return leftHandler
+      }
+    
+      getRightHandler(die : D6) : HandlerSpace {
+        const myHandler = die.container(HandlerSpace)!
+        const leftHandler = myHandler.index == 5 ? 
+          myHandler : 
+          this.game.first(HandlerSpace, {index: myHandler.index+1})!
+        return leftHandler
+      }
+
+
     getActions(): Record<string, (player: StarborgVsBot10Player) => Action<Record<string, Argument>>> {
         const game = this.game
         const { action } = game;
@@ -91,9 +109,9 @@ export class Phase1 {
 
             choose2DiceFromHandlers: (player) => action({
                 prompt: 'Choose 2 dice to remove',
-                condition: $.player.all(Die).length == 0
+                condition: $.player.all(D6).length == 0
             }).chooseOnBoard(
-                'dice', $.handlers.all(Die),
+                'dice', $.handlers.all(D6),
                 { number: 2 }
             ).do(({ dice }) => {
                 dice.forEach(x => {
@@ -103,9 +121,9 @@ export class Phase1 {
 
             choose1DieFromHandlers: (player) => action({
                 prompt: 'Choose 1 die to remove',
-                condition: $.player.all(Die).length == 1
+                condition: $.player.all(D6).length == 1
             }).chooseOnBoard(
-                'dice', $.handlers.all(Die),
+                'dice', $.handlers.all(D6),
                 { number: 1 }
             ).do(({ dice }) => {
                 dice.forEach(x => {
@@ -114,13 +132,13 @@ export class Phase1 {
             }).message('You chose to pick up a {{dice}}.'),
 
             chooseNoDiceFromHandlers: (player) => action({
-                condition: $.player.all(Die).length == 2
+                condition: $.player.all(D6).length == 2
             }).message('You already have 2 dice.'),
 
             choosePlayerDie: (player) => action({
                 prompt: 'Choose a die to place',
             }).chooseOnBoard(
-                'die', $.player.all(Die),
+                'die', $.player.all(D6),
                 { skipIf: 'never' }
             ).do(({ die }) => {
                 game.selectedDie = die
@@ -129,7 +147,7 @@ export class Phase1 {
             chooseHandler: (player) => action({
                 prompt: 'Choose a handler for this die',
             }).chooseOnBoard(
-                'handler', game.all(HandlerSpace).filter(x => x.all(Die).length == 0)
+                'handler', game.all(HandlerSpace).filter(x => x.all(D6).length == 0)
             ).do(({ handler }) => {
                 game.selectedDie!.putInto(handler)
                 const h = handler.first(Starborg)!
@@ -176,7 +194,7 @@ export class Phase1 {
             move: (player) => action({
                 prompt: 'Choose a die to move',
                 condition: this.game.nextActionIs('move')
-            }).chooseOnBoard('die', game.all(HandlerSpace).all(Die)
+            }).chooseOnBoard('die', game.all(HandlerSpace).all(D6)
             ).do(({ die }) => { 
                 game.selectedDie = die; 
                 game.followUp({ name: 'moveFollowUp' }) 
@@ -185,7 +203,7 @@ export class Phase1 {
             moveFollowUp: (player) => action({
                 prompt: 'Choose a handler to move to',
             }).chooseOnBoard(
-                'handler', game.all(HandlerSpace).filter(x => x.all(Die).length == 0)
+                'handler', game.all(HandlerSpace).filter(x => x.all(D6).length == 0)
                     .concat(game.selectedDie!.container(HandlerSpace)!)
             ).do(({ handler }) => {
                 const dieHandler = game.selectedDie!.container(HandlerSpace)!
@@ -208,18 +226,18 @@ export class Phase1 {
             moveLeftRight: (player) => action({
                 prompt: 'Choose a die to move left or right',
                 condition: this.game.nextActionIs('moveLeftRight') && (                    
-                    game.all(HandlerSpace).all(Die).filter(x => x.getLeftHandler().all(Die).length == 0).length +
-                    game.all(HandlerSpace).all(Die).filter(x => x.getRightHandler().all(Die).length == 0).length
+                    game.all(HandlerSpace).all(D6).filter(x => this.getLeftHandler(x).all(D6).length == 0).length +
+                    game.all(HandlerSpace).all(D6).filter(x => this.getRightHandler(x).all(D6).length == 0).length
                     ) > 0
             }).chooseOnBoard(
-                'die', game.all(HandlerSpace).all(Die).filter(x => x.getLeftHandler().all(Die).length == 0).concat(
-                    game.all(HandlerSpace).all(Die).filter(x => x.getRightHandler().all(Die).length == 0)),
+                'die', game.all(HandlerSpace).all(D6).filter(x => this.getLeftHandler(x).all(D6).length == 0).concat(
+                    game.all(HandlerSpace).all(D6).filter(x => this.getRightHandler(x).all(D6).length == 0)),
             ).do(({ die }) => {
                 const myHandler = die.container(HandlerSpace)!
                 game.selectedDie = die;
-                if (myHandler == die.getLeftHandler() || die.getLeftHandler().all(Die).length > 0) {
+                if (myHandler == this.getLeftHandler(die) || this.getLeftHandler(die).all(D6).length > 0) {
                     game.followUp({ name: 'leftRightFollowUpRight' })
-                } else if (myHandler == die.getRightHandler() || die.getRightHandler().all(Die).length > 0) {
+                } else if (myHandler == this.getRightHandler(die) || this.getRightHandler(die).all(D6).length > 0) {
                     game.followUp({ name: 'leftRightFollowUpLeft' })
                 } else {
                     game.followUp({ name: 'leftRightFollowUp' })
@@ -231,14 +249,14 @@ export class Phase1 {
             }).chooseFrom(
                 "direction", [{ label: 'Left', choice: 'left' }], { skipIf: 'never' }
             ).do(({ direction }) => {
-                const leftHandler = game.selectedDie!.getLeftHandler()
+                const leftHandler = this.getLeftHandler(game.selectedDie!)
                 game.selectedHandler = leftHandler
                 if (!this.handlerInjured(leftHandler)) {
                     game.performAction(this.getAction(leftHandler, game.selectedDie!))
                 } else {
                     game.clearAction()
                 }
-            }).message('You moved the ' + game.selectedDie! + ' to the {{direction}} onto ' + game.selectedDie!.getLeftHandler()! + '.'),
+            }).message('You moved the ' + game.selectedDie! + ' to the {{direction}} onto ' + this.getLeftHandler(game.selectedDie!)! + '.'),
 
             leftRightFollowUpRight: (player) => action({
                 prompt: 'Move right',
@@ -246,7 +264,7 @@ export class Phase1 {
                 "direction", ["Right"], { skipIf: 'never' }
             ).do(({ direction }) => {
                 // if (direction != 'Skip') {
-                    const rightHandler = game.selectedDie!.getRightHandler()
+                    const rightHandler = this.getRightHandler(game.selectedDie!)
                     game.selectedHandler = rightHandler
                     if (!this.handlerInjured(rightHandler)) {
                         game.performAction(this.getAction(rightHandler, game.selectedDie!))
@@ -264,7 +282,7 @@ export class Phase1 {
                 "direction", ["Left", "Right"]
             ).do(({ direction }) => {
                 // if (direction != 'Skip') {
-                    const handler = direction == 'Left' ? game.selectedDie!.getLeftHandler() : game.selectedDie!.getRightHandler()
+                    const handler = direction == 'Left' ? this.getLeftHandler(game.selectedDie!) : this.getRightHandler(game.selectedDie!)
                     game.selectedHandler = handler
                     if (!this.handlerInjured(handler)) {
                         game.performAction(this.getAction(handler, game.selectedDie!))
@@ -279,12 +297,12 @@ export class Phase1 {
             moveLeft: (player) => action({
                 prompt: 'Choose a die to move left',
                 condition: this.game.nextActionIs('moveLeft') &&
-                    game.all(HandlerSpace).all(Die).filter(x => x.getLeftHandler().all(Die).length == 0).length > 0
+                    game.all(HandlerSpace).all(D6).filter(x => this.getLeftHandler(x).all(D6).length == 0).length > 0
             }).chooseOnBoard(
-                'die', game.all(HandlerSpace).all(Die).filter(x => x.getLeftHandler().all(Die).length == 0),
+                'die', game.all(HandlerSpace).all(D6).filter(x => this.getLeftHandler(x).all(D6).length == 0),
                 { skipIf: 'never' }
             ).do(({ die }) => {
-                const leftHandler = die.getLeftHandler()
+                const leftHandler = this.getLeftHandler(die)
                 die.putInto(leftHandler)
                 if (!this.handlerInjured(leftHandler)) {
                     game.performAction(this.getAction(leftHandler, die))
@@ -296,12 +314,12 @@ export class Phase1 {
             moveRight: (player) => action({
                 prompt: 'Choose a die to move right',
                 condition: this.game.nextActionIs('moveRight') &&
-                    game.all(HandlerSpace).all(Die).filter(x => x.getRightHandler().all(Die).length == 0).length > 0
+                    game.all(HandlerSpace).all(D6).filter(x => this.getRightHandler(x).all(D6).length == 0).length > 0
             }).chooseOnBoard(
-                'die', game.all(HandlerSpace).all(Die).filter(x => x.getRightHandler().all(Die).length == 0),
+                'die', game.all(HandlerSpace).all(D6).filter(x => this.getRightHandler(x).all(D6).length == 0),
                 { skipIf: 'never' }
             ).do(({ die }) => {
-                const rightHandler = die.getRightHandler()
+                const rightHandler = this.getRightHandler(die)
                 die.putInto(rightHandler)
                 if (!this.handlerInjured(rightHandler)) {
                     game.performAction(this.getAction(rightHandler, die))
@@ -309,7 +327,7 @@ export class Phase1 {
                     game.clearAction()
                 }
             }).message('You moved the {{die}} to the right onto {{rightHandler}}.', 
-                ({ die }) => ({ rightHandler: die.getRightHandler() })),
+                ({ die }) => ({ rightHandler: this.getRightHandler(die) })),
 
             swap: (player) => action({
                 prompt: 'Choose 2 Handlers to swap',
@@ -320,8 +338,8 @@ export class Phase1 {
             ).do(({ handlers }) => {
                 const h1 = handlers[0].container(HandlerSpace)!
                 const h2 = handlers[1].container(HandlerSpace)!
-                const d1 = h1.first(Die)
-                const d2 = h2.first(Die)
+                const d1 = h1.first(D6)
+                const d2 = h2.first(D6)
 
                 handlers[0].putInto(h2)
                 handlers[1].putInto(h1)
@@ -380,7 +398,7 @@ export class Phase1 {
                 prompt: 'Transform into Starborg',
                 condition: game.bot10damage != 0 &&
                     game.all(Starborg, { rotation: 0 }).map(x => x.formation)
-                    .includes($.player.all(Die).reduce((acc, cur) => acc + cur.face, 0))
+                    .includes($.player.all(D6).reduce((acc, cur) => acc + cur.current, 0))
             }).do(() => {
                 game.message('You transformed into Starborg!')
                 game.phase = 2
@@ -427,8 +445,8 @@ export class Phase1 {
 
     begin(): void {
         // roll and place dice
-        this.game.all(Die).forEach(x => { x.roll() });
-        const dice: Die[] = this.game.all(Die).sortBy('face')
+        this.game.all(D6).forEach(x => { x.roll() });
+        const dice: D6[] = this.game.all(D6).sortBy('current')
         dice[0].putInto($.handler1)
         dice[1].putInto($.handler3)
         dice[2].putInto($.handler5)
@@ -478,7 +496,7 @@ export class Phase1 {
     attackPosition(handler: HandlerSpace): void {
         this.game.message('Bot-10 attacks ' + handler.first(Starborg)! + '.')
 
-        const die = handler.first(Die)
+        const die = handler.first(D6)
         if (die != undefined) {
             // dice protect handlers
             this.game.message('The ' + handler + ' handler is protected and discards a die.')
@@ -495,8 +513,8 @@ export class Phase1 {
         }
     }
 
-    getAction(handler: HandlerSpace, die: Die): string {
-        return handler.first(Starborg)!.phase1DieActions[die.face]
+    getAction(handler: HandlerSpace, die: D6): string {
+        return handler.first(Starborg)!.phase1DieActions[die.current]
     }
 
     handlerInjured(space: HandlerSpace): boolean {
@@ -522,7 +540,7 @@ export class Phase1 {
 
             if (this.game.bot10damage == ATTACK_ALL_NO_DIE) {
                 this.game.all(HandlerSpace).forEach(x => {
-                    if (x.all(Die).length == 0) {
+                    if (x.all(D6).length == 0) {
                         this.attackPosition(x)
                     }
                 })
@@ -652,12 +670,12 @@ export class Phase1 {
             }
         })
 
-        $.player.create(Die, 'die1')
-        $.player.create(Die, 'die2')
-        $.player.create(Die, 'die3')
+        $.player.create(D6, 'die1')
+        $.player.create(D6, 'die2')
+        $.player.create(D6, 'die3')
 
-        $.player.onEnter(Die, x => {
-            x.locked = false
-        })
+        // $.player.onEnter(D6, x => {
+            // x.locked = false
+        // })
     }
 }

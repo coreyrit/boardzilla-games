@@ -1,6 +1,8 @@
 import React from 'react';
 import { Space, render } from '@boardzilla/core';
-import { Bot10, Die, Starborg, default as setup } from '../game/index.js';
+import { D6, useD6 } from '@boardzilla/core/components';
+
+import { Bot10, RefSpace, Starborg, default as setup } from '../game/index.js';
 import { HandlerSpace, MovementSpace, PlayerSpace, VehicleSpace} from '../game/phase1.js';
 
 import './style.scss';
@@ -13,6 +15,15 @@ render(setup, {
   layout: game => {
 
     game.appearance({render: () => null});
+
+
+    game.layout('ref', { area: { left: 50, top: 80, width: 50, height: 10 }});
+    game.all(RefSpace).appearance({ render: x => ( 
+      <div className='RefSpace'>
+       <b>{game.infoHeader}</b><br />
+       {game.info}
+      </div>
+    ) });
 
     game.layout('phase1', { area: { left: 0, top: 0, width: 100, height: 100 }});
     $.phase1.appearance({ render: x=> null})
@@ -31,8 +42,8 @@ render(setup, {
     game.layout('rightLeg', { area: { left: 50, top: 55, width: 34, height: 25 }});
     game.layout('leftLeg', { area: { left: 84, top: 55, width: 34, height: 25 }});
 
-    game.all(StarborgSpace).layout(Die, {offsetColumn: {x: 0, y: 0} });
-    game.all(BotSpace).layout(Die, {offsetColumn: {x: 0, y: 0} });
+    game.all(StarborgSpace).layout(D6, {offsetColumn: {x: 0, y: 0} });
+    game.all(BotSpace).layout(D6, {offsetColumn: {x: 0, y: 0} });
 
     game.layout('nw', { area: { left: 0, top: 11, width: 25, height: 34 }});
     game.layout('ne', { area: { left: 25, top: 11, width: 25, height: 34 }});
@@ -56,7 +67,7 @@ render(setup, {
     $.movement.layout(MovementSpace, {rows: 1, columns: 3 });
     $.vehicles.layout(VehicleSpace, {rows: 1, columns: 5 });
     $.handlers.layout(HandlerSpace, {rows: 1, columns: 5 });
-    game.all(HandlerSpace).layout(Die, {offsetColumn: {x: 0, y: 0} });
+    game.all(HandlerSpace).layout(D6, {offsetColumn: {x: 0, y: 0} });
     $.handlers.layout(PlayerSpace, {rows: 1 });
 
     game.all(Starborg).appearance({ render: x => ( 
@@ -87,5 +98,7 @@ render(setup, {
       </div>
     ) });
 
+
+    useD6(game);
   }
 });

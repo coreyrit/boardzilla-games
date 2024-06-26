@@ -7,6 +7,7 @@ import {
   GameElement,
   Action
 } from '@boardzilla/core';
+import { D6 } from '@boardzilla/core/components';
 
 import { Phase1, HandlerSpace } from './phase1.js'
 import { BotSpace, Phase2, StarborgSpace } from './phase2.js'
@@ -16,6 +17,9 @@ export type SingleArgument = string | number | boolean | GameElement | Player;
 export type Argument = SingleArgument | SingleArgument[];
 
 export class StarborgVsBot10Player extends Player<MyGame, StarborgVsBot10Player> {
+}
+
+export class RefSpace extends Space<MyGame> {
 }
 
 export class Starborg extends Piece<MyGame> {
@@ -99,104 +103,26 @@ export class Bot10 extends Piece<MyGame> {
 }
 
 
-export class Die extends Piece<MyGame> {
-  face: number = 1
-  locked: boolean = true
+// export class Die extends D6 {
+  // face: number = 1
+  // locked: boolean = true
 
-  roll(): void {
-    this.face = Math.floor(this.game.random() * 6 + 1)
-  }
-  override toString(): string {
-    return this.face.toString()
-  }
+  // roll(): void {
+  //   this.face = Math.floor(this.game.random() * 6 + 1)
+  //   this.game.rotation += 720
+  //   this.game.addDelay()
+  // }
 
-  getClockwiseBot10() : BotSpace {
-    const myBot10 = this.container(BotSpace)!
-    return this.getNextClockwiseBot10(myBot10)
-  }
-
-  getNextClockwiseBot10(myBot10: BotSpace) : BotSpace {
-    let nextSpace = undefined
-
-    switch(myBot10.name) {
-      case 'nw': { nextSpace = this.game.first(BotSpace, {name: 'ne'})!; break; }
-      case 'ne': { nextSpace = this.game.first(BotSpace, {name: 'se'})!; break; }
-      case 'sw': { nextSpace = this.game.first(BotSpace, {name: 'nw'})!; break; }
-      case 'se': { nextSpace = this.game.first(BotSpace, {name: 'sw'})!; break; }
-    }
-    
-    if(nextSpace!.first(Bot10)!.damaged) {
-      return this.getNextClockwiseBot10(nextSpace!)
-    } else {
-      return nextSpace!
-    }
-  }
-
-  getCounterClockwiseBot10() : BotSpace {
-    const myBot10 = this.container(BotSpace)!
-    return this.getNextCounterClockwiseBot10(myBot10)
-  }
-
-  getNextCounterClockwiseBot10(myBot10: BotSpace) : BotSpace {
-    let nextSpace = undefined
-
-    switch(myBot10.name) {
-      case 'nw': { nextSpace =  this.game.first(BotSpace, {name: 'sw'})!; break; }
-      case 'ne': { nextSpace =  this.game.first(BotSpace, {name: 'nw'})!; break; }
-      case 'sw': { nextSpace =  this.game.first(BotSpace, {name: 'se'})!; break; }
-      case 'se': { nextSpace =  this.game.first(BotSpace, {name: 'ne'})!; break; }
-    }
-    if(nextSpace!.first(Bot10)!.damaged) {
-      return this.getNextCounterClockwiseBot10(nextSpace!)
-    } else {
-      return nextSpace!
-    }
-  }
-
-
-  getClockwiseStarborg() : StarborgSpace {
-    const myStarborg = this.container(StarborgSpace)!
-    switch(myStarborg.color) {
-      case 'black': { return this.game.first(StarborgSpace, {color: 'green'})! }
-      case 'red': { return this.game.first(StarborgSpace, {color: 'black'})! }
-      case 'green': { return this.game.first(StarborgSpace, {color: 'yellow'})! }
-      case 'yellow': { return this.game.first(StarborgSpace, {color: 'blue'})! }
-      case 'blue': { return this.game.first(StarborgSpace, {color: 'red'})! }
-    }
-    return myStarborg
-  }
-
-  getCounterClockwiseStarborg() : StarborgSpace {
-    const myStarborg = this.container(StarborgSpace)!
-    switch(myStarborg.color) {
-      case 'black': { return this.game.first(StarborgSpace, {color: 'red'})! }
-      case 'red': { return this.game.first(StarborgSpace, {color: 'blue'})! }
-      case 'green': { return this.game.first(StarborgSpace, {color: 'black'})! }
-      case 'yellow': { return this.game.first(StarborgSpace, {color: 'green'})! }
-      case 'blue': { return this.game.first(StarborgSpace, {color: 'yellow'})! }
-    }
-    return myStarborg
-  }
-
-  getLeftHandler() : HandlerSpace {
-    const myHandler = this.container(HandlerSpace)!
-    const leftHandler = myHandler.index == 1 ? 
-      myHandler : 
-      this.game.first(HandlerSpace, {index: myHandler.index-1})!
-    return leftHandler
-  }
-
-  getRightHandler() : HandlerSpace {
-    const myHandler = this.container(HandlerSpace)!
-    const leftHandler = myHandler.index == 5 ? 
-      myHandler : 
-      this.game.first(HandlerSpace, {index: myHandler.index+1})!
-    return leftHandler
-  }
-}
+  // override toString(): string {
+    // return this.current.toString()
+  // }
+// }
 
 export class MyGame extends Game<MyGame, StarborgVsBot10Player> {
   
+  infoHeader: string = ""
+  info: string = ""
+
   performingAction : boolean = false
   theNextAction : string = 'none'
   doAttackAdjacent : number = 0
@@ -205,7 +131,7 @@ export class MyGame extends Game<MyGame, StarborgVsBot10Player> {
   bot10damage : number = 0
   phase: number = 1
 
-  selectedDie: Die | undefined = undefined
+  selectedDie: D6 | undefined = undefined
   selectedHandler: HandlerSpace | undefined = undefined
   selectedBot10: BotSpace | undefined = undefined
   selectedStarborg: StarborgSpace | undefined = undefined
@@ -250,6 +176,8 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
   const phase2 = new Phase2(game)
   phase2.setup()
 
+  game.create(RefSpace, 'ref')
+
   const phaseAll = new PhaseAll(game)
 
   const allActions = Object.assign({}, phaseAll.getActions(phase1, phase2), phase1.getActions(), phase2.getActions());
@@ -264,13 +192,25 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
     whileLoop({while: () => game.phase == 1, do: ([
 
       // HANDLER TURN
+      () => {
+        game.infoHeader = 'Handler Turn';
+        game.info = '1. Remove 2 dice from cards.  Any die previously removed from a card by a Bot-10 attack must be included in this decision.';
+      },
 
       // 1. Remove 2 dice from cards.
       playerActions({ actions: ['choose2DiceFromHandlers', 'choose1DieFromHandlers', 'chooseNoDiceFromHandlers']}),
 
+      () => {
+        game.info = '2. Roll the dice.  If the sum of the dice is equal to one of the uninjured Handler’s Starborg formation values, then you may choose to form Starborg at this time and move to Phase 2 of the game.';
+      },
+
       // 2. Roll the dice. 
       playerActions({ actions: ['rollDice']}),
       playerActions({ actions: ['transform', 'skip']}),
+
+      () => {
+        game.info = '3. Place both dice, one at a time on a Handler card.  Perform the action on the card that matches the die value. Only 1 die permitted per card.  Do not perform actions on injured Handlers.';
+      },
 
       // only if not transformred
       ifElse({
@@ -293,6 +233,10 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
             () => game.clearSelectionsAndMove(),
           ])}),
         ]}),
+
+        () => {
+          game.info = '4. Check for Bot-10 damage.  Bot-10 is damaged if the order of the Handlers is the same as the order of the colors on the bottom of the Bot-10 movement cards.  To damage Bot-10, move the cube to the next space in numerical order.';
+        },
 
         // 4. Check for Bot-10 Damage
         playerActions({ actions: ['checkForDamagePhase1']}),
@@ -331,7 +275,7 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
       playerActions({ actions: ['choose2DiceFromStarborg', 'choose1DieFromStarborg', 'chooseNoDiceFromStarborg']}),
 
       // 2. Roll the dice. 
-      () => $.player.all(Die).forEach(x => x.roll()),
+      () => $.player.all(D6).forEach(x => x.roll()),
       () => phase2.checkBot10Attack(),
 
       // 3. Place both dice, one at a time on a Handler card and perform cactions.

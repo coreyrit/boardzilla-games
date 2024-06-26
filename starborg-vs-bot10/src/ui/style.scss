@@ -1,11 +1,43 @@
 #play-area {
 
-    .Die {
+    // .Die {
+    //     z-index: 5;
+    //     top: 55%; left: 38%; width: 20%; height: 20%;
+    //     color: black;
+    // }
+
+    .D6 {
         z-index: 5;
-        top: 55%; left: 38%; width: 20%; height: 20%;
-        color: black;
+        transform: scale(0.20) translate(0%, 40%);
+
+        &.selected {
+          border: solid;
+          border-color: yellow;
+          border-width: 10px;
+        }
+
+        &.selectable {
+          border: solid;
+          border-color: red;
+          border-width: 10px;
+        }
     }
 
+    .RefSpace {
+      z-index:100;
+      padding-top: 5px;
+      padding-left: 5px;
+      padding-right: 5px;
+      background-color: white;
+      display: block;
+      font-size: 12px;
+      white-space: wrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      width: 100%;
+      height: 100%;
+    }
+    
     .Bot10 {
         z-index: 1;
 
