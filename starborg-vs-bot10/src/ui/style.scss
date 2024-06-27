@@ -6,19 +6,24 @@
     //     color: black;
     // }
 
+    .HandlerSpace {
+      &.selectable {
+        z-index: 2;
+        filter: brightness(1.5);
+      }
+    }
+
     .D6 {
         z-index: 5;
         transform: scale(0.20) translate(0%, 40%);
 
         &.selected {
-          border: solid;
-          border-color: yellow;
-          border-width: 10px;
+          filter: brightness(0.5);
         }
 
         &.selectable {
           border: solid;
-          border-color: red;
+          border-color: yellow;
           border-width: 10px;
         }
     }
@@ -84,6 +89,15 @@
 
     .Starborg {
         z-index: 1;
+
+        &.selectable {
+          z-index: 2;
+          filter: brightness(1.5);
+        }
+        &.selected {
+          z-index: 2;
+          filter: brightness(0.5);
+        }
 
         &[data-color="green"] .handler { background-image: url(./assets/handler-green.jpg) }
         &[data-color="red"] .handler { background-image: url(./assets/handler-red.jpg) }
