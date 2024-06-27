@@ -227,7 +227,7 @@ export class Phase2 {
 
     checkBot10Attack() : void {
         const sum = $.player.all(D6).reduce((acc, cur) => acc + cur.current, 0)
-        if(this.game.all(Bot10, {rotation: 0}).map(x => x.unblockedAttack).includes(sum)) {
+        if(this.game.all(Bot10, {damaged: false}).map(x => x.unblockedAttack).includes(sum)) {
             this.game.message('Bot-10 rolled a ' + sum + ' and dealt Starborg 2 unblockable damage!')
             this.game.bot10damage -= 2
             if(this.game.bot10damage <= 0) {

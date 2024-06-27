@@ -167,12 +167,13 @@ export class PhaseAll {
                 const prevFace = die.current
                 die.roll()                
                 const newFace = die.current
-                if(die.container(Starborg) != undefined && prevFace != newFace) {
+                if(die.container(StarborgSpace) != undefined && prevFace != newFace) {
                     game.performAction(this.getNextAction(game, phase1, phase2, die))
                 } else {
                     game.clearAction()
                 }
-            }).message('You rolled a {{die}}.'),
+                game.message('You rolled a ' + prevFace + ' into a ' + newFace + '.')
+            }),
         }
     }
 }

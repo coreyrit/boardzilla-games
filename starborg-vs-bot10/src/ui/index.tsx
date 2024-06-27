@@ -32,7 +32,9 @@ render(setup, {
     $.vehicles.appearance({ render: () => null})
     game.all(VehicleSpace).appearance({ render: () => null})
     $.handlers.appearance({ render: () => null})
-    game.all(HandlerSpace).appearance({ render: () => null})
+    game.all(HandlerSpace).appearance({ render: x => ( 
+      <div className='HandlerSpace' />
+    ) });
 
     game.layout('player', { area: { left: 50, top: 80, width: 50, height: 25 }});
   
