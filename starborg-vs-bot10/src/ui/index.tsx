@@ -35,6 +35,12 @@ render(setup, {
     game.all(HandlerSpace).appearance({ render: x => ( 
       <div className='HandlerSpace' />
     ) });
+    game.all(StarborgSpace).appearance({ render: x => ( 
+      <div className='StarborgSpace' />
+    ) });
+    game.all(BotSpace).appearance({ render: x => ( 
+      <div className='BotSpace' />
+    ) });
 
     game.layout('player', { area: { left: 50, top: 80, width: 50, height: 25 }});
   
@@ -52,17 +58,6 @@ render(setup, {
     game.layout('sw', { area: { left: 0, top: 45, width: 25, height: 34 }});
     game.layout('se', { area: { left: 25, top: 45, width: 25, height: 34 }});
 
-    game.all(BotSpace).appearance({ render: x => ( 
-      <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-        {/* <rect width="100" height="100" x="0" y="0" fill="white" /> */}
-      </svg>
-    ) });
-    game.all(StarborgSpace).appearance({ render: x => ( 
-      <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-        {/* <rect width="100" height="100" x="0" y="0" fill="black" /> */}
-      </svg>
-    ) });
-    
 
     $.phase1.layout(Space, {rows: 4, columns: 1 });
 
