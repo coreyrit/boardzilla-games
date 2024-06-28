@@ -2,7 +2,7 @@ import React from 'react';
 import { Space, render } from '@boardzilla/core';
 import { D6, useD6 } from '@boardzilla/core/components';
 
-import { Bot10, RefSpace, Starborg, default as setup } from '../game/index.js';
+import { Bot10, IconSpace, RefSpace, Starborg, default as setup } from '../game/index.js';
 import { HandlerSpace, MovementSpace, PlayerSpace, VehicleSpace} from '../game/phase1.js';
 
 import './style.scss';
@@ -41,6 +41,23 @@ render(setup, {
     game.all(BotSpace).appearance({ render: x => ( 
       <div className='BotSpace' />
     ) });
+
+    game.all(IconSpace).appearance({ render: x => ( 
+      <div className='IconSpace' />
+    ) });
+
+    game.layout('iconRef', {
+      area: {
+        top: 0,
+        left: 0,
+        width: 100,
+        height: 80
+      },
+      drawer: {
+        closeDirection: 'up',
+        tab: () => 'Icon Reference',
+      },
+    });
 
     game.layout('player', { area: { left: 50, top: 80, width: 50, height: 25 }});
   

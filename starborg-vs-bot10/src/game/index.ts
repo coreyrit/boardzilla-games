@@ -22,6 +22,9 @@ export class StarborgVsBot10Player extends Player<MyGame, StarborgVsBot10Player>
 export class RefSpace extends Space<MyGame> {
 }
 
+export class IconSpace extends Space<MyGame> {
+}
+
 export class Starborg extends Piece<MyGame> {
   isHandler: boolean = true;
   color: 'red' | 'blue' | 'green' | 'black' | 'yellow'
@@ -169,6 +172,8 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
 
   const { action } = game;
   const { playerActions, loop, eachPlayer, whileLoop, forLoop, ifElse } = game.flowCommands;
+
+  game.create(IconSpace, 'iconRef')
 
   const phase1 = new Phase1(game)
   phase1.setup()
