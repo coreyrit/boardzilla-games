@@ -117,7 +117,8 @@ export class Phase1 {
                 dice.forEach(x => {
                     x.putInto($.player)
                 });
-            }).message('You chose to pick up {{dice}}.'),
+                game.message('You chose to pick up ' + dice[0].current + ' and ' + dice[1].current + '.')
+            }),
 
             choose1DieFromHandlers: (player) => action({
                 prompt: 'Choose 1 die to remove',
@@ -129,7 +130,8 @@ export class Phase1 {
                 dice.forEach(x => {
                     x.putInto($.player)
                 });
-            }).message('You chose to pick up a {{dice}}.'),
+                game.message('You chose to pick up a ' + dice[0].current + '.')
+            }),
 
             chooseNoDiceFromHandlers: (player) => action({
                 condition: $.player.all(D6).length == 2
@@ -142,7 +144,8 @@ export class Phase1 {
                 { skipIf: 'never' }
             ).do(({ die }) => {
                 game.selectedDie = die
-            }).message('You chose to place a {{die}}.'),
+                game.message('You chose to place a ' + die.current + '.')
+            }),
 
             chooseHandler: (player) => action({
                 prompt: 'Choose a handler for this die',
@@ -157,7 +160,7 @@ export class Phase1 {
                     game.clearAction()
                 }
                 game.selectedDie = undefined
-            }).message('You placed the ' + game.selectedDie! + ' on {{handler}}.'),
+            }).message('You placed the ' + game.selectedDie!.current + ' on {{handler}}.'),
 
             attackAdjacent: (player) => action({
                 prompt: 'Choose an adjacent handler to be attacked',
@@ -198,7 +201,8 @@ export class Phase1 {
             ).do(({ die }) => { 
                 game.selectedDie = die; 
                 game.followUp({ name: 'moveFollowUp' }) 
-            }).message('You are moving {{die}}.'),
+                game.message('You are moving a ' + die.current + '.')
+            }),
 
             moveFollowUp: (player) => action({
                 prompt: 'Choose a handler to move to',
@@ -210,7 +214,7 @@ export class Phase1 {
                 if (handler == dieHandler) {
                     // didn't move
                     game.clearAction()
-                    this.game.message('The ' + game.selectedDie! + ' did not move.')
+                    this.game.message('The ' + game.selectedDie!.current + ' did not move.')
                 } else {
                     game.selectedHandler = handler
                     if (!this.handlerInjured(handler)) {
@@ -218,7 +222,7 @@ export class Phase1 {
                     } else {
                         game.clearAction()
                     }
-                    this.game.message('You moved the ' + game.selectedDie! + ' to ' + 
+                    this.game.message('You moved the ' + game.selectedDie!.current + ' to ' + 
                         game.selectedDie!.container(HandlerSpace)! + '.')
                 }
             }),
@@ -242,7 +246,8 @@ export class Phase1 {
                 } else {
                     game.followUp({ name: 'leftRightFollowUp' })
                 }
-            }).message('You are moving {{die}}.'),
+                game.message('You are moving a ' + die.current + '.')
+            }),
 
             leftRightFollowUpLeft: (player) => action({
                 prompt: 'Move left',
@@ -256,7 +261,7 @@ export class Phase1 {
                 } else {
                     game.clearAction()
                 }
-            }).message('You moved the ' + game.selectedDie! + ' to the {{direction}} onto ' + this.getLeftHandler(game.selectedDie!)! + '.'),
+            }).message('You moved the ' + game.selectedDie!.current + ' to the {{direction}} onto ' + this.getLeftHandler(game.selectedDie!)! + '.'),
 
             leftRightFollowUpRight: (player) => action({
                 prompt: 'Move right',
@@ -274,7 +279,7 @@ export class Phase1 {
                 // } else {
                     // game.clearAction()
                 // }
-            }).message('You moved the ' + game.selectedDie! + ' to the {{direction}}.'),
+            }).message('You moved the ' + game.selectedDie!.current + ' to the {{direction}}.'),
 
             leftRightFollowUp: (player) => action({
                 prompt: 'Move left or right',
@@ -292,7 +297,7 @@ export class Phase1 {
                 // } else {
                     // game.clearAction()
                 // }
-            }).message('You moved the ' + game.selectedDie! + ' to the {{direction}}.'),
+            }).message('You moved the ' + game.selectedDie!.current + ' to the {{direction}}.'),
 
             moveLeft: (player) => action({
                 prompt: 'Choose a die to move left',
@@ -309,7 +314,8 @@ export class Phase1 {
                 } else {
                     game.clearAction()
                 }
-            }).message('You moved the {{die}} to the left onto {{die.getLeftHandler().'),
+                game.message('You moved the ' + die.current + ' to the left onto {{die.getLeftHandler().')
+            }),
 
             moveRight: (player) => action({
                 prompt: 'Choose a die to move right',
@@ -326,8 +332,8 @@ export class Phase1 {
                 } else {
                     game.clearAction()
                 }
-            }).message('You moved the {{die}} to the right onto {{rightHandler}}.', 
-                ({ die }) => ({ rightHandler: this.getRightHandler(die) })),
+                game.message('You moved the ' + die.current + ' to the right onto ' + this.getRightHandler(die) + '.')
+            }),
 
             swap: (player) => action({
                 prompt: 'Choose 2 Handlers to swap',

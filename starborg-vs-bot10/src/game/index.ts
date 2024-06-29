@@ -246,15 +246,24 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
         // 4. Check for Bot-10 Damage
         playerActions({ actions: ['checkForDamagePhase1']}),
 
-        // BOT-10 TURN
+        // BOT-10 TURN      
         playerActions({ actions: ['bot10turn']}),
 
         // only if not transformred
         ifElse({
           if: () => game.phase == 1,
           do: [
+            () => {
+              game.infoHeader = 'Bot-10 Turn';
+              game.info = '1. Shuffle the 3 movement cards and lay them out in a new row.  Be sure to maintain card orientation.';
+            },
+            
             // 1. Shuffle the 3 movemvent cards
             () => { phase1.shuffleMovementCards() },
+
+            () => {
+              game.info = '2. Follow the actions on the bottom of the cards in order from left to right.  Bot-10 will either move or attack.';
+            },
 
             // 2. Follow bottom actions
             // () => { phase1.followBot10Actions() },
@@ -268,6 +277,7 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
         ]})
     ])}),
 
+
     // set up for phase 2
     () => phase2.begin(),
 
@@ -275,14 +285,26 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
     whileLoop({while: () => game.phase == 2, do: ([
 
       // HANDLER TURN
+      () => {
+        game.infoHeader = 'Starborg Turn';
+        game.info = '1. Collect 2 dice, starting with ones not on cards.';
+      },
 
       // 1. Remove 2 dice from cards.
       playerActions({ actions: ['choose2DiceFromStarborg', 'choose1DieFromStarborg', 'chooseNoDiceFromStarborg']}),
+
+      () => {
+        game.info = '2. Roll the dice.  If the sum of the dice is equal to one of the attack values still on Bot-10, Starborg takes 2 damage.';
+      },
 
       // 2. Roll the dice. 
       () => $.player.all(D6).forEach(x => x.roll()),
       () => phase2.checkBot10Attack(),
 
+      () => {
+        game.info = '3. Place both dice, one at a time on a Starborg card.  Perform the action on the card that matches the die value. Do not perform actions on a card that has the health cube.  Chain actions as you would in Phase 1.';
+      },
+      
       // 3. Place both dice, one at a time on a Handler card and perform cactions.
       forLoop({ name: 'd', initial: 1, next: d => d + 1, while: d => d <= 2, do: [
         
@@ -301,15 +323,30 @@ export default createGame(StarborgVsBot10Player, MyGame, game => {
         ])}),
       ]}),
 
+      () => {
+        game.info = '4. Check for Bot-10 damage.  Bot-10 is damaged if a die is placed on Bot-10 and the values of all placed dice are on the correct types of attacks and the values are in the correct increasing order.  When Bot-10 is damaged, remove the card that had the die on it from play and reclaim the die.  If this is the final card on Bot-10, you win!';
+      },
+
       // 4. Check for Bot-10 Damage
       playerActions({ actions: ['checkForDamagePhase2']}),
 
       // BOT-10 TURN
       playerActions({ actions: ['bot10turn']}),
 
+      () => {
+        game.infoHeader = 'Bot-10 Turn';
+        game.info = '1. Roll all dice on Bot-10, if any, maintaining their positions on Bot-10.';
+      },
+
       // 1. Roll dice on Bot-10
+      playerActions({ actions: ['rollBot10Dice']}),
+
+      () => {
+        game.info = '2. Target the corresponding areas on Starborg.  If the part on Starborg has a die remove it, otherwise Starborg takes 1 damage.';
+      },
+      
       // 2. Target ares on Starborg
-      () => { phase2.rollDiceAndAttack() },
+      playerActions({ actions: ['attackWithBot10Dice']}),
 
     ])}),
 

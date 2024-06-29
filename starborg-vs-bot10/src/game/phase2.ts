@@ -203,28 +203,6 @@ export class Phase2 {
         return starborg.showCube()
     }
 
-    rollDiceAndAttack() : void {
-        this.game.all(BotSpace).all(D6).forEach(x => {
-            x.roll()
-            this.game.message('Bot-10 rolled a ' + x.current + '</>.')
-            const attackColor = x.container(BotSpace)!.attackColors[x.current]
-            const starborg = this.game.first(StarborgSpace, {color: attackColor})!
-            if(starborg.all(D6).length > 0) {
-                this.game.message('Starborg blocked the attack')
-                starborg.first(D6)!.putInto($.player)
-            } else {
-                this.game.message('Bot-10 dealt Starborg 1 damage!')
-                this.game.bot10damage--;
-                if(this.game.bot10damage <= 0) {
-                    this.game.message('Starborg has been defeated!')
-                    this.game.finish(undefined)
-                } else {
-                    this.game.message('Starborg has ' + this.game.bot10damage + ' health.')
-                }
-            }
-        })
-    }
-
     checkBot10Attack() : void {
         const sum = $.player.all(D6).reduce((acc, cur) => acc + cur.current, 0)
         if(this.game.all(Bot10, {damaged: false}).map(x => x.unblockedAttack).includes(sum)) {
@@ -244,6 +222,34 @@ export class Phase2 {
         const { action } = game;
 
         return {
+
+            rollBot10Dice: (player) => action({}).do(() => {
+                this.game.all(BotSpace).all(D6).forEach(x => {
+                    x.roll()
+                    this.game.message('Bot-10 rolled a ' + x.current + '.')
+                })
+            }),
+        
+            attackWithBot10Dice: (player) => action({}).do(() => {
+                this.game.all(BotSpace).all(D6).forEach(x => {                    
+                    const attackColor = x.container(BotSpace)!.attackColors[x.current]
+                    const starborg = this.game.first(StarborgSpace, {color: attackColor})!
+                    if(starborg.all(D6).length > 0) {
+                        this.game.message('Starborg blocked the attack.')
+                        starborg.first(D6)!.putInto($.player)
+                    } else {
+                        this.game.message('Bot-10 dealt Starborg 1 damage!')
+                        this.game.bot10damage--;
+                        if(this.game.bot10damage <= 0) {
+                            this.game.message('Starborg has been defeated!')
+                            this.game.finish(undefined)
+                        } else {
+                            this.game.message('Starborg has ' + this.game.bot10damage + ' health.')
+                        }
+                    }
+                })
+            }),
+
             checkForDamagePhase2: (player) => action({}).do(() => {
                 // this.game.message('Check for damage.')
                 // only possible with a single die on Bot-10
@@ -285,7 +291,8 @@ export class Phase2 {
             ).do(({ die }) => { 
                 game.selectedDie = die; 
                 game.followUp({ name: 'moveAnyFollowUp' }) 
-            }).message('You are moving {{die}}.'),
+                game.message('You are moving ' + die.current + '.')
+            }),
 
             moveAnyFollowUp: (player) => action({
                 prompt: 'Choose a space to move to',
@@ -298,7 +305,7 @@ export class Phase2 {
                 if (space == dieSpace) {
                     // didn't move
                     game.clearAction()
-                    this.game.message('The ' + game.selectedDie! + ' did not move.')
+                    this.game.message('The ' + game.selectedDie!.current + ' did not move.')
                 } else {
                     if(space instanceof StarborgSpace) {
                         game.selectedStarborg = space
@@ -311,7 +318,7 @@ export class Phase2 {
                         game.selectedBot10 = space
                         game.clearAction()
                     }
-                    this.game.message('You moved the ' + game.selectedDie! + ' to ' + 
+                    this.game.message('You moved the ' + game.selectedDie!.current + ' to ' + 
                         game.selectedDie!.container(StarborgSpace)! + '.')
                 }
             }),
@@ -345,7 +352,8 @@ export class Phase2 {
                 dice[0].putInto(space2)
                 dice[1].putInto(space1)
                 game.clearAction()
-            }).message('You swapped {{dice}}.'),
+                game.message('You swapped ' + dice[0].current + ' and ' + dice[1].current + '.')
+            }),
 
             moveCwCcwStarborg: (player) => action({
                 prompt: 'Choose a die on Starborg to move clockwise or counter-clockwise',
@@ -366,7 +374,8 @@ export class Phase2 {
                 } else {
                     game.followUp({ name: 'cwCcwFollowUp' })
                 }
-            }).message('You are moving a {{die}}.'),
+                game.message('You are moving ' + die.current + '.')
+            }),
             
             cwCcwFollowUpCcw: (player) => action({
                 prompt: 'Move counter-clockwise',
@@ -380,7 +389,7 @@ export class Phase2 {
                 } else {
                     game.clearAction()
                 }
-            }).message('You moved the ' + game.selectedDie! + ' on Starborg {{direction}}.'),
+            }).message('You moved the ' + game.selectedDie!.current + ' on Starborg {{direction}}.'),
             cwCcwFollowUpCw: (player) => action({
                 prompt: 'Move clockwise',
             }).chooseFrom(
@@ -393,7 +402,7 @@ export class Phase2 {
                 } else {
                     game.clearAction()
                 }
-            }).message('You moved the ' + game.selectedDie! + ' on Starborg {{direction}}.'),
+            }).message('You moved the ' + game.selectedDie!.current + ' on Starborg {{direction}}.'),
             cwCcwFollowUp: (player) => action({
                 prompt: 'Move clockwise or counter-clockwise',
             }).chooseFrom(
@@ -406,7 +415,7 @@ export class Phase2 {
                 } else {
                     game.clearAction()
                 }
-            }).message('You moved the ' + game.selectedDie! + ' on Starborg {{direction}}.'),
+            }).message('You moved the ' + game.selectedDie!.current + ' on Starborg {{direction}}.'),
             
             placeDie: (player) => action({
                 prompt: 'Choose a die to place on Bot-10',
@@ -417,7 +426,8 @@ export class Phase2 {
             ).do(({ die }) => {
                 game.selectedDie = die; 
                 game.followUp({ name: 'placeFollowUp' }) 
-            }).message('You are placing a {{die}}.'),
+                game.message('You are placing a ' + die.current + '.')
+            }),
 
             placeFollowUp: (player) => action({
                 prompt: 'Choose a Bot-10 part to place on',
@@ -426,7 +436,7 @@ export class Phase2 {
             ).do(({ bot10 }) => {
                 game.selectedBot10 = bot10
                 game.clearAction()
-            }).message('You placed the ' + game.selectedDie! + ' on Bot-10.'),
+            }).message('You placed the ' + game.selectedDie!.current + ' on Bot-10.'),
 
             moveCwBot10: (player) => action({
                 prompt: 'Choose a die on Bot-10 to move clockwise',
@@ -443,7 +453,8 @@ export class Phase2 {
                 const cwBot10 = this.getClockwiseBot10(die)
                 die.putInto(cwBot10)
                 game.clearAction()
-            }).message('You moved the {{die}} on Bot-10 clockwise.'),
+                game.message('You moved the ' + die.current + ' on Bot-10 clockwise.')
+            }),
 
             moveCcwBot10: (player) => action({
                 prompt: 'Choose a die on Bot-10 to move counter-clockwise',
@@ -456,7 +467,8 @@ export class Phase2 {
                 const cwBot10 = this.getCounterClockwiseBot10(die)
                 die.putInto(cwBot10)
                 game.clearAction()
-            }).message('You moved the {{die}} on Bot-10 counter-clockwise.'),
+                game.message('You moved the ' + die.current + ' on Bot-10 counter-clockwise.')
+            }),
 
 
             moveCwStarborg: (player) => action({
@@ -473,7 +485,8 @@ export class Phase2 {
                 } else {
                     game.clearAction()
                 }
-            }).message('You moved the {{die}} on Starborg clockwise.'),
+                game.message('You moved the ' + die.current + ' on Starborg clockwise.')
+            }),
 
             moveCcwStarborg: (player) => action({
                 prompt: 'Choose a die on Starborg to move counter-clockwise',
@@ -489,7 +502,8 @@ export class Phase2 {
                 } else {
                     game.clearAction()
                 }
-            }).message('You moved the {{die}} on Starborg counter-clockwise.'),
+                game.message('You moved the ' + die.current + ' on Starborg counter-clockwise.')
+            }),
 
             choose2DiceFromStarborg: (player) => action({
                 prompt: 'Choose 2 dice to remove',
@@ -501,7 +515,8 @@ export class Phase2 {
                 dice.forEach(x => {
                     x.putInto($.player)
                 });
-            }).message('You chose to pick up {{dice}}.'),
+                game.message('You chose to pick up ' + dice[0].current + ' and ' + dice[1].current + '.')
+            }),
 
             choose1DieFromStarborg: (player) => action({
                 prompt: 'Choose 1 die to remove',
@@ -513,7 +528,8 @@ export class Phase2 {
                 dice.forEach(x => {
                     x.putInto($.player)
                 });
-            }).message('You chose to pick up a {{dice}}.'),
+                game.message('You chose to pick up ' + dice[0].current + '.')
+            }),
 
             chooseNoDiceFromStarborg: (player) => action({
                 condition: $.player.all(D6).length == 2
@@ -532,7 +548,7 @@ export class Phase2 {
                     game.clearAction()
                 }
                 game.selectedDie = undefined
-            }).message('You placed the ' + game.selectedDie! + ' on {{starborg}}.'),
+            }).message('You placed the ' + game.selectedDie!.current + ' on {{starborg}}.'),
         }
     }
 }

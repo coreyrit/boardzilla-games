@@ -15,6 +15,7 @@ render(setup, {
   layout: game => {
 
     game.appearance({render: () => null});
+    $.player.appearance({render: () => null});
 
 
     game.layout('ref', { area: { left: 50, top: 80, width: 50, height: 10 }});

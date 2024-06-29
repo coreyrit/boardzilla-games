@@ -11,6 +11,7 @@ import {
 import { D6 } from '@boardzilla/core/components';
 import { HandlerSpace, Phase1 } from './phase1.js';
 import { BotSpace, Phase2, StarborgSpace } from './phase2.js';
+import { disconnect } from 'process';
 
 export type SingleArgument = string | number | boolean | GameElement | Player;
 export type Argument = SingleArgument | SingleArgument[];
@@ -61,7 +62,8 @@ export class PhaseAll {
                 dice.forEach(x => {
                     x.roll()
                 })
-            }).message('You roll a {{dice}}.'),
+                game.message('You roll a ' + dice[0].current + ' and ' + dice[1].childRefsIfObscured + '.')
+            }),
 
             // SET
             add1: (player) => action({
@@ -75,7 +77,8 @@ export class PhaseAll {
             ).do(({ die }) => {
                 die.current = die.current + 1
                 game.performAction(this.getNextAction(game, phase1, phase2, die))
-            }).message('You increased the die to {{die}}.'),
+                game.message('You increased the die to ' + die.current + '.')
+            }),
 
             addSub1: (player) => action({
                 prompt: 'Choose a die to increase or decrease by 1',
@@ -92,7 +95,8 @@ export class PhaseAll {
                 } else {
                     game.followUp({ name: 'addSubFollowUp' })
                 }
-            }).message('You are changing {{die}}.'),
+                game.message('You are changing ' + die.current + '.')
+            }),
 
             set: (player) => action({
                 prompt: 'Choose a die to set',
@@ -113,7 +117,7 @@ export class PhaseAll {
                     game.selectedDie!.current = val
                     game.performAction(this.getNextAction(game, phase1, phase2, game.selectedDie!))
                 }
-            }).message('You changed the die to ' + game.selectedDie! + '.'),
+            }).message('You changed the die to ' + game.selectedDie!.current + '.'),
             addSubFollowUp1: (player) => action({
                 prompt: 'Increase',
             }).chooseFrom(
@@ -122,7 +126,7 @@ export class PhaseAll {
                 const val = game.selectedDie!.current + 1
                 game.selectedDie!.current = val
                 game.performAction(this.getNextAction(game, phase1, phase2, game.selectedDie!))
-            }).message('You increased the die to ' + game.selectedDie! + '.'),
+            }).message('You increased the die to ' + game.selectedDie!.current + '.'),
             addSubFollowUp6: (player) => action({
                 prompt: 'Decrease',
             }).chooseFrom(
@@ -131,7 +135,7 @@ export class PhaseAll {
                 const val = game.selectedDie!.current - 1
                 game.selectedDie!.current = val
                 game.performAction(this.getNextAction(game, phase1, phase2, game.selectedDie!))
-            }).message('You decreased the die to ' + game.selectedDie! + '.'),
+            }).message('You decreased the die to ' + game.selectedDie!.current + '.'),
             addSubFollowUp: (player) => action({
                 prompt: 'Decrease or Increase',
             }).chooseFrom(
@@ -140,7 +144,7 @@ export class PhaseAll {
                 const val = game.selectedDie!.current + (value == "-1" ? -1 : 1)
                 game.selectedDie!.current = val
                 game.performAction(this.getNextAction(game, phase1, phase2, game.selectedDie!))
-            }).message('You changed the die to ' + game.selectedDie! + '.'),
+            }).message('You changed the die to ' + game.selectedDie!.current + '.'),
 
             sub1: (player) => action({
                 prompt: 'Choose a die to decrease by 1',
@@ -155,7 +159,8 @@ export class PhaseAll {
             ).do(({ die }) => {
                 die.current = die.current - 1
                 game.performAction(this.getNextAction(game, phase1, phase2, die))
-            }).message('You decreaesed the die to {{die}}.'),
+                game.message('You decreaesed the die to ' + die.current + '.')  
+            }),
 
             roll: () => action({
                 prompt: 'Choose a die to roll',
