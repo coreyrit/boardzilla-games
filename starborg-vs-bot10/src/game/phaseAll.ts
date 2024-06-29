@@ -62,7 +62,7 @@ export class PhaseAll {
                 dice.forEach(x => {
                     x.roll()
                 })
-                game.message('You roll a ' + dice[0].current + ' and ' + dice[1].childRefsIfObscured + '.')
+                game.message('You roll a ' + dice[0].current + ' and ' + dice[1].current + '.')
             }),
 
             // SET
