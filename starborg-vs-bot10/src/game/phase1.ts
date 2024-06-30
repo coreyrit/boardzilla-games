@@ -555,12 +555,18 @@ export class Phase1 {
                     this.attackPosition(handler)
                 }
 
-                if (this.game.bot10damage == ATTACK_ADJACENT) {
+                if (this.game.bot10damage == ATTACK_ADJACENT || this.game.bot10damage == DOUBLE_ATTACK_ADJACENT) {
                     this.game.message('Bot-10 is attacking adjacent.')
                     if (handler.index == 1) {
                         this.attackPosition(this.game.first(HandlerSpace, { index: handler.index + 1 })!)
+                        if(this.game.bot10damage == DOUBLE_ATTACK_ADJACENT) {
+                            this.attackPosition(this.game.first(HandlerSpace, { index: handler.index + 1 })!)
+                        }
                     } else if (handler.index == 5) {
                         this.attackPosition(this.game.first(HandlerSpace, { index: handler.index - 1 })!)
+                        if(this.game.bot10damage == DOUBLE_ATTACK_ADJACENT) {
+                            this.attackPosition(this.game.first(HandlerSpace, { index: handler.index - 1 })!)
+                        }
                     } else {
                         // this.game.followUp({ name: 'attackAdjacent' })
                         this.game.doAttackAdjacent = handler.index
