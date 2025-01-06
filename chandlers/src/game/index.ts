@@ -313,7 +313,6 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   bag.first(RoundEndTile)?.putInto($.roundEndSpace1);
   bag.first(RoundEndTile)?.putInto($.roundEndSpace2);
   bag.first(RoundEndTile)?.putInto($.roundEndSpace3);
-  bag.first(RoundEndTile)?.putInto($.roundEndSpace4);
 
   // back alley
   game.create(BackAlleySpace, 'backAlleySpaceA1');
