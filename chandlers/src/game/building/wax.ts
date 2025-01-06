@@ -1,5 +1,6 @@
+import { WorkerSpace } from "../boards.js";
 import { Wax, WorkerPiece } from "../components.js";
-import { Building, Color, MyGame, WorkerSpace } from "../index.js";
+import { Building, Color, MyGame } from "../index.js";
 
 export class WaxBuilding {
 

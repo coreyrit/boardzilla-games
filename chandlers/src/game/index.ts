@@ -12,64 +12,8 @@ import { WaxBuilding } from './building/wax.js';
 import { PigmentBuilding } from './building/pigment.js';
 import { MoldBuilding } from './building/mold.js';
 import { ChandlersPlayer } from './player.js';
-import { CustomerCard, EndGameTile, RoundEndTile, BackAlleyTile, ColorDie, KeyShape, CandlePawn, PowerTile, Wax, WorkerPiece, Pigment, Melt, MasteryCube } from './components.js';
-
-export class WorkerSpace extends Space<MyGame> {
-  building: Building
-  color: Color | undefined
-}
-
-export class ComponentSpace extends Space<MyGame> {
-
-}
-
-export class DiceSpace extends Space<MyGame> {
-
-}
-
-export class ReadySpace extends Space<MyGame> {
-
-}
-
-export class CustomerSpace extends Space<MyGame> {
-
-}
-
-export class Candelabra extends Space<MyGame> {
-
-}
-
-export class KeyHook extends Space<MyGame> {
-  color: Color;
-}
-
-export class Spill extends Space<MyGame> {
-
-}
-
-export class GameEndSpace extends Space<MyGame> {
-
-}
-
-export class RoundEndSpace extends Space<MyGame> {
-
-}
-
-export class BackAlleySpace extends Space<MyGame> {
-
-}
-
-export class PlayerSpace extends Space<MyGame> {
-
-}
-
-export class ChandlersBoard extends Space<MyGame> {
-
-}
-
-export class PlayerBoard extends Space<MyGame> {
-
-}
+import { CustomerCard, EndGameTile, RoundEndTile, BackAlleyTile, ColorDie, KeyShape, CandlePawn, PowerTile, Wax, WorkerPiece, Pigment, Melt, MasteryCube, ScoreTracker } from './components.js';
+import { BackAlleySpace, Candelabra, ChandlersBoard, ComponentSpace, CustomerSpace, DiceSpace, GameEndSpace, KeyHook, MasterySpace, MasteryTrack, PlayerBoard, PlayerSpace, PowerSpace, ReadySpace, RoundEndSpace, ScoringSpace, ScoringTrack, Spill, WorkerSpace } from './boards.js';
 
 export enum Building {
   Wax = 'wax',
@@ -86,15 +30,6 @@ export enum Color {
   Purple = 'purple',
   White = 'white',
   Black = 'black'
-}
-
-export class PowerSpace extends Space<MyGame> {
-
-}
-
-
-export class MasteryTrack extends Space<MyGame> {
-
 }
 
 export class MyGame extends Game<MyGame, ChandlersPlayer> {
@@ -443,6 +378,26 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     bag.create(Pigment, 'pigmentBlue' + i, {color: Color.Blue});
   }
 
+
+  game.create(ScoringTrack, 'scoringTrack1_20')
+  game.create(ScoringTrack, 'scoringTrack21_50')
+  game.create(ScoringTrack, 'scoringTrack51_70')
+  game.create(ScoringTrack, 'scoringTrack71_100')
+
+  for(var i = 1; i <= 20; i++) {
+    $.scoringTrack1_20.create(ScoringSpace, 'scoring' + i, {score: i});
+  }
+  for(var i = 21; i <= 50; i++) {
+    $.scoringTrack21_50.create(ScoringSpace, 'scoring' + i, {score: i});
+  }
+  for(var i = 51; i <= 70; i++) {
+    $.scoringTrack51_70.create(ScoringSpace, 'scoring' + i, {score: i});
+  }
+  for(var i = 71; i <= 100; i++) {
+    $.scoringTrack71_100.create(ScoringSpace, 'scoring' + i, {score: i == 100 ? 0 : i});
+  }
+  $.scoring100.create(ScoreTracker, 'greenScore', {color: Color.Green});
+
   // player
   game.create(PlayerSpace, 'playerSpace')
   $.playerSpace.onEnter(CustomerCard, x => {
@@ -470,10 +425,10 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   const power3 = greenBoard.create(PowerSpace, 'greenPower3')
 
   const masteryTrack = greenBoard.create(MasteryTrack, 'greenMastery')
-  masteryTrack.create(MasteryCube, 'cube0', {color: Color.Green});
-  for(var i = 1; i < 16; i++) {
-    masteryTrack.create(MasteryCube, 'cube' + i);
+  for(var i = 0; i < 16; i++) {
+    masteryTrack.create(MasterySpace, 'mastery' + i, {index: i});
   }
+  $.mastery0.create(MasteryCube, 'greenCube', {color: Color.Green});
 
   power1.create(PowerTile, 'roll')
   power2.create(PowerTile, 'set')
@@ -617,7 +572,8 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     ).do(({ melts }) => {
       melts.forEach(x => {
         x.mix(Color.Red);
-        $.bag.first(Pigment, {color: Color.Red})?.putInto($.pigmentSpillArea); // make sure to also get points
+        $.bag.first(Pigment, {color: Color.Red})?.putInto($.pigmentSpillArea);
+        player.increaseScore();
       }
     )}),
     chooseMeltManyYellow: player => action({
@@ -629,6 +585,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       melts.forEach(x => {
         x.mix(Color.Yellow);
         $.bag.first(Pigment, {color: Color.Yellow})?.putInto($.pigmentSpillArea);
+        player.increaseScore();
       }
     )}),
     chooseMeltManyBlue: player => action({
@@ -640,6 +597,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       melts.forEach(x => {
         x.mix(Color.Blue);
         $.bag.first(Pigment, {color: Color.Blue})?.putInto($.pigmentSpillArea);
+        player.increaseScore();
       }
     )}),
 

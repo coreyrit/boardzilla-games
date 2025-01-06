@@ -1,6 +1,7 @@
 import { Piece, Player } from "@boardzilla/core";
-import { Candelabra, Color, ComponentSpace, KeyHook, MyGame, PlayerBoard } from "./index.js";
-import { WorkerPiece, CandlePawn, ColorDie, KeyShape, Wax, Pigment, MasteryCube, Melt } from "./components.js";
+import { Color, MyGame } from "./index.js";
+import { WorkerPiece, CandlePawn, ColorDie, KeyShape, Wax, Pigment, MasteryCube, Melt, ScoreTracker } from "./components.js";
+import { Candelabra, ComponentSpace, KeyHook, MasterySpace, PlayerBoard, ScoringSpace, ScoringTrack } from "./boards.js";
 
 export class ChandlersPlayer extends Player<MyGame, ChandlersPlayer> {
     board: PlayerBoard
@@ -39,7 +40,8 @@ export class ChandlersPlayer extends Player<MyGame, ChandlersPlayer> {
       for(var i = 0; i < wax.length; i += 2) {
         if(i+1 < wax.length) {
           wax[i].putInto($.bag);
-          wax[i+1].putInto($.waxSpillArea); // make sure to earn points
+          wax[i+1].putInto($.waxSpillArea);
+          this.game.currentPlayer().increaseScore();
           $.bag.first(Melt)?.putInto(this.nextEmptySpace());
         }
       }
@@ -66,8 +68,7 @@ export class ChandlersPlayer extends Player<MyGame, ChandlersPlayer> {
   
     masteryLevel(): number {
       const cube = this.board.first(MasteryCube, {color: Color.Green})!
-      const allSpaces = this.board.all(MasteryCube);
-      const index = allSpaces.indexOf(cube);
+      const index = cube.container(MasterySpace)!.index;
       if(index >= 13) {
         return 3;
       } else if(index >= 6) {
@@ -75,5 +76,19 @@ export class ChandlersPlayer extends Player<MyGame, ChandlersPlayer> {
       } else {
         return 1;
       }
+    }
+
+    currentScore(): number {
+        const tracker = this.game.first(ScoreTracker, {color: Color.Green})!
+        return tracker.flipped ? tracker.container(ScoringSpace)!.score + 100 : tracker.container(ScoringSpace)!.score;
+    }
+
+    setScore(score: number): void {
+        const tracker = this.game.first(ScoreTracker, {color: Color.Green})!
+        tracker.putInto(this.game.first(ScoringSpace, {score: score})!)
+    }
+
+    increaseScore(): void {
+        this.setScore(this.currentScore()+1);
     }
   }

@@ -1,9 +1,10 @@
 import React from 'react';
-import { render } from '@boardzilla/core';
-import { BackAlleySpace, Candelabra, ChandlersBoard, ComponentSpace, CustomerSpace, DiceSpace, GameEndSpace, KeyHook, MasteryTrack, PlayerBoard, PlayerSpace, PowerSpace, ReadySpace, RoundEndSpace, Spill,  WorkerSpace, default as setup } from '../game/index.js';
+import { Piece, render } from '@boardzilla/core';
+import { default as setup } from '../game/index.js';
 
 import './style.scss';
-import { BackAlleyTile, CandlePawn, ColorDie, CustomerCard, EndGameTile, KeyShape, RoundEndTile, Wax, PowerTile, Melt, MasteryCube, Pigment } from '../game/components.js';
+import { BackAlleyTile, CandlePawn, ColorDie, CustomerCard, EndGameTile, KeyShape, RoundEndTile, Wax, PowerTile, Melt, MasteryCube, Pigment, ScoreTracker } from '../game/components.js';
+import { BackAlleySpace, Candelabra, ChandlersBoard, ComponentSpace, CustomerSpace, DiceSpace, GameEndSpace, KeyHook, MasterySpace, MasteryTrack, PlayerBoard, PlayerSpace, PowerSpace, ReadySpace, RoundEndSpace, ScoringSpace, ScoringTrack, Spill, WorkerSpace } from '../game/boards.js';
 // import '@boardzilla/core/index.css';
 
 render(setup, {
@@ -151,7 +152,7 @@ render(setup, {
       render: () => (
         <div className='CustomerSpace'>
         <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-          <rect x="0" y="0" width="100" height="70" />
+          {/* <rect x="0" y="0" width="100" height="70" /> */}
         </svg>
         </div>
       ),
@@ -265,7 +266,7 @@ render(setup, {
     game.all(GameEndSpace).appearance({
       render: () => (
         <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-          <rect x="0" y="0" width="100" height="55" />
+          {/* <rect x="0" y="0" width="100" height="55" /> */}
         </svg>
       ),
     });
@@ -273,7 +274,7 @@ render(setup, {
     game.all(RoundEndSpace).appearance({
       render: () => (
         <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-          <rect x="0" y="0" width="100" height="40" />
+          {/* <rect x="0" y="0" width="100" height="40" /> */}
         </svg>
       ),
     });
@@ -281,7 +282,7 @@ render(setup, {
     game.all(BackAlleySpace).appearance({
       render: () => (
         <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="50" cy="50" r="50" />
+          {/* <circle cx="50" cy="50" r="50" /> */}
         </svg>
       ),
     });
@@ -290,6 +291,14 @@ render(setup, {
       render: () => (
         <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
           {/* <rect x="0" y="0" width="100" height="40" /> */}
+        </svg>
+      ),
+    });
+
+    game.all(MasterySpace).appearance({
+      render: () => (
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <rect x="0" y="0" width="100" height="100" fill="currentColor" opacity='0' />
         </svg>
       ),
     });
@@ -382,12 +391,71 @@ render(setup, {
       gap: {x: 0.5, y: 0.5},
     });
 
-    $.greenMastery.layout(MasteryCube, { 
+    $.greenMastery.layout(MasterySpace, { 
       area: { left: 3, top: 20, width: 90, height: 7 },
       rows: 1,
       columns: 16,
       gap: {x: 0.25, y: 0},
       direction: 'ltr',
+    });
+
+
+    game.all(ScoringTrack).appearance({
+      render: () => (
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          {/* <rect x="0" y="0" width="100" height="100" /> */}
+        </svg>
+      ),
+    });
+    game.all(ScoringSpace).appearance({
+      render: () => (
+        <svg />
+      ),
+    });
+
+    game.layout('scoringTrack1_20', { 
+      area: { left: -22.75, top: 2, width: 3, height: 93 }
+    });
+    game.layout('scoringTrack21_50', { 
+      area: { left: -19.75, top: 2, width: 142.50, height: 3 }
+    });
+    game.layout('scoringTrack51_70', { 
+      area: { left: 120, top: 5, width: 3, height: 93 }
+    });
+    game.layout('scoringTrack71_100', { 
+      area: { left: -22.75, top: 95, width: 142.50, height: 3 }
+    });
+    $.scoringTrack1_20.layout(ScoringSpace, {     
+      rows: 20,
+      columns: 1,
+      gap: {x: 0, y: 0},
+      direction: 'btt',
+    });
+    $.scoringTrack21_50.layout(ScoringSpace, {     
+      rows: 1,
+      columns: 30,
+      gap: {x: 0, y: 0},
+      direction: 'ltr',
+    });
+    $.scoringTrack51_70.layout(ScoringSpace, {     
+      rows: 20,
+      columns: 1,
+      gap: {x: 0, y: 0},
+      direction: 'ttb',
+    });
+    $.scoringTrack71_100.layout(ScoringSpace, {     
+      rows: 1,
+      columns: 30,
+      gap: {x: 0, y: 0},
+      direction: 'rtl',
+    });
+
+    game.all(ScoreTracker).appearance({
+      render: x => (
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" color={x.color == undefined ? "white" : x.color}>
+          <circle cx="50" cy="50" r="50"fill="currentColor" stroke="white" strokeWidth="5" opacity={x.color == undefined ? '0' : '100'}/>
+        </svg>
+      ),
     });
 
     $.greenBoard.layout('greenDie1', { area: { left: 21, top: 71, width: 10, height: 15 }});

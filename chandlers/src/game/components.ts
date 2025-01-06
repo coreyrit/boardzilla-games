@@ -47,8 +47,13 @@ export class PowerTile extends Piece<MyGame> {
 }
 
 export class MasteryCube extends Piece<MyGame> {
-    color: Color | undefined = undefined;
-  }
+    color: Color
+}
+
+export class ScoreTracker extends Piece<MyGame> {
+    color: Color
+    flipped: Boolean = false;
+}
   
   export class Pigment extends Piece<MyGame> {
     color: Color = Color.Red;
