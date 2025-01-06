@@ -1,0 +1,670 @@
+#play-area {
+
+  .PlayerSpace {
+    z-index: 20;
+
+    top: 0%; left: 0%; width: 100%; height: 100%;
+
+    transition: 0.6s;
+    background-repeat: no-repeat;
+    background-position: center 50%;
+            
+    border-radius: 0.2em;
+    border-color: black;
+    background-size: contain;
+  }
+
+  .Pigment {
+    z-index: 50;
+    
+    &.selectable {
+      z-index: 15;
+      > div {      
+        border: 5px solid blue;
+        border-radius: 100px;
+        width: 100%;
+        height: 100%;
+      }
+    }
+    &.selected {
+      z-index: 15;
+      > div {      
+        border: 5px solid yellow;
+        border-radius: 100px;
+        width: 100%;
+        height: 100%;
+      }
+    }
+  }
+
+  .Wax {
+    z-index: 50;
+    
+    &.selectable {
+      z-index: 15;
+      > div {      
+        border: 5px solid blue;
+        border-radius: 100px;
+        width: 100%;
+        height: 150%;
+      }
+    }
+    &.selected {
+      z-index: 15;
+      > div {      
+        border: 5px solid yellow;
+        border-radius: 100px;
+        width: 100%;
+        height: 150%;
+      }
+    }
+
+    > div {   
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%; 
+      background-size: 100% auto;
+      background-repeat: no-repeat;
+      background-position: center center;
+      background-image: url(./assets/wax.png)
+    }
+  }
+
+  .Melt {
+    z-index: 50;
+    
+    &.selectable {
+      z-index: 15;
+      > div {      
+        border: 5px solid blue;
+        border-radius: 100px;
+        width: 100%;
+        height: 150%;
+      }
+    }
+    &.selected {
+      z-index: 15;
+      > div {      
+        border: 5px solid yellow;
+        border-radius: 100px;
+        width: 100%;
+        height: 150%;
+      }
+    }
+
+    > div {   
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%; 
+      background-size: 100% auto;
+      background-repeat: no-repeat;
+      background-position: center center;
+      background-image: url(./assets/melt.png)
+    }
+  }
+
+  .PlayerBoard {
+    z-index: 40;
+
+    &[data-name="greenBoard"] .front { background-image: url(./assets/players/green.jpg) }
+
+    > div {   
+      width: 100%;
+      height: 100%;      
+
+      .front {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-size: 100% auto;
+        background-repeat: no-repeat;
+        background-position: center center;
+      }
+  }
+  }
+
+  .drawer {
+    z-index: 2000;
+  }
+  .drawer-tab {
+    z-index: 2000;
+  }
+  .drawer-content {
+    z-index: 2100;
+  }
+
+    .ChandlersBoard {
+        z-index: 1;
+
+        width: 100%;
+        height: 100%;  
+
+        &[data-name="board"] .front { background-image: url(./assets/chandlersboard.jpg) }
+
+        > div {   
+            width: 100%;
+            height: 100%;      
+      
+            .front {
+              position: absolute;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 100%;
+              background-size: 100% auto;
+              background-repeat: no-repeat;
+              background-position: center center;
+            }
+        }
+    }
+
+    .KeyShape {
+      z-index: 90;
+
+      width: 100%;
+      height: 100%;  
+
+      &[data-name="red-key"] .front { background-image: url(./assets/keys/red-key.png) }
+      &[data-name="blue-key"] .front { background-image: url(./assets/keys/blue-key.png) }
+      &[data-name="yellow-key"] .front { background-image: url(./assets/keys/yellow-key.png) }
+      &[data-name="orange-key"] .front { background-image: url(./assets/keys/orange-key.png) }
+      &[data-name="green-key"] .front { background-image: url(./assets/keys/green-key.png) }
+      &[data-name="purple-key"] .front { background-image: url(./assets/keys/purple-key.png) }
+
+      &.selectable {
+        z-index: 220;
+        > div {      
+          .front {
+          border: 5px solid blue;
+          width: 100%;
+          height: 150%;
+          }
+        }
+      }
+      > div {   
+          width: 100%;
+          height: 100%;      
+    
+          .front {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: 100% auto;
+            background-repeat: no-repeat;
+            background-position: center center;
+          }
+      }
+    }
+
+    .CandlePawn {
+        z-index: 110;
+
+        width: 100%;
+        height: 100%;  
+
+        &[data-name="white-candle"] .front { background-image: url(./assets/candles/white-candle.png) }
+        &[data-name="red-candle"] .front { background-image: url(./assets/candles/red-candle.png) }
+        &[data-name="blue-candle"] .front { background-image: url(./assets/candles/blue-candle.png) }
+        &[data-name="yellow-candle"] .front { background-image: url(./assets/candles/yellow-candle.png) }
+        &[data-name="orange-candle"] .front { background-image: url(./assets/candles/orange-candle.png) }
+        &[data-name="green-candle"] .front { background-image: url(./assets/candles/green-candle.png) }
+        &[data-name="purple-candle"] .front { background-image: url(./assets/candles/purple-candle.png) }
+        &[data-name="black-candle"] .front { background-image: url(./assets/candles/black-candle.png) }
+
+        &.selectable {
+          z-index: 220;
+          > div {      
+            .front {
+            border: 5px solid blue;
+            width: 100%;
+            height: 150%;
+            }
+          }
+        }
+        > div {   
+            width: 100%;
+            height: 100%;      
+      
+            .front {
+              position: absolute;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 100%;
+              background-size: 100% auto;
+              background-repeat: no-repeat;
+              background-position: center center;
+            }
+        }
+    }
+
+    .WorkerSpace {
+        z-index: 10;
+
+        &.selectable {
+          z-index: 15;
+          > div {      
+            border: 5px solid blue;
+            border-radius: 100px;
+            width: 100%;
+            height: 100%;
+          }
+        }
+    }
+
+    .DiceSpace {
+      z-index: 10;
+    }
+
+    .ComponentSpace {
+      z-index: 10;
+    }
+
+    .ReadySpace {
+      z-index: 10;
+    }
+
+    .MasteryTrack {
+      z-index: 10;
+    }
+
+    .GameEndSpace {
+      z-index: 10;
+    }
+    
+    .RoundEndSpace {
+      z-index: 10;
+    }
+
+    .BackAlleySpace {
+      z-index: 10;
+    }
+
+    .CustomerSpace {
+        z-index: 10;
+
+        &.selectable {
+          z-index: 220;
+          > div {      
+            border: 5px solid blue;
+            width: 100%;
+            height: 100%;
+          }
+        }
+    }
+
+    .Candelabra {
+        z-index: 10;
+    }
+
+    .KeyHook {
+      z-index: 10;
+    }
+
+    .PowerSpace {
+      z-index: 10;
+    }
+
+    .Spill {
+      z-index: 10;
+    }
+
+    .BackAlleyTile {
+      z-index: 100;
+
+      width: 100%; 
+      height: 100%;
+      
+      &[data-name="add-pigment"] .front { background-image: url(./assets/backalley/add-pigment.jpg) }
+      &[data-name="add-pigment"] .back { background-image: url(./assets/backalley/back-alley-b.jpg) }
+
+      &[data-name="advance-mastery"] .front { background-image: url(./assets/backalley/advance-mastery.jpg) }
+      &[data-name="advance-mastery"] .back { background-image: url(./assets/backalley/back-alley-b.jpg) }
+
+      &[data-name="convert-key-to-die"] .front { background-image: url(./assets/backalley/convert-key-to-die.jpg) }
+      &[data-name="convert-key-to-die"] .back { background-image: url(./assets/backalley/back-alley-a.jpg) }
+
+      &[data-name="gain-goal-card"] .front { background-image: url(./assets/backalley/gain-goal-card.jpg) }
+      &[data-name="gain-goal-card"] .back { background-image: url(./assets/backalley/back-alley-b.jpg) }
+
+      &[data-name="melt-wax"] .front { background-image: url(./assets/backalley/melt-wax.jpg) }
+      &[data-name="melt-wax"] .back { background-image: url(./assets/backalley/back-alley-a.jpg) }
+
+      &[data-name="place-white-candle"] .front { background-image: url(./assets/backalley/place-white-candle.jpg) }
+      &[data-name="place-white-candle"] .back { background-image: url(./assets/backalley/back-alley-b.jpg) }
+
+      &[data-name="purchace-spilt-wax"] .front { background-image: url(./assets/backalley/purchace-spilt-wax.jpg) }
+      &[data-name="purchace-spilt-wax"] .back { background-image: url(./assets/backalley/back-alley-a.jpg) }
+
+      &[data-name="refresh-customers"] .front { background-image: url(./assets/backalley/refresh-customers.jpg) }
+      &[data-name="refresh-customers"] .back { background-image: url(./assets/backalley/back-alley-a.jpg) }
+
+      &[data-name="remove-pigment"] .front { background-image: url(./assets/backalley/remove-pigment.jpg) }
+      &[data-name="remove-pigment"] .back { background-image: url(./assets/backalley/back-alley-b.jpg) }
+
+      &[data-name="swap-customer"] .front { background-image: url(./assets/backalley/swap-customer.jpg) }
+      &[data-name="swap-customer"] .back { background-image: url(./assets/backalley/back-alley-a.jpg) }
+
+      &[data-name="two-wax"] .front { background-image: url(./assets/backalley/two-wax.jpg) }
+      &[data-name="two-wax"] .back { background-image: url(./assets/backalley/back-alley-b.jpg) }
+
+      &[data-name="move-candle"] .front { background-image: url(./assets/backalley/move-candle.jpg) }
+      &[data-name="move-candle"] .back { background-image: url(./assets/backalley/back-alley-a.jpg) }
+
+      > div {
+        width: 100%;
+        height: 100%;
+  
+        background-repeat: no-repeat;
+  
+        .front, .back {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          border-radius: 0.25em;
+          border-color: black;
+          background-size: 100% 100%;
+          border-radius: 100px;        }
+      }
+    }
+
+    .MasteryCube {
+      z-index: 100;
+
+      width: 100%; 
+      height: 100%;
+    }
+
+    .PowerTile {
+      z-index: 100;
+
+      width: 100%; 
+      height: 100%;
+
+      &[data-name="roll"] .front { background-image: url(./assets/power/roll.png) }
+      &[data-name="set"] .front { background-image: url(./assets/power/set.png) }
+      &[data-name="stack"] .front { background-image: url(./assets/power/stack.png) }
+   
+      &.selectable {
+        z-index: 220;
+        > div {      
+          .front {
+          border: 5px solid blue;
+          width: 100%;
+          height: 100%;
+          }
+        }
+      }
+
+      > div {
+        width: 100%;
+        height: 100%;
+  
+        background-repeat: no-repeat;
+  
+        .front, .back {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          border-radius: 0.25em;
+          border-color: black;
+          background-size: 100% 100%;
+        }
+  
+        /* front pane, placed above back */
+        .front {
+          z-index: 2;
+        }
+  
+        /* back, initially hidden pane */
+        .back {
+          background-image: url(./assets/power/power-back.png);
+        }
+      }
+    }
+
+    .RoundEndTile {
+      z-index: 100;
+
+      width: 100%; 
+      height: 100%;
+
+      &[data-name="customer-satisfaction"] .front { background-image: url(./assets/roundend/customer-satisfaction.jpg) }
+      &[data-name="five-colors"] .front { background-image: url(./assets/roundend/five-colors.jpg) }
+      &[data-name="mastery-level-three"] .front { background-image: url(./assets/roundend/mastery-level-three.jpg) }
+      &[data-name="one-by-five"] .front { background-image: url(./assets/roundend/one-by-five.jpg) }
+      &[data-name="three-by-three-otherwise"] .front { background-image: url(./assets/roundend/three-by-three-otherwise.jpg) }
+      &[data-name="three-by-tree-likewise"] .front { background-image: url(./assets/roundend/three-by-tree-likewise.jpg) }
+      &[data-name="two-by-three"] .front { background-image: url(./assets/roundend/two-by-three.jpg) }
+      &[data-name="two-by-two-by-color"] .front { background-image: url(./assets/roundend/two-by-two-by-color.jpg) }
+      &[data-name="two-by-two-by-type"] .front { background-image: url(./assets/roundend/two-by-two-by-type.jpg) }
+      &[data-name="two-pairs"] .front { background-image: url(./assets/roundend/two-pairs.jpg) }
+   
+      > div {
+        width: 100%;
+        height: 100%;
+  
+        background-repeat: no-repeat;
+  
+        .front, .back {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          border-radius: 0.25em;
+          border-color: black;
+          background-size: 100% 100%;
+        }
+  
+        /* front pane, placed above back */
+        .front {
+          z-index: 2;
+        }
+  
+        /* back, initially hidden pane */
+        .back {
+          background-image: url(./assets/roundend/round-end-back.jpg);
+        }
+      }
+    }
+
+    .EndGameTile {
+      z-index: 100;
+
+      width: 100%; 
+      height: 100%;
+
+      &[data-name="adventurer"] .front { background-image: url(./assets/endgame/adventurer-front.jpg) }
+      &[data-name="adventurer"] .back { background-image: url(./assets/endgame/adventurer-back.jpg) }
+
+      &[data-name="charlatan"] .front { background-image: url(./assets/endgame/charlatan-front.jpg) }
+      &[data-name="charlatan"] .back { background-image: url(./assets/endgame/charlatan-back.jpg) }
+
+      &[data-name="rogue"] .front { background-image: url(./assets/endgame/rogue-front.jpg) }
+      &[data-name="rogue"] .back { background-image: url(./assets/endgame/rogue-back.jpg) }
+
+      &[data-name="priest"] .front { background-image: url(./assets/endgame/priest-front.jpg) }
+      &[data-name="priest"] .back { background-image: url(./assets/endgame/priest-back.jpg) }
+
+      &[data-name="prince"] .front { background-image: url(./assets/endgame/prince-front.jpg) }
+      &[data-name="prince"] .back { background-image: url(./assets/endgame/prince-back.jpg) }
+
+      &[data-name="merchant"] .front { background-image: url(./assets/endgame/merchant-front.jpg) }
+      &[data-name="merchant"] .back { background-image: url(./assets/endgame/merchant-back.jpg) }
+
+      &[data-name="cartographer"] .front { background-image: url(./assets/endgame/cartographer-front.jpg) }
+      &[data-name="cartographer"] .back { background-image: url(./assets/endgame/cartographer-back.jpg) }
+
+      &[data-name="witch"] .front { background-image: url(./assets/endgame/witch-front.jpg) }
+      &[data-name="witch"] .back { background-image: url(./assets/endgame/witch-back.jpg) }
+
+      > div {
+        width: 100%;
+        height: 100%;
+  
+        background-repeat: no-repeat;
+  
+        .front, .back {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          border-radius: 0.25em;
+          border-color: black;
+          background-size: 100% 100%;
+        }
+      }
+    }
+
+    .ColorDie {
+        z-index: 100;
+
+        width: 100%; 
+        height: 100%;
+
+        .red { background-image: url(./assets/dice/die-red.png) }
+        .yellow { background-image: url(./assets/dice/die-yellow.png) }
+        .blue { background-image: url(./assets/dice/die-blue.png) }
+        .green { background-image: url(./assets/dice/die-green.png) }
+        .orange { background-image: url(./assets/dice/die-orange.png) }
+        .purple { background-image: url(./assets/dice/die-purple.png) }
+
+
+        &.selectable {
+          z-index: 220;
+          > div {      
+            .red, .yellow, .blue, .green, .orange, .purple {
+            border: 5px solid blue;
+            width: 100%;
+            height: 100%;
+            }
+          }
+        }
+        &.selected {
+          z-index: 220;
+          > div {      
+            .red, .yellow, .blue, .green, .orange, .purple {
+            border: 5px solid yellow;
+            width: 100%;
+            height: 100%;
+            }
+          }
+        }
+        
+        > div {
+            width: 100%;
+            height: 100%;
+      
+            background-repeat: no-repeat;
+      
+            .red, .yellow, .blue, .green, .orange, .purple {
+              position: absolute;
+              z-index: 200;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 100%;
+              border-radius: 0.25em;
+              border-color: black;
+              background-size: 100% 100%;
+              
+            }
+          }
+    }
+
+    .CustomerCard {
+        z-index: 100;
+        
+        width: 100%; 
+        height: 100%;
+
+        &[data-name="audacity"] .front { background-image: url(./assets/customers/audacity.jpg) }
+        &[data-name="bamboozle"] .front { background-image: url(./assets/customers/bamboozle.jpg) }
+        &[data-name="blessing-of-autumn"] .front { background-image: url(./assets/customers/blessing-of-autumn.jpg) }
+        &[data-name="blessing-of-heaven"] .front { background-image: url(./assets/customers/blessing-of-heaven.jpg) }
+        &[data-name="blessing-of-midnight"] .front { background-image: url(./assets/customers/blessing-of-midnight.jpg) }
+        &[data-name="blessing-of-moonlight"] .front { background-image: url(./assets/customers/blessing-of-moonlight.jpg) }
+        &[data-name="blessing-of-spring"] .front { background-image: url(./assets/customers/blessing-of-spring.jpg) }
+        &[data-name="blessing-of-summer"] .front { background-image: url(./assets/customers/blessing-of-summer.jpg) }
+        &[data-name="broker"] .front { background-image: url(./assets/customers/broker.jpg) }
+        &[data-name="bypass"] .front { background-image: url(./assets/customers/bypass.jpg) }
+        &[data-name="cleansing-flood"] .front { background-image: url(./assets/customers/cleansing-flood.jpg) }
+        &[data-name="cutoff"] .front { background-image: url(./assets/customers/cutoff.jpg) }
+        &[data-name="daring"] .front { background-image: url(./assets/customers/daring.jpg) }
+        &[data-name="dealer"] .front { background-image: url(./assets/customers/dealer.jpg) }
+        &[data-name="deception"] .front { background-image: url(./assets/customers/deception.jpg) }
+        &[data-name="detour"] .front { background-image: url(./assets/customers/detour.jpg) }
+        &[data-name="discount"] .front { background-image: url(./assets/customers/discount.jpg) }
+        &[data-name="discovery"] .front { background-image: url(./assets/customers/discovery.jpg) }
+        &[data-name="double-dip"] .front { background-image: url(./assets/customers/double-dip.jpg) }
+        &[data-name="exploit"] .front { background-image: url(./assets/customers/exploit.jpg) }
+        &[data-name="exploration"] .front { background-image: url(./assets/customers/exploration.jpg) }
+        &[data-name="grift"] .front { background-image: url(./assets/customers/grift.jpg) }
+        &[data-name="heroism"] .front { background-image: url(./assets/customers/heroism.jpg) }
+        &[data-name="hoodwink"] .front { background-image: url(./assets/customers/hoodwink.jpg) }
+        &[data-name="infernal-rush"] .front { background-image: url(./assets/customers/infernal-rush.jpg) }
+        &[data-name="intrepidity"] .front { background-image: url(./assets/customers/intrepidity.jpg) }
+        &[data-name="lightning-crash"] .front { background-image: url(./assets/customers/lightning-crash.jpg) }
+        &[data-name="miscount"] .front { background-image: url(./assets/customers/miscount.jpg) }
+        &[data-name="nourishing-wave"] .front { background-image: url(./assets/customers/nourishing-wave.jpg) }
+        &[data-name="operator"] .front { background-image: url(./assets/customers/operator.jpg) }
+        &[data-name="passage"] .front { background-image: url(./assets/customers/passage.jpg) }
+        &[data-name="prince-rohan"] .front { background-image: url(./assets/customers/prince-rohan.jpg) }
+        &[data-name="prince-tyrion"] .front { background-image: url(./assets/customers/prince-tyrion.jpg) }
+        &[data-name="princess-buttercup"] .front { background-image: url(./assets/customers/princess-buttercup.jpg) }
+        &[data-name="princess-evergreen"] .front { background-image: url(./assets/customers/princess-evergreen.jpg) }
+        &[data-name="princess-peach"] .front { background-image: url(./assets/customers/princess-peach.jpg) }
+        &[data-name="princess-perrywinkle"] .front { background-image: url(./assets/customers/princess-perrywinkle.jpg) }
+        &[data-name="retailer"] .front { background-image: url(./assets/customers/retailer.jpg) }
+        &[data-name="scam"] .front { background-image: url(./assets/customers/scam.jpg) }
+        &[data-name="seller"] .front { background-image: url(./assets/customers/seller.jpg) }
+        &[data-name="shadow-strike"] .front { background-image: url(./assets/customers/shadow-strike.jpg) }
+        &[data-name="shortcut"] .front { background-image: url(./assets/customers/shortcut.jpg) }
+        &[data-name="sleight-of-hand"] .front { background-image: url(./assets/customers/sleight-of-hand.jpg) }
+        &[data-name="sunlight-surge"] .front { background-image: url(./assets/customers/sunlight-surge.jpg) }
+        &[data-name="tomfoolery"] .front { background-image: url(./assets/customers/tomfoolery.jpg) }
+        &[data-name="trail"] .front { background-image: url(./assets/customers/trail.jpg) }
+        &[data-name="trickery"] .front { background-image: url(./assets/customers/trickery.jpg) }
+        &[data-name="vendor"] .front { background-image: url(./assets/customers/vendor.jpg) }
+
+        > div {
+            width: 100%;
+            height: 100%;
+      
+            background-repeat: no-repeat;
+      
+            .front, .back {
+              position: absolute;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 100%;
+              border-radius: 0.25em;
+              border-color: black;
+              background-size: 100% 100%;
+            }
+      
+            /* front pane, placed above back */
+            .front {
+              z-index: 2;
+            }
+      
+            /* back, initially hidden pane */
+            .back {
+              background-image: url(./assets/customers/chandlers-back.jpg);
+            }
+          }
+    }
+}
