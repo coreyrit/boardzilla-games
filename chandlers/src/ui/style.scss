@@ -208,31 +208,30 @@
         width: 100%;
         height: 100%;  
 
-        &[data-name="white-candle"] .front { background-image: url(./assets/candles/white-candle.png) }
-        &[data-name="red-candle"] .front { background-image: url(./assets/candles/red-candle.png) }
-        &[data-name="blue-candle"] .front { background-image: url(./assets/candles/blue-candle.png) }
-        &[data-name="yellow-candle"] .front { background-image: url(./assets/candles/yellow-candle.png) }
-        &[data-name="orange-candle"] .front { background-image: url(./assets/candles/orange-candle.png) }
-        &[data-name="green-candle"] .front { background-image: url(./assets/candles/green-candle.png) }
-        &[data-name="purple-candle"] .front { background-image: url(./assets/candles/purple-candle.png) }
-        &[data-name="black-candle"] .front { background-image: url(./assets/candles/black-candle.png) }
+        .white { background-image: url(./assets/candles/white-candle.png) }    
+        .red { background-image: url(./assets/candles/red-candle.png) }
+        .blue { background-image: url(./assets/candles/blue-candle.png) }
+        .yellow { background-image: url(./assets/candles/yellow-candle.png) }
+        .orange { background-image: url(./assets/candles/orange-candle.png) }
+        .green { background-image: url(./assets/candles/green-candle.png) }
+        .purple { background-image: url(./assets/candles/purple-candle.png) }
+        .black { background-image: url(./assets/candles/black-candle.png) }
 
         &.selectable {
           z-index: 220;
           > div {      
-            .front {
+            // .white .red {
             border: 5px solid blue;
             width: 100%;
             height: 150%;
-            }
+            // }
           }
         }
         > div {   
             width: 100%;
             height: 100%;      
       
-            .front {
-              position: absolute;
+            // .white {position: absolute;
               top: 0;
               left: 0;
               width: 100%;
@@ -240,7 +239,7 @@
               background-size: 100% auto;
               background-repeat: no-repeat;
               background-position: center center;
-            }
+            // }
         }
     }
 
@@ -275,7 +274,7 @@
     }
 
     .ScoringTrack {
-      z-index: 10;
+      z-index: 2;
     }
 
     .MasterySpace {
@@ -308,7 +307,7 @@
     }
 
     .Candelabra {
-        z-index: 10;
+        z-index: 3;
     }
 
     .KeyHook {

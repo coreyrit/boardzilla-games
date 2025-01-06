@@ -133,9 +133,9 @@ render(setup, {
     });
 
     game.all(CandlePawn).appearance({
-      render: () => (
+      render: x => (
         <div className='CandlePawn'>
-          <div className="front"/>
+          <div className={x.color}/>
         </div>
       ),
     });
@@ -315,7 +315,7 @@ render(setup, {
       offsetColumn: {x: 0, y: 0},
       alignment: 'left'
     });
-
+    
     game.all(WorkerSpace).layout(KeyShape, {
       offsetColumn: {x: 0, y: 0},
         alignment: 'left'
@@ -448,6 +448,13 @@ render(setup, {
       columns: 30,
       gap: {x: 0, y: 0},
       direction: 'rtl',
+    });
+
+    game.all(CustomerCard).layout(Piece, { 
+      // area: { left: 0, top: 0, width: 100, height: 100 },
+      rows: 1,
+      columns: 2,
+      gap: {x: 0, y: 0},
     });
 
     game.all(ScoreTracker).appearance({

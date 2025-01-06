@@ -163,7 +163,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   $.drawCustomer.create(CustomerCard, 'infernal-rush')
   $.drawCustomer.create(CustomerCard, 'intrepidity')
   $.drawCustomer.create(CustomerCard, 'lightning-crash')
-  $.drawCustomer.create(CustomerCard, 'miscount')
+  $.drawCustomer.create(CustomerCard, 'miscount', {requiredCandles: [Color.Green, Color.Orange, Color.Black]})
   $.drawCustomer.create(CustomerCard, 'nourishing-wave')
   $.drawCustomer.create(CustomerCard, 'operator')
   $.drawCustomer.create(CustomerCard, 'passage')
@@ -232,18 +232,18 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   const blackCandles = game.create(Candelabra, 'blackCandles');
 
   for(var i = 0; i < 8; i++) {
-    $.whiteCandles.create(CandlePawn, 'white-candle', {color: Color.White})
+    $.whiteCandles.create(CandlePawn, 'whiteCandle' + i, {color: Color.White})
   }
   for(var i = 0; i < 6; i++) {
-    $.redCandles.create(CandlePawn, 'red-candle', {color: Color.Red})
-    $.yellowCandles.create(CandlePawn, 'yellow-candle', {color: Color.Yellow})
-    $.blueCandles.create(CandlePawn, 'blue-candle', {color: Color.Blue})
-    $.orangeCandles.create(CandlePawn, 'orange-candle', {color: Color.Orange})
-    $.greenCandles.create(CandlePawn, 'green-candle', {color: Color.Green})
-    $.purpleCandles.create(CandlePawn, 'purple-candle', {color: Color.Purple})
+    $.redCandles.create(CandlePawn, 'redCandle' + i, {color: Color.Red})
+    $.yellowCandles.create(CandlePawn, 'yellowCandle' + i, {color: Color.Yellow})
+    $.blueCandles.create(CandlePawn, 'blueCandle' + i, {color: Color.Blue})
+    $.orangeCandles.create(CandlePawn, 'orangeCandle' + i, {color: Color.Orange})
+    $.greenCandles.create(CandlePawn, 'greenCandle' + i, {color: Color.Green})
+    $.purpleCandles.create(CandlePawn, 'purpleCandle' + i, {color: Color.Purple})
   }
   for(var i = 0; i < 4; i++) {
-    $.blackCandles.create(CandlePawn, 'black-candle', {color: Color.Black})
+    $.blackCandles.create(CandlePawn, 'blackCandle' + i, {color: Color.Black})
   }
 
   // roll random dice to start the round
@@ -443,6 +443,11 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   $.bag.first(Wax)?.putInto($.greenComponent2);
 
   $.drawCustomer.top(CustomerCard)?.putInto($.playerSpace)
+
+
+
+  game.all(Candelabra).first(CandlePawn, {color: Color.Orange})?.putInto($.playerSpace.first(CustomerCard)!);
+  $.bag.first(Wax)?.putInto($.playerSpace.first(CustomerCard)!);
 
 
   // GAME ACTIONS

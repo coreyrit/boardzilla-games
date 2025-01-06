@@ -3,6 +3,7 @@ import { Color, MyGame } from "./index.js";
 
 export class CustomerCard extends Piece<MyGame> {
     flipped: boolean = false;
+    requiredCandles: Color[];
 }
 
 export class EndGameTile extends Piece<MyGame> {
