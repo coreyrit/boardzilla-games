@@ -9,6 +9,7 @@ import { read } from 'fs';
 import { constants } from 'os';
 import { isNativeError } from 'util/types';
 import { WaxBuilding } from './building/wax.js';
+import { PigmentBuilding } from './building/pigment.js';
 
 export class ChandlersPlayer extends Player<MyGame, ChandlersPlayer> {
   board: PlayerBoard
@@ -440,22 +441,9 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   const waxBuilding = new WaxBuilding()
   waxBuilding.createWorkerSpaces(game);
 
-  const pigmentRed = game.create(WorkerSpace, 'pigmentRed', {building: Building.Pigment, color: Color.Red});
-  const pigmentYellow = game.create(WorkerSpace, 'pigmentYellow', {building: Building.Pigment, color: Color.Yellow});
-  const pigmentBlue = game.create(WorkerSpace, 'pigmentBlue', {building: Building.Pigment, color: Color.Blue});
+  const pigmentBuilding = new PigmentBuilding();
+  pigmentBuilding.createWorkerSpaces(game);
 
-  pigmentRed.onEnter(Worker, x => { if(!game.setup) { game.followUp({name: 'chooseMeltManyRed'}); game.currentPlayer().gainShape(Color.Red); } });
-  pigmentYellow.onEnter(Worker, x => { if(!game.setup) { game.followUp({name: 'chooseMeltManyYellow'}); game.currentPlayer().gainShape(Color.Yellow); } });
-  pigmentBlue.onEnter(Worker, x => { if(!game.setup) { game.followUp({name: 'chooseMeltManyBlue'}); game.currentPlayer().gainShape(Color.Blue); } });
-
-  const pigmentOrange = game.create(WorkerSpace, 'pigmentOrange', {building: Building.Pigment, color: Color.Orange});
-  const pigmentGreen = game.create(WorkerSpace, 'pigmentGreen', {building: Building.Pigment, color: Color.Green});
-  const pigmentPurple = game.create(WorkerSpace, 'pigmentPurple', {building: Building.Pigment, color: Color.Purple});
-
-  pigmentOrange.onEnter(Worker, x => { if(!game.setup) { game.followUp({name: 'chooseMeltRed'}); game.followUp({name: 'chooseMeltYellow'}); game.currentPlayer().gainShape(Color.Orange); } });
-  pigmentGreen.onEnter(Worker, x => { if(!game.setup) { game.followUp({name: 'chooseMeltYellow'}); game.followUp({name: 'chooseMeltBlue'}); game.currentPlayer().gainShape(Color.Green); } });
-  pigmentPurple.onEnter(Worker, x => { if(!game.setup) { game.followUp({name: 'chooseMeltBlue'}); game.followUp({name: 'chooseMeltRed'}); game.currentPlayer().gainShape(Color.Purple); } });
-  
   const pigmentRepeater = game.create(WorkerSpace, 'pigmentRepeater', {building: Building.Pigment});
   const pigmentMiddle = game.create(WorkerSpace, 'pigmentMiddle', {building: Building.Pigment});
   const pigmentBackroom = game.create(WorkerSpace, 'pigmentBackroom', {building: Building.Pigment});
