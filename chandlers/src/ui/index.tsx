@@ -1,8 +1,9 @@
 import React from 'react';
 import { render } from '@boardzilla/core';
-import { BackAlleySpace, BackAlleyTile, Candelabra, CandlePawn, ChandlersBoard, ColorDie, ComponentSpace, CustomerCard, CustomerSpace, DiceSpace, EndGameTile, GameEndSpace, KeyHook, KeyShape, MasteryCube, MasteryTrack, Melt, Pigment, PlayerBoard, PlayerSpace, PowerSpace, PowerTile, ReadySpace, RoundEndSpace, RoundEndTile, Spill, Wax, WorkerSpace, default as setup } from '../game/index.js';
+import { BackAlleySpace, Candelabra, ChandlersBoard, ComponentSpace, CustomerSpace, DiceSpace, GameEndSpace, KeyHook, MasteryTrack, PlayerBoard, PlayerSpace, PowerSpace, ReadySpace, RoundEndSpace, Spill,  WorkerSpace, default as setup } from '../game/index.js';
 
 import './style.scss';
+import { BackAlleyTile, CandlePawn, ColorDie, CustomerCard, EndGameTile, KeyShape, RoundEndTile, Wax, PowerTile, Melt, MasteryCube, Pigment } from '../game/components.js';
 // import '@boardzilla/core/index.css';
 
 render(setup, {
@@ -211,7 +212,7 @@ render(setup, {
     $.meltSpillArea.layout(Melt, {
       columns: 3, 
       rows: 2, 
-      gap: {x:1.5, y: 0}, 
+      // gap: {x:1.5, y: 0}, 
       offsetRow: {x: -50, y: 100}, 
       offsetColumn: 110, 
       scaling: 'fill', 

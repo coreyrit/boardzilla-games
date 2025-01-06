@@ -10,86 +10,9 @@ import { constants } from 'os';
 import { isNativeError } from 'util/types';
 import { WaxBuilding } from './building/wax.js';
 import { PigmentBuilding } from './building/pigment.js';
-
-export class ChandlersPlayer extends Player<MyGame, ChandlersPlayer> {
-  board: PlayerBoard
-  stack: Boolean = false;
-
-  nextEmptySpace() : ComponentSpace {
-    const spaces = this.board.all(ComponentSpace).filter(x => x.all(Piece).length == 0);
-    return spaces.first(ComponentSpace)!
-  }
-
-  gainWax(count: number = 1) : void {  
-    for(var i = 0; i < count; i++) {
-      $.bag.first(Wax)?.putInto(this.nextEmptySpace());
-    }
-  }
-
-  gainShape(color: Color) : void {
-    this.game.first(KeyHook, {color: color})!.first(KeyShape)?.putInto(this.nextEmptySpace());
-  }
-
-  gainCandle(melt: Melt, backToBag: Boolean = true, count: number = 2) : void {
-    if(backToBag) {
-      melt.putInto($.bag)
-    }
-    for(var i = 0; i < count; i++) {
-      const candles = this.game.all(Candelabra);
-      const candle = candles.first(CandlePawn, {color: melt.color})!;
-      candle.putInto(this.nextEmptySpace());
-    }
-    if(backToBag) {
-      melt.color = Color.White
-    }
-  }
-
-  meltWaxSpill(wax: Wax[]) : void {
-    for(var i = 0; i < wax.length; i += 2) {
-      if(i+1 < wax.length) {
-        wax[i].putInto($.bag);
-        wax[i+1].putInto($.waxSpillArea); // make sure to earn points
-        $.bag.first(Melt)?.putInto(this.nextEmptySpace());
-      }
-    }
-  }
-
-  meltWax(wax: Wax[]) : void {
-    for(var i = 0; i < wax.length; i ++) {
-      wax[i].putInto($.bag);
-      $.bag.first(Melt)?.putInto(this.nextEmptySpace());
-    }
-  }
-
-  workerCount(): number {
-    return this.board.all(Worker).length
-  }
-
-  diceCount(): number {
-    return this.board.all(ColorDie).length
-  }
-
-  workerColors(): Color[] {
-    return this.board.all(ColorDie).map(x => x.color);
-  }
-
-  masteryLevel(): number {
-    const cube = this.board.first(MasteryCube, {color: Color.Green})!
-    const allSpaces = this.board.all(MasteryCube);
-    const index = allSpaces.indexOf(cube);
-    if(index >= 13) {
-      return 3;
-    } else if(index >= 6) {
-      return 2;
-    } else {
-      return 1;
-    }
-  }
-}
-
-export class ChandlersBoard extends Space<MyGame> {
-
-}
+import { MoldBuilding } from './building/mold.js';
+import { ChandlersPlayer } from './player.js';
+import { CustomerCard, EndGameTile, RoundEndTile, BackAlleyTile, ColorDie, KeyShape, CandlePawn, PowerTile, Wax, WorkerPiece, Pigment, Melt, MasteryCube } from './components.js';
 
 export class WorkerSpace extends Space<MyGame> {
   building: Building
@@ -110,10 +33,6 @@ export class ReadySpace extends Space<MyGame> {
 
 export class CustomerSpace extends Space<MyGame> {
 
-}
-
-export class CustomerCard extends Piece<MyGame> {
-  flipped: boolean = false;
 }
 
 export class Candelabra extends Space<MyGame> {
@@ -140,20 +59,11 @@ export class BackAlleySpace extends Space<MyGame> {
 
 }
 
-export class EndGameTile extends Piece<MyGame> {
-  flipped: boolean = true;
-}
-
-export class RoundEndTile extends Piece<MyGame> {
-  flipped: boolean = true;
-}
-
-export class BackAlleyTile extends Piece<MyGame> {
-  flipped: boolean = true;
-  letter: String;
-}
-
 export class PlayerSpace extends Space<MyGame> {
+
+}
+
+export class ChandlersBoard extends Space<MyGame> {
 
 }
 
@@ -178,118 +88,13 @@ export enum Color {
   Black = 'black'
 }
 
-export class Worker extends Piece<MyGame> {
-  color: Color;
-}
-
-export class ColorDie extends Worker {
-  roll(): void {
-    let index = Math.floor(this.game.random() * 6);
-    const values = Object.values(Color);
-    this.color = values[index];
-  }
-}
-
-export class CandlePawn extends Worker {
-
-}
-
-export class KeyShape extends Worker {
-
-}
-
 export class PowerSpace extends Space<MyGame> {
 
 }
 
-export class Wax extends Piece<MyGame> {
-  
-}
-
-export class PowerTile extends Piece<MyGame> {
-  flipped: boolean = true;
-}
 
 export class MasteryTrack extends Space<MyGame> {
 
-}
-
-export class MasteryCube extends Piece<MyGame> {
-  color: Color | undefined = undefined;
-}
-
-export class Pigment extends Piece<MyGame> {
-  color: Color = Color.Red;
-}
-
-export class Melt extends Piece<MyGame> {
-  color: Color = Color.White
-
-  mix(color: Color): void {
-    switch(this.color) {
-      case Color.White: {
-        this.color = color;
-        break;
-      }
-      case Color.Red: {
-        switch(color) {
-          case Color.Blue: {
-            this.color = Color.Purple;
-            break;
-          }
-          case Color.Yellow: {
-            this.color = Color.Orange;
-            break;
-          }
-        }
-        break;
-      }
-      case Color.Yellow: {
-        switch(color) {
-          case Color.Blue: {
-            this.color = Color.Green;
-            break;
-          }
-          case Color.Red: {
-            this.color = Color.Orange;
-            break;
-          }
-        }
-        break;
-      }
-      case Color.Blue: {
-        switch(color) {
-          case Color.Yellow: {
-            this.color = Color.Green;
-            break;
-          }
-          case Color.Red: {
-            this.color = Color.Purple;
-            break;
-          }
-        }
-        break;
-      }
-      case Color.Green: {
-        if(color == Color.Red) {
-          this.color = Color.Black;
-        }
-        break;
-      }
-      case Color.Orange: {
-        if(color == Color.Blue) {
-          this.color = Color.Black;
-        }
-        break;
-      }
-      case Color.Purple: {
-        if(color == Color.Yellow) {
-          this.color = Color.Black;
-        }
-        break;
-      }
-    }
-  }
 }
 
 export class MyGame extends Game<MyGame, ChandlersPlayer> {
@@ -298,16 +103,20 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
   init(): void {    
   }
 
+  capitalize(color: Color) : string {
+    return color.toString().charAt(0).toUpperCase() + color.toString().substring(1)
+  }
+
   currentPlayer() : ChandlersPlayer {
     const pl = this.players.current() as ChandlersPlayer;
     return pl;
   }
 
   middleAvailable(left: WorkerSpace, right: WorkerSpace, middle: WorkerSpace) : Boolean {
-    if(left.all(Worker).length == 0 || right.all(Worker).length == 0) {
+    if(left.all(WorkerPiece).length == 0 || right.all(WorkerPiece).length == 0) {
       return false;
     }
-    const readyWorker = $.ready.first(Worker);
+    const readyWorker = $.ready.first(WorkerPiece);
     if(readyWorker == undefined) {
       return false;
     }
@@ -316,7 +125,7 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
 
   performMastery(building: Building, space: WorkerSpace | undefined = undefined) : void {
     if(space != undefined) {
-      space.color = space.top(Worker)?.color;
+      space.color = space.top(WorkerPiece)?.color;
     }
 
     switch(building) {
@@ -339,7 +148,11 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     }
   }
 
-  performBackroom(building: Building) : void {
+  performBackroom(building: Building, space: WorkerSpace | undefined = undefined) : void {
+    if(space != undefined) {
+      space.color = space.top(WorkerPiece)?.color;
+    }
+
     switch(building) {
       case Building.Wax: {
         this.followUp({name: 'chooseCustomer'});
@@ -353,9 +166,15 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
       }
       case Building. Mold: {
         this.followUp({name: 'chooseCandlesToTrade'});    
+        // also need to do the back alley action    
         break;
       }
     }
+  }
+
+  performMiddle(building: Building, space: WorkerSpace) : void {
+    space.color = space.top(WorkerPiece)?.color;
+    this.followUp({name: 'chooseMiddleAction', args: { building: building }});
   }
 }
 
@@ -444,65 +263,8 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   const pigmentBuilding = new PigmentBuilding();
   pigmentBuilding.createWorkerSpaces(game);
 
-  const pigmentRepeater = game.create(WorkerSpace, 'pigmentRepeater', {building: Building.Pigment});
-  const pigmentMiddle = game.create(WorkerSpace, 'pigmentMiddle', {building: Building.Pigment});
-  const pigmentBackroom = game.create(WorkerSpace, 'pigmentBackroom', {building: Building.Pigment});
-
-  pigmentRepeater.onEnter(Worker, x => {
-    game.performMastery(Building.Pigment, pigmentRepeater);
-  })
-  pigmentBackroom.onEnter(Worker, x => {
-    ($.pigmentBackroom as WorkerSpace).color = x.color;
-    game.performBackroom(Building.Pigment);
-  })
-  pigmentMiddle.onEnter(Worker, x => {
-    ($.pigmentMiddle as WorkerSpace).color = x.color;
-    game.followUp({name: 'chooseMiddleAction', args: { building: Building.Pigment }});
-  })
-
-  const pigmentSpill = game.create(WorkerSpace, 'pigmentSpill', {building: Building.Pigment});
-
-  pigmentSpill.onEnter(Worker, x => {     
-    // draw a random customer
-    $.drawCustomer.top(CustomerCard)?.putInto($.playerSpace);
-    if($.pigmentSpillArea.all(Pigment).length > 0) {
-      game.followUp({name: 'chooseSpiltPigment'})
-    }
-  });
-
-  const moldRed = game.create(WorkerSpace, 'moldRed', {building: Building.Mold, color: Color.Red});
-  const moldYellow = game.create(WorkerSpace, 'moldYellow', {building: Building.Mold, color: Color.Yellow});
-  const moldBlue = game.create(WorkerSpace, 'moldBlue', {building: Building.Mold, color: Color.Blue});
-
-  moldRed.onEnter(Worker, x => { if(!game.setup) { game.followUp({name: 'chooseRedOrWhiteMelt'}); game.currentPlayer().gainShape(Color.Red); } });
-  moldYellow.onEnter(Worker, x => { if(!game.setup) { game.followUp({name: 'chooseYellowOrWhiteMelt'}); game.currentPlayer().gainShape(Color.Yellow); } });
-  moldBlue.onEnter(Worker, x => { if(!game.setup) { game.followUp({name: 'chooseBlueOrWhiteMelt'}); game.currentPlayer().gainShape(Color.Blue); } });
-
-  const moldOrange = game.create(WorkerSpace, 'moldOrange', {building: Building.Mold, color: Color.Orange});
-  const moldGreen = game.create(WorkerSpace, 'moldGreen', {building: Building.Mold, color: Color.Green});
-  const moldPurple = game.create(WorkerSpace, 'moldPurple', {building: Building.Mold, color: Color.Purple});
-
-  moldOrange.onEnter(Worker, x => { if(!game.setup) { game.followUp({name: 'chooseOrangeOrBlackMelt'}); game.currentPlayer().gainShape(Color.Orange); } });
-  moldGreen.onEnter(Worker, x => { if(!game.setup) { game.followUp({name: 'chooseGreenOrBlackMelt'}); game.currentPlayer().gainShape(Color.Green); } });
-  moldPurple.onEnter(Worker, x => { if(!game.setup) { game.followUp({name: 'choosePurpleOrBlackMelt'}); game.currentPlayer().gainShape(Color.Purple); } });
-
-  const moldRepeater = game.create(WorkerSpace, 'moldRepeater', {building: Building.Mold});
-  const moldMiddle = game.create(WorkerSpace, 'moldMiddle', {building: Building.Mold});
-  const moldBackroom = game.create(WorkerSpace, 'moldBackroom', {building: Building.Mold});
-
-  moldRepeater.onEnter(Worker, x => {
-    game.performMastery(Building.Mold, moldRepeater);
-  })
-  moldBackroom.onEnter(Worker, x => {
-    ($.moldBackroom as WorkerSpace).color = x.color;
-    game.performBackroom(Building.Mold);
-  })
-  moldMiddle.onEnter(Worker, x => {
-    ($.moldMiddle as WorkerSpace).color = x.color;
-    game.followUp({name: 'chooseMiddleAction', args: { building: Building.Mold }});
-  })
-
-  const moldSpill = game.create(WorkerSpace, 'moldSpill', {building: Building.Mold});
+  const moldBuilding = new MoldBuilding();
+  moldBuilding.createWorkerSpaces(game);
 
   // build out spill areas
   const waxSpillArea = game.create(Spill, 'waxSpillArea');
@@ -783,7 +545,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       prompt: 'Choose a worker',
       condition: player.workerCount() > 0,
     }).chooseOnBoard(
-      'worker', player.board.all(Worker),
+      'worker', player.board.all(WorkerPiece),
       { skipIf: 'never' }
     ).do(({ worker }) => {
       // player.selectedWorker = worker
@@ -933,33 +695,33 @@ export default createGame(ChandlersPlayer, MyGame, game => {
 
     placeWorker: (player) => action({
       prompt: 'Place the worker',
-      condition: $.ready.all(Worker).length > 0
+      condition: $.ready.all(WorkerPiece).length > 0
     }).chooseOnBoard(
       'space', game.all(WorkerSpace)
-        .filter(x => x.all(Worker).length == 0 
-          || (x.top(Worker) instanceof KeyShape && $.ready.first(Worker) instanceof ColorDie)
-          || (x.top(Worker) instanceof KeyShape && $.ready.first(Worker) instanceof CandlePawn)
-          || (x.top(Worker) instanceof ColorDie && $.ready.first(Worker) instanceof CandlePawn)          
-          || (x.top(Worker) instanceof ColorDie && player.stack && $.ready.first(Worker) instanceof ColorDie)
+        .filter(x => x.all(WorkerPiece).length == 0 
+          || (x.top(WorkerPiece) instanceof KeyShape && $.ready.first(WorkerPiece) instanceof ColorDie)
+          || (x.top(WorkerPiece) instanceof KeyShape && $.ready.first(WorkerPiece) instanceof CandlePawn)
+          || (x.top(WorkerPiece) instanceof ColorDie && $.ready.first(WorkerPiece) instanceof CandlePawn)          
+          || (x.top(WorkerPiece) instanceof ColorDie && player.stack && $.ready.first(WorkerPiece) instanceof ColorDie)
         )
         .filter(x => x.color == undefined 
-          || x.color == $.ready.first(Worker)?.color
-          || (x.all(Worker).length == 0 && $.ready.first(Worker)?.color == Color.Black)
-          || (x.top(Worker) instanceof KeyShape && $.ready.first(Worker)?.color == Color.Black)
-          || (x.top(Worker) instanceof KeyShape && $.ready.first(Worker)?.color == Color.Black)
-          || (x.top(Worker) instanceof ColorDie && $.ready.first(Worker)?.color == Color.Black)
+          || x.color == $.ready.first(WorkerPiece)?.color
+          || (x.all(WorkerPiece).length == 0 && $.ready.first(WorkerPiece)?.color == Color.Black)
+          || (x.top(WorkerPiece) instanceof KeyShape && $.ready.first(WorkerPiece)?.color == Color.Black)
+          || (x.top(WorkerPiece) instanceof KeyShape && $.ready.first(WorkerPiece)?.color == Color.Black)
+          || (x.top(WorkerPiece) instanceof ColorDie && $.ready.first(WorkerPiece)?.color == Color.Black)
         )
         .concat(game.first(WorkerSpace, {name: 'waxSpill'})!)
         .concat(game.first(WorkerSpace, {name: 'pigmentSpill'})!)
         .concat(game.first(WorkerSpace, {name: 'moldSpill'})!)
         .filter(x => x.name != 'waxMiddle' || game.middleAvailable($.waxRepeater as WorkerSpace, $.waxBackroom as WorkerSpace, $.waxMiddle as WorkerSpace))
-        .filter(x => x.name != 'pigmentMiddle' || ($.pigmentRepeater.all(Worker).length > 0 && $.pigmentBackroom.all(Worker).length > 0))
-        .filter(x => x.name != 'moldMiddle' || ($.moldRepeater.all(Worker).length > 0 && $.moldBackroom.all(Worker).length > 0))
+        .filter(x => x.name != 'pigmentMiddle' || ($.pigmentRepeater.all(WorkerPiece).length > 0 && $.pigmentBackroom.all(WorkerPiece).length > 0))
+        .filter(x => x.name != 'moldMiddle' || ($.moldRepeater.all(WorkerPiece).length > 0 && $.moldBackroom.all(WorkerPiece).length > 0))
         ,
       { skipIf: 'never' }
     ).do(({ space }) => {
       player.stack = false;
-      $.ready.first(Worker)?.putInto(space);
+      $.ready.first(WorkerPiece)?.putInto(space);
       // player.selectedWorker = undefined
     }),
 
@@ -969,7 +731,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       game.finish(undefined)
     }),
     skip: (player) => action({
-      condition: $.ready.all(Worker).length == 0,
+      condition: $.ready.all(WorkerPiece).length == 0,
     }).do(() => {
         // do nothing
     }),
