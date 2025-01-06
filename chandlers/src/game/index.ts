@@ -8,6 +8,7 @@ import {
 import { read } from 'fs';
 import { constants } from 'os';
 import { isNativeError } from 'util/types';
+import { WaxBuilding } from './building/wax.js';
 
 export class ChandlersPlayer extends Player<MyGame, ChandlersPlayer> {
   board: PlayerBoard
@@ -159,13 +160,13 @@ export class PlayerBoard extends Space<MyGame> {
 
 }
 
-enum Building {
+export enum Building {
   Wax = 'wax',
   Pigment = 'pigment',
   Mold = 'mold'
 }
 
-enum Color {
+export enum Color {
   Red = 'red',
   Yellow = 'yellow',
   Blue = 'blue',
@@ -290,7 +291,7 @@ export class Melt extends Piece<MyGame> {
   }
 }
 
-class MyGame extends Game<MyGame, ChandlersPlayer> {
+export class MyGame extends Game<MyGame, ChandlersPlayer> {
   setup: Boolean = false;
 
   init(): void {    
@@ -312,7 +313,11 @@ class MyGame extends Game<MyGame, ChandlersPlayer> {
     return readyWorker.color != left.color && readyWorker.color != right.color;
   }
 
-  performMastery(building: Building) : void {
+  performMastery(building: Building, space: WorkerSpace | undefined = undefined) : void {
+    if(space != undefined) {
+      space.color = space.top(Worker)?.color;
+    }
+
     switch(building) {
       case Building.Wax: {
         this.followUp({name: 'chooseWaxRepeater'});
@@ -432,47 +437,8 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   drawCustomer.top(CustomerCard)?.putInto($.customer4)
 
   // set up the worker spaces
-  const waxRed = game.create(WorkerSpace, 'waxRed', {building: Building.Wax, color: Color.Red});
-  const waxYellow = game.create(WorkerSpace, 'waxYellow', {building: Building.Wax, color: Color.Yellow});
-  const waxBlue = game.create(WorkerSpace, 'waxBlue', {building: Building.Wax, color: Color.Blue});
-
-  waxRed.onEnter(Worker, x => { if(!game.setup) { game.currentPlayer().gainWax(3); game.currentPlayer().gainShape(Color.Red); } });
-  waxYellow.onEnter(Worker, x => { if(!game.setup) { game.currentPlayer().gainWax(3); game.currentPlayer().gainShape(Color.Yellow);  } });
-  waxBlue.onEnter(Worker, x => { if(!game.setup) { game.currentPlayer().gainWax(3); game.currentPlayer().gainShape(Color.Blue); } });
-
-  const waxOrange = game.create(WorkerSpace, 'waxOrange', {building: Building.Wax, color: Color.Orange});
-  const waxGreen = game.create(WorkerSpace, 'waxGreen', {building: Building.Wax, color: Color.Green});
-  const waxPurple = game.create(WorkerSpace, 'waxPurple', {building: Building.Wax, color: Color.Purple});
-
-  waxOrange.onEnter(Worker, x => { if(!game.setup) { game.followUp({name: 'chooseWax'}); game.currentPlayer().gainShape(Color.Orange); } });
-  waxGreen.onEnter(Worker, x => { if(!game.setup) { game.followUp({name: 'chooseWax'}); game.currentPlayer().gainShape(Color.Green); } });
-  waxPurple.onEnter(Worker, x => { if(!game.setup) { game.followUp({name: 'chooseWax'}); game.currentPlayer().gainShape(Color.Purple); } });
-
-  const waxRepeater = game.create(WorkerSpace, 'waxRepeater', {building: Building.Wax});
-  const waxMiddle = game.create(WorkerSpace, 'waxMiddle', {building: Building.Wax});
-  const waxBackroom = game.create(WorkerSpace, 'waxBackroom', {building: Building.Wax});
-  
-  waxRepeater.onEnter(Worker, x => {
-    ($.waxRepeater as WorkerSpace).color = x.color;
-    game.performMastery(Building.Wax); 
-  })
-  waxBackroom.onEnter(Worker, x => {
-    ($.waxBackroom as WorkerSpace).color = x.color;
-    game.performBackroom(Building.Wax);
-  })
-  waxMiddle.onEnter(Worker, x => {
-    ($.waxMiddle as WorkerSpace).color = x.color;
-    game.followUp({name: 'chooseMiddleAction', args: { building: Building.Wax }});
-  })
-  
-  const waxSpill = game.create(WorkerSpace, 'waxSpill', {building: Building.Wax});
-
-  waxSpill.onEnter(Worker, x => {     
-    $.waxSpillArea.all(Wax).forEach(x => {
-      x.putInto(game.currentPlayer().nextEmptySpace());
-    })
-    game.currentPlayer().gainWax();
-  });
+  const waxBuilding = new WaxBuilding()
+  waxBuilding.createWorkerSpaces(game);
 
   const pigmentRed = game.create(WorkerSpace, 'pigmentRed', {building: Building.Pigment, color: Color.Red});
   const pigmentYellow = game.create(WorkerSpace, 'pigmentYellow', {building: Building.Pigment, color: Color.Yellow});
@@ -495,8 +461,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   const pigmentBackroom = game.create(WorkerSpace, 'pigmentBackroom', {building: Building.Pigment});
 
   pigmentRepeater.onEnter(Worker, x => {
-    ($.pigmentRepeater as WorkerSpace).color = x.color;
-    game.performMastery(Building.Pigment);
+    game.performMastery(Building.Pigment, pigmentRepeater);
   })
   pigmentBackroom.onEnter(Worker, x => {
     ($.pigmentBackroom as WorkerSpace).color = x.color;
@@ -538,8 +503,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   const moldBackroom = game.create(WorkerSpace, 'moldBackroom', {building: Building.Mold});
 
   moldRepeater.onEnter(Worker, x => {
-    ($.moldRepeater as WorkerSpace).color = x.color;
-    game.performMastery(Building.Mold);
+    game.performMastery(Building.Mold, moldRepeater);
   })
   moldBackroom.onEnter(Worker, x => {
     ($.moldBackroom as WorkerSpace).color = x.color;
