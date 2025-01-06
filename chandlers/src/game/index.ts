@@ -13,7 +13,7 @@ import { PigmentBuilding } from './building/pigment.js';
 import { MoldBuilding } from './building/mold.js';
 import { ChandlersPlayer } from './player.js';
 import { CustomerCard, EndGameTile, RoundEndTile, BackAlleyTile, ColorDie, KeyShape, CandlePawn, PowerTile, Wax, WorkerPiece, Pigment, Melt, MasteryCube, ScoreTracker } from './components.js';
-import { BackAlleySpace, Candelabra, ChandlersBoard, ComponentSpace, CustomerSpace, DiceSpace, GameEndSpace, KeyHook, MasterySpace, MasteryTrack, PlayerBoard, PlayerSpace, PowerSpace, ReadySpace, RoundEndSpace, ScoringSpace, ScoringTrack, Spill, WorkerSpace } from './boards.js';
+import { BackAlleySpace, Candelabra, CandleSpace, ChandlersBoard, ComponentSpace, CustomerSpace, DiceSpace, GameEndSpace, KeyHook, MasterySpace, MasteryTrack, PlayerBoard, PlayerSpace, PowerSpace, ReadySpace, RoundEndSpace, ScoringSpace, ScoringTrack, Spill, WorkerSpace } from './boards.js';
 
 export enum Building {
   Wax = 'wax',
@@ -184,6 +184,28 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   $.drawCustomer.create(CustomerCard, 'trail')
   $.drawCustomer.create(CustomerCard, 'trickery')
   $.drawCustomer.create(CustomerCard, 'vendor')
+
+  // create candle spaces
+  $.drawCustomer.all(CustomerCard).forEach(x => {
+    const topSpaces = 
+      (x.requiredCandles.includes(Color.Blue) ? 1 : 0) + 
+      (x.requiredCandles.includes(Color.White) ? 1 : 0) + 
+      (x.requiredCandles.includes(Color.Yellow) ? 1 : 0) + 
+      (x.requiredCandles.includes(Color.Red) ? 1 : 0)
+    const bottomSpaces = 
+      (x.requiredCandles.includes(Color.Green) ? 1 : 0) + 
+      (x.requiredCandles.includes(Color.Purple) ? 1 : 0) + 
+      (x.requiredCandles.includes(Color.Orange) ? 1 : 0) + 
+      (x.requiredCandles.includes(Color.Black) ? 1 : 0)
+
+    for(var i = 0; i < topSpaces; i++) {
+      x.create(CandleSpace, x.name + '-top-space' + i)
+    }
+    for(var i = 0; i < bottomSpaces; i++) {
+      x.create(CandleSpace, x.name + '-bottom-space' + i)
+    }
+
+  })
 
   drawCustomer.shuffle()
   drawCustomer.top(CustomerCard)?.putInto($.customer1)

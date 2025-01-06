@@ -25,6 +25,10 @@ export class CustomerSpace extends Space<MyGame> {
 export class Candelabra extends Space<MyGame> {
  
 }
+
+export class CandleSpace extends Piece<MyGame> {
+
+}
   
 export class KeyHook extends Space<MyGame> {
     color: Color;
