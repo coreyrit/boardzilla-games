@@ -4,17 +4,21 @@ import { Building, Color, MyGame } from "../index.js";
 
 export class WaxBuilding {
 
-    performPrimvaryColor(game: MyGame, shape: Color) : void{
+    performPrimvaryColor(game: MyGame, shape: Color, skipShape : Boolean = false) : void{
         if(!game.setup) { 
             game.currentPlayer().gainWax(3); 
-            game.currentPlayer().gainShape(shape); 
+            if(!skipShape) {
+                game.currentPlayer().gainShape(shape); 
+            }
         } 
     }
 
-    performSecondaryColor(game: MyGame, shape: Color) : void{
+    performSecondaryColor(game: MyGame, shape: Color, skipShape: Boolean = false) : void{
         if(!game.setup) { 
             game.followUp({name: 'chooseWax'}); 
-            game.currentPlayer().gainShape(shape); 
+            if(!skipShape) {
+                game.currentPlayer().gainShape(shape); 
+            }
         } 
     }
 

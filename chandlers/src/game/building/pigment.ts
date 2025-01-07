@@ -4,18 +4,38 @@ import { Building, Color, MyGame } from "../index.js";
 
 export class PigmentBuilding {
 
-    performPrimvaryColor(game: MyGame, shape: Color) : void{
+    performPrimvaryColor(game: MyGame, shape: Color, skipShape: Boolean = false ) : void{
         if(!game.setup) { 
             game.followUp({name: 'chooseMeltMany' + game.capitalize(shape)}); 
-            game.currentPlayer().gainShape(shape); 
+            if(!skipShape) {
+                game.currentPlayer().gainShape(shape); 
+            }
         }
     }
 
-    performSecondoaryColor(game: MyGame, shape: Color, mix1: Color, mix2: Color) : void{
+    getDerivedColors(color : Color) : Color[] {
+        switch(color) {
+            case Color.Orange: {
+                return [Color.Red, Color.Yellow]
+            }
+            case Color.Green: {
+                return [Color.Yellow, Color.Blue]
+            }
+            case Color.Purple: {
+                return [Color.Blue, Color.Red]
+            }
+        }
+        return []
+    }
+
+    performSecondaryColor(game: MyGame, shape: Color, skipShape: Boolean = false ) : void{
         if(!game.setup) { 
-            game.followUp({name: 'chooseMelt' + game.capitalize(mix1)}); 
-            game.followUp({name: 'chooseMelt' + game.capitalize(mix2)}); 
-            game.currentPlayer().gainShape(Color.Orange); 
+            const mix: Color[] = this.getDerivedColors(shape);
+            game.followUp({name: 'chooseMelt' + game.capitalize(mix[0])}); 
+            game.followUp({name: 'chooseMelt' + game.capitalize(mix[1])}); 
+            if(!skipShape) {
+                game.currentPlayer().gainShape(shape); 
+            }
         }
     }
 
@@ -32,9 +52,9 @@ export class PigmentBuilding {
         const pigmentGreen = game.create(WorkerSpace, 'pigmentGreen', {building: Building.Pigment, color: Color.Green});
         const pigmentPurple = game.create(WorkerSpace, 'pigmentPurple', {building: Building.Pigment, color: Color.Purple});
 
-        pigmentOrange.onEnter(WorkerPiece, x => { this.performSecondoaryColor(game, Color.Orange, Color.Red, Color.Yellow) });
-        pigmentGreen.onEnter(WorkerPiece, x => { this.performSecondoaryColor(game, Color.Green, Color.Yellow, Color.Blue) });
-        pigmentPurple.onEnter(WorkerPiece, x => { this.performSecondoaryColor(game, Color.Purple, Color.Blue, Color.Red) });
+        pigmentOrange.onEnter(WorkerPiece, x => { this.performSecondaryColor(game, Color.Orange) });
+        pigmentGreen.onEnter(WorkerPiece, x => { this.performSecondaryColor(game, Color.Green) });
+        pigmentPurple.onEnter(WorkerPiece, x => { this.performSecondaryColor(game, Color.Purple) });
 
         const pigmentRepeater = game.create(WorkerSpace, 'pigmentRepeater', {building: Building.Pigment});
         const pigmentMiddle = game.create(WorkerSpace, 'pigmentMiddle', {building: Building.Pigment});

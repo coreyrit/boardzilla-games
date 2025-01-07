@@ -202,6 +202,28 @@
       }
     }
 
+    .CandleTopRow {
+      z-index: 106;
+    }
+    .CandleBottomRow {
+      z-index: 106;
+    }
+    .CandleSpace {
+      z-index: 107;
+      width: 100%;
+      height: 100%; 
+
+      &.selectable {
+        z-index: 15;
+        > div {      
+          border: 5px solid blue;
+          border-radius: 100px;
+          width: 100%;
+          height: 100%;
+        }
+      }
+    }
+
     .CandlePawn {
         z-index: 110;
 
@@ -597,6 +619,8 @@
         width: 100%; 
         height: 100%;
 
+        &[data-name="greenBaseAction"] .front { background-image: url(./assets/customers/blank.png) } 
+        
         &[data-name="audacity"] .front { background-image: url(./assets/customers/audacity.jpg) }
         &[data-name="bamboozle"] .front { background-image: url(./assets/customers/bamboozle.jpg) }
         &[data-name="blessing-of-autumn"] .front { background-image: url(./assets/customers/blessing-of-autumn.jpg) }
@@ -645,6 +669,17 @@
         &[data-name="trail"] .front { background-image: url(./assets/customers/trail.jpg) }
         &[data-name="trickery"] .front { background-image: url(./assets/customers/trickery.jpg) }
         &[data-name="vendor"] .front { background-image: url(./assets/customers/vendor.jpg) }
+
+        &.selectable {
+          z-index: 220;
+          > div {      
+            .front {
+            border: 5px solid blue;
+            width: 100%;
+            height: 100%;
+            }
+          }
+        }
 
         > div {
             width: 100%;

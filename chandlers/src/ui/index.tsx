@@ -1,10 +1,10 @@
 import React from 'react';
 import { Piece, render } from '@boardzilla/core';
-import { default as setup } from '../game/index.js';
+import { Color, MyGame, default as setup } from '../game/index.js';
 
 import './style.scss';
 import { BackAlleyTile, CandlePawn, ColorDie, CustomerCard, EndGameTile, KeyShape, RoundEndTile, Wax, PowerTile, Melt, MasteryCube, Pigment, ScoreTracker } from '../game/components.js';
-import { BackAlleySpace, Candelabra, ChandlersBoard, ComponentSpace, CustomerSpace, DiceSpace, GameEndSpace, KeyHook, MasterySpace, MasteryTrack, PlayerBoard, PlayerSpace, PowerSpace, ReadySpace, RoundEndSpace, ScoringSpace, ScoringTrack, Spill, WorkerSpace } from '../game/boards.js';
+import { BackAlleySpace, Candelabra, CandleBottomRow, CandleSpace, CandleTopRow, ChandlersBoard, ComponentSpace, CustomerSpace, DiceSpace, GameEndSpace, KeyHook, MasterySpace, MasteryTrack, PlayerBoard, PlayerSpace, PowerSpace, ReadySpace, RoundEndSpace, ScoringSpace, ScoringTrack, Spill, WorkerSpace } from '../game/boards.js';
 // import '@boardzilla/core/index.css';
 
 render(setup, {
@@ -384,6 +384,8 @@ render(setup, {
     ) });
 
     $.playerSpace.layout('greenBoard', { area: { left: 50, top: 10, width: 30, height: 80 }});
+    $.greenBoard.layout('greenBaseActionSpace', { area: { left: 65, top: 40, width: 33, height: 45 }});
+    
     $.playerSpace.layout(CustomerCard, { 
       area: { left: 5, top: 2, width: 40, height: 96 },
       rows: 3,
@@ -450,13 +452,54 @@ render(setup, {
       direction: 'rtl',
     });
 
-    game.all(CustomerCard).layout(Piece, { 
-      // area: { left: 0, top: 0, width: 100, height: 100 },
-      rows: 1,
-      columns: 2,
-      gap: {x: 0, y: 0},
-    });
+    game.all(CustomerCard).forEach(x => {
+      if(x.data != "") {
+        for (const candleRow of [x.first(CandleTopRow)!, x.first(CandleBottomRow)!]) {
+          const numSpaces = candleRow.all(CandleSpace).length;
 
+          var width = 0;
+          switch(numSpaces) {
+            case 1: { width = 20; break; }
+            case 2: { width = 50; break; }
+            case 3: { width = 60; break; }
+            case 4: { width = 80; break; }
+          }
+
+          if(candleRow.name.includes('topRow')) {
+            x.layout(CandleTopRow, { 
+              area: { left: (100-width)/2-5, top: 23, width: width, height: 25 },
+            });
+          } else {
+            x.layout(CandleBottomRow, { 
+              area: { left: (100-width)/2-5, top: 48, width: width, height: 25 },
+            });
+          }
+        }
+      }
+    });    
+    game.all(CandleTopRow).layout(CandleSpace, {
+      rows: 1
+    }); 
+    game.all(CandleBottomRow).layout(CandleSpace, {
+      rows: 1
+    }); 
+
+    game.all(CandleTopRow).appearance({
+      render: x => (
+        <svg />
+      ),
+    });
+    game.all(CandleBottomRow).appearance({
+      render: x => (
+        <svg />
+      ),
+    });
+    game.all(CandleSpace).appearance({
+      render: () => (
+        <div className='CandleSpace' />
+      ),
+    });
+    
     game.all(ScoreTracker).appearance({
       render: x => (
         <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" color={x.color == undefined ? "white" : x.color}>

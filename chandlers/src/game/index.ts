@@ -13,7 +13,7 @@ import { PigmentBuilding } from './building/pigment.js';
 import { MoldBuilding } from './building/mold.js';
 import { ChandlersPlayer } from './player.js';
 import { CustomerCard, EndGameTile, RoundEndTile, BackAlleyTile, ColorDie, KeyShape, CandlePawn, PowerTile, Wax, WorkerPiece, Pigment, Melt, MasteryCube, ScoreTracker } from './components.js';
-import { BackAlleySpace, Candelabra, CandleSpace, ChandlersBoard, ComponentSpace, CustomerSpace, DiceSpace, GameEndSpace, KeyHook, MasterySpace, MasteryTrack, PlayerBoard, PlayerSpace, PowerSpace, ReadySpace, RoundEndSpace, ScoringSpace, ScoringTrack, Spill, WorkerSpace } from './boards.js';
+import { BackAlleySpace, Candelabra, CandleBottomRow, CandleSpace, CandleTopRow, ChandlersBoard, ComponentSpace, CustomerSpace, DiceSpace, GameEndSpace, KeyHook, MasterySpace, MasteryTrack, PlayerBoard, PlayerSpace, PowerSpace, ReadySpace, RoundEndSpace, ScoringSpace, ScoringTrack, Spill, WorkerSpace } from './boards.js';
 
 export enum Building {
   Wax = 'wax',
@@ -30,6 +30,18 @@ export enum Color {
   Purple = 'purple',
   White = 'white',
   Black = 'black'
+}
+
+export enum CustomerType {
+  None = 'none',
+  Prince = 'prince',
+  Rogue = 'rogue',
+  Priest = 'priest',
+  Witch = 'witch',
+  Merchant = 'merchant',
+  Adventurer = 'adventurer',
+  Cartographer = 'cartographer',
+  Charlatan = 'charlatan'
 }
 
 export class MyGame extends Game<MyGame, ChandlersPlayer> {
@@ -120,6 +132,8 @@ export default createGame(ChandlersPlayer, MyGame, game => {
 
   game.init();
 
+  const bag = game.create(Space, 'bag')
+
   // create the board
   const board = game.create(ChandlersBoard, 'board');
 
@@ -135,76 +149,69 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   customer4.onEnter(CustomerCard, x => { x.flipped = true; })
 
   // build the customer deck
-  $.drawCustomer.create(CustomerCard, 'intrepidity')
-  $.drawCustomer.create(CustomerCard, 'audacity')
-  $.drawCustomer.create(CustomerCard, 'bamboozle')
-  $.drawCustomer.create(CustomerCard, 'blessing-of-autumn')
-  $.drawCustomer.create(CustomerCard, 'blessing-of-heaven')
-  $.drawCustomer.create(CustomerCard, 'blessing-of-midnight')
-  $.drawCustomer.create(CustomerCard, 'blessing-of-moonlight')
-  $.drawCustomer.create(CustomerCard, 'blessing-of-spring')
-  $.drawCustomer.create(CustomerCard, 'blessing-of-summer')
-  $.drawCustomer.create(CustomerCard, 'broker')
-  $.drawCustomer.create(CustomerCard, 'bypass')
-  $.drawCustomer.create(CustomerCard, 'cleansing-flood')
-  $.drawCustomer.create(CustomerCard, 'cutoff')
-  $.drawCustomer.create(CustomerCard, 'daring')
-  $.drawCustomer.create(CustomerCard, 'dealer')
-  $.drawCustomer.create(CustomerCard, 'deception')
-  $.drawCustomer.create(CustomerCard, 'detour')
-  $.drawCustomer.create(CustomerCard, 'discount')
-  $.drawCustomer.create(CustomerCard, 'discovery')
-  $.drawCustomer.create(CustomerCard, 'double-dip')
-  $.drawCustomer.create(CustomerCard, 'exploit')
-  $.drawCustomer.create(CustomerCard, 'exploration')
-  $.drawCustomer.create(CustomerCard, 'grift')
-  $.drawCustomer.create(CustomerCard, 'heroism')
-  $.drawCustomer.create(CustomerCard, 'hoodwink')
-  $.drawCustomer.create(CustomerCard, 'infernal-rush')
-  $.drawCustomer.create(CustomerCard, 'intrepidity')
-  $.drawCustomer.create(CustomerCard, 'lightning-crash')
-  $.drawCustomer.create(CustomerCard, 'miscount', {requiredCandles: [Color.Green, Color.Orange, Color.Black]})
-  $.drawCustomer.create(CustomerCard, 'nourishing-wave')
-  $.drawCustomer.create(CustomerCard, 'operator')
-  $.drawCustomer.create(CustomerCard, 'passage')
-  $.drawCustomer.create(CustomerCard, 'prince-rohan')
-  $.drawCustomer.create(CustomerCard, 'prince-tyrion')
-  $.drawCustomer.create(CustomerCard, 'princess-buttercup')
-  $.drawCustomer.create(CustomerCard, 'princess-evergreen')
-  $.drawCustomer.create(CustomerCard, 'princess-peach')
-  $.drawCustomer.create(CustomerCard, 'princess-perrywinkle')
-  $.drawCustomer.create(CustomerCard, 'retailer')
-  $.drawCustomer.create(CustomerCard, 'scam')
-  $.drawCustomer.create(CustomerCard, 'seller')
-  $.drawCustomer.create(CustomerCard, 'shadow-strike')
-  $.drawCustomer.create(CustomerCard, 'shortcut')
-  $.drawCustomer.create(CustomerCard, 'sleight-of-hand')
-  $.drawCustomer.create(CustomerCard, 'sunlight-surge')
-  $.drawCustomer.create(CustomerCard, 'tomfoolery')
-  $.drawCustomer.create(CustomerCard, 'trail')
-  $.drawCustomer.create(CustomerCard, 'trickery')
-  $.drawCustomer.create(CustomerCard, 'vendor')
+  $.drawCustomer.create(CustomerCard, 'audacity', {customerType: CustomerType.Adventurer, color: Color.Green, data: "bgpx"})
+  $.drawCustomer.create(CustomerCard, 'bamboozle', {customerType: CustomerType.Charlatan, color: Color.Blue, data: "brp"})
+  $.drawCustomer.create(CustomerCard, 'blessing-of-autumn', {customerType: CustomerType.Priest, color: Color.Orange, data: "brgo"})
+  $.drawCustomer.create(CustomerCard, 'blessing-of-heaven', {customerType: CustomerType.Priest, color: Color.Blue, data: "bypo"})
+  $.drawCustomer.create(CustomerCard, 'blessing-of-midnight', {customerType: CustomerType.Priest, color: Color.Purple, data: "rpo"})
+  $.drawCustomer.create(CustomerCard, 'blessing-of-moonlight', {customerType: CustomerType.Priest, color: Color.Yellow, data: "yrgo"})
+  $.drawCustomer.create(CustomerCard, 'blessing-of-spring', {customerType: CustomerType.Priest, color: Color.Green, data: "bgx"})
+  $.drawCustomer.create(CustomerCard, 'blessing-of-summer', {customerType: CustomerType.Priest, color: Color.Red, data: "wyrx"})
+  $.drawCustomer.create(CustomerCard, 'broker', {customerType: CustomerType.Merchant, color: Color.Blue, data: "byrp"})
+  $.drawCustomer.create(CustomerCard, 'bypass', {customerType: CustomerType.Cartographer, color: Color.Yellow, data: "bygo"})
+  $.drawCustomer.create(CustomerCard, 'cleansing-flood', {customerType: CustomerType.Witch, color: Color.Blue, data: "bgpo"})
+  $.drawCustomer.create(CustomerCard, 'cutoff', {customerType: CustomerType.Cartographer, color: Color.Purple, data: "wrp"})
+  $.drawCustomer.create(CustomerCard, 'daring', {customerType: CustomerType.Adventurer, color: Color.Blue, data: "bwrx"})
+  $.drawCustomer.create(CustomerCard, 'dealer', {customerType: CustomerType.Merchant, color: Color.Purple, data: "wyp"})
+  $.drawCustomer.create(CustomerCard, 'deception', {customerType: CustomerType.Rogue, color: Color.Yellow, data: "byx"})
+  $.drawCustomer.create(CustomerCard, 'detour', {customerType: CustomerType.Cartographer, color: Color.Orange, data: "wypo"})
+  $.drawCustomer.create(CustomerCard, 'discount', {customerType: CustomerType.Rogue, color: Color.Blue, data: "byo"})
+  $.drawCustomer.create(CustomerCard, 'discovery', {customerType: CustomerType.Adventurer, color: Color.Purple, data: "rpx"})
+  $.drawCustomer.create(CustomerCard, 'double-dip', {customerType: CustomerType.Rogue, color: Color.Red, data: "bwrp"})
+  $.drawCustomer.create(CustomerCard, 'exploit', {customerType: CustomerType.Rogue, color: Color.Purple, data: "bwpo"})
+  $.drawCustomer.create(CustomerCard, 'exploration', {customerType: CustomerType.Adventurer, color: Color.Orange, data: "wgo"})
+  $.drawCustomer.create(CustomerCard, 'grift', {customerType: CustomerType.Charlatan, color: Color.Orange, data: "bwgo"})
+  $.drawCustomer.create(CustomerCard, 'heroism', {customerType: CustomerType.Adventurer, color: Color.Yellow, data: "byrg"})
+  $.drawCustomer.create(CustomerCard, 'hoodwink', {customerType: CustomerType.Charlatan, color: Color.Red, data: "wrgx"})
+  $.drawCustomer.create(CustomerCard, 'infernal-rush', {customerType: CustomerType.Witch, color: Color.Red, data: "wyro"})
+  $.drawCustomer.create(CustomerCard, 'intrepidity', {customerType: CustomerType.Adventurer, color: Color.Red, data: "rgpo"})
+  $.drawCustomer.create(CustomerCard, 'lightning-crash', {customerType: CustomerType.Witch, color: Color.Yellow, data: "yrx"})
+  $.drawCustomer.create(CustomerCard, 'miscount', {customerType: CustomerType.Rogue, color: Color.Green, data: "gox"})
+  $.drawCustomer.create(CustomerCard, 'nourishing-wave', {customerType: CustomerType.Witch, color: Color.Green, data: "wygx"})
+  $.drawCustomer.create(CustomerCard, 'operator', {customerType: CustomerType.Merchant, color: Color.Orange, data: "bwo"})
+  $.drawCustomer.create(CustomerCard, 'passage', {customerType: CustomerType.Cartographer, color: Color.Green, data: "wgp"})
+  $.drawCustomer.create(CustomerCard, 'prince-rohan', {customerType: CustomerType.Prince, color: Color.Red, data: "bwrg"})
+  $.drawCustomer.create(CustomerCard, 'prince-tyrion', {customerType: CustomerType.Prince, color: Color.Purple, data: "bypx"})
+  $.drawCustomer.create(CustomerCard, 'princess-buttercup', {customerType: CustomerType.Prince, color: Color.Yellow, data: "yrox"})
+  $.drawCustomer.create(CustomerCard, 'princess-evergreen', {customerType: CustomerType.Prince, color: Color.Green, data: "wyg"})
+  $.drawCustomer.create(CustomerCard, 'princess-peach', {customerType: CustomerType.Prince, color: Color.Orange, data: "bwro"})
+  $.drawCustomer.create(CustomerCard, 'princess-perrywinkle', {customerType: CustomerType.Prince, color: Color.Blue, data: "bwyp"})
+  $.drawCustomer.create(CustomerCard, 'retailer', {customerType: CustomerType.Merchant, color: Color.Red, data: "wrox"})
+  $.drawCustomer.create(CustomerCard, 'scam', {customerType: CustomerType.Charlatan, color: Color.Yellow, data: "byg"})
+  $.drawCustomer.create(CustomerCard, 'seller', {customerType: CustomerType.Merchant, color: Color.Green, data: "wygo"})
+  $.drawCustomer.create(CustomerCard, 'shadow-strike', {customerType: CustomerType.Witch, color: Color.Purple, data: "wrgp"})
+  $.drawCustomer.create(CustomerCard, 'shortcut', {customerType: CustomerType.Cartographer, color: Color.Red, data: "wyrg"})
+  $.drawCustomer.create(CustomerCard, 'sleight-of-hand', {customerType: CustomerType.Rogue, color: Color.Orange, data: "wrpo"})
+  $.drawCustomer.create(CustomerCard, 'sunlight-surge', {customerType: CustomerType.Witch, color: Color.Orange, data: "wgpo"})
+  $.drawCustomer.create(CustomerCard, 'tomfoolery', {customerType: CustomerType.Charlatan, color: Color.Purple, data: "wpo"})
+  $.drawCustomer.create(CustomerCard, 'trail', {customerType: CustomerType.Cartographer, color: Color.Blue, data: "bwpx"})
+  $.drawCustomer.create(CustomerCard, 'trickery', {customerType: CustomerType.Charlatan, color: Color.Green, data: "ygx"})
+  $.drawCustomer.create(CustomerCard, 'vendor', {customerType: CustomerType.Merchant, color: Color.Yellow, data: "ypx"})
 
   // create candle spaces
   $.drawCustomer.all(CustomerCard).forEach(x => {
-    const topSpaces = 
-      (x.requiredCandles.includes(Color.Blue) ? 1 : 0) + 
-      (x.requiredCandles.includes(Color.White) ? 1 : 0) + 
-      (x.requiredCandles.includes(Color.Yellow) ? 1 : 0) + 
-      (x.requiredCandles.includes(Color.Red) ? 1 : 0)
-    const bottomSpaces = 
-      (x.requiredCandles.includes(Color.Green) ? 1 : 0) + 
-      (x.requiredCandles.includes(Color.Purple) ? 1 : 0) + 
-      (x.requiredCandles.includes(Color.Orange) ? 1 : 0) + 
-      (x.requiredCandles.includes(Color.Black) ? 1 : 0)
+    const topRow = x.create(CandleTopRow, x.name + '-topRow');
+    const bottomRow = x.create(CandleBottomRow, x.name + '-bottomRow');
 
-    for(var i = 0; i < topSpaces; i++) {
-      x.create(CandleSpace, x.name + '-top-space' + i)
-    }
-    for(var i = 0; i < bottomSpaces; i++) {
-      x.create(CandleSpace, x.name + '-bottom-space' + i)
-    }
+    if(x.requiredCandles().includes(Color.Blue)) { topRow.create(CandleSpace, x.name + '-blue', {color: Color.Blue}); }
+    if(x.requiredCandles().includes(Color.White)) { topRow.create(CandleSpace, x.name + '-white', {color: Color.White}); }
+    if(x.requiredCandles().includes(Color.Yellow)) { topRow.create(CandleSpace, x.name + '-yellow', {color: Color.Yellow}); }
+    if(x.requiredCandles().includes(Color.Red)) { topRow.create(CandleSpace, x.name + '-red', {color: Color.Red}); }
 
+    if(x.requiredCandles().includes(Color.Green)) { bottomRow.create(CandleSpace, x.name + '-green', {color: Color.Green}); }
+    if(x.requiredCandles().includes(Color.Purple)) { bottomRow.create(CandleSpace, x.name + '-purple', {color: Color.Purple}); }
+    if(x.requiredCandles().includes(Color.Orange)) { bottomRow.create(CandleSpace, x.name + '-orange', {color: Color.Orange}); }
+    if(x.requiredCandles().includes(Color.Black)) { bottomRow.create(CandleSpace, x.name + '-black', {color: Color.Black}); }
   })
 
   drawCustomer.shuffle()
@@ -253,6 +260,9 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   const purpleCandles = game.create(Candelabra, 'purpleCandles');
   const blackCandles = game.create(Candelabra, 'blackCandles');
 
+  // place ONE white candle in the bag
+  $.bag.create(CandlePawn, 'whiteCandleBag', {color: Color.White});
+
   for(var i = 0; i < 8; i++) {
     $.whiteCandles.create(CandlePawn, 'whiteCandle' + i, {color: Color.White})
   }
@@ -292,8 +302,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   game.create(GameEndSpace, 'gameEndType1')
   game.create(GameEndSpace, 'gameEndType2')
   game.create(GameEndSpace, 'gameEndType3')
-
-  const bag = game.create(Space, 'bag')
+  
   game.create(EndGameTile, 'adventurer')
   game.create(EndGameTile, 'charlatan')
   game.create(EndGameTile, 'rogue')
@@ -445,11 +454,14 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   const power2 = greenBoard.create(PowerSpace, 'greenPower2')
   const power3 = greenBoard.create(PowerSpace, 'greenPower3')
 
+  const baseAction = greenBoard.create(CustomerSpace, 'greenBaseActionSpace');
+  baseAction.create(CustomerCard, 'greenBaseAction', {flipped: true})
+
   const masteryTrack = greenBoard.create(MasteryTrack, 'greenMastery')
   for(var i = 0; i < 16; i++) {
     masteryTrack.create(MasterySpace, 'mastery' + i, {index: i});
   }
-  $.mastery0.create(MasteryCube, 'greenCube', {color: Color.Green});
+  $.mastery5.create(MasteryCube, 'greenCube', {color: Color.Green});
 
   power1.create(PowerTile, 'roll')
   power2.create(PowerTile, 'set')
@@ -464,12 +476,11 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   $.bag.first(Melt)?.putInto($.greenComponent1);
   $.bag.first(Wax)?.putInto($.greenComponent2);
 
-  $.drawCustomer.top(CustomerCard)?.putInto($.playerSpace)
+  const card = $.drawCustomer.top(CustomerCard)!
+  card.putInto($.playerSpace);
 
-
-
-  game.all(Candelabra).first(CandlePawn, {color: Color.Orange})?.putInto($.playerSpace.first(CustomerCard)!);
-  $.bag.first(Wax)?.putInto($.playerSpace.first(CustomerCard)!);
+  // const candle = game.all(Candelabra).first(CandlePawn, {color: Color.Yellow})!;
+  // game.first(CustomerCard, {name: 'trickery'})!.placeCandle(candle);
 
 
   // GAME ACTIONS
@@ -509,18 +520,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       $.drawCustomer.top(CustomerCard)?.putInto(customer);
     }),
 
-    chooseCandlesToTrade: (player) => action({
-      prompt: 'Choose candles to trade'
-    }).chooseOnBoard(
-      'playerCandle', player.board.all(CandlePawn),
-      { skipIf: 'never' }
-    ).chooseOnBoard(
-      'candle', game.all(Candelabra).all(CandlePawn),
-      { skipIf: 'never' }
-    ).do(({ playerCandle, candle }) => {
-      playerCandle.putInto($.bag);
-      candle.putInto(player.nextEmptySpace());
-    }),
+
 
     chooseWorker: (player) => action({
       prompt: 'Choose a worker',
@@ -542,6 +542,27 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       player.meltWaxSpill(wax);
     }),
 
+    chooseKey: (player) => action({
+      prompt: 'Choose key to gain',
+    }).chooseOnBoard(
+      'key', game.all(KeyHook).all(KeyShape),
+      { skipIf: 'never' }
+    ).do(({ key }) => {
+      key.putInto(player.nextEmptySpace())
+    }),
+
+    chooseSpiltDie: (player) => action({
+      prompt: 'Choose die to gain',
+    }).chooseOnBoard(
+      'die', $.waxSpill.all(ColorDie)
+        .concat($.pigmentSpill.all(ColorDie))
+        .concat($.moldSpill.all(ColorDie)),
+      { skipIf: 'never' }
+    ).do(({ die }) => {
+      die.roll();
+      die.putInto(player.nextEmptyDieSpace())
+    }),
+
     chooseWaxRepeater: (player) => action({
       prompt: 'Choose wax to melt',
     }).chooseOnBoard(
@@ -549,6 +570,58 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       { skipIf: 'never', min: 1, max: player.masteryLevel() }
     ).do(({ wax }) => {
       player.meltWax(wax);
+    }),
+
+    chooseNextCustomer: (player) => action({
+      prompt: 'Choose your next customer',
+    }).chooseOnBoard(
+      'customer', [$.drawCustomer, $.customer1, $.customer2, $.customer3, $.customer4],
+      { skipIf: 'never' }
+    ).do(({ customer }) => {
+      if( customer == $.drawCustomer) {
+        $.drawCustomer.top(CustomerCard)?.putInto($.playerSpace);
+      } else {
+        customer.first(CustomerCard)?.putInto($.playerSpace);
+        $.drawCustomer.top(CustomerCard)?.putInto(customer);
+      }
+    }),
+
+    chooseAvailableColorAction: (player) => action({
+      prompt: 'Choose an available color action',
+    }).chooseOnBoard(
+      'action', [$.waxRed, $.waxYellow, $.waxBlue, $.waxOrange, $.waxGreen, $.waxPurple,
+        $.pigmentRed, $.pigmentYellow, $.pigmentBlue, $.pigmentOrange, $.pigmentGreen, $.pigmentPurple,
+        $.moldRed, $.moldYellow, $.moldBlue, $.moldOrange, $.moldGreen, $.moldPurple]
+        .filter(x => x.all(WorkerPiece).length == 0),
+      { skipIf: 'never' }
+    ).do(({ action }) => {
+      const workerSpace = action as WorkerSpace;
+      switch(workerSpace.building) {
+        case Building.Wax: {
+          if([Color.Red, Color.Yellow, Color.Blue].includes(workerSpace.color!)) {
+            new WaxBuilding().performPrimvaryColor(game, workerSpace.color!, true);
+          } else {
+            new WaxBuilding().performSecondaryColor(game, workerSpace.color!, true);
+          }
+          break;
+        }
+        case Building.Pigment: {
+          if([Color.Red, Color.Yellow, Color.Blue].includes(workerSpace.color!)) {
+            new PigmentBuilding().performPrimvaryColor(game, workerSpace.color!, true);
+          } else {
+            new PigmentBuilding().performSecondaryColor(game, workerSpace.color!, true);
+          }
+          break;
+        }
+        case Building.Mold: {
+          if([Color.Red, Color.Yellow, Color.Blue].includes(workerSpace.color!)) {
+            new MoldBuilding().performPrimvaryColor(game, workerSpace.color!, true);
+          } else {
+            new MoldBuilding().performSecondaryColor(game, workerSpace.color!, true);
+          }
+          break;
+        }
+      }
     }),
 
     chooseMiddleAction: () => action<{building: Building}>({
@@ -561,6 +634,104 @@ export default createGame(ChandlersPlayer, MyGame, game => {
           game.performMastery(building);
         } else {
           game.performBackroom(building);
+        }
+      }
+    ),
+
+    chooseCandlesToTrade: (player) => action<{color: Color}>({
+      prompt: 'Choose candles to trade'
+    }).chooseOnBoard(
+      'playerCandle', ({ color }) => color == undefined ? player.board.all(CandlePawn) : player.board.all(CandlePawn, {color: color}),
+      { skipIf: 'never' }
+    ).chooseOnBoard(
+      'candle', game.all(Candelabra).all(CandlePawn),
+      { skipIf: 'never' }
+    ).do(({ playerCandle, candle }) => {
+      playerCandle.putInto($.bag);
+      candle.putInto(player.nextEmptySpace());
+    }),
+
+    activateCustomer: (player) => action<{color: Color}>({
+      prompt: "Choose customer to activate"
+    }).chooseOnBoard(
+      'customer', ({ color }) => $.playerSpace.all(CustomerCard, {color: color}).concat(player.board.first(CustomerCard)!),
+      { skipIf: 'never' }
+    ).do(
+      ({ customer, color }) => {
+        // perform the customer action
+        if(customer.color == Color.White) {
+          switch(color) {
+            case Color.White: {
+              player.increaseMastery(1);
+              break;
+            }
+            case Color.Red: {
+              player.increaseMastery(2);
+              break;
+            }
+            case Color.Yellow: {
+              player.increaseMastery(2);
+              break;
+            }
+            case Color.Blue: {
+              player.increaseMastery(2);
+              break;
+            }
+            case Color.Green: {
+              player.increaseMastery(2);
+              break;
+            }
+            case Color.Orange: {
+              player.increaseMastery(2);
+              break;
+            }
+            case Color.Purple: {
+              player.increaseMastery(2);
+              break;
+            }
+            case Color.Black: {
+              player.increaseMastery(3);
+              break;
+            }
+          }
+        } else {
+         switch(customer.customerType) {
+          case CustomerType.Adventurer: {
+            game.followUp({name: 'chooseKey'})
+            break;
+          }
+          case CustomerType.Rogue: {
+            break;
+          }
+          case CustomerType.Witch: {    
+            game.followUp({name: 'chooseCandlesToTrade', args: {color: Color.White}});
+            break;
+          }
+          case CustomerType.Priest: {
+            $.bag.first(CandlePawn, {color: Color.White})?.putInto(player.nextEmptySpace());
+            break;
+          }
+          case CustomerType.Prince: {
+            player.increaseScore(3);
+            break;
+          }
+          case CustomerType.Merchant: {
+            game.followUp({name: 'chooseNextCustomer'})
+            break;
+          }
+          case CustomerType.Charlatan: {
+            game.followUp({name: 'chooseSpiltDie'})
+            break;
+          }
+          case CustomerType.Cartographer: {
+            const mastery = player.currentMastery();
+            if(mastery >= 2) {
+              player.setMastery(mastery-2);
+              game.followUp({name: 'chooseAvailableColorAction'});
+            }
+            break;
+          }
+         } 
         }
       }
     ),
@@ -676,9 +847,20 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       player.gainCandle(melt);
     }),
 
+    placeCandle: player => action({
+      prompt: 'Place the candle',
+      condition: $.ready.first(WorkerPiece)! instanceof CandlePawn
+    }).chooseOnBoard(
+      'space', $.playerSpace.all(CandleSpace, {color: $.ready.first(WorkerPiece)?.color})
+        .filter(x => x.all(CandlePawn).length == 0) ,
+      { skipIf: 'never' }
+    ).do(({ space }) => {
+      space.container(CustomerCard)!.placeCandle($.ready.first(WorkerPiece)!)
+      game.followUp({name: 'activateCustomer', args: {color: space.color}});
+    }),
 
     placeWorker: (player) => action({
-      prompt: 'Place the worker',
+      prompt: 'Use the worker',
       condition: $.ready.all(WorkerPiece).length > 0
     }).chooseOnBoard(
       'space', game.all(WorkerSpace)
@@ -797,7 +979,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   game.defineFlow(
     loop(
       playerActions({ actions: ['chooseWorker', 'usePower', 'pass']}),
-      playerActions({ actions: ['placeWorker', 'skip']})
+      playerActions({ actions: ['placeWorker', 'placeCandle', 'skip']})
     )
   );
 });

@@ -1,7 +1,7 @@
 import { Piece, Player } from "@boardzilla/core";
 import { Color, MyGame } from "./index.js";
 import { WorkerPiece, CandlePawn, ColorDie, KeyShape, Wax, Pigment, MasteryCube, Melt, ScoreTracker } from "./components.js";
-import { Candelabra, ComponentSpace, KeyHook, MasterySpace, PlayerBoard, ScoringSpace, ScoringTrack } from "./boards.js";
+import { Candelabra, ComponentSpace, DiceSpace, KeyHook, MasterySpace, PlayerBoard, ScoringSpace, ScoringTrack } from "./boards.js";
 
 export class ChandlersPlayer extends Player<MyGame, ChandlersPlayer> {
     board: PlayerBoard
@@ -10,6 +10,11 @@ export class ChandlersPlayer extends Player<MyGame, ChandlersPlayer> {
     nextEmptySpace() : ComponentSpace {
       const spaces = this.board.all(ComponentSpace).filter(x => x.all(Piece).length == 0);
       return spaces.first(ComponentSpace)!
+    }
+
+    nextEmptyDieSpace() : DiceSpace {
+      const spaces = this.board.all(DiceSpace).filter(x => x.all(Piece).length == 0);
+      return spaces.first(DiceSpace)!
     }
   
     gainWax(count: number = 1) : void {  
@@ -66,9 +71,18 @@ export class ChandlersPlayer extends Player<MyGame, ChandlersPlayer> {
       return this.board.all(ColorDie).map(x => x.color);
     }
   
-    masteryLevel(): number {
+    currentMastery(): number {
       const cube = this.board.first(MasteryCube, {color: Color.Green})!
-      const index = cube.container(MasterySpace)!.index;
+      return cube.container(MasterySpace)!.index;
+    }
+
+    setMastery(index: number): void {
+      const cube = this.board.first(MasteryCube, {color: Color.Green})!
+      cube.putInto(this.board.first(MasterySpace, {index: index})!);
+    }
+
+    masteryLevel(): number {
+      const index = this.currentMastery();
       if(index >= 13) {
         return 3;
       } else if(index >= 6) {
@@ -77,6 +91,10 @@ export class ChandlersPlayer extends Player<MyGame, ChandlersPlayer> {
         return 1;
       }
     }
+
+    increaseMastery(value: number = 1): void {
+      this.setMastery(this.currentMastery()+value);
+  }
 
     currentScore(): number {
         const tracker = this.game.first(ScoreTracker, {color: Color.Green})!
@@ -88,7 +106,7 @@ export class ChandlersPlayer extends Player<MyGame, ChandlersPlayer> {
         tracker.putInto(this.game.first(ScoringSpace, {score: score})!)
     }
 
-    increaseScore(): void {
-        this.setScore(this.currentScore()+1);
+    increaseScore(value: number = 1): void {
+        this.setScore(this.currentScore()+value);
     }
   }

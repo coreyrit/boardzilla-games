@@ -1,9 +1,48 @@
 import { Piece } from "@boardzilla/core";
-import { Color, MyGame } from "./index.js";
+import { Color, CustomerType, MyGame } from "./index.js";
+import { CandleSpace } from "./boards.js";
 
 export class CustomerCard extends Piece<MyGame> {
     flipped: boolean = false;
-    requiredCandles: Color[] = [];
+    data: string = ""
+    color: Color = Color.White;
+    customerType: CustomerType = CustomerType.None;
+    
+    requiredCandles(): Color[] {
+      var req: Color[] = []
+      if(this.data.includes("b")) {
+        req.push(Color.Blue);
+      }
+      if(this.data.includes("w")) {
+        req.push(Color.White);
+      }
+      if(this.data.includes("r")) {
+        req.push(Color.Red);
+      }
+      if(this.data.includes("y")) {
+        req.push(Color.Yellow);
+      }
+      if(this.data.includes("g")) {
+        req.push(Color.Green);
+      }
+      if(this.data.includes("o")) {
+        req.push(Color.Orange);
+      }
+      if(this.data.includes("p")) {
+        req.push(Color.Purple);
+      }
+      if(this.data.includes("x")) {
+        req.push(Color.Black);
+      }
+      return req;
+    }
+
+    placeCandle(candle: CandlePawn) : void {      
+      const space = this.game.first(CandleSpace, 
+        {name: this.name + '-' + candle.color}
+      )!;
+      candle.putInto(space);
+    }
 }
 
 export class EndGameTile extends Piece<MyGame> {
