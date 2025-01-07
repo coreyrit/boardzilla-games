@@ -163,6 +163,21 @@ export class ScoreTracker extends Piece<MyGame> {
   export class Melt extends Piece<MyGame> {
     color: Color = Color.White
   
+    canTakeColor(color: Color): boolean {
+      switch(color) {
+        case Color.Red: {
+          return [Color.White, Color.Blue, Color.Yellow, Color.Green].includes(this.color);
+        }
+        case Color.Blue: {
+          return [Color.White, Color.Red, Color.Yellow, Color.Orange].includes(this.color);
+        }
+        case Color.Yellow: {
+          return [Color.White, Color.Blue, Color.Red, Color.Purple].includes(this.color);
+        }
+      }
+      return false;
+    }
+
     mix(color: Color): void {
       switch(this.color) {
         case Color.White: {

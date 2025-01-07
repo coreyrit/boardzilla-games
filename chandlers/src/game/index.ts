@@ -803,7 +803,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     chooseMeltRed: player => action({
       prompt: 'Choose melt to pigment red',
     }).chooseOnBoard(
-      'melt', player.board.all(Melt),
+      'melt', player.board.all(Melt).filter(x => x.canTakeColor(Color.Red)),
       { skipIf: 'never' }
     ).do(({ melt }) => {
       melt.mix(Color.Red);
@@ -811,7 +811,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     chooseMeltYellow: player => action({
       prompt: 'Choose melt to pigment yellow',
     }).chooseOnBoard(
-      'melt', player.board.all(Melt),
+      'melt', player.board.all(Melt).filter(x => x.canTakeColor(Color.Yellow)),
       { skipIf: 'never' }
     ).do(({ melt }) => {
       melt.mix(Color.Yellow);
@@ -819,7 +819,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     chooseMeltBlue: player => action({
       prompt: 'Choose melt to pigment blue',
     }).chooseOnBoard(
-      'melt', player.board.all(Melt),
+      'melt', player.board.all(Melt).filter(x => x.canTakeColor(Color.Blue)),
       { skipIf: 'never' }
     ).do(({ melt }) => {
       melt.mix(Color.Blue);
@@ -828,7 +828,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     chooseMeltManyRed: player => action({
       prompt: 'Choose melt(s) to pigment red',
     }).chooseOnBoard(
-      'melts', player.board.all(Melt),
+      'melts', player.board.all(Melt).filter(x => x.canTakeColor(Color.Red)),
       { skipIf: 'never', min: 1, max: 8 }
     ).do(({ melts }) => {
       melts.forEach(x => {
@@ -840,7 +840,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     chooseMeltManyYellow: player => action({
       prompt: 'Choose melt(s) to pigment yellow',
     }).chooseOnBoard(
-      'melts', player.board.all(Melt),
+      'melts', player.board.all(Melt).filter(x => x.canTakeColor(Color.Yellow)),
       { skipIf: 'never', min: 1, max: 8 }
     ).do(({ melts }) => {
       melts.forEach(x => {
@@ -852,7 +852,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     chooseMeltManyBlue: player => action({
       prompt: 'Choose melt(s) to pigment blue',
     }).chooseOnBoard(
-      'melts', player.board.all(Melt),
+      'melts', player.board.all(Melt).filter(x => x.canTakeColor(Color.Blue)),
       { skipIf: 'never', min: 1, max: 8 }
     ).do(({ melts }) => {
       melts.forEach(x => {
@@ -959,7 +959,32 @@ export default createGame(ChandlersPlayer, MyGame, game => {
         .filter(x => x.name != 'waxMiddle' || game.middleAvailable($.waxRepeater as WorkerSpace, $.waxBackroom as WorkerSpace, $.waxMiddle as WorkerSpace))
         .filter(x => x.name != 'pigmentMiddle' || ($.pigmentRepeater.all(WorkerPiece).length > 0 && $.pigmentBackroom.all(WorkerPiece).length > 0))
         .filter(x => x.name != 'moldMiddle' || ($.moldRepeater.all(WorkerPiece).length > 0 && $.moldBackroom.all(WorkerPiece).length > 0))
-        ,
+
+        // advanced filtering
+        .filter(x => [$.waxOrange, $.waxGreen, $.waxPurple].includes(x) && player.board.all(Wax).length < 2 ? false : true)
+        
+        .filter(x => x == $.pigmentRed && 
+          player.board.all(Melt).map(x => x.canTakeColor(Color.Red) ? 1 : 0).reduce((sum, current) => sum + current, 0) == 0 ? false : true)
+        .filter(x => x == $.pigmentBlue && 
+          player.board.all(Melt).map(x => x.canTakeColor(Color.Blue) ? 1 : 0).reduce((sum, current) => sum + current, 0) == 0 ? false : true)
+        .filter(x => x == $.pigmentYellow && 
+          player.board.all(Melt).map(x => x.canTakeColor(Color.Yellow) ? 1 : 0).reduce((sum, current) => sum + current, 0) == 0 ? false : true)
+        .filter(x => x == $.pigmentOrange && 
+            (
+              player.board.all(Melt).map(x => x.canTakeColor(Color.Red) ? 1 : 0).reduce((sum, current) => sum + current, 0) == 0 ||
+              player.board.all(Melt).map(x => x.canTakeColor(Color.Yellow) ? 1 : 0).reduce((sum, current) => sum + current, 0) == 0
+            ) ? false : true)
+        .filter(x => x == $.pigmentGreen && 
+            (
+              player.board.all(Melt).map(x => x.canTakeColor(Color.Blue) ? 1 : 0).reduce((sum, current) => sum + current, 0) == 0 ||
+              player.board.all(Melt).map(x => x.canTakeColor(Color.Yellow) ? 1 : 0).reduce((sum, current) => sum + current, 0) == 0
+            ) ? false : true)
+        .filter(x => x == $.pigmentPurple && 
+            (
+              player.board.all(Melt).map(x => x.canTakeColor(Color.Red) ? 1 : 0).reduce((sum, current) => sum + current, 0) == 0 ||
+              player.board.all(Melt).map(x => x.canTakeColor(Color.Blue) ? 1 : 0).reduce((sum, current) => sum + current, 0) == 0
+            ) ? false : true)
+            ,
       { skipIf: 'never' }
     ).do(({ space }) => {
       player.stack = false;
