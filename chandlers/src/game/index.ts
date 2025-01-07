@@ -461,7 +461,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   for(var i = 0; i < 16; i++) {
     masteryTrack.create(MasterySpace, 'mastery' + i, {index: i});
   }
-  $.mastery5.create(MasteryCube, 'greenCube', {color: Color.Green});
+  $.mastery0.create(MasteryCube, 'greenCube', {color: Color.Green});
 
   power1.create(PowerTile, 'roll')
   power2.create(PowerTile, 'set')
