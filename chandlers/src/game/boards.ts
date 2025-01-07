@@ -54,7 +54,7 @@ export class RoundEndSpace extends Space<MyGame> {
 }
   
 export class BackAlleySpace extends Space<MyGame> {
-  
+  letter: string = "";
 }
   
 export class PlayerSpace extends Space<MyGame> {
@@ -90,5 +90,9 @@ export class ScoringSpace extends Space<MyGame> {
     override toString(): string {
         return this.score.toString()
     }
+}
+
+export class BackAlley extends Space<MyGame> {
+    letter: string;
 }
 

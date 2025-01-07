@@ -313,6 +313,39 @@
 
     .BackAlleySpace {
       z-index: 10;
+
+      &.selectable {
+        z-index: 220;
+        > div {      
+          border-radius: 100px;    
+          border: 5px solid blue;
+          width: 100%;
+          height: 100%;
+        }
+      }
+      &.selected {
+        z-index: 220;
+        > div {      
+          border-radius: 100px;    
+          border: 5px solid yellow;
+          width: 100%;
+          height: 100%;
+        }
+      }
+    }
+
+    .BackAlley {
+      z-index: 10;
+
+      &.selectable {
+        z-index: 220;
+        > div {      
+          border-radius: 100px;    
+          border: 5px solid blue;
+          width: 100%;
+          height: 100%;
+        }
+      }
     }
 
     .CustomerSpace {
@@ -426,6 +459,17 @@
         z-index: 220;
         > div {      
           .front {
+          border: 5px solid blue;
+          width: 100%;
+          height: 100%;
+          }
+        }
+      }
+
+      &.selectable {
+        z-index: 220;
+        > div {      
+          .back {
           border: 5px solid blue;
           width: 100%;
           height: 100%;

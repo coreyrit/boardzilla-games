@@ -4,7 +4,7 @@ import { Color, MyGame, default as setup } from '../game/index.js';
 
 import './style.scss';
 import { BackAlleyTile, CandlePawn, ColorDie, CustomerCard, EndGameTile, KeyShape, RoundEndTile, Wax, PowerTile, Melt, MasteryCube, Pigment, ScoreTracker } from '../game/components.js';
-import { BackAlleySpace, Candelabra, CandleBottomRow, CandleSpace, CandleTopRow, ChandlersBoard, ComponentSpace, CustomerSpace, DiceSpace, GameEndSpace, KeyHook, MasterySpace, MasteryTrack, PlayerBoard, PlayerSpace, PowerSpace, ReadySpace, RoundEndSpace, ScoringSpace, ScoringTrack, Spill, WorkerSpace } from '../game/boards.js';
+import { BackAlley, BackAlleySpace, Candelabra, CandleBottomRow, CandleSpace, CandleTopRow, ChandlersBoard, ComponentSpace, CustomerSpace, DiceSpace, GameEndSpace, KeyHook, MasterySpace, MasteryTrack, PlayerBoard, PlayerSpace, PowerSpace, ReadySpace, RoundEndSpace, ScoringSpace, ScoringTrack, Spill, WorkerSpace } from '../game/boards.js';
 // import '@boardzilla/core/index.css';
 
 render(setup, {
@@ -94,10 +94,16 @@ render(setup, {
     game.layout('backAlleySpaceA2', { area: { left: 22.5, top: 43, width: 6.5, height: 6.5 }});
     game.layout('backAlleySpaceA3', { area: { left: 22.5, top: 50, width: 6.5, height: 6.5 }});
     game.layout('backAlleySpaceA4', { area: { left: 22.5, top: 57, width: 6.5, height: 6.5 }});
+    
+    game.layout('backAlleyA', { area: { left: 22.5, top: 67, width: 6.5, height: 6.5 }});
+
     game.layout('backAlleySpaceB1', { area: { left: 71, top: 36, width: 6.5, height: 6.5 }});
     game.layout('backAlleySpaceB2', { area: { left: 71, top: 43, width: 6.5, height: 6.5 }});
     game.layout('backAlleySpaceB3', { area: { left: 71, top: 50, width: 6.5, height: 6.5 }});
     game.layout('backAlleySpaceB4', { area: { left: 71, top: 57, width: 6.5, height: 6.5 }});
+
+    game.layout('backAlleyB', { area: { left: 71, top: 67, width: 6.5, height: 6.5 }});
+
     game.layout('waxBackAlleySpaceA', { area: { left: 14, top: 69.5, width: 6.5, height: 6.5 }});
     game.layout('pigmentBackAlleySpaceA', { area: { left: 56.5, top: 69.5, width: 6.5, height: 6.5 }});
     game.layout('pigmentBackAlleySpaceB', { area: { left: 63.5, top: 69.5, width: 6.5, height: 6.5 }});
@@ -281,11 +287,21 @@ render(setup, {
 
     game.all(BackAlleySpace).appearance({
       render: () => (
-        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-          {/* <circle cx="50" cy="50" r="50" /> */}
-        </svg>
+        <div className='BackAlleySpace'>
+        {/* <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="50" cy="50" r="50" />
+        </svg> */}
+  </div>
       ),
     });
+
+    game.all(BackAlley).appearance({ render: x => ( 
+      <div className='BackAlley'>
+            {/* <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="50" cy="50" r="50" />
+            </svg> */}
+      </div>
+    ) });
 
     game.all(MasteryTrack).appearance({
       render: () => (

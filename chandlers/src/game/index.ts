@@ -13,7 +13,7 @@ import { PigmentBuilding } from './building/pigment.js';
 import { MoldBuilding } from './building/mold.js';
 import { ChandlersPlayer } from './player.js';
 import { CustomerCard, EndGameTile, RoundEndTile, BackAlleyTile, ColorDie, KeyShape, CandlePawn, PowerTile, Wax, WorkerPiece, Pigment, Melt, MasteryCube, ScoreTracker } from './components.js';
-import { BackAlleySpace, Candelabra, CandleBottomRow, CandleSpace, CandleTopRow, ChandlersBoard, ComponentSpace, CustomerSpace, DiceSpace, GameEndSpace, KeyHook, MasterySpace, MasteryTrack, PlayerBoard, PlayerSpace, PowerSpace, ReadySpace, RoundEndSpace, ScoringSpace, ScoringTrack, Spill, WorkerSpace } from './boards.js';
+import { BackAlley, BackAlleySpace, Candelabra, CandleBottomRow, CandleSpace, CandleTopRow, ChandlersBoard, ComponentSpace, CustomerSpace, DiceSpace, GameEndSpace, KeyHook, MasterySpace, MasteryTrack, PlayerBoard, PlayerSpace, PowerSpace, ReadySpace, RoundEndSpace, ScoringSpace, ScoringTrack, Spill, WorkerSpace } from './boards.js';
 
 export enum Building {
   Wax = 'wax',
@@ -347,15 +347,19 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   bag.first(RoundEndTile)?.putInto($.roundEndSpace3);
 
   // back alley
-  game.create(BackAlleySpace, 'backAlleySpaceA1');
-  game.create(BackAlleySpace, 'backAlleySpaceA2');
-  game.create(BackAlleySpace, 'backAlleySpaceA3');
-  game.create(BackAlleySpace, 'backAlleySpaceA4');
+  game.create(BackAlleySpace, 'backAlleySpaceA1', {letter: "A"});
+  game.create(BackAlleySpace, 'backAlleySpaceA2', {letter: "A"});
+  game.create(BackAlleySpace, 'backAlleySpaceA3', {letter: "A"});
+  game.create(BackAlleySpace, 'backAlleySpaceA4', {letter: "A"});
 
-  game.create(BackAlleySpace, 'backAlleySpaceB1');
-  game.create(BackAlleySpace, 'backAlleySpaceB2');
-  game.create(BackAlleySpace, 'backAlleySpaceB3');
-  game.create(BackAlleySpace, 'backAlleySpaceB4');
+  game.create(BackAlley, 'backAlleyA', {letter: "A"});
+
+  game.create(BackAlleySpace, 'backAlleySpaceB1', {letter: "B"});
+  game.create(BackAlleySpace, 'backAlleySpaceB2', {letter: "B"});
+  game.create(BackAlleySpace, 'backAlleySpaceB3', {letter: "B"});
+  game.create(BackAlleySpace, 'backAlleySpaceB4', {letter: "B"});
+
+  game.create(BackAlley, 'backAlleyB', {letter: "B"});
 
   game.create(BackAlleySpace, 'waxBackAlleySpaceA');
   game.create(BackAlleySpace, 'pigmentBackAlleySpaceA');
@@ -479,10 +483,6 @@ export default createGame(ChandlersPlayer, MyGame, game => {
 
   const card = $.drawCustomer.top(CustomerCard)!
   card.putInto($.playerSpace);
-
-  // const candle = game.all(Candelabra).first(CandlePawn, {color: Color.Yellow})!;
-  // game.first(CustomerCard, {name: 'trickery'})!.placeCandle(candle);
-
 
   // GAME ACTIONS
   game.defineActions({
@@ -661,6 +661,59 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       playerCandle.putInto($.bag);
       candle.putInto(player.nextEmptySpace());
     }),
+
+    sellCandle: player => action({
+      prompt: 'Sell the candle',
+      condition: $.ready.first(WorkerPiece)! instanceof CandlePawn
+    }).chooseOnBoard(
+      'space', game.all(BackAlley),
+      { skipIf: 'never' }
+    ).do(({ space }) => {
+      switch(space.letter) {
+        case 'A': {
+          player.increaseScore();
+          break;
+        }
+        case 'B': {
+          if(player.board.all(PowerTile, {flipped: false}).length > 0) {
+            game.followUp({name: 'choosePowerTile'});
+          }
+          break;
+        }
+      }
+
+      const candle = $.ready.first(CandlePawn)!
+      var actions = 2;
+      if(candle.color == Color.White) {
+        actions = 1;
+      } else if(candle.color == Color.Black) {
+        actions = 3;
+      }
+      for(var i = 0; i < actions; i++) {
+        game.followUp({name: 'chooseBackAlleyAction', args: {space: space}});
+      }
+
+      candle.putInto($.bag);
+    }),
+
+    choosePowerTile: (player) => action({
+      prompt: 'Choose power tile',
+    }).chooseOnBoard(
+      'tile', player.board.all(PowerTile, {flipped: false}),
+      { skipIf: 'never' }
+    ).do(({ tile }) => {
+      tile.flipped = true;
+    }),
+
+    chooseBackAlleyAction: (player) => action<{space: BackAlley}>({
+      prompt: 'Choose back alley tile',
+    }).chooseOnBoard(
+      'token', ({space}) => game.all(BackAlleySpace, {letter: space.letter}),
+      { skipIf: 'never' }
+    ).do(({ token }) => {
+      token.first(BackAlleyTile)!.performAction(game);
+    }),
+    
 
     activateCustomer: (player) => action<{color: Color}>({
       prompt: "Choose customer to activate"
@@ -1002,7 +1055,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   game.defineFlow(
     loop(
       playerActions({ actions: ['chooseWorker', 'usePower', 'pass']}),
-      playerActions({ actions: ['placeWorker', 'placeCandle', 'skip']})
+      playerActions({ actions: ['placeWorker', 'placeCandle', 'sellCandle', 'skip']})
     )
   );
 });
