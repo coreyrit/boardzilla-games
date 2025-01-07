@@ -18,7 +18,7 @@ render(setup, {
 
     game.layout('board', { area: { left: -25, top: 0, width: 150, height: 100 }});
 
-    game.layout('playerSpace', { area: { left: -25, top: 60, width: 150, height: 40 },
+    game.layout('playerSpaceGreen', { area: { left: -25, top: 60, width: 150, height: 40 },
       drawer: { closeDirection: 'down', tab: () => 'Player' }});
 
     game.layout('drawCustomer', { area: { left: -19.5, top: 6, width: 19.5, height: 13.5 }});
@@ -399,10 +399,10 @@ render(setup, {
         </div>
     ) });
 
-    $.playerSpace.layout('greenBoard', { area: { left: 50, top: 10, width: 30, height: 80 }});
+    $.playerSpaceGreen.layout('greenBoard', { area: { left: 50, top: 10, width: 30, height: 80 }});
     $.greenBoard.layout('greenBaseActionSpace', { area: { left: 65, top: 40, width: 33, height: 45 }});
     
-    $.playerSpace.layout(CustomerCard, { 
+    $.playerSpaceGreen.layout(CustomerCard, { 
       area: { left: 5, top: 2, width: 40, height: 96 },
       rows: 3,
       columns: 3,

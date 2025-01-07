@@ -68,7 +68,7 @@ export class PigmentBuilding {
 
         pigmentSpill.onEnter(WorkerPiece, x => {     
             // draw a random customer
-            $.drawCustomer.top(CustomerCard)?.putInto($.playerSpace);
+            $.drawCustomer.top(CustomerCard)?.putInto(game.currentPlayer().space);
             if($.pigmentSpillArea.all(Pigment).length > 0) {
                 game.followUp({name: 'chooseSpiltPigment'})
             }

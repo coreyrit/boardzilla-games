@@ -90,7 +90,7 @@ export class BackAlleyTile extends Piece<MyGame> {
 
         case 'add-pigment': {
           if(game.currentPlayer().board.all(Melt).length > 0) {
-            game.followUp({name: 'choosePigmentColor'});
+            game.followUp({name: 'choosePigmentColor', args: {firstChoice: true}});
           }
           break;
         }

@@ -81,8 +81,9 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
         break;
       }
       case Building.Pigment: {
-        for(var i = 0; i < this.currentPlayer().masteryLevel(); i++) {
-          this.followUp({name: 'choosePigmentColor'});    
+        this.followUp({name: 'choosePigmentColor', args: {firstChoice: true}}); 
+        for(var i = 1; i < this.currentPlayer().masteryLevel(); i++) {
+          this.followUp({name: 'choosePigmentColor', args: {firstChoice: false}});    
         }
         break;
       }
@@ -434,12 +435,12 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   $.scoring100.create(ScoreTracker, 'greenScore', {color: Color.Green});
 
   // player
-  game.create(PlayerSpace, 'playerSpace')
-  $.playerSpace.onEnter(CustomerCard, x => {
+  const playerSpaceGreen = game.create(PlayerSpace, 'playerSpaceGreen')
+  playerSpaceGreen.onEnter(CustomerCard, x => {
     x.flipped = true;
   })
-
-  const greenBoard = $.playerSpace.create(PlayerBoard, "greenBoard")
+  const greenBoard = playerSpaceGreen.create(PlayerBoard, "greenBoard")
+  game.players[0].space = playerSpaceGreen
   game.players[0].board = greenBoard
 
   greenBoard.create(ComponentSpace, 'greenComponent1');
@@ -482,34 +483,36 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   $.bag.first(Wax)?.putInto($.greenComponent2);
 
   const card = $.drawCustomer.top(CustomerCard)!
-  card.putInto($.playerSpace);
+  card.putInto($.playerSpaceGreen);
 
   // GAME ACTIONS
   game.defineActions({
-    chooseSpiltPigment: (player) => action({
-      prompt: 'Choose spilt pigments',
-    }).chooseOnBoard(
-      'pigments', $.pigmentSpillArea.all(Pigment),
-      { skipIf: 'never', min: 0, max: 8 }
-    ).do(({ pigments }) => {
-      pigments.forEach(x => {
-        switch(x.color) {
-          case Color.Red: {
-            game.followUp({name: 'chooseMeltRed'})
-            break;
-          }
-          case Color.Yellow: {
-            game.followUp({name: 'chooseMeltYellow'})
-            break;
-          }
-          case Color.Blue: {
-            game.followUp({name: 'chooseMeltBlue'})
-            break;
+
+    chooseSpiltPigment: (player) => action<{firstChoice: boolean}>({
+      prompt: 'Choose melt and pigment color'
+    }).chooseFrom(
+      "continueMixing", () => ['Yes', 'No'],
+      { prompt: 'Mix from spilled pigment?', skipIf: 'never' }
+    ).chooseOnBoard(
+      'melt', ({continueMixing}) => continueMixing == 'Yes' ? player.board.all(Melt) : [],
+      { min: 0 }
+    ).chooseOnBoard(
+      'pigment', ({melt, continueMixing}) => (continueMixing == 'Yes' ? $.pigmentSpillArea.all(Pigment) : [])
+      .filter(x => melt.length > 0 && x.color == Color.Red && !melt[0].canTakeColor(Color.Red) ? false : true)
+      .filter(x => melt.length > 0 && x.color == Color.Yellow && !melt[0].canTakeColor(Color.Yellow) ? false : true)
+      .filter(x => melt.length > 0 && x.color == Color.Blue && !melt[0].canTakeColor(Color.Blue) ? false : true),
+      { min: 0 }
+    ).do(      
+      ({ melt, pigment }) => {
+        if(melt.length > 0 && pigment.length > 0) {
+          melt[0].mix(pigment[0].color);
+          pigment[0].putInto($.bag);
+          if($.pigmentSpillArea.all(Pigment).length > 0) {
+            game.followUp({name: 'chooseSpiltPigment'})
           }
         }
-        x.putInto($.bag)
-      })
-    }),
+      }
+    ),
 
     chooseCustomer: (player) => action({
       prompt: 'Choose a customer'
@@ -517,7 +520,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       'customer', [$.customer1, $.customer2, $.customer3, $.customer4],
       { skipIf: 'never' }
     ).do(({ customer }) => {
-      customer.first(CustomerCard)?.putInto($.playerSpace);
+      customer.first(CustomerCard)?.putInto(player.space);
       $.drawCustomer.top(CustomerCard)?.putInto(customer);
     }),
 
@@ -590,9 +593,9 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       { skipIf: 'never' }
     ).do(({ customer }) => {
       if( customer == $.drawCustomer) {
-        $.drawCustomer.top(CustomerCard)?.putInto($.playerSpace);
+        $.drawCustomer.top(CustomerCard)?.putInto(player.space);
       } else {
-        customer.first(CustomerCard)?.putInto($.playerSpace);
+        customer.first(CustomerCard)?.putInto(player.space);
         $.drawCustomer.top(CustomerCard)?.putInto(customer);
       }
     }),
@@ -645,6 +648,38 @@ export default createGame(ChandlersPlayer, MyGame, game => {
           game.performMastery(building);
         } else {
           game.performBackroom(building);
+        }
+      }
+    ),
+
+    choosePigmentColor: (player) => action<{firstChoice: boolean}>({
+      prompt: 'Choose melt and pigment color'
+    }).chooseOnBoard(
+      'melt', () => player.board.all(Melt),
+      { skipIf: 'never' }
+    ).chooseFrom(
+      "color", ({firstChoice}) => ['Red', 'Yellow', 'Blue', 'Finish']
+        .filter(x => x == 'Red' && player.board.all(Melt).map(x => x.canTakeColor(Color.Red) ? 1 : 0).reduce((sum, current) => sum + current, 0) == 0 ? false : true)
+        .filter(x => x == 'Yellow' && player.board.all(Melt).map(x => x.canTakeColor(Color.Yellow) ? 1 : 0).reduce((sum, current) => sum + current, 0) == 0 ? false : true)
+        .filter(x => x == 'Blue' && player.board.all(Melt).map(x => x.canTakeColor(Color.Blue) ? 1 : 0).reduce((sum, current) => sum + current, 0) == 0 ? false : true)
+        .filter(x => x == 'Finish' && firstChoice ? false : true)
+        ,
+      { skipIf: 'never' }
+    ).do(
+      ({ melt, color }) => {
+        switch(color) {
+          case 'Red': {
+            melt.mix(Color.Red);
+            break;
+          }
+          case 'Blue': {
+            melt.mix(Color.Blue);
+            break;
+          }
+          case 'Yellow': {
+            melt.mix(Color.Yellow);
+            break;
+          }
         }
       }
     ),
@@ -718,7 +753,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     activateCustomer: (player) => action<{color: Color}>({
       prompt: "Choose customer to activate"
     }).chooseOnBoard(
-      'customer', ({ color }) => $.playerSpace.all(CustomerCard, {color: color}).concat(player.board.first(CustomerCard)!),
+      'customer', ({ color }) => player.space.all(CustomerCard, {color: color}).concat(player.board.first(CustomerCard)!),
       { skipIf: 'never' }
     ).do(
       ({ customer, color }) => {
@@ -915,7 +950,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       prompt: 'Place the candle',
       condition: $.ready.first(WorkerPiece)! instanceof CandlePawn
     }).chooseOnBoard(
-      'space', $.playerSpace.all(CandleSpace, {color: $.ready.first(WorkerPiece)?.color})
+      'space', player.space.all(CandleSpace, {color: $.ready.first(WorkerPiece)?.color})
         .filter(x => x.all(CandlePawn).length == 0) ,
       { skipIf: 'never' }
     ).do(({ space }) => {
@@ -927,7 +962,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       prompt: 'Place the candle',
       condition: $.ready.first(WorkerPiece)! instanceof CandlePawn
     }).chooseOnBoard(
-      'space', $.playerSpace.all(CandleSpace)
+      'space', player.space.all(CandleSpace)
         .filter(x => x.all(CandlePawn).length == 0),
       { skipIf: 'never' }
     ).do(({ space }) => {
@@ -962,6 +997,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
 
         // advanced filtering
         .filter(x => [$.waxOrange, $.waxGreen, $.waxPurple].includes(x) && player.board.all(Wax).length < 2 ? false : true)
+        .filter(x => x == $.waxRepeater && player.board.all(Wax).length < 1 ? false : true)
         
         .filter(x => x == $.pigmentRed && 
           player.board.all(Melt).map(x => x.canTakeColor(Color.Red) ? 1 : 0).reduce((sum, current) => sum + current, 0) == 0 ? false : true)
@@ -984,6 +1020,19 @@ export default createGame(ChandlersPlayer, MyGame, game => {
               player.board.all(Melt).map(x => x.canTakeColor(Color.Red) ? 1 : 0).reduce((sum, current) => sum + current, 0) == 0 ||
               player.board.all(Melt).map(x => x.canTakeColor(Color.Blue) ? 1 : 0).reduce((sum, current) => sum + current, 0) == 0
             ) ? false : true)
+        .filter(x => x == $.pigmentRepeater &&
+            (
+              player.board.all(Melt).map(x => x.canTakeColor(Color.Red) ? 1 : 0).reduce((sum, current) => sum + current, 0) == 0 &&
+              player.board.all(Melt).map(x => x.canTakeColor(Color.Yellow) ? 1 : 0).reduce((sum, current) => sum + current, 0) == 0 &&
+              player.board.all(Melt).map(x => x.canTakeColor(Color.Blue) ? 1 : 0).reduce((sum, current) => sum + current, 0) == 0
+            ) ? false : true)
+
+        .filter(x => x == $.moldRed && (player.board.all(Melt, {color: Color.White}).length == 0 && player.board.all(Melt, {color: Color.Red}).length == 0) ? false : true)
+        .filter(x => x == $.moldYellow && (player.board.all(Melt, {color: Color.White}).length == 0 && player.board.all(Melt, {color: Color.Yellow}).length == 0) ? false : true)
+        .filter(x => x == $.moldBlue && (player.board.all(Melt, {color: Color.White}).length == 0 && player.board.all(Melt, {color: Color.Blue}).length == 0) ? false : true)
+        .filter(x => x == $.moldOrange && (player.board.all(Melt, {color: Color.Black}).length == 0 && player.board.all(Melt, {color: Color.Orange}).length == 0) ? false : true)
+        .filter(x => x == $.moldGreen && (player.board.all(Melt, {color: Color.Black}).length == 0 && player.board.all(Melt, {color: Color.Green}).length == 0) ? false : true)
+        .filter(x => x == $.moldPurple && (player.board.all(Melt, {color: Color.Black}).length == 0 && player.board.all(Melt, {color: Color.Purple}).length == 0) ? false : true)
             ,
       { skipIf: 'never' }
     ).do(({ space }) => {
@@ -1021,20 +1070,6 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       player.gainCandle(melt, false, 1);
       melt.putInto($.meltSpillArea);  
       // also need to gain points      
-    }),
-    
-    choosePigmentColor: (player) => action({
-      prompt: 'Choose melt and pigment color',
-    }).chooseOnBoard(
-      'melt', player.board.all(Melt),
-      { skipIf: 'never' }
-    ).chooseFrom(
-      "color", ['Red', 'Yellow', 'Blue', 'Finish'], 
-      { skipIf: 'never' }
-    ).do(({ melt, color }) => {
-      if(color != 'Finish') {
-        melt.mix(Color[color]);
-      }
     }),
 
     chooseDieToSet: (player) => action({
