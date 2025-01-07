@@ -56,6 +56,67 @@ export class RoundEndTile extends Piece<MyGame> {
 export class BackAlleyTile extends Piece<MyGame> {
     flipped: boolean = true;
     letter: String;
+
+    performAction(game: MyGame) : void {
+      switch(this.name) {
+        case 'refresh-customers': {
+          for(const customer of [$.customer1, $.customer2, $.customer3, $.customer4]) {
+            customer.first(CustomerCard)?.putInto($.bag);
+            $.drawCustomer.top(CustomerCard)?.putInto(customer);
+          }
+          break;
+        }
+        case 'melt-wax': {
+          if(game.currentPlayer().board.all(Wax).length > 0) {
+            game.currentPlayer().meltWax([game.currentPlayer().board.first(Wax)!]);
+          }
+          break;
+        }
+        case 'purchace-spilt-wax': {
+          break;
+        }
+        case 'convert-key-to-die': {
+          if(game.currentPlayer().board.all(Wax).length > 0) {
+            game.currentPlayer().meltWax([game.currentPlayer().board.first(Wax)!]);
+          }
+          break;
+        }
+        case 'move-candle': {
+          break;
+        }
+        case 'swap-customer': {
+          break;
+        }
+
+        case 'add-pigment': {
+          if(game.currentPlayer().board.all(Melt).length > 0) {
+            game.followUp({name: 'choosePigmentColor'});
+          }
+          break;
+        }
+        case 'advance-mastery': {
+          game.currentPlayer().increaseMastery();
+          break;
+        }
+        case 'gain-goal-card': {
+          break;
+        }
+        case 'place-white-candle': {
+          if(game.currentPlayer().board.all(CandlePawn, {color: Color.White}).length > 0) {
+            game.followUp({name:'chooseWhiteCandle'});
+            game.followUp({name:'placeWhiteCandle'});
+          }
+          break;
+        }
+        case 'remove-pigment': {
+          break;
+        }
+        case 'two-wax': {
+          game.currentPlayer().gainWax(2); 
+          break;
+        }
+      }
+    }
 }
 
 export class WorkerPiece extends Piece<MyGame> {

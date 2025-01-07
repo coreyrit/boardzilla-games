@@ -103,17 +103,18 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     switch(building) {
       case Building.Wax: {
         this.followUp({name: 'chooseCustomer'});
-        // also need to do the back alley action    
+        $.waxBackAlleySpaceA.first(BackAlleyTile)!.performAction(this);
         break;
       }
       case Building.Pigment: {
         this.currentPlayer().board.all(PowerTile).forEach(x => {x.flipped = true});
-        // also need to do the back alley action    
+        $.pigmentBackAlleySpaceA.first(BackAlleyTile)!.performAction(this);
+        $.pigmentBackAlleySpaceB.first(BackAlleyTile)!.performAction(this);
         break;
       }
       case Building. Mold: {
         this.followUp({name: 'chooseCandlesToTrade'});    
-        // also need to do the back alley action    
+        $.moldBackAlleySpaceB.first(BackAlleyTile)!.performAction(this);
         break;
       }
     }
@@ -361,19 +362,19 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   game.create(BackAlleySpace, 'pigmentBackAlleySpaceB');
   game.create(BackAlleySpace, 'moldBackAlleySpaceB');
 
-  game.create(BackAlleyTile, 'refresh-customers', {letter: "A"});
-  game.create(BackAlleyTile, 'melt-wax', {letter: "A"});
-  game.create(BackAlleyTile, 'purchace-spilt-wax', {letter: "A"});
-  game.create(BackAlleyTile, 'convert-key-to-die', {letter: "A"});
-  game.create(BackAlleyTile, 'move-candle', {letter: "A"});
-  game.create(BackAlleyTile, 'swap-customer', {letter: "A"});
+  const refreshCustomers = game.create(BackAlleyTile, 'refresh-customers', {letter: "A"});
+  const meltWax = game.create(BackAlleyTile, 'melt-wax', {letter: "A"});
+  const purchaseSpiltWax = game.create(BackAlleyTile, 'purchace-spilt-wax', {letter: "A"});
+  const convertKeyToDie = game.create(BackAlleyTile, 'convert-key-to-die', {letter: "A"});
+  const moveCandle = game.create(BackAlleyTile, 'move-candle', {letter: "A"});
+  const swapCustomer = game.create(BackAlleyTile, 'swap-customer', {letter: "A"});
 
-  game.create(BackAlleyTile, 'add-pigment', {letter: "B"});
-  game.create(BackAlleyTile, 'advance-mastery', {letter: "B"});
-  game.create(BackAlleyTile, 'gain-goal-card', {letter: "B"});
-  game.create(BackAlleyTile, 'place-white-candle', {letter: "B"});
-  game.create(BackAlleyTile, 'remove-pigment', {letter: "B"});
-  game.create(BackAlleyTile, 'two-wax', {letter: "B"});
+  const addPigment = game.create(BackAlleyTile, 'add-pigment', {letter: "B"});
+  const advanceMastery = game.create(BackAlleyTile, 'advance-mastery', {letter: "B"});
+  const gainGoalCard = game.create(BackAlleyTile, 'gain-goal-card', {letter: "B"});
+  const placeWhiteCandle = game.create(BackAlleyTile, 'place-white-candle', {letter: "B"});
+  const removePigment = game.create(BackAlleyTile, 'remove-pigment', {letter: "B"});
+  const twoWax = game.create(BackAlleyTile, 'two-wax', {letter: "B"});
 
   game.all(BackAlleyTile).putInto(bag);
   bag.shuffle()
@@ -531,6 +532,16 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     ).do(({ worker }) => {
       // player.selectedWorker = worker
       worker.putInto($.ready)
+    }),
+
+    chooseWhiteCandle: (player) => action({
+      prompt: 'Choose a white candle',
+    }).chooseOnBoard(
+      'candle', player.board.all(CandlePawn, {color: Color.White}),
+      { skipIf: 'never' }
+    ).do(({ candle }) => {
+      // player.selectedWorker = worker
+      candle.putInto($.ready)
     }),
 
     chooseWax: (player) => action({
@@ -857,6 +868,18 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     ).do(({ space }) => {
       space.container(CustomerCard)!.placeCandle($.ready.first(WorkerPiece)!)
       game.followUp({name: 'activateCustomer', args: {color: space.color}});
+    }),
+
+    placeWhiteCandle: player => action({
+      prompt: 'Place the candle',
+      condition: $.ready.first(WorkerPiece)! instanceof CandlePawn
+    }).chooseOnBoard(
+      'space', $.playerSpace.all(CandleSpace)
+        .filter(x => x.all(CandlePawn).length == 0),
+      { skipIf: 'never' }
+    ).do(({ space }) => {
+      space.container(CustomerCard)!.placeCandle($.ready.first(WorkerPiece)!)
+      game.followUp({name: 'activateCustomer', args: {color: Color.White}});
     }),
 
     placeWorker: (player) => action({
