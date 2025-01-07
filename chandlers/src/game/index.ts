@@ -50,6 +50,15 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
   init(): void {    
   }
 
+  allPlayersPassed() : boolean {
+    for (const player of this.players) {
+      if(!player.pass) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   capitalize(color: Color) : string {
     return color.toString().charAt(0).toUpperCase() + color.toString().substring(1)
   }
@@ -130,7 +139,7 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
 export default createGame(ChandlersPlayer, MyGame, game => {
 
   const { action } = game;
-  const { playerActions, loop, eachPlayer } = game.flowCommands;
+  const { playerActions, loop, eachPlayer, whileLoop } = game.flowCommands;
 
   game.init();
 
@@ -528,7 +537,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
 
     chooseWorker: (player) => action({
       prompt: 'Choose a worker',
-      condition: player.workerCount() > 0,
+      condition: player.workerCount() > 0 && !player.pass,
     }).chooseOnBoard(
       'worker', player.board.all(WorkerPiece),
       { skipIf: 'never' }
@@ -1044,7 +1053,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     pass: (player) => action({
       prompt: 'Pass',
     }).do(() => {
-      game.finish(undefined)
+      player.pass = true;
     }),
     skip: (player) => action({
       condition: $.ready.all(WorkerPiece).length == 0,
@@ -1088,7 +1097,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
 
     usePower: (player) => action({
       prompt: 'Use a power tile',
-      condition: player.diceCount() > 0,
+      condition: player.diceCount() > 0 && !player.pass,
     }).chooseOnBoard(
       'power', player.board.all(PowerTile, {flipped: true}),
       { skipIf: 'never' }
@@ -1113,9 +1122,35 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   });
 
   game.defineFlow(
+
     loop(
-      playerActions({ actions: ['chooseWorker', 'usePower', 'pass']}),
-      playerActions({ actions: ['placeWorker', 'placeCandle', 'sellCandle', 'skip']})
+    whileLoop({while: () => !game.allPlayersPassed(), do: ([
+
+      eachPlayer({
+        name: 'turn', do: [
+          playerActions({ actions: ['chooseWorker', 'usePower', 'pass']}),
+          playerActions({ actions: ['placeWorker', 'placeCandle', 'sellCandle', 'skip']})
+        ]
+      }),
+    ])}),
+      () => {
+        for(const player of game.players) { player.pass = false; }
+        game.all(ColorDie).putInto($.bag);
+        game.setup = true;
+        for(var i = 0; i < 2; i++) {
+          Object.values(Building).forEach((building: Building) =>{
+            const die = $.bag.first(ColorDie)!;
+            die.roll()
+            die.putInto(game.first(WorkerSpace, { building: building, color: die.color })!)
+          });          
+        }
+        const die1 = $.bag.first(ColorDie); die1?.roll(); die1?.putInto($.greenDie1);
+        const die2 = $.bag.first(ColorDie); die2?.roll(); die2?.putInto($.greenDie2);
+        const die3 = $.bag.first(ColorDie); die3?.roll(); die3?.putInto($.greenDie3);
+
+        game.setup = false;
+      }
     )
+    
   );
 });

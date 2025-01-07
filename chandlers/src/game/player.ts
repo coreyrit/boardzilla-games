@@ -6,6 +6,7 @@ import { Candelabra, ComponentSpace, DiceSpace, KeyHook, MasterySpace, PlayerBoa
 export class ChandlersPlayer extends Player<MyGame, ChandlersPlayer> {
     space: PlayerSpace
     board: PlayerBoard
+    pass: Boolean = false;
     stack: Boolean = false;
   
     nextEmptySpace() : ComponentSpace {
