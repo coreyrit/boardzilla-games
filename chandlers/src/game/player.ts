@@ -8,6 +8,8 @@ export class ChandlersPlayer extends Player<MyGame, ChandlersPlayer> {
     board: PlayerBoard
     pass: Boolean = false;
     stack: Boolean = false;
+    placedWorker: Boolean = false;
+    playerColor: Color
   
     nextEmptySpace() : ComponentSpace {
       const spaces = this.board.all(ComponentSpace).filter(x => x.all(Piece).length == 0);
@@ -74,12 +76,12 @@ export class ChandlersPlayer extends Player<MyGame, ChandlersPlayer> {
     }
   
     currentMastery(): number {
-      const cube = this.board.first(MasteryCube, {color: Color.Green})!
+      const cube = this.board.first(MasteryCube, {color: this.playerColor})!
       return cube.container(MasterySpace)!.index;
     }
 
     setMastery(index: number): void {
-      const cube = this.board.first(MasteryCube, {color: Color.Green})!
+      const cube = this.board.first(MasteryCube, {color: this.playerColor})!
       cube.putInto(this.board.first(MasterySpace, {index: index})!);
     }
 
@@ -99,12 +101,12 @@ export class ChandlersPlayer extends Player<MyGame, ChandlersPlayer> {
   }
 
     currentScore(): number {
-        const tracker = this.game.first(ScoreTracker, {color: Color.Green})!
+        const tracker = this.game.first(ScoreTracker, {color: this.playerColor})!
         return tracker.flipped ? tracker.container(ScoringSpace)!.score + 100 : tracker.container(ScoringSpace)!.score;
     }
 
     setScore(score: number): void {
-        const tracker = this.game.first(ScoreTracker, {color: Color.Green})!
+        const tracker = this.game.first(ScoreTracker, {color: this.playerColor})!
         tracker.putInto(this.game.first(ScoringSpace, {score: score})!)
     }
 

@@ -21,7 +21,7 @@ render(setup, {
     game.layoutAsDrawer($.playersSpace as Space<MyGame>, 
       { area: { left: -25, top: 50, width: 150, height: 50 }, openDirection: 'up', tab: 'Players'});
     $.playersSpace.layoutAsTabs({'Red': $.playerSpaceRed as Space<MyGame>, 'Green': $.playerSpaceGreen as Space<MyGame>},
-      { area: { left: 0, top: 10, width: 100, height: 90 }, tabDirection: 'up', tabs: {Red: 'Red', Green: 'Green'} }
+      { area: { left: 0, top: 5, width: 100, height: 80 }, tabDirection: 'up', tabs: {Red: 'Red', Green: 'Green'} }
     );
 
     // game.layoutAsDrawer($.playerSpaceGreen as Space<MyGame>, 

@@ -441,6 +441,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     $.scoringTrack71_100.create(ScoringSpace, 'scoring' + i, {score: i == 100 ? 0 : i});
   }
   $.scoring100.create(ScoreTracker, 'greenScore', {color: Color.Green});
+  $.scoring100.create(ScoreTracker, 'redScore', {color: Color.Red});
 
   // players
   const playersSpace = game.create(PlayersSpace, 'playersSpace')
@@ -456,6 +457,8 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     const playerBoard = playerSpace.create(PlayerBoard, colors[i] + "Board")
     game.players[i].space = playerSpace
     game.players[i].board = playerBoard
+    game.players[i].playerColor = colors[i]
+
 
     console.log(game.players[i].board);
 
@@ -477,7 +480,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     const power3 = playerBoard.create(PowerSpace, colors[i] + 'Power3')
 
     const baseAction = playerBoard.create(CustomerSpace, colors[i] + 'BaseActionSpace');
-    baseAction.create(CustomerCard, colors[i] + 'BaseAction', {flipped: true})
+    baseAction.create(CustomerCard, colors[i] + 'BaseAction', {flipped: true, color: Color.White})
 
     const masteryTrack = playerBoard.create(MasteryTrack, colors[i] + 'Mastery')
     for(var k = 0; k < 16; k++) {
@@ -786,7 +789,8 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     activateCustomer: (player) => action<{color: Color}>({
       prompt: "Choose customer to activate"
     }).chooseOnBoard(
-      'customer', ({ color }) => player.space.all(CustomerCard, {color: color}).concat(player.board.first(CustomerCard)!),
+      'customer', ({ color }) => player.space.all(CustomerCard, {color: color}).concat(player.board.first(CustomerCard)!)
+      ,
       { skipIf: 'never' }
     ).do(
       ({ customer, color }) => {
@@ -1071,13 +1075,14 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     ).do(({ space }) => {
       player.stack = false;
       $.ready.first(WorkerPiece)?.putInto(space);
-      // player.selectedWorker = undefined
+      player.placedWorker = true;
     }),
 
     pass: (player) => action({
       prompt: 'Pass',
     }).do(() => {
       player.pass = true;
+      player.placedWorker = true;
     }),
     skip: (player) => action({
       condition: $.ready.all(WorkerPiece).length == 0,
@@ -1182,8 +1187,11 @@ export default createGame(ChandlersPlayer, MyGame, game => {
 
       eachPlayer({
         name: 'turn', do: [
-          playerActions({ actions: ['chooseWorker', 'usePower', 'pass']}),
-          playerActions({ actions: ['placeWorker', 'placeCandle', 'sellCandle', 'skip']})
+          () => {game.currentPlayer().placedWorker = false},
+          whileLoop({while: () => !game.currentPlayer().placedWorker, do: ([
+            playerActions({ actions: ['chooseWorker', 'usePower', 'pass']}),
+            playerActions({ actions: ['placeWorker', 'placeCandle', 'sellCandle', 'skip']})
+          ])})
         ]
       }),
     ])}),
@@ -1223,9 +1231,11 @@ export default createGame(ChandlersPlayer, MyGame, game => {
         game.setup = false;
 
         // start with new dice
-        const die1 = $.bag.first(ColorDie); die1?.roll(); die1?.putInto($.greenDie1);
-        const die2 = $.bag.first(ColorDie); die2?.roll(); die2?.putInto($.greenDie2);
-        const die3 = $.bag.first(ColorDie); die3?.roll(); die3?.putInto($.greenDie3);
+        for(const player of game.players) {
+          const die1 = $.bag.first(ColorDie); die1?.roll(); die1?.putInto(player.nextEmptyDieSpace());
+          const die2 = $.bag.first(ColorDie); die2?.roll(); die2?.putInto(player.nextEmptyDieSpace());
+          const die3 = $.bag.first(ColorDie); die3?.roll(); die3?.putInto(player.nextEmptyDieSpace());
+        }
       }
     )
     
