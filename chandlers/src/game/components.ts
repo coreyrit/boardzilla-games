@@ -76,8 +76,8 @@ export class BackAlleyTile extends Piece<MyGame> {
           break;
         }
         case 'convert-key-to-die': {
-          if(game.currentPlayer().board.all(Wax).length > 0) {
-            game.currentPlayer().meltWax([game.currentPlayer().board.first(Wax)!]);
+          if(game.currentPlayer().board.all(KeyShape).length > 0) {
+            game.followUp({name: 'chooseKeyAndShape'})
           }
           break;
         }

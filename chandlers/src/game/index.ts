@@ -574,6 +574,20 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       key.putInto(player.nextEmptySpace())
     }),
 
+    chooseKeyAndShape: (player) => action({
+      prompt: 'Choose key and die to trade',
+    }).chooseOnBoard(
+      'key', player.board.all(KeyShape),
+      { skipIf: 'never' }
+    ).chooseOnBoard(
+      'die', game.all(WorkerSpace).all(ColorDie),
+      { skipIf: 'never' }
+    ).do(({ key, die }) => {
+      key.putInto(game.first(KeyHook, {color: key.color})!);
+      die.roll();
+      die.putInto(player.nextEmptySpace());
+    }),
+
     chooseSpiltDie: (player) => action({
       prompt: 'Choose die to gain',
     }).chooseOnBoard(
