@@ -60,6 +60,10 @@ export class BackAlleySpace extends Space<MyGame> {
 export class PlayerSpace extends Space<MyGame> {
  
 }
+
+export class PlayersSpace extends Space<MyGame> {
+ 
+}
   
 export class ChandlersBoard extends Space<MyGame> {
   

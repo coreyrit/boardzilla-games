@@ -1,5 +1,9 @@
 #play-area {
 
+  .PlayersSpace {
+    z-index: 15;
+  }
+
   .PlayerSpace {
     z-index: 20;
 
@@ -109,6 +113,7 @@
     z-index: 40;
 
     &[data-name="greenBoard"] .front { background-image: url(./assets/players/green.jpg) }
+    &[data-name="redBoard"] .front { background-image: url(./assets/players/green.jpg) }
 
     > div {   
       width: 100%;
@@ -132,6 +137,7 @@
   }
   .drawer-tab {
     z-index: 2000;
+    // background-color: green;
   }
   .drawer-content {
     z-index: 2100;
@@ -664,6 +670,7 @@
         height: 100%;
 
         &[data-name="greenBaseAction"] .front { background-image: url(./assets/customers/blank.png) } 
+        &[data-name="redBaseAction"] .front { background-image: url(./assets/customers/blank.png) } 
         
         &[data-name="audacity"] .front { background-image: url(./assets/customers/audacity.jpg) }
         &[data-name="bamboozle"] .front { background-image: url(./assets/customers/bamboozle.jpg) }

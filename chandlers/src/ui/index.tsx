@@ -1,10 +1,10 @@
 import React from 'react';
-import { Piece, render } from '@boardzilla/core';
+import { Piece, render, Space } from '@boardzilla/core';
 import { Color, MyGame, default as setup } from '../game/index.js';
 
 import './style.scss';
 import { BackAlleyTile, CandlePawn, ColorDie, CustomerCard, EndGameTile, KeyShape, RoundEndTile, Wax, PowerTile, Melt, MasteryCube, Pigment, ScoreTracker } from '../game/components.js';
-import { BackAlley, BackAlleySpace, Candelabra, CandleBottomRow, CandleSpace, CandleTopRow, ChandlersBoard, ComponentSpace, CustomerSpace, DiceSpace, GameEndSpace, KeyHook, MasterySpace, MasteryTrack, PlayerBoard, PlayerSpace, PowerSpace, ReadySpace, RoundEndSpace, ScoringSpace, ScoringTrack, Spill, WorkerSpace } from '../game/boards.js';
+import { BackAlley, BackAlleySpace, Candelabra, CandleBottomRow, CandleSpace, CandleTopRow, ChandlersBoard, ComponentSpace, CustomerSpace, DiceSpace, GameEndSpace, KeyHook, MasterySpace, MasteryTrack, PlayerBoard, PlayerSpace, PlayersSpace, PowerSpace, ReadySpace, RoundEndSpace, ScoringSpace, ScoringTrack, Spill, WorkerSpace } from '../game/boards.js';
 // import '@boardzilla/core/index.css';
 
 render(setup, {
@@ -17,9 +17,25 @@ render(setup, {
     });
 
     game.layout('board', { area: { left: -25, top: 0, width: 150, height: 100 }});
+    
+    game.layoutAsDrawer($.playersSpace as Space<MyGame>, 
+      { area: { left: -25, top: 50, width: 150, height: 50 }, openDirection: 'up', tab: 'Players'});
+    $.playersSpace.layoutAsTabs({'Red': $.playerSpaceRed as Space<MyGame>, 'Green': $.playerSpaceGreen as Space<MyGame>},
+      { area: { left: 0, top: 10, width: 100, height: 90 }, tabDirection: 'up', tabs: {Red: 'Red', Green: 'Green'} }
+    );
 
-    game.layout('playerSpaceGreen', { area: { left: -25, top: 60, width: 150, height: 40 },
-      drawer: { closeDirection: 'down', tab: () => 'Player' }});
+    // game.layoutAsDrawer($.playerSpaceGreen as Space<MyGame>, 
+    //   { area: { left: -25, top: 60, width: 150, height: 40 }, openDirection: 'up', tab: 'Green'});
+    // game.layoutAsDrawer($.playerSpaceRed as Space<MyGame>, 
+    //   { area: { left: -25, top: 60, width: 150, height: 40 }, openDirection: 'up', tab: 'Red'});
+
+    // game.layout('playerSpaceGreen', { area: { left: -25, top: 60, width: 150, height: 40 },
+    //   drawer: { closeDirection: 'down', tab: () => 'Green Player' }});
+    // game.layout('playerSpaceRed', { area: { left: -25, top: 60, width: 150, height: 40 },
+    //   drawer: { closeDirection: 'down', tab: () => 'Red Player' }});
+
+
+    game.layoutAsTabs
 
     game.layout('drawCustomer', { area: { left: -19.5, top: 6, width: 19.5, height: 13.5 }});
     game.layout('customer1', { area: { left: 5.5, top: 6, width: 19.5, height: 13.5 }});
@@ -386,6 +402,11 @@ render(setup, {
       </div>
     ) });
 
+    game.all(PlayersSpace).appearance({ render: x => ( 
+      <div className='PlayersSpace'>
+        <svg />
+      </div>
+    ) });
 
     game.all(PlayerSpace).appearance({ render: x => ( 
       <div className='PlayerSpace'>
@@ -396,20 +417,42 @@ render(setup, {
       render: x => ( 
       <div className='PlayerBoard'>
         <div className='front' />
-        </div>
+        {/* <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <rect x="0" y="0" width="100" height="100" />
+        </svg> */}
+      </div>
     ) });
 
     $.playerSpaceGreen.layout('greenBoard', { area: { left: 50, top: 10, width: 30, height: 80 }});
     $.greenBoard.layout('greenBaseActionSpace', { area: { left: 65, top: 40, width: 33, height: 45 }});
+
+    $.playerSpaceRed.layout('redBoard', { area: { left: 50, top: 10, width: 30, height: 80 }});
+    $.redBoard.layout('redBaseActionSpace', { area: { left: 65, top: 40, width: 33, height: 45 }});
     
+    $.greenBoard.layout('greenMastery', {area: { left: 0, top: 0, width: 100, height: 100 }});
+    $.redBoard.layout('redMastery', {area: { left: 0, top: 0, width: 100, height: 100 }});
+
     $.playerSpaceGreen.layout(CustomerCard, { 
       area: { left: 5, top: 2, width: 40, height: 96 },
       rows: 3,
       columns: 3,
       gap: {x: 0.5, y: 0.5},
     });
-
     $.greenMastery.layout(MasterySpace, { 
+      area: { left: 3, top: 20, width: 90, height: 7 },
+      rows: 1,
+      columns: 16,
+      gap: {x: 0.25, y: 0},
+      direction: 'ltr',
+    });
+
+    $.playerSpaceRed.layout(CustomerCard, { 
+      area: { left: 5, top: 2, width: 40, height: 96 },
+      rows: 3,
+      columns: 3,
+      gap: {x: 0.5, y: 0.5},
+    });    
+    $.redMastery.layout(MasterySpace, { 
       area: { left: 3, top: 20, width: 90, height: 7 },
       rows: 1,
       columns: 16,
@@ -541,5 +584,23 @@ render(setup, {
     $.greenBoard.layout('greenPower2', { area: { left: 2.5, top: 55, width: 10, height: 15 }});
     $.greenBoard.layout('greenPower3', { area: { left: 2.5, top: 72, width: 10, height: 15 }});
 
+
+
+    $.redBoard.layout('redDie1', { area: { left: 21, top: 71, width: 10, height: 15 }});
+    $.redBoard.layout('redDie2', { area: { left: 33.5, top: 71, width: 10, height: 15 }});
+    $.redBoard.layout('redDie3', { area: { left: 46, top: 71, width: 10, height: 15 }});
+
+    $.redBoard.layout('redComponent1', { area: { left: 15, top: 40, width: 10, height: 10 }});
+    $.redBoard.layout('redComponent2', { area: { left: 27, top: 40, width: 10, height: 10 }});
+    $.redBoard.layout('redComponent3', { area: { left: 40, top: 40, width: 10, height: 10 }});
+    $.redBoard.layout('redComponent4', { area: { left: 52, top: 40, width: 10, height: 10 }});
+    $.redBoard.layout('redCompo5ent5', { area: { left: 15, top: 57, width: 10, height: 10 }});
+    $.redBoard.layout('redComponent6', { area: { left: 27, top: 57, width: 10, height: 10 }});
+    $.redBoard.layout('redComponent7', { area: { left: 40, top: 57, width: 10, height: 10 }});
+    $.redBoard.layout('redComponent8', { area: { left: 52, top: 57, width: 10, height: 10 }});
+
+    $.redBoard.layout('redPower1', { area: { left: 2.5, top: 38, width: 10, height: 15 }});
+    $.redBoard.layout('redPower2', { area: { left: 2.5, top: 55, width: 10, height: 15 }});
+    $.redBoard.layout('redPower3', { area: { left: 2.5, top: 72, width: 10, height: 15 }});
   }
 });

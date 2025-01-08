@@ -13,7 +13,7 @@ import { PigmentBuilding } from './building/pigment.js';
 import { MoldBuilding } from './building/mold.js';
 import { ChandlersPlayer } from './player.js';
 import { CustomerCard, EndGameTile, RoundEndTile, BackAlleyTile, ColorDie, KeyShape, CandlePawn, PowerTile, Wax, WorkerPiece, Pigment, Melt, MasteryCube, ScoreTracker } from './components.js';
-import { BackAlley, BackAlleySpace, Candelabra, CandleBottomRow, CandleSpace, CandleTopRow, ChandlersBoard, ComponentSpace, CustomerSpace, DiceSpace, GameEndSpace, KeyHook, MasterySpace, MasteryTrack, PlayerBoard, PlayerSpace, PowerSpace, ReadySpace, RoundEndSpace, ScoringSpace, ScoringTrack, Spill, WorkerSpace } from './boards.js';
+import { BackAlley, BackAlleySpace, Candelabra, CandleBottomRow, CandleSpace, CandleTopRow, ChandlersBoard, ComponentSpace, CustomerSpace, DiceSpace, GameEndSpace, KeyHook, MasterySpace, MasteryTrack, PlayerBoard, PlayerSpace, PlayersSpace, PowerSpace, ReadySpace, RoundEndSpace, ScoringSpace, ScoringTrack, Spill, WorkerSpace } from './boards.js';
 
 export enum Building {
   Wax = 'wax',
@@ -423,7 +423,6 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     bag.create(Pigment, 'pigmentBlue' + i, {color: Color.Blue});
   }
 
-
   game.create(ScoringTrack, 'scoringTrack1_20')
   game.create(ScoringTrack, 'scoringTrack21_50')
   game.create(ScoringTrack, 'scoringTrack51_70')
@@ -443,56 +442,67 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   }
   $.scoring100.create(ScoreTracker, 'greenScore', {color: Color.Green});
 
-  // player
-  const playerSpaceGreen = game.create(PlayerSpace, 'playerSpaceGreen')
-  playerSpaceGreen.onEnter(CustomerCard, x => {
-    x.flipped = true;
-  })
-  const greenBoard = playerSpaceGreen.create(PlayerBoard, "greenBoard")
-  game.players[0].space = playerSpaceGreen
-  game.players[0].board = greenBoard
+  // players
+  const playersSpace = game.create(PlayersSpace, 'playersSpace')
+  const colors = [Color.Green, Color.Red]
+  for(var i = 0; i < game.players.length; i++) {
+    console.log(i);
 
-  greenBoard.create(ComponentSpace, 'greenComponent1');
-  greenBoard.create(ComponentSpace, 'greenComponent2');
-  greenBoard.create(ComponentSpace, 'greenComponent3');
-  greenBoard.create(ComponentSpace, 'greenComponent4');
-  greenBoard.create(ComponentSpace, 'greenComponent5');
-  greenBoard.create(ComponentSpace, 'greenComponent6');
-  greenBoard.create(ComponentSpace, 'greenComponent7');
-  greenBoard.create(ComponentSpace, 'greenComponent8');
+    const playerSpace = playersSpace.create(PlayerSpace, 'playerSpace' + game.capitalize(colors[i]), {player: game.players[i]})
+    playerSpace.onEnter(CustomerCard, x => {
+      x.flipped = true;
+    })
 
-  greenBoard.create(DiceSpace, 'greenDie1');
-  greenBoard.create(DiceSpace, 'greenDie2');
-  greenBoard.create(DiceSpace, 'greenDie3');
+    const playerBoard = playerSpace.create(PlayerBoard, colors[i] + "Board")
+    game.players[i].space = playerSpace
+    game.players[i].board = playerBoard
 
-  const power1 = greenBoard.create(PowerSpace, 'greenPower1')
-  const power2 = greenBoard.create(PowerSpace, 'greenPower2')
-  const power3 = greenBoard.create(PowerSpace, 'greenPower3')
+    console.log(game.players[i].board);
 
-  const baseAction = greenBoard.create(CustomerSpace, 'greenBaseActionSpace');
-  baseAction.create(CustomerCard, 'greenBaseAction', {flipped: true})
+    playerBoard.create(ComponentSpace, colors[i] + 'Component1');
+    playerBoard.create(ComponentSpace, colors[i] + 'Component2');
+    playerBoard.create(ComponentSpace, colors[i] + 'Component3');
+    playerBoard.create(ComponentSpace, colors[i] + 'Component4');
+    playerBoard.create(ComponentSpace, colors[i] + 'Component5');
+    playerBoard.create(ComponentSpace, colors[i] + 'Component6');
+    playerBoard.create(ComponentSpace, colors[i] + 'Component7');
+    playerBoard.create(ComponentSpace, colors[i] + 'Component8');
 
-  const masteryTrack = greenBoard.create(MasteryTrack, 'greenMastery')
-  for(var i = 0; i < 16; i++) {
-    masteryTrack.create(MasterySpace, 'mastery' + i, {index: i});
+    const playerDie1 = playerBoard.create(DiceSpace, colors[i] + 'Die1');
+    const playerDie2 = playerBoard.create(DiceSpace, colors[i] + 'Die2');
+    const playerDie3 = playerBoard.create(DiceSpace, colors[i] + 'Die3');
+
+    const power1 = playerBoard.create(PowerSpace, colors[i] + 'Power1')
+    const power2 = playerBoard.create(PowerSpace, colors[i] + 'Power2')
+    const power3 = playerBoard.create(PowerSpace, colors[i] + 'Power3')
+
+    const baseAction = playerBoard.create(CustomerSpace, colors[i] + 'BaseActionSpace');
+    baseAction.create(CustomerCard, colors[i] + 'BaseAction', {flipped: true})
+
+    const masteryTrack = playerBoard.create(MasteryTrack, colors[i] + 'Mastery')
+    for(var k = 0; k < 16; k++) {
+      const trackSpace = masteryTrack.create(MasterySpace, colors[i] + 'Mastery' + k, {index: k});
+      if(k == 0) {
+        trackSpace.create(MasteryCube, colors[i] + 'Cube', {color: colors[i]});
+      }
+    }    
+
+    power1.create(PowerTile, 'roll')
+    power2.create(PowerTile, 'set')
+    power3.create(PowerTile, 'stack')
+
+    const die1 = game.create(ColorDie, 'p' + i + 'colorDie1'); die1.roll(); die1.putInto(playerDie1);
+    const die2 = game.create(ColorDie, 'p' + i + 'colorDie2'); die2.roll(); die2.putInto(playerDie2);
+    const die3 = game.create(ColorDie, 'p' + i + 'colorDie3'); die3.roll(); die3.putInto(playerDie3);
+
+    $.bag.first(Melt)?.putInto(game.players[i].nextEmptySpace());
+    for(var j = 0; j <= i; j++) {
+      $.bag.first(Wax)?.putInto(game.players[i].nextEmptySpace());
+    }
+
+    const card = $.drawCustomer.top(CustomerCard)!
+    card.putInto(playerSpace);
   }
-  $.mastery0.create(MasteryCube, 'greenCube', {color: Color.Green});
-
-  power1.create(PowerTile, 'roll')
-  power2.create(PowerTile, 'set')
-  power3.create(PowerTile, 'stack')
-
-  // bag.first(Wax)?.putInto($.greenComponent1)
-
-  const die1 = game.create(ColorDie, 'p1colorDie1'); die1.roll(); die1.putInto($.greenDie1);
-  const die2 = game.create(ColorDie, 'p1colorDie2'); die2.roll(); die2.putInto($.greenDie2);
-  const die3 = game.create(ColorDie, 'p1colorDie3'); die3.roll(); die3.putInto($.greenDie3);
-
-  $.bag.first(Melt)?.putInto($.greenComponent1);
-  $.bag.first(Wax)?.putInto($.greenComponent2);
-
-  const card = $.drawCustomer.top(CustomerCard)!
-  card.putInto($.playerSpaceGreen);
 
   // GAME ACTIONS
   game.defineActions({
