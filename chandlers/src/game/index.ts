@@ -1078,7 +1078,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     ).do(({ melt }) => {
       player.gainCandle(melt, false, 1);
       melt.putInto($.meltSpillArea);  
-      // also need to gain points      
+      player.increaseScore();    
     }),
 
     chooseDieToSet: (player) => action({
@@ -1093,6 +1093,36 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     )
     .do(({ die, color }) => {
       die.color = Color[color]
+    }),
+
+    chooseSpiltMelts: (player) => action({
+      prompt: 'Choose spilt melts to buy',
+    }).chooseOnBoard(
+      'melts', $.meltSpillArea.all(Melt),
+      { skipIf: 'never', min: 1, max: player.board.all(Wax).length >= 5 ? 3 : (player.board.all(Wax).length >= 3 ? 2: 1) }
+    )
+    .do(({ melts }) => {
+      melts.forEach(x => x.putInto(player.nextEmptySpace()));
+      switch(melts.length) {
+        case 1: {
+          player.board.first(Wax)?.putInto($.bag);          
+          break;
+        }
+        case 2: {
+          player.board.first(Wax)?.putInto($.bag);
+          player.board.first(Wax)?.putInto($.bag);
+          player.board.first(Wax)?.putInto($.bag);
+          break;
+        }
+        case 3: {
+          player.board.first(Wax)?.putInto($.bag);
+          player.board.first(Wax)?.putInto($.bag);
+          player.board.first(Wax)?.putInto($.bag);
+          player.board.first(Wax)?.putInto($.bag);
+          player.board.first(Wax)?.putInto($.bag);
+          break;
+        }
+      }
     }),
 
     usePower: (player) => action({
@@ -1134,7 +1164,29 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       }),
     ])}),
       () => {
+        // check round end goals
+
+        // reset players
         for(const player of game.players) { player.pass = false; }
+
+        // discard used candles
+        board.all(CandlePawn).putInto($.bag);
+
+        // return shapes
+        game.first(KeyShape, {color: Color.Red})?.putInto($.redHook);
+        game.first(KeyShape, {color: Color.Yellow})?.putInto($.yellowHook);
+        game.first(KeyShape, {color: Color.Blue})?.putInto($.blueHook);
+        game.first(KeyShape, {color: Color.Orange})?.putInto($.orangeHook);
+        game.first(KeyShape, {color: Color.Green})?.putInto($.greenHook);
+        game.first(KeyShape, {color: Color.Purple})?.putInto($.purpleHook);
+
+        // reset the customers
+        for(const customer of [$.customer1, $.customer2, $.customer3, $.customer4]) {
+          customer.first(CustomerCard)?.putInto($.bag);
+          $.drawCustomer.top(CustomerCard)?.putInto(customer);
+        }
+
+        // set starting dice
         game.all(ColorDie).putInto($.bag);
         game.setup = true;
         for(var i = 0; i < 2; i++) {
@@ -1144,11 +1196,12 @@ export default createGame(ChandlersPlayer, MyGame, game => {
             die.putInto(game.first(WorkerSpace, { building: building, color: die.color })!)
           });          
         }
+        game.setup = false;
+
+        // start with new dice
         const die1 = $.bag.first(ColorDie); die1?.roll(); die1?.putInto($.greenDie1);
         const die2 = $.bag.first(ColorDie); die2?.roll(); die2?.putInto($.greenDie2);
         const die3 = $.bag.first(ColorDie); die3?.roll(); die3?.putInto($.greenDie3);
-
-        game.setup = false;
       }
     )
     

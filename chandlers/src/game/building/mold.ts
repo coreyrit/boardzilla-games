@@ -1,5 +1,5 @@
 import { WorkerSpace } from "../boards.js";
-import { WorkerPiece } from "../components.js";
+import { Melt, Wax, WorkerPiece } from "../components.js";
 import { Building, Color, MyGame } from "../index.js";
 
 export class MoldBuilding {
@@ -49,6 +49,13 @@ export class MoldBuilding {
         moldMiddle.onEnter(WorkerPiece, x => { game.performMiddle(Building.Mold, moldMiddle); })
 
         const moldSpill = game.create(WorkerSpace, 'moldSpill', {building: Building.Mold});
+
+        moldSpill.onEnter(WorkerPiece, x => {    
+            game.currentPlayer().increaseScore(); 
+            if($.meltSpillArea.all(Melt).length > 0 && game.currentPlayer().board.all(Wax).length > 0) {
+                game.followUp({name: 'chooseSpiltMelts'});
+            }
+        });
     }
 
 }
