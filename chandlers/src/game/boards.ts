@@ -1,5 +1,6 @@
 import { Piece, Space } from "@boardzilla/core";
 import { Building, Color, MyGame } from "./index.js";
+import { Melt } from "./components.js";
 
 export class WorkerSpace extends Space<MyGame> {
     building: Building
@@ -7,7 +8,7 @@ export class WorkerSpace extends Space<MyGame> {
 }
   
 export class ComponentSpace extends Space<MyGame> {
-  
+  num: number;
 }
   
 export class DiceSpace extends Space<MyGame> {
@@ -70,7 +71,11 @@ export class ChandlersBoard extends Space<MyGame> {
 }
   
 export class PlayerBoard extends Space<MyGame> {
-  
+  openingsForColor(color: Color) : number {
+    const openings = this.all(Melt).map(x => x.canTakeColor(Color.Red) ? 1 : 0).reduce((sum, current) => sum + current, 0);
+    console.log(this.name + ' can hold ' + openings + ' of ' + color);
+    return openings;
+  }
 }
 
 export class PowerSpace extends Space<MyGame> {

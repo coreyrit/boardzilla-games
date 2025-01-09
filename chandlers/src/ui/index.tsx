@@ -19,9 +19,28 @@ render(setup, {
     game.layout('board', { area: { left: -25, top: 0, width: 150, height: 100 }});
     
     game.layoutAsDrawer($.playersSpace as Space<MyGame>, 
-      { area: { left: -25, top: 50, width: 150, height: 50 }, openDirection: 'up', tab: 'Players'});
+      { area: { left: -25, top: 50, width: 150, height: 50 }, openDirection: 'up', tab: 'Players',
+      openIf: actions => actions.some(a => 
+        [
+          'chooseWorker',
+          'chooseMeltRed', 'chooseMeltYellow', 'chooseMeltBlue', 'chooseMeltManyRed', 'chooseMeltManyYellow', 'chooseMeltManyBlue',
+          'chooseRedOrWhiteMelt', 'chooseYellowOrWhiteMelt', 'chooseBlueOrWhiteMelt', 'chooseOrangeOrBlackMelt', 'chooseGreenOrBlackMelt', 'choosePurpleOrBlackMelt', 
+          'chooseWax',
+          'chooseSpiltPigment', 'chooseMelt', 'chooseCandlesToTrade',
+          'discardExtraComponents', 'choosePigmentColor',
+          'chooseWaxRepeater'
+        ]
+        .includes(a.name)),
+      closeIf: actions => actions.some(a => 
+          [
+            'placeWorker', 'chooseSpiltPigmentToMix'
+          ]
+          .includes(a.name)),
+      });
+
     $.playersSpace.layoutAsTabs({'Red': $.playerSpaceRed as Space<MyGame>, 'Green': $.playerSpaceGreen as Space<MyGame>},
-      { area: { left: 0, top: 5, width: 100, height: 80 }, tabDirection: 'up', tabs: {Red: 'Red', Green: 'Green'} }
+      { area: { left: 0, top: 10 , width: 100, height: 80 }, tabDirection: 'up', tabs: {Red: 'Red', Green: 'Green'},
+      setTabTo: actions => {return game.capitalize(game.currentPlayer().playerColor)}}
     );
 
     // game.layoutAsDrawer($.playerSpaceGreen as Space<MyGame>, 
@@ -548,6 +567,7 @@ render(setup, {
         <svg />
       ),
     });
+    
     game.all(CandleBottomRow).appearance({
       render: x => (
         <svg />
@@ -579,6 +599,10 @@ render(setup, {
     $.greenBoard.layout('greenComponent6', { area: { left: 27, top: 57, width: 10, height: 10 }});
     $.greenBoard.layout('greenComponent7', { area: { left: 40, top: 57, width: 10, height: 10 }});
     $.greenBoard.layout('greenComponent8', { area: { left: 52, top: 57, width: 10, height: 10 }});
+    
+    for(var i = 9; i <= 20; i++) {
+      $.greenBoard.layout('greenComponent' + i, { area: { left: (9-i)*0, top: 95, width: 10, height: 10 }});
+    }
 
     $.greenBoard.layout('greenPower1', { area: { left: 2.5, top: 38, width: 10, height: 15 }});
     $.greenBoard.layout('greenPower2', { area: { left: 2.5, top: 55, width: 10, height: 15 }});
@@ -594,7 +618,7 @@ render(setup, {
     $.redBoard.layout('redComponent2', { area: { left: 27, top: 40, width: 10, height: 10 }});
     $.redBoard.layout('redComponent3', { area: { left: 40, top: 40, width: 10, height: 10 }});
     $.redBoard.layout('redComponent4', { area: { left: 52, top: 40, width: 10, height: 10 }});
-    $.redBoard.layout('redCompo5ent5', { area: { left: 15, top: 57, width: 10, height: 10 }});
+    $.redBoard.layout('redComponent5', { area: { left: 15, top: 57, width: 10, height: 10 }});
     $.redBoard.layout('redComponent6', { area: { left: 27, top: 57, width: 10, height: 10 }});
     $.redBoard.layout('redComponent7', { area: { left: 40, top: 57, width: 10, height: 10 }});
     $.redBoard.layout('redComponent8', { area: { left: 52, top: 57, width: 10, height: 10 }});
@@ -602,5 +626,13 @@ render(setup, {
     $.redBoard.layout('redPower1', { area: { left: 2.5, top: 38, width: 10, height: 15 }});
     $.redBoard.layout('redPower2', { area: { left: 2.5, top: 55, width: 10, height: 15 }});
     $.redBoard.layout('redPower3', { area: { left: 2.5, top: 72, width: 10, height: 15 }});
+
+    game.layoutControls({
+      element: game,
+      top: 0,
+      center: -5,
+      width: 30
+    });
   }
+  
 });

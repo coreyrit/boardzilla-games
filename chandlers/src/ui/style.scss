@@ -1,7 +1,11 @@
 #play-area {
 
-  .PlayersSpace {
+  .PlayersSpaces {
     z-index: 15;
+  }
+
+  .drawer-content {
+    background-color: #ffffff80;
   }
 
   .PlayerSpace {
@@ -549,6 +553,11 @@
         /* front pane, placed above back */
         .front {
           z-index: 2;
+
+          &:hover {
+            z-index: 1000;
+            transform: scale(2.0);
+          }
         }
   
         /* back, initially hidden pane */
@@ -760,4 +769,8 @@
             }
           }
     }
+}
+
+.player-controls {
+  z-index: 2000;
 }

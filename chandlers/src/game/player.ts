@@ -11,6 +11,14 @@ export class ChandlersPlayer extends Player<MyGame, ChandlersPlayer> {
     placedWorker: Boolean = false;
     playerColor: Color
   
+    componentCount() : number {
+      const c =  this.board.all(ComponentSpace)
+        .map(x => x.all(Piece).length == 0 ? 0 : 1)
+        .reduce((sum, current) => sum + current, 0);
+      console.log('count = ' + c);
+      return c;
+    }
+
     nextEmptySpace() : ComponentSpace {
       const spaces = this.board.all(ComponentSpace).filter(x => x.all(Piece).length == 0);
       return spaces.first(ComponentSpace)!

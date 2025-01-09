@@ -139,7 +139,7 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
 export default createGame(ChandlersPlayer, MyGame, game => {
 
   const { action } = game;
-  const { playerActions, loop, eachPlayer, whileLoop } = game.flowCommands;
+  const { playerActions, loop, eachPlayer, whileLoop, ifElse } = game.flowCommands;
 
   game.init();
 
@@ -462,14 +462,17 @@ export default createGame(ChandlersPlayer, MyGame, game => {
 
     console.log(game.players[i].board);
 
-    playerBoard.create(ComponentSpace, colors[i] + 'Component1');
-    playerBoard.create(ComponentSpace, colors[i] + 'Component2');
-    playerBoard.create(ComponentSpace, colors[i] + 'Component3');
-    playerBoard.create(ComponentSpace, colors[i] + 'Component4');
-    playerBoard.create(ComponentSpace, colors[i] + 'Component5');
-    playerBoard.create(ComponentSpace, colors[i] + 'Component6');
-    playerBoard.create(ComponentSpace, colors[i] + 'Component7');
-    playerBoard.create(ComponentSpace, colors[i] + 'Component8');
+    for(var l = 1; l <= 20; l++) {
+      playerBoard.create(ComponentSpace, colors[i] + 'Component' + l, {num: l});
+      // playerBoard.create(ComponentSpace, colors[i] + 'Component1');
+      // playerBoard.create(ComponentSpace, colors[i] + 'Component2');
+      // playerBoard.create(ComponentSpace, colors[i] + 'Component3');
+      // playerBoard.create(ComponentSpace, colors[i] + 'Component4');
+      // playerBoard.create(ComponentSpace, colors[i] + 'Component5');
+      // playerBoard.create(ComponentSpace, colors[i] + 'Component6');
+      // playerBoard.create(ComponentSpace, colors[i] + 'Component7');
+      // playerBoard.create(ComponentSpace, colors[i] + 'Component8');
+    }
 
     const playerDie1 = playerBoard.create(DiceSpace, colors[i] + 'Die1');
     const playerDie2 = playerBoard.create(DiceSpace, colors[i] + 'Die2');
@@ -510,31 +513,62 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   // GAME ACTIONS
   game.defineActions({
 
+    chooseSpiltPigmentToMix: (player) => action<{melt: Melt}>({
+      prompt: 'Choose pigment color'
+    }).chooseOnBoard(
+      'pigment', ({melt}) => $.pigmentSpillArea.all(Pigment).filter(x => melt.canTakeColor(x.color)),
+      { skipIf: 'never' }
+    ).do(      
+      ({ melt, pigment }) => {
+        melt.mix(pigment.color);
+        pigment.putInto($.bag);
+        if($.pigmentSpillArea.all(Pigment).length > 0) {
+          game.followUp({name: 'chooseSpiltPigment'})
+        }
+      }
+    ),
+
     chooseSpiltPigment: (player) => action<{firstChoice: boolean}>({
-      prompt: 'Choose melt and pigment color'
+      prompt: 'Choose melt to pigment'
     }).chooseFrom(
       "continueMixing", () => ['Yes', 'No'],
       { prompt: 'Mix from spilled pigment?', skipIf: 'never' }
     ).chooseOnBoard(
       'melt', ({continueMixing}) => continueMixing == 'Yes' ? player.board.all(Melt) : [],
-      { min: 0 }
-    ).chooseOnBoard(
-      'pigment', ({melt, continueMixing}) => (continueMixing == 'Yes' ? $.pigmentSpillArea.all(Pigment) : [])
-      .filter(x => melt.length > 0 && x.color == Color.Red && !melt[0].canTakeColor(Color.Red) ? false : true)
-      .filter(x => melt.length > 0 && x.color == Color.Yellow && !melt[0].canTakeColor(Color.Yellow) ? false : true)
-      .filter(x => melt.length > 0 && x.color == Color.Blue && !melt[0].canTakeColor(Color.Blue) ? false : true),
-      { min: 0 }
+      { min: 0 }    
     ).do(      
-      ({ melt, pigment }) => {
-        if(melt.length > 0 && pigment.length > 0) {
-          melt[0].mix(pigment[0].color);
-          pigment[0].putInto($.bag);
-          if($.pigmentSpillArea.all(Pigment).length > 0) {
-            game.followUp({name: 'chooseSpiltPigment'})
-          }
+      ({ melt, continueMixing }) => {
+        if(melt.length > 0 && continueMixing == 'Yes') {
+          game.followUp({name: 'chooseSpiltPigmentToMix', args: {melt: melt[0]}})
         }
       }
     ),
+
+    // chooseSpiltPigment: (player) => action<{firstChoice: boolean}>({
+    //   prompt: 'Choose melt to pigment'
+    // }).chooseFrom(
+    //   "continueMixing", () => ['Yes', 'No'],
+    //   { prompt: 'Mix from spilled pigment?', skipIf: 'never' }
+    // ).chooseOnBoard(
+    //   'melt', ({continueMixing}) => continueMixing == 'Yes' ? player.board.all(Melt) : [],
+    //   { min: 0 }
+    // ).chooseOnBoard(
+    //   'pigment', ({melt, continueMixing}) => (continueMixing == 'Yes' ? $.pigmentSpillArea.all(Pigment) : [])
+    //   .filter(x => melt.length > 0 && x.color == Color.Red && !melt[0].canTakeColor(Color.Red) ? false : true)
+    //   .filter(x => melt.length > 0 && x.color == Color.Yellow && !melt[0].canTakeColor(Color.Yellow) ? false : true)
+    //   .filter(x => melt.length > 0 && x.color == Color.Blue && !melt[0].canTakeColor(Color.Blue) ? false : true),
+    //   { min: 0 }
+    // ).do(      
+    //   ({ melt, pigment }) => {
+    //     if(melt.length > 0 && pigment.length > 0) {
+    //       melt[0].mix(pigment[0].color);
+    //       pigment[0].putInto($.bag);
+    //       if($.pigmentSpillArea.all(Pigment).length > 0) {
+    //         game.followUp({name: 'chooseSpiltPigment'})
+    //       }
+    //     }
+    //   }
+    // ),
 
     chooseCustomer: (player) => action({
       prompt: 'Choose a customer'
@@ -1032,44 +1066,38 @@ export default createGame(ChandlersPlayer, MyGame, game => {
         .filter(x => x.name != 'pigmentMiddle' || ($.pigmentRepeater.all(WorkerPiece).length > 0 && $.pigmentBackroom.all(WorkerPiece).length > 0))
         .filter(x => x.name != 'moldMiddle' || ($.moldRepeater.all(WorkerPiece).length > 0 && $.moldBackroom.all(WorkerPiece).length > 0))
 
-        // advanced filtering
-        .filter(x => [$.waxOrange, $.waxGreen, $.waxPurple].includes(x) && player.board.all(Wax).length < 2 ? false : true)
-        .filter(x => x == $.waxRepeater && player.board.all(Wax).length < 1 ? false : true)
-        
-        .filter(x => x == $.pigmentRed && 
-          player.board.all(Melt).map(x => x.canTakeColor(Color.Red) ? 1 : 0).reduce((sum, current) => sum + current, 0) == 0 ? false : true)
-        .filter(x => x == $.pigmentBlue && 
-          player.board.all(Melt).map(x => x.canTakeColor(Color.Blue) ? 1 : 0).reduce((sum, current) => sum + current, 0) == 0 ? false : true)
-        .filter(x => x == $.pigmentYellow && 
-          player.board.all(Melt).map(x => x.canTakeColor(Color.Yellow) ? 1 : 0).reduce((sum, current) => sum + current, 0) == 0 ? false : true)
-        .filter(x => x == $.pigmentOrange && 
-            (
-              player.board.all(Melt).map(x => x.canTakeColor(Color.Red) ? 1 : 0).reduce((sum, current) => sum + current, 0) == 0 ||
-              player.board.all(Melt).map(x => x.canTakeColor(Color.Yellow) ? 1 : 0).reduce((sum, current) => sum + current, 0) == 0
-            ) ? false : true)
-        .filter(x => x == $.pigmentGreen && 
-            (
-              player.board.all(Melt).map(x => x.canTakeColor(Color.Blue) ? 1 : 0).reduce((sum, current) => sum + current, 0) == 0 ||
-              player.board.all(Melt).map(x => x.canTakeColor(Color.Yellow) ? 1 : 0).reduce((sum, current) => sum + current, 0) == 0
-            ) ? false : true)
-        .filter(x => x == $.pigmentPurple && 
-            (
-              player.board.all(Melt).map(x => x.canTakeColor(Color.Red) ? 1 : 0).reduce((sum, current) => sum + current, 0) == 0 ||
-              player.board.all(Melt).map(x => x.canTakeColor(Color.Blue) ? 1 : 0).reduce((sum, current) => sum + current, 0) == 0
-            ) ? false : true)
-        .filter(x => x == $.pigmentRepeater &&
-            (
-              player.board.all(Melt).map(x => x.canTakeColor(Color.Red) ? 1 : 0).reduce((sum, current) => sum + current, 0) == 0 &&
-              player.board.all(Melt).map(x => x.canTakeColor(Color.Yellow) ? 1 : 0).reduce((sum, current) => sum + current, 0) == 0 &&
-              player.board.all(Melt).map(x => x.canTakeColor(Color.Blue) ? 1 : 0).reduce((sum, current) => sum + current, 0) == 0
-            ) ? false : true)
+        // advanced filtering        
+        .filter(x => x != $.waxOrange || player.board.all(Wax).length >= 2)
+        .filter(x => x != $.waxGreen || player.board.all(Wax).length >= 2)
+        .filter(x => x != $.waxPurple || player.board.all(Wax).length >= 2)
 
-        .filter(x => x == $.moldRed && (player.board.all(Melt, {color: Color.White}).length == 0 && player.board.all(Melt, {color: Color.Red}).length == 0) ? false : true)
-        .filter(x => x == $.moldYellow && (player.board.all(Melt, {color: Color.White}).length == 0 && player.board.all(Melt, {color: Color.Yellow}).length == 0) ? false : true)
-        .filter(x => x == $.moldBlue && (player.board.all(Melt, {color: Color.White}).length == 0 && player.board.all(Melt, {color: Color.Blue}).length == 0) ? false : true)
-        .filter(x => x == $.moldOrange && (player.board.all(Melt, {color: Color.Black}).length == 0 && player.board.all(Melt, {color: Color.Orange}).length == 0) ? false : true)
-        .filter(x => x == $.moldGreen && (player.board.all(Melt, {color: Color.Black}).length == 0 && player.board.all(Melt, {color: Color.Green}).length == 0) ? false : true)
-        .filter(x => x == $.moldPurple && (player.board.all(Melt, {color: Color.Black}).length == 0 && player.board.all(Melt, {color: Color.Purple}).length == 0) ? false : true)
+        .filter(x => x != $.waxRepeater || player.board.all(Wax).length > 0)
+        
+        .filter(x => x != $.pigmentRed || player.board.openingsForColor(Color.Red) > 0)
+        .filter(x => x != $.pigmentBlue || player.board.openingsForColor(Color.Blue) > 0)
+        .filter(x => x != $.pigmentYellow || player.board.openingsForColor(Color.Yellow) > 0)
+        .filter(x => x != $.pigmentOrange ||
+            (player.board.openingsForColor(Color.Red) > 0 && player.board.openingsForColor(Color.Yellow) > 0))
+        .filter(x => x != $.pigmentGreen ||
+            (player.board.openingsForColor(Color.Blue) > 0 && player.board.openingsForColor(Color.Yellow) > 0))
+        .filter(x => x != $.pigmentPurple || 
+            (player.board.openingsForColor(Color.Blue) > 0 && player.board.openingsForColor(Color.Red) > 0))
+        .filter(x => x != $.pigmentRepeater ||
+            (player.board.openingsForColor(Color.Red) > 0 || 
+             player.board.openingsForColor(Color.Yellow) > 0 || 
+             player.board.openingsForColor(Color.Blue) > 0))
+        .filter(x => x != $.moldRed ||
+           (player.board.all(Melt, {color: Color.White}).length + player.board.all(Melt, {color: Color.Red}).length > 0))
+        .filter(x => x != $.moldYellow ||
+            (player.board.all(Melt, {color: Color.White}).length + player.board.all(Melt, {color: Color.Yellow}).length > 0))
+        .filter(x => x != $.moldBlue ||
+            (player.board.all(Melt, {color: Color.White}).length + player.board.all(Melt, {color: Color.Blue}).length > 0))
+        .filter(x => x != $.moldOrange ||
+            (player.board.all(Melt, {color: Color.Black}).length + player.board.all(Melt, {color: Color.Orange}).length > 0))
+        .filter(x => x != $.moldGreen ||
+            (player.board.all(Melt, {color: Color.Black}).length + player.board.all(Melt, {color: Color.Green}).length > 0))
+        .filter(x => x != $.moldPurple ||
+            (player.board.all(Melt, {color: Color.Black}).length + player.board.all(Melt, {color: Color.Purple}).length > 0))
             ,
       { skipIf: 'never' }
     ).do(({ space }) => {
@@ -1178,6 +1206,32 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       power.flipped = false;
     }),
 
+    discardExtraComponents: (player) => action({
+      prompt: 'Discard Down to 8 components',
+    }).chooseOnBoard(
+      'components', player.board.all(ComponentSpace).all(Piece),
+      { skipIf: 'never', number: player.componentCount() - 8 }
+    ).do(({ components }) => {
+      for(const component of components) {      
+        if(component instanceof KeyShape) {
+          const key = component as KeyShape;
+          key.putInto(game.first(KeyHook, {color: key.color})!);
+        } else if(component instanceof Melt) {
+          (component as Melt).color = Color.White;
+          component.putInto($.bag);
+        } else {
+          component.putInto($.bag);
+        }
+      }
+      // move the extra pieces onto the board
+      for(var i = 9; i <= 20; i++) {
+        const space = player.board.first(ComponentSpace, {num: i})!;
+        if(space.all(Piece).length > 0) {
+            space.first(Piece)?.putInto(player.nextEmptySpace());
+        }
+      }
+    }),
+
   });
 
   game.defineFlow(
@@ -1190,7 +1244,10 @@ export default createGame(ChandlersPlayer, MyGame, game => {
           () => {game.currentPlayer().placedWorker = false},
           whileLoop({while: () => !game.currentPlayer().placedWorker, do: ([
             playerActions({ actions: ['chooseWorker', 'usePower', 'pass']}),
-            playerActions({ actions: ['placeWorker', 'placeCandle', 'sellCandle', 'skip']})
+            playerActions({ actions: ['placeWorker', 'placeCandle', 'sellCandle', 'skip']}),
+            ifElse({
+              if: () => game.currentPlayer().componentCount() > 8, do: [playerActions({ actions: ['discardExtraComponents']})
+            ]}),
           ])})
         ]
       }),
@@ -1200,6 +1257,17 @@ export default createGame(ChandlersPlayer, MyGame, game => {
 
         // reset players
         for(const player of game.players) { player.pass = false; }
+
+        // reset space colors
+        ($.waxRepeater as WorkerSpace).color = undefined;
+        ($.waxBackroom as WorkerSpace).color = undefined;
+        ($.waxMiddle as WorkerSpace).color = undefined;
+        ($.pigmentRepeater as WorkerSpace).color = undefined;
+        ($.pigmentBackroom as WorkerSpace).color = undefined;
+        ($.pigmentMiddle as WorkerSpace).color = undefined;
+        ($.moldRepeater as WorkerSpace).color = undefined;
+        ($.moldBackroom as WorkerSpace).color = undefined;
+        ($.moldMiddle as WorkerSpace).color = undefined;
 
         // discard used candles
         board.all(CandlePawn).putInto($.bag);
