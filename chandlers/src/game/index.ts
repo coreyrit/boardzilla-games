@@ -55,7 +55,7 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
       if(x.flipped) {
         for(const player of this.players) {
           if(x.achieved(player)) {
-            console.log('player ' + player.name + ' earned 5 points')
+            this.message(player.name + ' achieved round end goal: ' + x.name + ' and scores 5 points.')
             player.increaseScore(5);
             x.flipped = false;
           }
@@ -524,7 +524,8 @@ export default createGame(ChandlersPlayer, MyGame, game => {
 
     chooseSpiltPigmentToMix: (player) => action<{melt: Melt}>({
       prompt: 'Choose pigment color'
-    }).chooseOnBoard(
+    })
+    .chooseOnBoard(
       'pigment', ({melt}) => $.pigmentSpillArea.all(Pigment).filter(x => melt.canTakeColor(x.color)),
       { skipIf: 'never' }
     ).do(      
@@ -545,10 +546,20 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     ).chooseOnBoard(
       'melt', ({continueMixing}) => continueMixing == 'Yes' ? player.board.all(Melt) : [],
       { min: 0 }    
-    ).do(      
+    )
+    // .chooseOnBoard(
+    //   'pigment', ({melt}) => $.pigmentSpillArea.all(Pigment).filter(x => melt.canTakeColor(x.color)),
+    //   { skipIf: 'never' }
+    // )
+    .do(      
       ({ melt, continueMixing }) => {
         if(melt.length > 0 && continueMixing == 'Yes') {
           game.followUp({name: 'chooseSpiltPigmentToMix', args: {melt: melt[0]}})
+          // melt[0].mix(pigment.color);
+          // pigment.putInto($.bag);
+          // if($.pigmentSpillArea.all(Pigment).length > 0) {
+          //   game.followUp({name: 'chooseSpiltPigment'})
+          // }
         }
       }
     ),
@@ -1056,10 +1067,9 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     }).chooseOnBoard(
       'space', game.all(WorkerSpace)
         .filter(x => x.all(WorkerPiece).length == 0 
-          || (x.top(WorkerPiece) instanceof KeyShape && $.ready.first(WorkerPiece) instanceof ColorDie)
-          || (x.top(WorkerPiece) instanceof KeyShape && $.ready.first(WorkerPiece) instanceof CandlePawn)
-          || (x.top(WorkerPiece) instanceof ColorDie && $.ready.first(WorkerPiece) instanceof CandlePawn)          
-          || (x.top(WorkerPiece) instanceof ColorDie && player.stack && $.ready.first(WorkerPiece) instanceof ColorDie)
+          || (!x.containsDie() && !x.containsCandle() && $.ready.first(WorkerPiece) instanceof ColorDie)
+          || (!x.containsCandle() && $.ready.first(WorkerPiece) && $.ready.first(WorkerPiece) instanceof CandlePawn)
+          || (!x.containsCandle() && player.stack && $.ready.first(WorkerPiece) instanceof ColorDie)
         )
         .filter(x => x.color == undefined 
           || x.color == $.ready.first(WorkerPiece)?.color
@@ -1280,7 +1290,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
         ($.moldMiddle as WorkerSpace).color = undefined;
 
         // discard used candles
-        board.all(CandlePawn).putInto($.bag);
+        game.all(WorkerSpace).all(CandlePawn).putInto($.bag);
 
         // return shapes
         game.first(KeyShape, {color: Color.Red})?.putInto($.redHook);

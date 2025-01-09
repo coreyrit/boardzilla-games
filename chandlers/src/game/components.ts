@@ -2,6 +2,7 @@ import { Piece } from "@boardzilla/core";
 import { Color, CustomerType, MyGame } from "./index.js";
 import { CandleSpace } from "./boards.js";
 import { ChandlersPlayer } from "./player.js";
+import { SetLogic } from "./setlogic.js";
 
 export class CustomerCard extends Piece<MyGame> {
     flipped: boolean = false;
@@ -80,24 +81,7 @@ export class RoundEndTile extends Piece<MyGame> {
             .filter(x => x >= 2).length >= 2
         }
         case 'three-by-three-otherwise': {
-          var uniqueCount = 0;
-          const customerCandleColors = player.space.all(CustomerCard).map(x => x.all(CandlePawn).map(y => y.color))
-            .sort((x, y) => x.length - y.length);
-          for(var i = 0; i < customerCandleColors.length; i++) {
-            const customer1 = customerCandleColors[i];
-            if(customer1.length > 0) {
-              const color = customer1[0]
-              uniqueCount++;
-              for(var j = i+1; j < customerCandleColors.length; j++) {
-                const customer2 = customerCandleColors[j];
-                const index = customer2.indexOf(color, 0);
-                if (index > -1) {
-                  customer2.splice(index, 1);
-                }
-              }
-            }
-          }
-          return uniqueCount >= 3;
+          return SetLogic.countSets(player.space.all(CustomerCard).map(x => new Set<string>(x.all(CandlePawn).map(y => y.color.toString())))) >= 3;
         }
         case 'three-by-tree-likewise': {
           return candleColors.map(x => player.space.all(CustomerCard).all(CandlePawn, {color: x}).length)
@@ -188,7 +172,7 @@ export class BackAlleyTile extends Piece<MyGame> {
 
 export class WorkerPiece extends Piece<MyGame> {
     color: Color;
-  }
+}
 
 export class ColorDie extends WorkerPiece {
     roll(): void {

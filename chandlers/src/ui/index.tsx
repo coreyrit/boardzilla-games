@@ -33,7 +33,7 @@ render(setup, {
         .includes(a.name)),
       closeIf: actions => actions.some(a => 
           [
-            'placeWorker', 'chooseSpiltPigmentToMix'
+            'placeWorker', 'chooseSpiltPigmentToMix', 'chooseKey'
           ]
           .includes(a.name)),
       });

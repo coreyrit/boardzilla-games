@@ -1,10 +1,20 @@
 import { Piece, Space } from "@boardzilla/core";
 import { Building, Color, MyGame } from "./index.js";
-import { Melt } from "./components.js";
+import { CandlePawn, ColorDie, KeyShape, Melt } from "./components.js";
 
 export class WorkerSpace extends Space<MyGame> {
     building: Building
     color: Color | undefined
+
+    containsKey() : boolean {
+      return this.all(KeyShape).length > 0;
+    }
+    containsDie() : boolean {
+      return this.all(ColorDie).length > 0;
+    }
+    containsCandle() : boolean {
+      return this.all(CandlePawn).length > 0;
+    }
 }
   
 export class ComponentSpace extends Space<MyGame> {
@@ -72,7 +82,7 @@ export class ChandlersBoard extends Space<MyGame> {
   
 export class PlayerBoard extends Space<MyGame> {
   openingsForColor(color: Color) : number {
-    const openings = this.all(Melt).map(x => x.canTakeColor(Color.Red) ? 1 : 0).reduce((sum, current) => sum + current, 0);
+    const openings = this.all(Melt).map(x => x.canTakeColor(color) ? 1 : 0).reduce((sum, current) => sum + current, 0);
     return openings;
   }
 }
