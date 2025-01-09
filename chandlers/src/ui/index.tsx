@@ -601,7 +601,7 @@ render(setup, {
     $.greenBoard.layout('greenComponent8', { area: { left: 52, top: 57, width: 10, height: 10 }});
     
     for(var i = 9; i <= 20; i++) {
-      $.greenBoard.layout('greenComponent' + i, { area: { left: (9-i)*0, top: 95, width: 10, height: 10 }});
+      $.greenBoard.layout('greenComponent' + i, { area: { left: 30+(9-i)*10, top: 95, width: 10, height: 10 }});
     }
 
     $.greenBoard.layout('greenPower1', { area: { left: 2.5, top: 38, width: 10, height: 15 }});
@@ -626,6 +626,10 @@ render(setup, {
     $.redBoard.layout('redPower1', { area: { left: 2.5, top: 38, width: 10, height: 15 }});
     $.redBoard.layout('redPower2', { area: { left: 2.5, top: 55, width: 10, height: 15 }});
     $.redBoard.layout('redPower3', { area: { left: 2.5, top: 72, width: 10, height: 15 }});
+
+    for(var i = 9; i <= 20; i++) {
+      $.greenBoard.layout('redComponent' + i, { area: { left: 30+(9-i)*10, top: 95, width: 10, height: 10 }});
+    }
 
     game.layoutControls({
       element: game,

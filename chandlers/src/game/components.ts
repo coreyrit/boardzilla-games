@@ -54,49 +54,66 @@ export class RoundEndTile extends Piece<MyGame> {
     flipped: boolean = true;
 
     achieved(player: ChandlersPlayer) : boolean {
+      const customerColors = [Color.Red, Color.Yellow, Color.Blue, Color.Orange, Color.Green, Color.Purple]
+      const customerTypes = [CustomerType.Adventurer, CustomerType.Cartographer, CustomerType.Charlatan, CustomerType.Merchant,
+        CustomerType.Priest, CustomerType.Prince, CustomerType.Rogue, CustomerType.Witch]
+      const candleColors = [Color.White, Color.Red, Color.Blue, Color.Yellow, Color.Orange, Color.Green, Color.Purple, Color.Black]
+
       switch(this.name) {
         case 'customer-satisfaction': {
-          break;
+          return player.space.all(CustomerCard)
+            .filter(x => x.all(CandlePawn).length == x.requiredCandles().length && x.customerType != CustomerType.None).length >= 2
         }
         case 'five-colors': {
-          break;
+          return candleColors.map(x => player.space.all(CustomerCard).all(CandlePawn, {color: x}).length)
+            .filter(x => x >= 1).length >= 5
         }
         case 'mastery-level-three': {
-          break;
+          return player.masteryLevel() == 3;
         }
         case 'one-by-five': {
-          break;
+          return player.space.all(CustomerCard)
+            .filter(x => x.all(CandlePawn).length >= 1).length >= 5;
         }
         case 'two-pairs': {
-          break;
+          return candleColors.map(x => player.space.all(CustomerCard).all(CandlePawn, {color: x}).length)
+            .filter(x => x >= 2).length >= 2
         }
         case 'three-by-three-otherwise': {
-          break;
-        }
-        case 'three-by-tree-likewise': {
-          break;
-        }
-        case 'two-by-three': {
-          break;
-        }
-        case 'two-by-two-by-color': {
-          const countByColor = new Set<Color>();
-          var foundIt = false;
-          player.space.all(CustomerCard).forEach(x => {
-            const candleCount = x.all(CandlePawn).length;
-            if(candleCount >= 2) {
-              console.log('card ' + x.name + ' has 2 candles');
-              if(countByColor.has(x.color)) {
-                foundIt = true;
-              } else {
-                countByColor.add(x.color);
+          var uniqueCount = 0;
+          const customerCandleColors = player.space.all(CustomerCard).map(x => x.all(CandlePawn).map(y => y.color))
+            .sort((x, y) => x.length - y.length);
+          for(var i = 0; i < customerCandleColors.length; i++) {
+            const customer1 = customerCandleColors[i];
+            if(customer1.length > 0) {
+              const color = customer1[0]
+              uniqueCount++;
+              for(var j = i+1; j < customerCandleColors.length; j++) {
+                const customer2 = customerCandleColors[j];
+                const index = customer2.indexOf(color, 0);
+                if (index > -1) {
+                  customer2.splice(index, 1);
+                }
               }
             }
-          })
-          return foundIt;
+          }
+          return uniqueCount >= 3;
+        }
+        case 'three-by-tree-likewise': {
+          return candleColors.map(x => player.space.all(CustomerCard).all(CandlePawn, {color: x}).length)
+            .filter(x => x >= 3).length >= 3
+        }
+        case 'two-by-three': {
+          return player.space.all(CustomerCard)
+            .filter(x => x.all(CandlePawn).length >= 2).length >= 3
+        }
+        case 'two-by-two-by-color': {
+          return customerColors.map(x => player.space.all(CustomerCard, {color: x}).all(CandlePawn).length)
+            .filter(x => x >= 2).length >= 2;
         }
         case 'two-by-two-by-type': {
-          break;
+          return customerTypes.map(x => player.space.all(CustomerCard, {customerType: x}).all(CandlePawn).length)
+            .filter(x => x >= 2).length >= 2;
         }
       }
       return false;
