@@ -15,7 +15,6 @@ export class ChandlersPlayer extends Player<MyGame, ChandlersPlayer> {
       const c =  this.board.all(ComponentSpace)
         .map(x => x.all(Piece).length == 0 ? 0 : 1)
         .reduce((sum, current) => sum + current, 0);
-      console.log('count = ' + c);
       return c;
     }
 

@@ -50,6 +50,20 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
   init(): void {    
   }
 
+  checkRoundEndGoals() : void {
+    this.all(RoundEndSpace).all(RoundEndTile).forEach(x => {
+      if(x.flipped) {
+        for(const player of this.players) {
+          if(x.achieved(player)) {
+            console.log('player ' + player.name + ' earned 5 points')
+            player.increaseScore(5);
+            x.flipped = false;
+          }
+        }
+      }
+    })
+  }
+
   allPlayersPassed() : boolean {
     for (const player of this.players) {
       if(!player.pass) {
@@ -447,8 +461,6 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   const playersSpace = game.create(PlayersSpace, 'playersSpace')
   const colors = [Color.Green, Color.Red]
   for(var i = 0; i < game.players.length; i++) {
-    console.log(i);
-
     const playerSpace = playersSpace.create(PlayerSpace, 'playerSpace' + game.capitalize(colors[i]), {player: game.players[i]})
     playerSpace.onEnter(CustomerCard, x => {
       x.flipped = true;
@@ -458,9 +470,6 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     game.players[i].space = playerSpace
     game.players[i].board = playerBoard
     game.players[i].playerColor = colors[i]
-
-
-    console.log(game.players[i].board);
 
     for(var l = 1; l <= 20; l++) {
       playerBoard.create(ComponentSpace, colors[i] + 'Component' + l, {num: l});
@@ -1254,6 +1263,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     ])}),
       () => {
         // check round end goals
+        game.checkRoundEndGoals();
 
         // reset players
         for(const player of game.players) { player.pass = false; }

@@ -1,6 +1,7 @@
 import { Piece } from "@boardzilla/core";
 import { Color, CustomerType, MyGame } from "./index.js";
 import { CandleSpace } from "./boards.js";
+import { ChandlersPlayer } from "./player.js";
 
 export class CustomerCard extends Piece<MyGame> {
     flipped: boolean = false;
@@ -51,6 +52,55 @@ export class EndGameTile extends Piece<MyGame> {
   
 export class RoundEndTile extends Piece<MyGame> {
     flipped: boolean = true;
+
+    achieved(player: ChandlersPlayer) : boolean {
+      switch(this.name) {
+        case 'customer-satisfaction': {
+          break;
+        }
+        case 'five-colors': {
+          break;
+        }
+        case 'mastery-level-three': {
+          break;
+        }
+        case 'one-by-five': {
+          break;
+        }
+        case 'two-pairs': {
+          break;
+        }
+        case 'three-by-three-otherwise': {
+          break;
+        }
+        case 'three-by-tree-likewise': {
+          break;
+        }
+        case 'two-by-three': {
+          break;
+        }
+        case 'two-by-two-by-color': {
+          const countByColor = new Set<Color>();
+          var foundIt = false;
+          player.space.all(CustomerCard).forEach(x => {
+            const candleCount = x.all(CandlePawn).length;
+            if(candleCount >= 2) {
+              console.log('card ' + x.name + ' has 2 candles');
+              if(countByColor.has(x.color)) {
+                foundIt = true;
+              } else {
+                countByColor.add(x.color);
+              }
+            }
+          })
+          return foundIt;
+        }
+        case 'two-by-two-by-type': {
+          break;
+        }
+      }
+      return false;
+    }
 }
   
 export class BackAlleyTile extends Piece<MyGame> {
