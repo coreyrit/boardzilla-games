@@ -29,7 +29,7 @@ export class SetLogic {
             if(!allValues.has(val)) {
               allValues.set(val, 0);
             }
-            allValues.set(val, allValues.get(val)+1);
+            allValues.set(val, allValues.get(val)!+1);
           }
         }
         return allValues;
