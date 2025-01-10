@@ -201,6 +201,10 @@ export class Wax extends Piece<MyGame> {
   
 }
 
+export class Bulb extends Piece<MyGame> {
+  
+}
+
 export class PowerTile extends Piece<MyGame> {
   flipped: boolean = true;
 }

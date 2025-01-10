@@ -3,8 +3,8 @@ import { Piece, render, Space } from '@boardzilla/core';
 import { Color, MyGame, default as setup } from '../game/index.js';
 
 import './style.scss';
-import { BackAlleyTile, CandlePawn, ColorDie, CustomerCard, EndGameTile, KeyShape, RoundEndTile, Wax, PowerTile, Melt, MasteryCube, Pigment, ScoreTracker } from '../game/components.js';
-import { BackAlley, BackAlleySpace, Candelabra, CandleBottomRow, CandleSpace, CandleTopRow, ChandlersBoard, ComponentSpace, CustomerSpace, DiceSpace, GameEndSpace, KeyHook, MasterySpace, MasteryTrack, PlayerBoard, PlayerSpace, PlayersSpace, PowerSpace, ReadySpace, RoundEndSpace, ScoringSpace, ScoringTrack, Spill, WorkerSpace } from '../game/boards.js';
+import { BackAlleyTile, CandlePawn, ColorDie, CustomerCard, EndGameTile, KeyShape, RoundEndTile, Wax, PowerTile, Melt, MasteryCube, Pigment, ScoreTracker, Bulb } from '../game/components.js';
+import { BackAlley, BackAlleySpace, Candelabra, CandleBottomRow, CandleSpace, CandleTopRow, ChandlersBoard, ComponentSpace, CustomerSpace, DiceSpace, GameEndSpace, KeyHook, MasterySpace, MasteryTrack, PlayerBoard, PlayerSpace, PlayersSpace, PowerSpace, ReadySpace, RoundEndSpace, RoundSpace, ScoringSpace, ScoringTrack, Spill, WorkerSpace } from '../game/boards.js';
 // import '@boardzilla/core/index.css';
 
 render(setup, {
@@ -40,7 +40,13 @@ render(setup, {
 
     $.playersSpace.layoutAsTabs({'Red': $.playerSpaceRed as Space<MyGame>, 'Green': $.playerSpaceGreen as Space<MyGame>},
       { area: { left: 0, top: 10 , width: 100, height: 80 }, tabDirection: 'up', tabs: {Red: 'Red', Green: 'Green'},
-      setTabTo: actions => {return game.capitalize(game.currentPlayer().playerColor)}}
+      setTabTo: actions => {
+        if(game.currentPlayer() != undefined) {
+          return game.capitalize(game.currentPlayer().playerColor)
+        } else {
+          return '';
+        }
+      }}
     );
 
     // game.layoutAsDrawer($.playerSpaceGreen as Space<MyGame>, 
@@ -117,6 +123,11 @@ render(setup, {
     game.layout('gameEndType2', { area: { left: -12, top: 25.6, width: 8, height: 4.5 }});
     game.layout('gameEndType3', { area: { left: -12, top: 30.25, width: 8, height: 4.5 }});
 
+    game.layout('round1', { area: { left: 85.5, top: 6, width: 5, height: 5 }});
+    game.layout('round2', { area: { left: 91.5, top: 6, width: 5, height: 5 }});
+    game.layout('round3', { area: { left: 97, top: 6, width: 5, height: 5 }});
+    game.layout('round4', { area: { left: 102.5, top: 6, width: 5, height: 5 }});
+
     game.layout('roundEndSpace1', { area: { left: -19.5, top: 88, width: 16.6, height: 6.5 }});
     game.layout('roundEndSpace2', { area: { left: -1, top: 88, width: 16.6, height: 6.5 }});
     game.layout('roundEndSpace3', { area: { left: 17, top: 88, width: 16.6, height: 6.5 }});
@@ -160,6 +171,12 @@ render(setup, {
     game.all(Wax).appearance({
       render: () => (
         <div className='Wax' />
+      ),
+    });
+
+    game.all(Bulb).appearance({
+      render: () => (
+        <div className='Bulb' />
       ),
     });
 
@@ -308,6 +325,14 @@ render(setup, {
       render: () => (
         <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
           {/* <rect x="0" y="0" width="100" height="55" /> */}
+        </svg>
+      ),
+    });
+
+    game.all(RoundSpace).appearance({
+      render: () => (
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          {/* <rect x="0" y="0" width="100" height="100" /> */}
         </svg>
       ),
     });

@@ -12,8 +12,8 @@ import { WaxBuilding } from './building/wax.js';
 import { PigmentBuilding } from './building/pigment.js';
 import { MoldBuilding } from './building/mold.js';
 import { ChandlersPlayer } from './player.js';
-import { CustomerCard, EndGameTile, RoundEndTile, BackAlleyTile, ColorDie, KeyShape, CandlePawn, PowerTile, Wax, WorkerPiece, Pigment, Melt, MasteryCube, ScoreTracker } from './components.js';
-import { BackAlley, BackAlleySpace, Candelabra, CandleBottomRow, CandleSpace, CandleTopRow, ChandlersBoard, ComponentSpace, CustomerSpace, DiceSpace, GameEndSpace, KeyHook, MasterySpace, MasteryTrack, PlayerBoard, PlayerSpace, PlayersSpace, PowerSpace, ReadySpace, RoundEndSpace, ScoringSpace, ScoringTrack, Spill, WorkerSpace } from './boards.js';
+import { CustomerCard, EndGameTile, RoundEndTile, BackAlleyTile, ColorDie, KeyShape, CandlePawn, PowerTile, Wax, WorkerPiece, Pigment, Melt, MasteryCube, ScoreTracker, Bulb } from './components.js';
+import { BackAlley, BackAlleySpace, Candelabra, CandleBottomRow, CandleSpace, CandleTopRow, ChandlersBoard, ComponentSpace, CustomerSpace, DiceSpace, GameEndSpace, KeyHook, MasterySpace, MasteryTrack, PlayerBoard, PlayerSpace, PlayersSpace, PowerSpace, ReadySpace, RoundEndSpace, RoundSpace, ScoringSpace, ScoringTrack, Spill, WorkerSpace } from './boards.js';
 
 export enum Building {
   Wax = 'wax',
@@ -48,6 +48,14 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
   setup: Boolean = false;
 
   init(): void {    
+  }
+
+  currentRound() : number {
+    return this.first(Bulb)!.container(RoundSpace)!.round;
+  }
+
+  nextRound() : void {
+    this.first(Bulb)!.putInto(this.first(RoundSpace, {round: this.currentRound()+1})!);
   }
 
   checkRoundEndGoals() : void {
@@ -347,6 +355,14 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   bag.first(EndGameTile)?.putInto($.greenType);
   bag.first(EndGameTile)?.putInto($.purpleType);
   bag.first(EndGameTile)?.putInto($.blackType);
+
+  // rounds
+  game.create(RoundSpace, 'round1', {round: 1});
+  game.create(RoundSpace, 'round2', {round: 2});
+  game.create(RoundSpace, 'round3', {round: 3});
+  game.create(RoundSpace, 'round4', {round: 4});
+
+  $.round1.create(Bulb, 'bulb');
 
   // round end goals
   game.create(RoundEndSpace, 'roundEndSpace1')
@@ -1324,6 +1340,13 @@ export default createGame(ChandlersPlayer, MyGame, game => {
           const die1 = $.bag.first(ColorDie); die1?.roll(); die1?.putInto(player.nextEmptyDieSpace());
           const die2 = $.bag.first(ColorDie); die2?.roll(); die2?.putInto(player.nextEmptyDieSpace());
           const die3 = $.bag.first(ColorDie); die3?.roll(); die3?.putInto(player.nextEmptyDieSpace());
+        }
+
+        if(game.currentRound() < 4) {
+          game.nextRound();
+        } else {
+          // do final scoring
+          game.finish(undefined)
         }
       }
     )

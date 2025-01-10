@@ -63,6 +63,10 @@ export class GameEndSpace extends Space<MyGame> {
 export class RoundEndSpace extends Space<MyGame> {
   
 }
+
+export class RoundSpace extends Space<MyGame> {
+  round: number;
+}
   
 export class BackAlleySpace extends Space<MyGame> {
   letter: string = "";
