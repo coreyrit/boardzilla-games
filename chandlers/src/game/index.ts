@@ -55,6 +55,7 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
       if(x.flipped) {
         for(const player of this.players) {
           if(x.achieved(player)) {
+            console.log(player.name + ' achieved round end goal: ' + x.name + ' and scores 5 points.')
             this.message(player.name + ' achieved round end goal: ' + x.name + ' and scores 5 points.')
             player.increaseScore(5);
             x.flipped = false;

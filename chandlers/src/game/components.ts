@@ -2,7 +2,7 @@ import { Piece } from "@boardzilla/core";
 import { Color, CustomerType, MyGame } from "./index.js";
 import { CandleSpace } from "./boards.js";
 import { ChandlersPlayer } from "./player.js";
-import { SetLogic } from "./setlogic.js";
+import { IdSet, SetLogic } from "./setlogic.js";
 
 export class CustomerCard extends Piece<MyGame> {
     flipped: boolean = false;
@@ -54,11 +54,24 @@ export class EndGameTile extends Piece<MyGame> {
 export class RoundEndTile extends Piece<MyGame> {
     flipped: boolean = true;
 
+
+    customerColorsToIdSets(player : ChandlersPlayer) : IdSet[] {
+      return player.space.all(CustomerCard).map(x => new IdSet(x.color.toString(), 
+        x.all(CandlePawn).map(y => y.color.toString())))
+    }
+
+    customerTypesToIdSets(player : ChandlersPlayer) : IdSet[] {
+      return player.space.all(CustomerCard).map(x => new IdSet(x.customerType.toString(), 
+        x.all(CandlePawn).map(y => y.color.toString())))
+    }
+
     achieved(player: ChandlersPlayer) : boolean {
       const customerColors = [Color.Red, Color.Yellow, Color.Blue, Color.Orange, Color.Green, Color.Purple]
       const customerTypes = [CustomerType.Adventurer, CustomerType.Cartographer, CustomerType.Charlatan, CustomerType.Merchant,
         CustomerType.Priest, CustomerType.Prince, CustomerType.Rogue, CustomerType.Witch]
       const candleColors = [Color.White, Color.Red, Color.Blue, Color.Yellow, Color.Orange, Color.Green, Color.Purple, Color.Black]
+
+      console.log('checking ' + this.name)
 
       switch(this.name) {
         case 'customer-satisfaction': {
@@ -66,38 +79,32 @@ export class RoundEndTile extends Piece<MyGame> {
             .filter(x => x.all(CandlePawn).length == x.requiredCandles().length && x.customerType != CustomerType.None).length >= 2
         }
         case 'five-colors': {
-          return candleColors.map(x => player.space.all(CustomerCard).all(CandlePawn, {color: x}).length)
-            .filter(x => x >= 1).length >= 5
+          return SetLogic.fiveColors(this.customerColorsToIdSets(player));
         }
         case 'mastery-level-three': {
           return player.masteryLevel() == 3;
         }
         case 'one-by-five': {
-          return player.space.all(CustomerCard)
-            .filter(x => x.all(CandlePawn).length >= 1).length >= 5;
+          return SetLogic.oneByFive(this.customerColorsToIdSets(player));
         }
         case 'two-pairs': {
-          return candleColors.map(x => player.space.all(CustomerCard).all(CandlePawn, {color: x}).length)
-            .filter(x => x >= 2).length >= 2
+          return SetLogic.twoPairs(this.customerColorsToIdSets(player));
         }
         case 'three-by-three-otherwise': {
-          return SetLogic.countSets(player.space.all(CustomerCard).map(x => new Set<string>(x.all(CandlePawn).map(y => y.color.toString())))) >= 3;
+          return SetLogic.threeByThreeOtherwise(this.customerColorsToIdSets(player));
         }
         case 'three-by-tree-likewise': {
-          return candleColors.map(x => player.space.all(CustomerCard).all(CandlePawn, {color: x}).length)
-            .filter(x => x >= 3).length >= 3
+          return SetLogic.threeByThreeLikewise(this.customerColorsToIdSets(player));
         }
         case 'two-by-three': {
           return player.space.all(CustomerCard)
             .filter(x => x.all(CandlePawn).length >= 2).length >= 3
         }
         case 'two-by-two-by-color': {
-          return customerColors.map(x => player.space.all(CustomerCard, {color: x}).all(CandlePawn).length)
-            .filter(x => x >= 2).length >= 2;
+          return SetLogic.twoByTwo(this.customerColorsToIdSets(player));
         }
         case 'two-by-two-by-type': {
-          return customerTypes.map(x => player.space.all(CustomerCard, {customerType: x}).all(CandlePawn).length)
-            .filter(x => x >= 2).length >= 2;
+          return SetLogic.twoByTwo(this.customerTypesToIdSets(player));
         }
       }
       return false;
