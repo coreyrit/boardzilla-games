@@ -1062,7 +1062,11 @@ export default createGame(ChandlersPlayer, MyGame, game => {
         .filter(x => x.all(CandlePawn).length == 0) ,
       { skipIf: 'never' }
     ).do(({ space }) => {
-      space.container(CustomerCard)!.placeCandle($.ready.first(WorkerPiece)!)
+      const card = space.container(CustomerCard)!
+      card.placeCandle($.ready.first(WorkerPiece)!)
+      if(card.all(CandlePawn).length == card.requiredCandles().length && card.requiredCandles().length == 3) {
+        $.drawCustomer.top(CustomerCard)?.putInto(player.space);
+      }
       game.followUp({name: 'activateCustomer', args: {color: space.color}});
     }),
 
@@ -1074,7 +1078,11 @@ export default createGame(ChandlersPlayer, MyGame, game => {
         .filter(x => x.all(CandlePawn).length == 0),
       { skipIf: 'never' }
     ).do(({ space }) => {
-      space.container(CustomerCard)!.placeCandle($.ready.first(WorkerPiece)!)
+      const card = space.container(CustomerCard)!
+      card.placeCandle($.ready.first(WorkerPiece)!)      
+      if(card.all(CandlePawn).length == card.requiredCandles().length && card.requiredCandles().length == 3) {
+        $.drawCustomer.top(CustomerCard)?.putInto(player.space);
+      }
       game.followUp({name: 'activateCustomer', args: {color: Color.White}});
     }),
 

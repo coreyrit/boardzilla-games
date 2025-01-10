@@ -40,7 +40,7 @@ export class CustomerCard extends Piece<MyGame> {
     }
 
     placeCandle(candle: CandlePawn) : void {      
-      const space = this.game.first(CandleSpace, 
+      const space = this.first(CandleSpace, 
         {name: this.name + '-' + candle.color}
       )!;
       candle.putInto(space);
