@@ -110,12 +110,16 @@ export class RoundEndTile extends Piece<MyGame> {
       return false;
     }
 }
-  
+
 export class BackAlleyTile extends Piece<MyGame> {
     flipped: boolean = true;
     letter: String;
 
     performAction(game: MyGame) : void {
+      game.followUp({name: 'confirmAction', args: {tile: this}});
+    }
+
+    performActionAfterConfirmation(game: MyGame) : void {
       switch(this.name) {
         case 'refresh-customers': {
           for(const customer of [$.customer1, $.customer2, $.customer3, $.customer4]) {
@@ -131,6 +135,9 @@ export class BackAlleyTile extends Piece<MyGame> {
           break;
         }
         case 'purchace-spilt-wax': {
+          if(game.currentPlayer().board.all(Wax).length > 0) {
+            game.followUp({name: 'chooseOneSpiltMelt'})
+          }
           break;
         }
         case 'convert-key-to-die': {
@@ -140,9 +147,16 @@ export class BackAlleyTile extends Piece<MyGame> {
           break;
         }
         case 'move-candle': {
+          console.log(game.currentPlayer().space.all(CandlePawn).length);
+          if(game.currentPlayer().space.all(CustomerCard).all(CandlePawn).length > 0) {
+            game.followUp({name: 'chooseCandleToMove'})
+          }
           break;
         }
         case 'swap-customer': {
+          if(game.currentPlayer().space.all(CustomerCard).filter(x => x.all(CandlePawn).length == 0)) {
+            game.followUp({name: 'chooseCustomerToSwap'})
+          }
           break;
         }
 
@@ -160,13 +174,16 @@ export class BackAlleyTile extends Piece<MyGame> {
           break;
         }
         case 'place-white-candle': {
-          if(game.currentPlayer().board.all(CandlePawn, {color: Color.White}).length > 0) {
+          if(game.currentPlayer().space.all(CandlePawn, {color: Color.White}).length > 0) {
             game.followUp({name:'chooseWhiteCandle'});
             game.followUp({name:'placeWhiteCandle'});
           }
           break;
         }
         case 'remove-pigment': {
+          if(game.currentPlayer().board.all(Melt).filter(x => x.color != Color.White).length > 0) {
+            game.followUp({name:'choosePigmentsToRemove'});
+          }
           break;
         }
         case 'two-wax': {
@@ -225,6 +242,21 @@ export class ScoreTracker extends Piece<MyGame> {
   export class Melt extends Piece<MyGame> {
     color: Color = Color.White
   
+    hasColor(color: Color): boolean {
+      switch(color) {
+        case Color.Red: {
+          return [Color.Black, Color.Purple, Color.Orange, Color.Red].includes(this.color);
+        }
+        case Color.Blue: {
+          return [Color.Black, Color.Green, Color.Purple, Color.Blue].includes(this.color);
+        }
+        case Color.Yellow: {
+          return [Color.Black, Color.Orange, Color.Green, Color.Yellow].includes(this.color);
+        }
+      }
+      return false;
+    }
+
     canTakeColor(color: Color): boolean {
       switch(color) {
         case Color.Red: {
@@ -238,6 +270,63 @@ export class ScoreTracker extends Piece<MyGame> {
         }
       }
       return false;
+    }
+
+    unmix(color: Color): void {
+      switch(this.color) {
+        case Color.Red: {
+          if(color == Color.Red) {
+            this.color = Color.White;
+          }
+          break;
+        }
+        case Color.Yellow: {
+          if(color == Color.Yellow) {
+            this.color = Color.White;
+          }
+          break;
+        }
+        case Color.Blue: {
+          if(color == Color.Blue) {
+            this.color = Color.White;
+          }
+          break;
+        }
+        case Color.Green: {
+          if(color == Color.Blue) {
+            this.color = Color.Yellow;
+          } else if(color == Color.Yellow) {
+            this.color = Color.Blue;
+          }
+          break;
+        }
+        case Color.Orange: {
+          if(color == Color.Red) {
+            this.color = Color.Yellow;
+          } else if(color == Color.Yellow) {
+            this.color = Color.Red;
+          }
+          break;
+        }
+        case Color.Purple: {
+          if(color == Color.Blue) {
+            this.color = Color.Red;
+          } else if(color == Color.Red) {
+            this.color = Color.Blue;
+          }
+          break;
+        }
+        case Color.Purple: {
+          if(color == Color.Blue) {
+            this.color = Color.Orange;
+          } else if(color == Color.Red) {
+            this.color = Color.Green;
+          } else if(color == Color.Yellow) {
+            this.color = Color.Purple;
+          }
+          break;
+        }
+      }
     }
 
     mix(color: Color): void {

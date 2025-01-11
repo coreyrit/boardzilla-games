@@ -14,6 +14,7 @@ import { MoldBuilding } from './building/mold.js';
 import { ChandlersPlayer } from './player.js';
 import { CustomerCard, EndGameTile, RoundEndTile, BackAlleyTile, ColorDie, KeyShape, CandlePawn, PowerTile, Wax, WorkerPiece, Pigment, Melt, MasteryCube, ScoreTracker, Bulb } from './components.js';
 import { BackAlley, BackAlleySpace, Candelabra, CandleBottomRow, CandleSpace, CandleTopRow, ChandlersBoard, ComponentSpace, CustomerSpace, DiceSpace, GameEndSpace, KeyHook, MasterySpace, MasteryTrack, PlayerBoard, PlayerSpace, PlayersSpace, PowerSpace, ReadySpace, RoundEndSpace, RoundSpace, ScoringSpace, ScoringTrack, Spill, WorkerSpace } from './boards.js';
+import { timeLog } from 'console';
 
 export enum Building {
   Wax = 'wax',
@@ -121,7 +122,9 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
       }
       case Building. Mold: {
         for(var i = 0; i < this.currentPlayer().masteryLevel(); i++) {
-          this.followUp({name: 'chooseMelt'});    
+          if(this.currentPlayer().board.all(Melt).length > 0) {
+            this.followUp({name: 'chooseMelt'});    
+          }
         }
         break;
       }
@@ -853,9 +856,35 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       'token', ({space}) => game.all(BackAlleySpace, {letter: space.letter}),
       { skipIf: 'never' }
     ).do(({ token }) => {
-      token.first(BackAlleyTile)!.performAction(game);
+      token.first(BackAlleyTile)!.performActionAfterConfirmation(game);
     }),
     
+    chooseCandleToMove: (player) => action({
+      prompt: 'Choose candle to move',
+    }).chooseOnBoard(
+      'candle', player.space.all(CustomerCard).all(CandlePawn),
+      { skipIf: 'never' }
+    ).chooseOnBoard(
+      'space', ({candle}) => player.space.all(CandleSpace, {color: candle.color})
+        .filter(x => x.all(CandlePawn).length == 0).concat(candle.container(CandleSpace)!),
+      { skipIf: 'never' }
+    )
+    .do(({ candle, space }) => {
+      candle.putInto(space);
+    }),
+
+    chooseCustomerToSwap: (player) => action({
+      prompt: 'Choose customers to swap',
+    }).chooseOnBoard(
+      'customer1', player.space.all(CustomerCard).filter(x => x.all(CandlePawn).length == 0),
+      { skipIf: 'never' }
+    ).chooseOnBoard(
+      'customer2', ({customer1}) => [$.customer1, $.customer2, $.customer3, $.customer4],
+      { skipIf: 'never' }
+    ).do(({ customer1, customer2 }) => {
+      customer2.top(CustomerCard)?.putInto(player.space);
+      customer1.putInto(customer2);
+    }),
 
     activateCustomer: (player) => action<{color: Color}>({
       prompt: "Choose customer to activate"
@@ -1079,11 +1108,11 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       { skipIf: 'never' }
     ).do(({ space }) => {
       const card = space.container(CustomerCard)!
-      card.placeCandle($.ready.first(WorkerPiece)!)      
+      $.ready.first(WorkerPiece)!.putInto(space);
       if(card.all(CandlePawn).length == card.requiredCandles().length && card.requiredCandles().length == 3) {
         $.drawCustomer.top(CustomerCard)?.putInto(player.space);
       }
-      game.followUp({name: 'activateCustomer', args: {color: Color.White}});
+      player.increaseMastery(1);
     }),
 
     placeWorker: (player) => action({
@@ -1194,6 +1223,67 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     )
     .do(({ die, color }) => {
       die.color = Color[color]
+    }),
+
+    confirmAction: (player) => action<{tile: BackAlleyTile}>({
+      prompt: 'Do you want to perform the bonus?',
+    }).chooseFrom(
+      "choice", ({tile}) => [tile.name, 'Skip'], 
+      { skipIf: 'never' }
+    ).do(({ choice, tile }) => {
+      if(choice != 'Skip') {
+        tile.performActionAfterConfirmation(game);
+      }
+    }),
+
+    choosePigmentsToRemove: (player) => action({
+      prompt: 'Choose melt to remove pigments',
+    }).chooseOnBoard(
+      'melt', player.board.all(Melt).filter(x => x.color != Color.White),
+      { skipIf: 'never' }
+    ).do(({ melt }) => {
+      game.followUp({name: 'chooseColorToRemove', args: {melt: melt}})
+    }),
+
+    chooseColorToRemove: (player) => action<{melt: Melt}>({
+      prompt: 'Choose color to remove',
+    }).chooseFrom(
+      "color", ({melt}) => ['Red', 'Yellow', 'Blue', 'Finish']
+        .filter(x => x != 'Red' || melt.hasColor(Color.Red))
+        .filter(x => x != 'Yellow' || melt.hasColor(Color.Yellow))
+        .filter(x => x != 'Blue' || melt.hasColor(Color.Blue))
+        , 
+      { skipIf: 'never' }
+    )
+    .do(({ melt, color }) => {
+      switch(color) {
+        case 'Red': {
+          melt.unmix(Color.Red);
+          break;
+        }
+        case 'Blue': {
+          melt.unmix(Color.Blue);
+          break;
+        }
+        case 'Yellow': {
+          melt.unmix(Color.Yellow);
+          break;
+        }
+      }
+      if(color != 'Finish') {
+        game.followUp({name: 'chooseColorToRemove', args: {melt: melt}})
+      }
+    }),
+
+    chooseOneSpiltMelt: (player) => action({
+      prompt: 'Choose spilt melt to buy',
+    }).chooseOnBoard(
+      'melt', $.meltSpillArea.all(Melt),
+      { skipIf: 'never' }
+    )
+    .do(({ melt }) => {
+      melt.putInto(player.nextEmptySpace());
+      player.board.first(Wax)?.putInto($.bag);
     }),
 
     chooseSpiltMelts: (player) => action({

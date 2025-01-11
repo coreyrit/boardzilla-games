@@ -28,12 +28,14 @@ render(setup, {
           'chooseWax',
           'chooseSpiltPigment', 'chooseMelt', 'chooseCandlesToTrade',
           'discardExtraComponents', 'choosePigmentColor',
-          'chooseWaxRepeater'
+          'chooseWaxRepeater', 'chooseCandleToMove', 'choosePowerTile',
+          'choosePigmentsToRemove', 'chooseWhiteCandle', 'chooseCustomerToSwap', 'chooseKeyAndShape'
         ]
         .includes(a.name)),
       closeIf: actions => actions.some(a => 
           [
-            'placeWorker', 'chooseSpiltPigmentToMix', 'chooseKey'
+            'placeWorker', 'chooseSpiltPigmentToMix', 'chooseKey',
+            'chooseBackAlleyAction'
           ]
           .includes(a.name)),
       });
