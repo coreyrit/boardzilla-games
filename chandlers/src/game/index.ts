@@ -160,6 +160,18 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     space.color = space.top(WorkerPiece)?.color;
     this.followUp({name: 'chooseMiddleAction', args: { building: building }});
   }
+
+  placeEndGameTile(tile : EndGameTile) {
+    if($.gameEndType1.all(EndGameTile).length == 0) {
+      tile.putInto($.gameEndType1);
+    } else if($.gameEndType2.all(EndGameTile).length == 0) {
+      tile.putInto($.gameEndType2);
+    } else if($.gameEndType3.all(EndGameTile).length == 0) {
+      tile.putInto($.gameEndType3);
+    } else {
+      tile.putInto($.bag);
+    }
+  }
 }
 
 export default createGame(ChandlersPlayer, MyGame, game => {
@@ -336,9 +348,61 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   game.create(GameEndSpace, 'purpleType');
   game.create(GameEndSpace, 'blackType');
 
+  whiteCandles.onExit(CandlePawn, x => {
+    if(whiteCandles.all(CandlePawn).length == 0) {
+      game.placeEndGameTile($.whiteType.first(EndGameTile)!);
+    }
+  })
+  redCandles.onExit(CandlePawn, x => {
+    if(redCandles.all(CandlePawn).length == 0) {
+      game.placeEndGameTile($.redType.first(EndGameTile)!);
+    }
+  })
+  yellowCandles.onExit(CandlePawn, x => {
+    if(yellowCandles.all(CandlePawn).length == 0) {
+      game.placeEndGameTile($.yellowType.first(EndGameTile)!);
+    }
+  })
+  blueCandles.onExit(CandlePawn, x => {
+    if(blueCandles.all(CandlePawn).length == 0) {
+      game.placeEndGameTile($.blueType.first(EndGameTile)!);
+    }
+  })
+  orangeCandles.onExit(CandlePawn, x => {
+    if(orangeCandles.all(CandlePawn).length == 0) {
+      game.placeEndGameTile($.orangeType.first(EndGameTile)!);
+    }
+  })
+  greenCandles.onExit(CandlePawn, x => {
+    if(greenCandles.all(CandlePawn).length == 0) {
+      game.placeEndGameTile($.greenType.first(EndGameTile)!);
+    }
+  })
+  purpleCandles.onExit(CandlePawn, x => {
+    if(purpleCandles.all(CandlePawn).length == 0) {
+      game.placeEndGameTile($.purpleType.first(EndGameTile)!);
+    }
+  })
+  blackCandles.onExit(CandlePawn, x => {
+    if(blackCandles.all(CandlePawn).length == 0) {
+      game.placeEndGameTile($.blackType.first(EndGameTile)!);
+    }
+  })
+
+
   game.create(GameEndSpace, 'gameEndType1')
   game.create(GameEndSpace, 'gameEndType2')
   game.create(GameEndSpace, 'gameEndType3')
+
+  $.gameEndType1.onEnter(EndGameTile, x => {
+    x.flipped = false;
+  })
+  $.gameEndType2.onEnter(EndGameTile, x => {
+    x.flipped = false;
+  })
+  $.gameEndType3.onEnter(EndGameTile, x => {
+    x.flipped = false;
+  })
   
   game.create(EndGameTile, 'adventurer')
   game.create(EndGameTile, 'charlatan')
