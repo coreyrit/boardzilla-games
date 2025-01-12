@@ -15,6 +15,7 @@ export class CustomerCard extends Piece<MyGame> {
     data: string = ""
     color: Color = Color.White;
     customerType: CustomerType = CustomerType.None;
+    scoring: number[]
     
     requiredCandles(): Color[] {
       var req: Color[] = []

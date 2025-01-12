@@ -225,54 +225,54 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   customer4.onEnter(CustomerCard, x => { x.flipped = true; })
   
   // build the customer deck
-  $.drawCustomer.create(CustomerCard, 'audacity', {customerType: CustomerType.Adventurer, color: Color.Green, data: "bgpx"})
-  $.drawCustomer.create(CustomerCard, 'bamboozle', {customerType: CustomerType.Charlatan, color: Color.Blue, data: "brp"})
-  $.drawCustomer.create(CustomerCard, 'blessing-of-autumn', {customerType: CustomerType.Priest, color: Color.Orange, data: "brgo"})
-  $.drawCustomer.create(CustomerCard, 'blessing-of-heaven', {customerType: CustomerType.Priest, color: Color.Blue, data: "bypo"})
-  $.drawCustomer.create(CustomerCard, 'blessing-of-midnight', {customerType: CustomerType.Priest, color: Color.Purple, data: "rpo"})
-  $.drawCustomer.create(CustomerCard, 'blessing-of-moonlight', {customerType: CustomerType.Priest, color: Color.Yellow, data: "yrgo"})
-  $.drawCustomer.create(CustomerCard, 'blessing-of-spring', {customerType: CustomerType.Priest, color: Color.Green, data: "bgx"})
-  $.drawCustomer.create(CustomerCard, 'blessing-of-summer', {customerType: CustomerType.Priest, color: Color.Red, data: "wyrx"})
-  $.drawCustomer.create(CustomerCard, 'broker', {customerType: CustomerType.Merchant, color: Color.Blue, data: "byrp"})
-  $.drawCustomer.create(CustomerCard, 'bypass', {customerType: CustomerType.Cartographer, color: Color.Yellow, data: "bygo"})
-  $.drawCustomer.create(CustomerCard, 'cleansing-flood', {customerType: CustomerType.Witch, color: Color.Blue, data: "bgpo"})
-  $.drawCustomer.create(CustomerCard, 'cutoff', {customerType: CustomerType.Cartographer, color: Color.Purple, data: "wrp"})
-  $.drawCustomer.create(CustomerCard, 'daring', {customerType: CustomerType.Adventurer, color: Color.Blue, data: "bwrx"})
-  $.drawCustomer.create(CustomerCard, 'dealer', {customerType: CustomerType.Merchant, color: Color.Purple, data: "wyp"})
-  $.drawCustomer.create(CustomerCard, 'deception', {customerType: CustomerType.Rogue, color: Color.Yellow, data: "byx"})
-  $.drawCustomer.create(CustomerCard, 'detour', {customerType: CustomerType.Cartographer, color: Color.Orange, data: "wypo"})
-  $.drawCustomer.create(CustomerCard, 'discount', {customerType: CustomerType.Rogue, color: Color.Blue, data: "byo"})
-  $.drawCustomer.create(CustomerCard, 'discovery', {customerType: CustomerType.Adventurer, color: Color.Purple, data: "rpx"})
-  $.drawCustomer.create(CustomerCard, 'double-dip', {customerType: CustomerType.Rogue, color: Color.Red, data: "bwrp"})
-  $.drawCustomer.create(CustomerCard, 'exploit', {customerType: CustomerType.Rogue, color: Color.Purple, data: "bwpo"})
-  $.drawCustomer.create(CustomerCard, 'exploration', {customerType: CustomerType.Adventurer, color: Color.Orange, data: "wgo"})
-  $.drawCustomer.create(CustomerCard, 'grift', {customerType: CustomerType.Charlatan, color: Color.Orange, data: "bwgo"})
-  $.drawCustomer.create(CustomerCard, 'heroism', {customerType: CustomerType.Adventurer, color: Color.Yellow, data: "byrg"})
-  $.drawCustomer.create(CustomerCard, 'hoodwink', {customerType: CustomerType.Charlatan, color: Color.Red, data: "wrgx"})
-  $.drawCustomer.create(CustomerCard, 'infernal-rush', {customerType: CustomerType.Witch, color: Color.Red, data: "wyro"})
-  $.drawCustomer.create(CustomerCard, 'intrepidity', {customerType: CustomerType.Adventurer, color: Color.Red, data: "rgpo"})
-  $.drawCustomer.create(CustomerCard, 'lightning-crash', {customerType: CustomerType.Witch, color: Color.Yellow, data: "yrx"})
-  $.drawCustomer.create(CustomerCard, 'miscount', {customerType: CustomerType.Rogue, color: Color.Green, data: "gox"})
-  $.drawCustomer.create(CustomerCard, 'nourishing-wave', {customerType: CustomerType.Witch, color: Color.Green, data: "wygx"})
-  $.drawCustomer.create(CustomerCard, 'operator', {customerType: CustomerType.Merchant, color: Color.Orange, data: "bwo"})
-  $.drawCustomer.create(CustomerCard, 'passage', {customerType: CustomerType.Cartographer, color: Color.Green, data: "wgp"})
-  $.drawCustomer.create(CustomerCard, 'prince-rohan', {customerType: CustomerType.Prince, color: Color.Red, data: "bwrg"})
-  $.drawCustomer.create(CustomerCard, 'prince-tyrion', {customerType: CustomerType.Prince, color: Color.Purple, data: "bypx"})
-  $.drawCustomer.create(CustomerCard, 'princess-buttercup', {customerType: CustomerType.Prince, color: Color.Yellow, data: "yrox"})
-  $.drawCustomer.create(CustomerCard, 'princess-evergreen', {customerType: CustomerType.Prince, color: Color.Green, data: "wyg"})
-  $.drawCustomer.create(CustomerCard, 'princess-peach', {customerType: CustomerType.Prince, color: Color.Orange, data: "bwro"})
-  $.drawCustomer.create(CustomerCard, 'princess-perrywinkle', {customerType: CustomerType.Prince, color: Color.Blue, data: "bwyp"})
-  $.drawCustomer.create(CustomerCard, 'retailer', {customerType: CustomerType.Merchant, color: Color.Red, data: "wrox"})
-  $.drawCustomer.create(CustomerCard, 'scam', {customerType: CustomerType.Charlatan, color: Color.Yellow, data: "byg"})
-  $.drawCustomer.create(CustomerCard, 'seller', {customerType: CustomerType.Merchant, color: Color.Green, data: "wygo"})
-  $.drawCustomer.create(CustomerCard, 'shadow-strike', {customerType: CustomerType.Witch, color: Color.Purple, data: "wrgp"})
-  $.drawCustomer.create(CustomerCard, 'shortcut', {customerType: CustomerType.Cartographer, color: Color.Red, data: "wyrg"})
-  $.drawCustomer.create(CustomerCard, 'sleight-of-hand', {customerType: CustomerType.Rogue, color: Color.Orange, data: "wrpo"})
-  $.drawCustomer.create(CustomerCard, 'sunlight-surge', {customerType: CustomerType.Witch, color: Color.Orange, data: "wgpo"})
-  $.drawCustomer.create(CustomerCard, 'tomfoolery', {customerType: CustomerType.Charlatan, color: Color.Purple, data: "wpo"})
-  $.drawCustomer.create(CustomerCard, 'trail', {customerType: CustomerType.Cartographer, color: Color.Blue, data: "bwpx"})
-  $.drawCustomer.create(CustomerCard, 'trickery', {customerType: CustomerType.Charlatan, color: Color.Green, data: "ygx"})
-  $.drawCustomer.create(CustomerCard, 'vendor', {customerType: CustomerType.Merchant, color: Color.Yellow, data: "ypx"})
+  $.drawCustomer.create(CustomerCard, 'audacity', {scoring: [2, 4, 8, 14], customerType: CustomerType.Adventurer, color: Color.Green, data: "bgpx"})
+  $.drawCustomer.create(CustomerCard, 'bamboozle', {scoring: [1, 4, 8], customerType: CustomerType.Charlatan, color: Color.Blue, data: "brp"})
+  $.drawCustomer.create(CustomerCard, 'blessing-of-autumn', {scoring: [2, 4, 7, 13], customerType: CustomerType.Priest, color: Color.Orange, data: "brgo"})
+  $.drawCustomer.create(CustomerCard, 'blessing-of-heaven', {scoring: [2, 4, 7, 13], customerType: CustomerType.Priest, color: Color.Blue, data: "bypo"})
+  $.drawCustomer.create(CustomerCard, 'blessing-of-midnight', {scoring: [1, 4, 8], customerType: CustomerType.Priest, color: Color.Purple, data: "rpo"})
+  $.drawCustomer.create(CustomerCard, 'blessing-of-moonlight', {scoring: [2, 4, 7, 13], customerType: CustomerType.Priest, color: Color.Yellow, data: "yrgo"})
+  $.drawCustomer.create(CustomerCard, 'blessing-of-spring', {scoring: [1, 4, 9], customerType: CustomerType.Priest, color: Color.Green, data: "bgx"})
+  $.drawCustomer.create(CustomerCard, 'blessing-of-summer', {scoring: [2, 4, 7, 13], customerType: CustomerType.Priest, color: Color.Red, data: "wyrx"})
+  $.drawCustomer.create(CustomerCard, 'broker', {scoring: [2, 4, 7, 13], customerType: CustomerType.Merchant, color: Color.Blue, data: "byrp"})
+  $.drawCustomer.create(CustomerCard, 'bypass', {scoring: [2, 4, 7, 13], customerType: CustomerType.Cartographer, color: Color.Yellow, data: "bygo"})
+  $.drawCustomer.create(CustomerCard, 'cleansing-flood', {scoring: [2, 4, 8, 14], customerType: CustomerType.Witch, color: Color.Blue, data: "bgpo"})
+  $.drawCustomer.create(CustomerCard, 'cutoff', {scoring: [1, 3, 7], customerType: CustomerType.Cartographer, color: Color.Purple, data: "wrp"})
+  $.drawCustomer.create(CustomerCard, 'daring', {scoring: [2, 4, 7, 13], customerType: CustomerType.Adventurer, color: Color.Blue, data: "bwrx"})
+  $.drawCustomer.create(CustomerCard, 'dealer', {scoring: [1, 3, 7], customerType: CustomerType.Merchant, color: Color.Purple, data: "wyp"})
+  $.drawCustomer.create(CustomerCard, 'deception', {scoring: [1, 4, 8], customerType: CustomerType.Rogue, color: Color.Yellow, data: "byx"})
+  $.drawCustomer.create(CustomerCard, 'detour', {scoring: [2, 4, 7, 13], customerType: CustomerType.Cartographer, color: Color.Orange, data: "wypo"})
+  $.drawCustomer.create(CustomerCard, 'discount', {scoring: [1, 4, 8], customerType: CustomerType.Rogue, color: Color.Blue, data: "byo"})
+  $.drawCustomer.create(CustomerCard, 'discovery', {scoring: [1, 4, 9], customerType: CustomerType.Adventurer, color: Color.Purple, data: "rpx"})
+  $.drawCustomer.create(CustomerCard, 'double-dip', {scoring: [2, 4, 7, 14], customerType: CustomerType.Rogue, color: Color.Red, data: "bwrp"})
+  $.drawCustomer.create(CustomerCard, 'exploit', {scoring: [2, 4, 7, 13], customerType: CustomerType.Rogue, color: Color.Purple, data: "bwpo"})
+  $.drawCustomer.create(CustomerCard, 'exploration', {scoring: [1, 4, 8], customerType: CustomerType.Adventurer, color: Color.Orange, data: "wgo"})
+  $.drawCustomer.create(CustomerCard, 'grift', {scoring: [2, 4, 7, 13], customerType: CustomerType.Charlatan, color: Color.Orange, data: "bwgo"})
+  $.drawCustomer.create(CustomerCard, 'heroism', {scoring: [2, 4, 7, 13], customerType: CustomerType.Adventurer, color: Color.Yellow, data: "byrg"})
+  $.drawCustomer.create(CustomerCard, 'hoodwink', {scoring: [2, 4, 7, 13], customerType: CustomerType.Charlatan, color: Color.Red, data: "wrgx"})
+  $.drawCustomer.create(CustomerCard, 'infernal-rush', {scoring: [2, 4, 7, 12], customerType: CustomerType.Witch, color: Color.Red, data: "wyro"})
+  $.drawCustomer.create(CustomerCard, 'intrepidity', {scoring: [2, 4, 8, 14], customerType: CustomerType.Adventurer, color: Color.Red, data: "rgpo"})
+  $.drawCustomer.create(CustomerCard, 'lightning-crash', {scoring: [1, 4, 8], customerType: CustomerType.Witch, color: Color.Yellow, data: "yrx"})
+  $.drawCustomer.create(CustomerCard, 'miscount', {scoring: [1, 4, 9], customerType: CustomerType.Rogue, color: Color.Green, data: "gox"})
+  $.drawCustomer.create(CustomerCard, 'nourishing-wave', {scoring: [2, 4, 7, 13], customerType: CustomerType.Witch, color: Color.Green, data: "wygx"})
+  $.drawCustomer.create(CustomerCard, 'operator', {scoring: [1, 3, 7], customerType: CustomerType.Merchant, color: Color.Orange, data: "bwo"})
+  $.drawCustomer.create(CustomerCard, 'passage', {scoring: [1, 4, 8], customerType: CustomerType.Cartographer, color: Color.Green, data: "wgp"})
+  $.drawCustomer.create(CustomerCard, 'prince-rohan', {scoring: [2, 4, 7, 12], customerType: CustomerType.Prince, color: Color.Red, data: "bwrg"})
+  $.drawCustomer.create(CustomerCard, 'prince-tyrion', {scoring: [2, 4, 8, 14], customerType: CustomerType.Prince, color: Color.Purple, data: "bypx"})
+  $.drawCustomer.create(CustomerCard, 'princess-buttercup', {scoring: [2, 4, 8, 14], customerType: CustomerType.Prince, color: Color.Yellow, data: "yrox"})
+  $.drawCustomer.create(CustomerCard, 'princess-evergreen', {scoring: [1, 3, 7], customerType: CustomerType.Prince, color: Color.Green, data: "wyg"})
+  $.drawCustomer.create(CustomerCard, 'princess-peach', {scoring: [2, 4, 7, 12], customerType: CustomerType.Prince, color: Color.Orange, data: "bwro"})
+  $.drawCustomer.create(CustomerCard, 'princess-perrywinkle', {scoring: [2, 4, 7, 12], customerType: CustomerType.Prince, color: Color.Blue, data: "bwyp"})
+  $.drawCustomer.create(CustomerCard, 'retailer', {scoring: [2, 4, 7, 13], customerType: CustomerType.Merchant, color: Color.Red, data: "wrox"})
+  $.drawCustomer.create(CustomerCard, 'scam', {scoring: [1, 4, 8], customerType: CustomerType.Charlatan, color: Color.Yellow, data: "byg"})
+  $.drawCustomer.create(CustomerCard, 'seller', {scoring: [2, 4, 7, 13], customerType: CustomerType.Merchant, color: Color.Green, data: "wygo"})
+  $.drawCustomer.create(CustomerCard, 'shadow-strike', {scoring: [2, 4, 7, 13], customerType: CustomerType.Witch, color: Color.Purple, data: "wrgp"})
+  $.drawCustomer.create(CustomerCard, 'shortcut', {scoring: [2, 4, 7, 12], customerType: CustomerType.Cartographer, color: Color.Red, data: "wyrg"})
+  $.drawCustomer.create(CustomerCard, 'sleight-of-hand', {scoring: [2, 4, 7, 13], customerType: CustomerType.Rogue, color: Color.Orange, data: "wrpo"})
+  $.drawCustomer.create(CustomerCard, 'sunlight-surge', {scoring: [2, 4, 7, 13], customerType: CustomerType.Witch, color: Color.Orange, data: "wgpo"})
+  $.drawCustomer.create(CustomerCard, 'tomfoolery', {scoring: [1, 4, 8], customerType: CustomerType.Charlatan, color: Color.Purple, data: "wpo"})
+  $.drawCustomer.create(CustomerCard, 'trail', {scoring: [2, 4, 7, 13], customerType: CustomerType.Cartographer, color: Color.Blue, data: "bwpx"})
+  $.drawCustomer.create(CustomerCard, 'trickery', {scoring: [1, 4, 9], customerType: CustomerType.Charlatan, color: Color.Green, data: "ygx"})
+  $.drawCustomer.create(CustomerCard, 'vendor', {scoring: [1, 4, 9], customerType: CustomerType.Merchant, color: Color.Yellow, data: "ypx"})
 
   // create candle spaces
   $.drawCustomer.all(CustomerCard).forEach(x => {
@@ -1533,7 +1533,24 @@ export default createGame(ChandlersPlayer, MyGame, game => {
         if(game.currentRound() < 4) {
           game.nextRound();
         } else {
+
           // do final scoring
+          game.players.forEach(player => {
+            // score for customers
+            player.space.all(CustomerCard).forEach(card => {
+              const candleCount = card.all(CandlePawn).length;
+              if(candleCount > 0) {
+                player.increaseScore(card.scoring[candleCount-1]);
+              }
+            })
+            // score for mastery
+            player.increaseScore(player.masteryScore());
+
+            // score for personal goals
+
+            // score for round end goals
+          })
+
           game.finish(undefined)
         }
       }
