@@ -56,6 +56,7 @@ export class CustomerCard extends Piece<MyGame> {
 
 export class EndGameTile extends Piece<MyGame> {
     flipped: boolean = true;
+    type: CustomerType;
 }
   
 export class RoundEndTile extends Piece<MyGame> {

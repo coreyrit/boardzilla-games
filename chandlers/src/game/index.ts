@@ -431,14 +431,14 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     x.flipped = false;
   })
   
-  game.create(EndGameTile, 'adventurer')
-  game.create(EndGameTile, 'charlatan')
-  game.create(EndGameTile, 'rogue')
-  game.create(EndGameTile, 'merchant')
-  game.create(EndGameTile, 'priest')
-  game.create(EndGameTile, 'prince')
-  game.create(EndGameTile, 'witch')
-  game.create(EndGameTile, 'cartographer')
+  game.create(EndGameTile, 'adventurer', {type: CustomerType.Adventurer})
+  game.create(EndGameTile, 'charlatan', {type: CustomerType.Charlatan})
+  game.create(EndGameTile, 'rogue', {type: CustomerType.Rogue})
+  game.create(EndGameTile, 'merchant', {type: CustomerType.Merchant})
+  game.create(EndGameTile, 'priest', {type: CustomerType.Priest})
+  game.create(EndGameTile, 'prince', {type: CustomerType.Prince})
+  game.create(EndGameTile, 'witch', {type: CustomerType.Witch})
+  game.create(EndGameTile, 'cartographer', {type: CustomerType.Cartographer})
   game.all(EndGameTile).putInto(bag);
   bag.shuffle()
   bag.first(EndGameTile)?.putInto($.whiteType);
@@ -1540,15 +1540,55 @@ export default createGame(ChandlersPlayer, MyGame, game => {
             player.space.all(CustomerCard).forEach(card => {
               const candleCount = card.all(CandlePawn).length;
               if(candleCount > 0) {
-                player.increaseScore(card.scoring[candleCount-1]);
+                const candleScore = card.scoring[candleCount-1]
+                game.message(player.name + ' scored ' + candleScore + ' points for candles on ' + card.name);
+                player.increaseScore(candleScore);
               }
             })
             // score for mastery
+            game.message(player.name + ' scored ' + player.masteryScore() + ' points for mastery');
             player.increaseScore(player.masteryScore());
 
             // score for personal goals
+            player.space.all(GoalCard).forEach(goal => {
+              if (
+                  (goal.color1 == goal.color2 &&
+                   player.space.all(CandlePawn, {color: goal.color1}).length >= 2)
+                  ||
+                  (player.space.all(CandlePawn, {color: goal.color1}).length > 0 && 
+                   player.space.all(CandlePawn, {color: goal.color2}).length > 0)
+                ) {
+                  player.space.first(CandlePawn, {color: goal.color1})?.putInto($.bag);
+                  player.space.first(CandlePawn, {color: goal.color2})?.putInto($.bag);
 
-            // score for round end goals
+                  game.message(player.name + ' scored 6 points for goal ' + goal.name);
+                  player.increaseScore(6);
+                }
+              }
+            );
+
+            // score for game end goals
+            if($.gameEndType1.all(EndGameTile).length > 0) {
+              const type1 = $.gameEndType1.first(EndGameTile)!
+              const score1 = player.space.all(CustomerCard, {customerType: type1.type})
+                .filter(x => x.all(CandlePawn).length > 0).length * 5;
+              player.increaseScore(score1);
+              game.message(player.name + ' scored ' + score1 + ' points for type ' + type1);
+            }
+            if($.gameEndType2.all(EndGameTile).length > 0) {
+              const type2 = $.gameEndType2.first(EndGameTile)!
+              const score2 = player.space.all(CustomerCard, {customerType: type2.type})
+                .filter(x => x.all(CandlePawn).length > 0).length * 3;
+              player.increaseScore(score2);
+              game.message(player.name + ' scored ' + score2 + ' points for type ' + type2);
+            }
+            if($.gameEndType3.all(EndGameTile).length > 0) {
+              const type3 = $.gameEndType3.first(EndGameTile)!
+              const score3 = player.space.all(CustomerCard, {customerType: type3.type})
+                .filter(x => x.all(CandlePawn).length > 0).length * 5;
+              player.increaseScore(score3);
+              game.message(player.name + ' scored ' + score3 + ' points for type ' + type3);
+            }
           })
 
           game.finish(undefined)
