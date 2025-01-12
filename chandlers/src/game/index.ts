@@ -1553,13 +1553,13 @@ export default createGame(ChandlersPlayer, MyGame, game => {
             player.space.all(GoalCard).forEach(goal => {
               if (
                   (goal.color1 == goal.color2 &&
-                   player.space.all(CandlePawn, {color: goal.color1}).length >= 2)
+                   player.space.all(CustomerCard, {color: goal.color1, scoredGoal: false}).length >= 2)
                   ||
-                  (player.space.all(CandlePawn, {color: goal.color1}).length > 0 && 
-                   player.space.all(CandlePawn, {color: goal.color2}).length > 0)
+                  (player.space.all(CustomerCard, {color: goal.color1, scoredGoal: false}).length > 0 && 
+                   player.space.all(CustomerCard, {color: goal.color2, scoredGoal: false}).length > 0)
                 ) {
-                  player.space.first(CandlePawn, {color: goal.color1})?.putInto($.bag);
-                  player.space.first(CandlePawn, {color: goal.color2})?.putInto($.bag);
+                  player.space.first(CustomerCard, {color: goal.color1, scoredGoal: false})!.scoredGoal = true;
+                  player.space.first(CustomerCard, {color: goal.color2, scoredGoal: false})!.scoredGoal = true;
 
                   game.message(player.name + ' scored 6 points for goal ' + goal.name);
                   player.increaseScore(6);
