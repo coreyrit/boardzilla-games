@@ -126,7 +126,12 @@ export class ChandlersPlayer extends Player<MyGame, ChandlersPlayer> {
     }
 
     increaseMastery(value: number = 1): void {
-      this.setMastery(this.currentMastery()+value);
+      if(this.currentMastery()+value > 15) {
+        this.setMastery(15);
+        this.increaseScore(1);
+      } else {
+        this.setMastery(this.currentMastery()+value);
+      }
     }
 
     currentScore(): number {

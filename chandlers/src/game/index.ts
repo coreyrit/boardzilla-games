@@ -121,11 +121,7 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
         break;
       }
       case Building. Mold: {
-        for(var i = 0; i < this.currentPlayer().masteryLevel(); i++) {
-          if(this.currentPlayer().board.all(Melt).length > 0) {
-            this.followUp({name: 'chooseMelt'});    
-          }
-        }
+        this.followUp({name: 'chooseMelt', args: {count:this.currentPlayer().masteryLevel()}});    
         break;
       }
     }
@@ -674,32 +670,6 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       }
     ),
 
-    // chooseSpiltPigment: (player) => action<{firstChoice: boolean}>({
-    //   prompt: 'Choose melt to pigment'
-    // }).chooseFrom(
-    //   "continueMixing", () => ['Yes', 'No'],
-    //   { prompt: 'Mix from spilled pigment?', skipIf: 'never' }
-    // ).chooseOnBoard(
-    //   'melt', ({continueMixing}) => continueMixing == 'Yes' ? player.board.all(Melt) : [],
-    //   { min: 0 }
-    // ).chooseOnBoard(
-    //   'pigment', ({melt, continueMixing}) => (continueMixing == 'Yes' ? $.pigmentSpillArea.all(Pigment) : [])
-    //   .filter(x => melt.length > 0 && x.color == Color.Red && !melt[0].canTakeColor(Color.Red) ? false : true)
-    //   .filter(x => melt.length > 0 && x.color == Color.Yellow && !melt[0].canTakeColor(Color.Yellow) ? false : true)
-    //   .filter(x => melt.length > 0 && x.color == Color.Blue && !melt[0].canTakeColor(Color.Blue) ? false : true),
-    //   { min: 0 }
-    // ).do(      
-    //   ({ melt, pigment }) => {
-    //     if(melt.length > 0 && pigment.length > 0) {
-    //       melt[0].mix(pigment[0].color);
-    //       pigment[0].putInto($.bag);
-    //       if($.pigmentSpillArea.all(Pigment).length > 0) {
-    //         game.followUp({name: 'chooseSpiltPigment'})
-    //       }
-    //     }
-    //   }
-    // ),
-
     chooseCustomer: (player) => action({
       prompt: 'Choose a customer'
     }).chooseOnBoard(
@@ -851,6 +821,31 @@ export default createGame(ChandlersPlayer, MyGame, game => {
         }
       }
     ),
+
+    continueMolding: (player) => action<{count: number}>({
+      prompt: 'Do you want to continue molding?',
+    }).chooseFrom(
+      "choice", () => ['Yes', 'No'],
+      { skipIf: 'never' }
+    ).do(({ choice, count }) => {
+      if(choice == 'Yes') {
+        game.followUp({name: 'chooseMelt', args: {count: count-1}});
+      }
+    }),
+
+    chooseMelt: (player) => action<{count:number}>({
+      prompt: 'Choose melt to mold',
+    }).chooseOnBoard(
+      'melt', player.board.all(Melt),
+      { skipIf: 'never' }
+    ).do(({ melt, count }) => {
+      player.gainCandle(melt, false, 1);
+      melt.putInto($.meltSpillArea);  
+      player.increaseScore();
+      if(count > 1) {
+        game.followUp({name: 'continueMolding', args: {count: count}});
+      }
+    }),
 
     choosePigmentColor: (player) => action<{firstChoice: boolean}>({
       prompt: 'Choose melt and pigment color'
@@ -1250,19 +1245,42 @@ export default createGame(ChandlersPlayer, MyGame, game => {
              player.board.openingsForColor(Color.Yellow) > 0 || 
              player.board.openingsForColor(Color.Blue) > 0))
         .filter(x => x != $.moldRed ||
-           (player.board.all(Melt, {color: Color.White}).length + player.board.all(Melt, {color: Color.Red}).length > 0))
+           (
+            (player.board.all(Melt, {color: Color.White}).length > 0 && game.all(Candelabra).all(CandlePawn, {color: Color.White}).length > 1) ||
+            (player.board.all(Melt, {color: Color.Red}).length > 0 && game.all(Candelabra).all(CandlePawn, {color: Color.Red}).length > 1)
+           )
+        )
         .filter(x => x != $.moldYellow ||
-            (player.board.all(Melt, {color: Color.White}).length + player.board.all(Melt, {color: Color.Yellow}).length > 0))
+          (
+           (player.board.all(Melt, {color: Color.White}).length > 0 && game.all(Candelabra).all(CandlePawn, {color: Color.White}).length > 1) ||
+           (player.board.all(Melt, {color: Color.Yellow}).length > 0 && game.all(Candelabra).all(CandlePawn, {color: Color.Yellow}).length > 1)
+          )
+        )
         .filter(x => x != $.moldBlue ||
-            (player.board.all(Melt, {color: Color.White}).length + player.board.all(Melt, {color: Color.Blue}).length > 0))
+          (
+           (player.board.all(Melt, {color: Color.White}).length > 0 && game.all(Candelabra).all(CandlePawn, {color: Color.White}).length > 1) ||
+           (player.board.all(Melt, {color: Color.Blue}).length > 0 && game.all(Candelabra).all(CandlePawn, {color: Color.Blue}).length > 1)
+          )
+        )
         .filter(x => x != $.moldOrange ||
-            (player.board.all(Melt, {color: Color.Black}).length + player.board.all(Melt, {color: Color.Orange}).length > 0))
+          (
+           (player.board.all(Melt, {color: Color.Black}).length > 0 && game.all(Candelabra).all(CandlePawn, {color: Color.Black}).length > 1) ||
+           (player.board.all(Melt, {color: Color.Orange}).length > 0 && game.all(Candelabra).all(CandlePawn, {color: Color.Orange}).length > 1)
+          )
+        )
         .filter(x => x != $.moldGreen ||
-            (player.board.all(Melt, {color: Color.Black}).length + player.board.all(Melt, {color: Color.Green}).length > 0))
+          (
+           (player.board.all(Melt, {color: Color.Black}).length > 0 && game.all(Candelabra).all(CandlePawn, {color: Color.Black}).length > 1) ||
+           (player.board.all(Melt, {color: Color.Green}).length > 0 && game.all(Candelabra).all(CandlePawn, {color: Color.Green}).length > 1)
+          )
+        )
         .filter(x => x != $.moldPurple ||
-            (player.board.all(Melt, {color: Color.Black}).length + player.board.all(Melt, {color: Color.Purple}).length > 0))
-            ,
-      { skipIf: 'never' }
+          (
+           (player.board.all(Melt, {color: Color.Black}).length > 0 && game.all(Candelabra).all(CandlePawn, {color: Color.Black}).length > 1) ||
+           (player.board.all(Melt, {color: Color.Purple}).length > 0 && game.all(Candelabra).all(CandlePawn, {color: Color.Purple}).length > 1)
+          )
+        ),
+        { skipIf: 'never' }
     ).do(({ space }) => {
       player.stack = false;
       $.ready.first(WorkerPiece)?.putInto(space);
@@ -1288,17 +1306,6 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       { skipIf: 'never', min: 1, max: 11 }
     ).do(({ dice }) => {
       dice.forEach(x => x.roll());
-    }),
-
-    chooseMelt: (player) => action({
-      prompt: 'Choose melt to mold',
-    }).chooseOnBoard(
-      'melt', player.board.all(Melt),
-      { skipIf: 'never' }
-    ).do(({ melt }) => {
-      player.gainCandle(melt, false, 1);
-      melt.putInto($.meltSpillArea);  
-      player.increaseScore();    
     }),
 
     chooseDieToSet: (player) => action({
