@@ -28,7 +28,11 @@ export class DiceSpace extends Space<MyGame> {
 export class ReadySpace extends Space<MyGame> {
   
 }
+
+export class GoalSpace extends Space<MyGame> {
   
+}
+
 export class CustomerSpace extends Space<MyGame> {
   
 }

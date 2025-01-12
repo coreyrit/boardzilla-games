@@ -12,8 +12,8 @@ import { WaxBuilding } from './building/wax.js';
 import { PigmentBuilding } from './building/pigment.js';
 import { MoldBuilding } from './building/mold.js';
 import { ChandlersPlayer } from './player.js';
-import { CustomerCard, EndGameTile, RoundEndTile, BackAlleyTile, ColorDie, KeyShape, CandlePawn, PowerTile, Wax, WorkerPiece, Pigment, Melt, MasteryCube, ScoreTracker, Bulb } from './components.js';
-import { BackAlley, BackAlleySpace, Candelabra, CandleBottomRow, CandleSpace, CandleTopRow, ChandlersBoard, ComponentSpace, CustomerSpace, DiceSpace, GameEndSpace, KeyHook, MasterySpace, MasteryTrack, PlayerBoard, PlayerSpace, PlayersSpace, PowerSpace, ReadySpace, RoundEndSpace, RoundSpace, ScoringSpace, ScoringTrack, Spill, WorkerSpace } from './boards.js';
+import { CustomerCard, EndGameTile, RoundEndTile, BackAlleyTile, ColorDie, KeyShape, CandlePawn, PowerTile, Wax, WorkerPiece, Pigment, Melt, MasteryCube, ScoreTracker, Bulb, GoalCard } from './components.js';
+import { BackAlley, BackAlleySpace, Candelabra, CandleBottomRow, CandleSpace, CandleTopRow, ChandlersBoard, ComponentSpace, CustomerSpace, DiceSpace, GameEndSpace, GoalSpace, KeyHook, MasterySpace, MasteryTrack, PlayerBoard, PlayerSpace, PlayersSpace, PowerSpace, ReadySpace, RoundEndSpace, RoundSpace, ScoringSpace, ScoringTrack, Spill, WorkerSpace } from './boards.js';
 import { timeLog } from 'console';
 
 export enum Building {
@@ -186,6 +186,33 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   // create the board
   const board = game.create(ChandlersBoard, 'board');
 
+
+  // set up the goal deck
+  const goalDeck = game.create(GoalSpace, 'goalDeck');
+  goalDeck.create(GoalCard, 'purple-purple', {color1: Color.Purple, color2: Color.Purple} );
+  goalDeck.create(GoalCard, 'blue-blue', {color1: Color.Blue, color2: Color.Blue} );
+  goalDeck.create(GoalCard, 'blue-purple', {color1: Color.Blue, color2: Color.Purple} );
+  goalDeck.create(GoalCard, 'green-purple', {color1: Color.Green, color2: Color.Purple} );
+  goalDeck.create(GoalCard, 'green-green', {color1: Color.Green, color2: Color.Green} );
+  goalDeck.create(GoalCard, 'green-blue', {color1: Color.Green, color2: Color.Blue} );
+  goalDeck.create(GoalCard, 'yellow-blue', {color1: Color.Yellow, color2: Color.Blue} );
+  goalDeck.create(GoalCard, 'yellow-green', {color1: Color.Yellow, color2: Color.Green} );
+  goalDeck.create(GoalCard, 'yellow-purple', {color1: Color.Yellow, color2: Color.Purple} );
+  goalDeck.create(GoalCard, 'yellow-yellow', {color1: Color.Yellow, color2: Color.Yellow} );
+  goalDeck.create(GoalCard, 'orange-blue', {color1: Color.Orange, color2: Color.Blue} );
+  goalDeck.create(GoalCard, 'orange-green', {color1: Color.Orange, color2: Color.Green} );
+  goalDeck.create(GoalCard, 'orange-orange', {color1: Color.Orange, color2: Color.Orange} );
+  goalDeck.create(GoalCard, 'orange-purple', {color1: Color.Orange, color2: Color.Purple} );
+  goalDeck.create(GoalCard, 'orange-yellow', {color1: Color.Orange, color2: Color.Yellow} );
+  goalDeck.create(GoalCard, 'red-red', {color1: Color.Red, color2: Color.Red} );
+  goalDeck.create(GoalCard, 'red-blue', {color1: Color.Red, color2: Color.Blue} );
+  goalDeck.create(GoalCard, 'red-green', {color1: Color.Red, color2: Color.Green} );
+  goalDeck.create(GoalCard, 'red-orange', {color1: Color.Red, color2: Color.Orange} );
+  goalDeck.create(GoalCard, 'red-purple', {color1: Color.Red, color2: Color.Purple} );
+  goalDeck.create(GoalCard, 'red-yellow', {color1: Color.Red, color2: Color.Yellow} );
+  
+  goalDeck.shuffle();
+
   // set up the market
   const drawCustomer = game.create(CustomerSpace, 'drawCustomer');
   const customer1 = game.create(CustomerSpace, 'customer1');
@@ -196,7 +223,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   customer2.onEnter(CustomerCard, x => { x.flipped = true; })
   customer3.onEnter(CustomerCard, x => { x.flipped = true; })
   customer4.onEnter(CustomerCard, x => { x.flipped = true; })
-
+  
   // build the customer deck
   $.drawCustomer.create(CustomerCard, 'audacity', {customerType: CustomerType.Adventurer, color: Color.Green, data: "bgpx"})
   $.drawCustomer.create(CustomerCard, 'bamboozle', {customerType: CustomerType.Charlatan, color: Color.Blue, data: "brp"})
@@ -549,6 +576,9 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     playerSpace.onEnter(CustomerCard, x => {
       x.flipped = true;
     })
+    playerSpace.onEnter(GoalCard, x => {
+      x.flipped = true;      
+    })
 
     const playerBoard = playerSpace.create(PlayerBoard, colors[i] + "Board")
     game.players[i].space = playerSpace
@@ -557,14 +587,6 @@ export default createGame(ChandlersPlayer, MyGame, game => {
 
     for(var l = 1; l <= 20; l++) {
       playerBoard.create(ComponentSpace, colors[i] + 'Component' + l, {num: l});
-      // playerBoard.create(ComponentSpace, colors[i] + 'Component1');
-      // playerBoard.create(ComponentSpace, colors[i] + 'Component2');
-      // playerBoard.create(ComponentSpace, colors[i] + 'Component3');
-      // playerBoard.create(ComponentSpace, colors[i] + 'Component4');
-      // playerBoard.create(ComponentSpace, colors[i] + 'Component5');
-      // playerBoard.create(ComponentSpace, colors[i] + 'Component6');
-      // playerBoard.create(ComponentSpace, colors[i] + 'Component7');
-      // playerBoard.create(ComponentSpace, colors[i] + 'Component8');
     }
 
     const playerDie1 = playerBoard.create(DiceSpace, colors[i] + 'Die1');
@@ -601,6 +623,10 @@ export default createGame(ChandlersPlayer, MyGame, game => {
 
     const card = $.drawCustomer.top(CustomerCard)!
     card.putInto(playerSpace);
+
+    const goal = $.goalDeck.top(GoalCard)!
+    goal.putInto(playerSpace);
+    goal.showOnlyTo(game.players[i]);
   }
 
   // GAME ACTIONS

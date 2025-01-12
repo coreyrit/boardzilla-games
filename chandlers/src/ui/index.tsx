@@ -3,7 +3,7 @@ import { Piece, render, Space } from '@boardzilla/core';
 import { Color, MyGame, default as setup } from '../game/index.js';
 
 import './style.scss';
-import { BackAlleyTile, CandlePawn, ColorDie, CustomerCard, EndGameTile, KeyShape, RoundEndTile, Wax, PowerTile, Melt, MasteryCube, Pigment, ScoreTracker, Bulb } from '../game/components.js';
+import { BackAlleyTile, CandlePawn, ColorDie, CustomerCard, EndGameTile, KeyShape, RoundEndTile, Wax, PowerTile, Melt, MasteryCube, Pigment, ScoreTracker, Bulb, GoalCard } from '../game/components.js';
 import { BackAlley, BackAlleySpace, Candelabra, CandleBottomRow, CandleSpace, CandleTopRow, ChandlersBoard, ComponentSpace, CustomerSpace, DiceSpace, GameEndSpace, KeyHook, MasterySpace, MasteryTrack, PlayerBoard, PlayerSpace, PlayersSpace, PowerSpace, ReadySpace, RoundEndSpace, RoundSpace, ScoringSpace, ScoringTrack, Spill, WorkerSpace } from '../game/boards.js';
 // import '@boardzilla/core/index.css';
 
@@ -63,6 +63,8 @@ render(setup, {
 
 
     game.layoutAsTabs
+
+    game.layout('goalDeck', { area: { left: 0, top: 0, width: 0, height: 0 }});
 
     game.layout('drawCustomer', { area: { left: -19.5, top: 6, width: 19.5, height: 13.5 }});
     game.layout('customer1', { area: { left: 5.5, top: 6, width: 19.5, height: 13.5 }});
@@ -418,6 +420,12 @@ render(setup, {
       </div>
     ) });
 
+    game.all(GoalCard).appearance({ render: x => ( 
+      <div className='GoalCard'>
+        <div className={x.flipped ? 'front' : 'back'} />
+      </div>
+    ) });
+
     game.all(EndGameTile).appearance({ render: x => ( 
       <div className='EndGameTile'>
         <div className={x.flipped ? 'front' : 'back'} />
@@ -484,6 +492,12 @@ render(setup, {
       columns: 3,
       gap: {x: 0.5, y: 0.5},
     });
+    $.playerSpaceGreen.layout(GoalCard, { 
+      area: { left: 81, top: 2, width: 18, height: 96 },
+      rows: 3,
+      columns: 3,
+      gap: {x: 0.5, y: 0.5},
+    });
     $.greenMastery.layout(MasterySpace, { 
       area: { left: 3, top: 20, width: 90, height: 7 },
       rows: 1,
@@ -497,7 +511,13 @@ render(setup, {
       rows: 3,
       columns: 3,
       gap: {x: 0.5, y: 0.5},
-    });    
+    });   
+    $.playerSpaceRed.layout(GoalCard, { 
+      area: { left: 82, top: 2, width: 18, height: 96 },
+      rows: 3,
+      columns: 3,
+      gap: {x: 0.5, y: 0.5},
+    }); 
     $.redMastery.layout(MasterySpace, { 
       area: { left: 3, top: 20, width: 90, height: 7 },
       rows: 1,

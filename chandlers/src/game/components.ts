@@ -4,6 +4,12 @@ import { CandleSpace } from "./boards.js";
 import { ChandlersPlayer } from "./player.js";
 import { IdSet, SetLogic } from "./setlogic.js";
 
+export class GoalCard extends Piece<MyGame> {
+  flipped: boolean = false;
+  color1: Color;
+  color2: Color;
+}
+
 export class CustomerCard extends Piece<MyGame> {
     flipped: boolean = false;
     data: string = ""
@@ -171,6 +177,11 @@ export class BackAlleyTile extends Piece<MyGame> {
           break;
         }
         case 'gain-goal-card': {
+          const goal = $.goalDeck.top(GoalCard)!
+          console.log(goal.name);
+          console.log(game.currentPlayer().space.name);
+          goal.putInto(game.currentPlayer().space);
+          goal.showOnlyTo(game.currentPlayer());
           break;
         }
         case 'place-white-candle': {
