@@ -244,10 +244,12 @@ export class PowerTile extends Piece<MyGame> {
 
 export class MasteryCube extends Piece<MyGame> {
     color: Color
+    index: number;
 }
 
 export class ScoreTracker extends Piece<MyGame> {
-    color: Color
+    color: Color;
+    index: number;
     flipped: Boolean = false;
 }
   

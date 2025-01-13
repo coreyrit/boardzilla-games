@@ -83,12 +83,12 @@ export class ChandlersPlayer extends Player<MyGame, ChandlersPlayer> {
     }
   
     currentMastery(): number {
-      const cube = this.board.first(MasteryCube, {color: this.playerColor})!
+      const cube = this.board.first(MasteryCube, {index: this.game.players.indexOf(this)})!
       return cube.container(MasterySpace)!.index;
     }
 
     setMastery(index: number): void {
-      const cube = this.board.first(MasteryCube, {color: this.playerColor})!
+      const cube = this.board.first(MasteryCube, {index: this.game.players.indexOf(this)})!
       cube.putInto(this.board.first(MasterySpace, {index: index})!);
     }
 
@@ -135,12 +135,12 @@ export class ChandlersPlayer extends Player<MyGame, ChandlersPlayer> {
     }
 
     currentScore(): number {
-        const tracker = this.game.first(ScoreTracker, {color: this.playerColor})!
+        const tracker = this.game.first(ScoreTracker, {index: this.game.players.indexOf(this)})!
         return tracker.flipped ? tracker.container(ScoringSpace)!.score + 100 : tracker.container(ScoringSpace)!.score;
     }
 
     setScore(score: number): void {
-        const tracker = this.game.first(ScoreTracker, {color: this.playerColor})!
+        const tracker = this.game.first(ScoreTracker, {index: this.game.players.indexOf(this)})!
         tracker.putInto(this.game.first(ScoringSpace, {score: score})!)
     }
 

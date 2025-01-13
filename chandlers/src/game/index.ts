@@ -352,7 +352,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
 
   // roll random dice to start the round
   game.setup = true;
-  for(var i = 0; i < 2; i++) {
+  for(var i = 0; i < 4-game.players.length; i++) {
     Object.values(Building).forEach((building: Building) =>{
       const die = game.create(ColorDie, 'colorDie' + i);
       die.roll()
@@ -473,9 +473,11 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   game.create(RoundEndTile, 'two-by-two-by-type')
   game.all(RoundEndTile).putInto(bag);
   bag.shuffle()
-  bag.first(RoundEndTile)?.putInto($.roundEndSpace1);
-  bag.first(RoundEndTile)?.putInto($.roundEndSpace2);
-  bag.first(RoundEndTile)?.putInto($.roundEndSpace3);
+
+  const roundEndSpaces = game.all(RoundEndSpace);
+  for(var i = 0; i < game.players.length+1; i++) {
+    bag.first(RoundEndTile)?.putInto(roundEndSpaces[i]);  
+  }
 
   // back alley
   game.create(BackAlleySpace, 'backAlleySpaceA1', {letter: "A"});
@@ -564,13 +566,13 @@ export default createGame(ChandlersPlayer, MyGame, game => {
 
   // players  
   const playersSpace = game.create(PlayersSpace, 'playersSpace')
-  const colors = [Color.Green, Color.Red]
   
   for(var i = 0; i < game.players.length; i++) {
-    const score = $.scoring100.create(ScoreTracker, colors[i] + 'Score', {color: colors[i]});
+    const score = $.scoring100.create(ScoreTracker, 'p' + i + 'Score', 
+      {color: Color.White, index: i}); // color will be fixed
     score.player = game.players[i];
     
-    const playerSpace = playersSpace.create(PlayerSpace, 'playerSpace' + game.capitalize(colors[i]), {player: game.players[i]})
+    const playerSpace = playersSpace.create(PlayerSpace, 'playerSpace' + i, {player: game.players[i]});
     playerSpace.onEnter(CustomerCard, x => {
       x.flipped = true;
     })
@@ -578,33 +580,33 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       x.flipped = true;      
     })
 
-    const playerBoard = playerSpace.create(PlayerBoard, colors[i] + "Board")
+    const playerBoard = playerSpace.create(PlayerBoard, 'p' + i + "Board")
     playerBoard.player = game.players[i];
     
     game.players[i].space = playerSpace
     game.players[i].board = playerBoard
-    game.players[i].playerColor = colors[i]
+    // game.players[i].playerColor = colors[i]
 
     for(var l = 1; l <= 20; l++) {
-      playerBoard.create(ComponentSpace, colors[i] + 'Component' + l, {num: l});
+      playerBoard.create(ComponentSpace, 'p' + i + 'Component' + l, {num: l});
     }
 
-    const playerDie1 = playerBoard.create(DiceSpace, colors[i] + 'Die1');
-    const playerDie2 = playerBoard.create(DiceSpace, colors[i] + 'Die2');
-    const playerDie3 = playerBoard.create(DiceSpace, colors[i] + 'Die3');
+    const playerDie1 = playerBoard.create(DiceSpace, 'p' + i + 'Die1');
+    const playerDie2 = playerBoard.create(DiceSpace, 'p' + i + 'Die2');
+    const playerDie3 = playerBoard.create(DiceSpace, 'p' + i + 'Die3');
 
-    const power1 = playerBoard.create(PowerSpace, colors[i] + 'Power1')
-    const power2 = playerBoard.create(PowerSpace, colors[i] + 'Power2')
-    const power3 = playerBoard.create(PowerSpace, colors[i] + 'Power3')
+    const power1 = playerBoard.create(PowerSpace, 'p' + i + 'Power1')
+    const power2 = playerBoard.create(PowerSpace, 'p' + i + 'Power2')
+    const power3 = playerBoard.create(PowerSpace, 'p' + i + 'Power3')
 
-    const baseAction = playerBoard.create(CustomerSpace, colors[i] + 'BaseActionSpace');
-    baseAction.create(CustomerCard, colors[i] + 'BaseAction', {flipped: true, color: Color.White})
+    const baseAction = playerBoard.create(CustomerSpace, 'p' + i + 'BaseActionSpace');
+    baseAction.create(CustomerCard, 'p' + i + 'BaseAction', {flipped: true, color: Color.White})
 
-    const masteryTrack = playerBoard.create(MasteryTrack, colors[i] + 'Mastery')
+    const masteryTrack = playerBoard.create(MasteryTrack, 'p' + i + 'Mastery')
     for(var k = 0; k < 16; k++) {
-      const trackSpace = masteryTrack.create(MasterySpace, colors[i] + 'Mastery' + k, {index: k});
+      const trackSpace = masteryTrack.create(MasterySpace, 'p' + i  + 'Mastery' + k, {index: k});
       if(k == 0) {
-        const mastery = trackSpace.create(MasteryCube, colors[i] + 'Cube', {color: colors[i]});
+        const mastery = trackSpace.create(MasteryCube, 'p' + i + 'Cube', {index: i, color: Color.White}); // color will be fixed
         mastery.player = game.players[i];
       }
     }    
@@ -1532,7 +1534,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
         // set starting dice
         game.all(ColorDie).putInto($.bag);
         game.setup = true;
-        for(var i = 0; i < 2; i++) {
+        for(var i = 0; i < 4-game.players.length; i++) {
           Object.values(Building).forEach((building: Building) =>{
             const die = $.bag.first(ColorDie)!;
             die.roll()

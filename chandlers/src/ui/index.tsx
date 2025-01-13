@@ -41,48 +41,36 @@ render(setup, {
       });
 
 
-      const tab1 = (
-        <div>          
-          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" color={game.players[0].color}>            
-            <rect x="0" y="0" width="100" height="100" fill='currentColor'/>
-          </svg>
-          <div className='playerTab'>
-            {game.players[0].name}
+      var index = 0;
+      let tabSpaces: Record<string, Space<MyGame> | string> = {};
+      let tabDefs: Record<string, React.ReactNode> = {};
+      game.players.forEach(x => {
+        tabSpaces['player' + index] = x.space;
+        const tab = (
+          <div>          
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" color={x.color}>            
+              <rect x="0" y="0" width="100" height="100" fill='currentColor'/>
+            </svg>
+            <div className='playerTab'>
+              {x.name}
+            </div>
           </div>
-        </div>
-      );
-      const tab2 = (
-        <div>          
-          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" color={game.players[1].color}>            
-            <rect x="0" y="0" width="100" height="100" fill='currentColor'/>
-          </svg>
-          <div className='playerTab'>
-            {game.players[1].name}
-          </div>
-        </div>
-      );
-    $.playersSpace.layoutAsTabs({'Red': $.playerSpaceRed as Space<MyGame>, 'Green': $.playerSpaceGreen as Space<MyGame>},
-      { area: { left: 0, top: 10 , width: 100, height: 80 }, tabDirection: 'up', tabs: {Red: tab2, Green: tab1},
+        );
+        tabDefs['player' + index]  = tab;
+        index++;
+      });
+
+    $.playersSpace.layoutAsTabs(tabSpaces,
+      { area: { left: 0, top: 10 , width: 100, height: 80 }, tabDirection: 'up', tabs: tabDefs,
       setTabTo: actions => {
         if(game.currentPlayer() != undefined) {
-          return game.capitalize(game.currentPlayer().playerColor)
+          return 'player' + game.players.indexOf(game.currentPlayer());
         } else {
           return '';
         }
       }
     }
     );
-
-    // game.layoutAsDrawer($.playerSpaceGreen as Space<MyGame>, 
-    //   { area: { left: -25, top: 60, width: 150, height: 40 }, openDirection: 'up', tab: 'Green'});
-    // game.layoutAsDrawer($.playerSpaceRed as Space<MyGame>, 
-    //   { area: { left: -25, top: 60, width: 150, height: 40 }, openDirection: 'up', tab: 'Red'});
-
-    // game.layout('playerSpaceGreen', { area: { left: -25, top: 60, width: 150, height: 40 },
-    //   drawer: { closeDirection: 'down', tab: () => 'Green Player' }});
-    // game.layout('playerSpaceRed', { area: { left: -25, top: 60, width: 150, height: 40 },
-    //   drawer: { closeDirection: 'down', tab: () => 'Red Player' }});
-
 
     game.layoutAsTabs
 
@@ -500,55 +488,36 @@ render(setup, {
       </div>
     ) });
 
-    $.playerSpaceGreen.layout('greenBoard', { area: { left: 50, top: 10, width: 30, height: 80 }});
-    $.greenBoard.layout('greenBaseActionSpace', { area: { left: 65, top: 40, width: 33, height: 45 }});
-
-    $.playerSpaceRed.layout('redBoard', { area: { left: 50, top: 10, width: 30, height: 80 }});
-    $.redBoard.layout('redBaseActionSpace', { area: { left: 65, top: 40, width: 33, height: 45 }});
     
-    $.greenBoard.layout('greenMastery', {area: { left: 0, top: 0, width: 100, height: 100 }});
-    $.redBoard.layout('redMastery', {area: { left: 0, top: 0, width: 100, height: 100 }});
+    game.players.forEach(x => {
+      x.space.layout(x.board, { area: { left: 50, top: 10, width: 30, height: 80 }});
+      x.board.layout(x.board.first(CustomerSpace)!, { area: { left: 65, top: 40, width: 33, height: 45 }});
+      x.board.layout(x.board.first(MasteryTrack)!, {area: { left: 0, top: 0, width: 100, height: 100 }});
 
-    $.playerSpaceGreen.layout(CustomerCard, { 
-      area: { left: 5, top: 2, width: 40, height: 96 },
-      rows: 3,
-      columns: 3,
-      gap: {x: 0.5, y: 0.5},
-    });
-    $.playerSpaceGreen.layout(GoalCard, { 
-      area: { left: 81, top: 2, width: 18, height: 96 },
-      rows: 3,
-      columns: 3,
-      gap: {x: 0.5, y: 0.5},
-    });
-    $.greenMastery.layout(MasterySpace, { 
-      area: { left: 3, top: 20, width: 90, height: 7 },
-      rows: 1,
-      columns: 16,
-      gap: {x: 0.25, y: 0},
-      direction: 'ltr',
-    });
+      x.space.layout(CustomerCard, { 
+        area: { left: 5, top: 2, width: 40, height: 96 },
+        rows: 3,
+        columns: 3,
+        gap: {x: 0.5, y: 0.5},
+      });
 
-    $.playerSpaceRed.layout(CustomerCard, { 
-      area: { left: 5, top: 2, width: 40, height: 96 },
-      rows: 3,
-      columns: 3,
-      gap: {x: 0.5, y: 0.5},
-    });   
-    $.playerSpaceRed.layout(GoalCard, { 
-      area: { left: 82, top: 2, width: 18, height: 96 },
-      rows: 3,
-      columns: 3,
-      gap: {x: 0.5, y: 0.5},
-    }); 
-    $.redMastery.layout(MasterySpace, { 
-      area: { left: 3, top: 20, width: 90, height: 7 },
-      rows: 1,
-      columns: 16,
-      gap: {x: 0.25, y: 0},
-      direction: 'ltr',
-    });
+      x.space.layout(GoalCard, { 
+        area: { left: 81, top: 2, width: 18, height: 96 },
+        rows: 3,
+        columns: 3,
+        gap: {x: 0.5, y: 0.5},
+      });
 
+      x.board.first(MasteryTrack)!.layout(MasterySpace, { 
+        area: { left: 3, top: 20, width: 90, height: 7 },
+        rows: 1,
+        columns: 16,
+        gap: {x: 0.25, y: 0},
+        direction: 'ltr',
+      });
+
+      index++;
+    })
 
     game.all(ScoringTrack).appearance({
       render: () => (
@@ -657,49 +626,31 @@ render(setup, {
       ),
     });
 
-    $.greenBoard.layout('greenDie1', { area: { left: 21, top: 71, width: 10, height: 15 }});
-    $.greenBoard.layout('greenDie2', { area: { left: 33.5, top: 71, width: 10, height: 15 }});
-    $.greenBoard.layout('greenDie3', { area: { left: 46, top: 71, width: 10, height: 15 }});
+    game.players.forEach(x => {
+      const dieSpaces = x.board.all(DiceSpace);
+      x.board.layout(dieSpaces[0], { area: { left: 21, top: 71, width: 10, height: 15 }});
+      x.board.layout(dieSpaces[1], { area: { left: 33.5, top: 71, width: 10, height: 15 }});
+      x.board.layout(dieSpaces[2], { area: { left: 46, top: 71, width: 10, height: 15 }});
 
-    $.greenBoard.layout('greenComponent1', { area: { left: 15, top: 40, width: 10, height: 10 }});
-    $.greenBoard.layout('greenComponent2', { area: { left: 27, top: 40, width: 10, height: 10 }});
-    $.greenBoard.layout('greenComponent3', { area: { left: 40, top: 40, width: 10, height: 10 }});
-    $.greenBoard.layout('greenComponent4', { area: { left: 52, top: 40, width: 10, height: 10 }});
-    $.greenBoard.layout('greenComponent5', { area: { left: 15, top: 57, width: 10, height: 10 }});
-    $.greenBoard.layout('greenComponent6', { area: { left: 27, top: 57, width: 10, height: 10 }});
-    $.greenBoard.layout('greenComponent7', { area: { left: 40, top: 57, width: 10, height: 10 }});
-    $.greenBoard.layout('greenComponent8', { area: { left: 52, top: 57, width: 10, height: 10 }});
-    
-    for(var i = 9; i <= 20; i++) {
-      $.greenBoard.layout('greenComponent' + i, { area: { left: 30+(9-i)*10, top: 95, width: 10, height: 10 }});
-    }
+      const compSpaces = x.board.all(ComponentSpace);
+      x.board.layout(compSpaces[0], { area: { left: 15, top: 40, width: 10, height: 10 }});
+      x.board.layout(compSpaces[1], { area: { left: 27, top: 40, width: 10, height: 10 }});
+      x.board.layout(compSpaces[2], { area: { left: 40, top: 40, width: 10, height: 10 }});
+      x.board.layout(compSpaces[3], { area: { left: 52, top: 40, width: 10, height: 10 }});
+      x.board.layout(compSpaces[4], { area: { left: 15, top: 57, width: 10, height: 10 }});
+      x.board.layout(compSpaces[5], { area: { left: 27, top: 57, width: 10, height: 10 }});
+      x.board.layout(compSpaces[6], { area: { left: 40, top: 57, width: 10, height: 10 }});
+      x.board.layout(compSpaces[7], { area: { left: 52, top: 57, width: 10, height: 10 }});
 
-    $.greenBoard.layout('greenPower1', { area: { left: 2.5, top: 38, width: 10, height: 15 }});
-    $.greenBoard.layout('greenPower2', { area: { left: 2.5, top: 55, width: 10, height: 15 }});
-    $.greenBoard.layout('greenPower3', { area: { left: 2.5, top: 72, width: 10, height: 15 }});
-
-
-
-    $.redBoard.layout('redDie1', { area: { left: 21, top: 71, width: 10, height: 15 }});
-    $.redBoard.layout('redDie2', { area: { left: 33.5, top: 71, width: 10, height: 15 }});
-    $.redBoard.layout('redDie3', { area: { left: 46, top: 71, width: 10, height: 15 }});
-
-    $.redBoard.layout('redComponent1', { area: { left: 15, top: 40, width: 10, height: 10 }});
-    $.redBoard.layout('redComponent2', { area: { left: 27, top: 40, width: 10, height: 10 }});
-    $.redBoard.layout('redComponent3', { area: { left: 40, top: 40, width: 10, height: 10 }});
-    $.redBoard.layout('redComponent4', { area: { left: 52, top: 40, width: 10, height: 10 }});
-    $.redBoard.layout('redComponent5', { area: { left: 15, top: 57, width: 10, height: 10 }});
-    $.redBoard.layout('redComponent6', { area: { left: 27, top: 57, width: 10, height: 10 }});
-    $.redBoard.layout('redComponent7', { area: { left: 40, top: 57, width: 10, height: 10 }});
-    $.redBoard.layout('redComponent8', { area: { left: 52, top: 57, width: 10, height: 10 }});
-
-    $.redBoard.layout('redPower1', { area: { left: 2.5, top: 38, width: 10, height: 15 }});
-    $.redBoard.layout('redPower2', { area: { left: 2.5, top: 55, width: 10, height: 15 }});
-    $.redBoard.layout('redPower3', { area: { left: 2.5, top: 72, width: 10, height: 15 }});
-
-    for(var i = 9; i <= 20; i++) {
-      $.redBoard.layout('redComponent' + i, { area: { left: 30+(9-i)*10, top: 95, width: 10, height: 10 }});
-    }
+      for(var i = 8; i < 20; i++) {
+        x.board.layout(compSpaces[i], { area: { left: 30+(9-i)*10, top: 95, width: 10, height: 10 }});
+      }
+      
+      const powerSpaces = x.board.all(PowerSpace);
+      x.board.layout(powerSpaces[0], { area: { left: 2.5, top: 38, width: 10, height: 15 }});
+      x.board.layout(powerSpaces[1], { area: { left: 2.5, top: 55, width: 10, height: 15 }});
+      x.board.layout(powerSpaces[2], { area: { left: 2.5, top: 72, width: 10, height: 15 }});
+    })
 
     game.layoutControls({
       element: game,

@@ -788,8 +788,10 @@
         width: 100%; 
         height: 100%;
 
-        &[data-name="greenBaseAction"] .front { background-image: url(./assets/customers/blank.png) } 
-        &[data-name="redBaseAction"] .front { background-image: url(./assets/customers/blank.png) } 
+        &[data-name="p0BaseAction"] .front { background-image: url(./assets/customers/blank.png) } 
+        &[data-name="p1BaseAction"] .front { background-image: url(./assets/customers/blank.png) } 
+        &[data-name="p2BaseAction"] .front { background-image: url(./assets/customers/blank.png) } 
+        &[data-name="p3BaseAction"] .front { background-image: url(./assets/customers/blank.png) } 
         
         &[data-name="audacity"] .front { background-image: url(./assets/customers/audacity.jpg) }
         &[data-name="bamboozle"] .front { background-image: url(./assets/customers/bamboozle.jpg) }
