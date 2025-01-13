@@ -131,8 +131,14 @@
   .PlayerBoard {
     z-index: 40;
 
-    &[data-name="greenBoard"] .front { background-image: url(./assets/players/green.jpg) }
-    &[data-name="redBoard"] .front { background-image: url(./assets/players/red.jpg) }
+    // &[data-name="greenBoard"] .front { background-image: url(./assets/players/green.jpg) }
+    // &[data-name="redBoard"] .front { background-image: url(./assets/players/red.jpg) }
+
+    .front { 
+      background-image: url(./assets/players/board.png);
+    }
+
+
 
     > div {   
       width: 100%;
@@ -762,8 +768,8 @@
         width: 100%; 
         height: 100%;
 
-        &[data-name="greenBaseAction"] .front { background-image: url(./assets/customers/blank.png) } 
-        &[data-name="redBaseAction"] .front { background-image: url(./assets/customers/blank.png) } 
+        &[data-name="greenBaseAction"] .front { background-image: url(./assets/players/mastery.png) } 
+        &[data-name="redBaseAction"] .front { background-image: url(./assets/players/mastery.png) } 
         
         &[data-name="audacity"] .front { background-image: url(./assets/customers/audacity.jpg) }
         &[data-name="bamboozle"] .front { background-image: url(./assets/customers/bamboozle.jpg) }

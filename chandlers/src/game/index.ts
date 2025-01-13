@@ -560,14 +560,16 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   }
   for(var i = 71; i <= 100; i++) {
     $.scoringTrack71_100.create(ScoringSpace, 'scoring' + i, {score: i == 100 ? 0 : i});
-  }
-  $.scoring100.create(ScoreTracker, 'greenScore', {color: Color.Green});
-  $.scoring100.create(ScoreTracker, 'redScore', {color: Color.Red});
+  }  
 
-  // players
+  // players  
   const playersSpace = game.create(PlayersSpace, 'playersSpace')
   const colors = [Color.Green, Color.Red]
+  
   for(var i = 0; i < game.players.length; i++) {
+    const score = $.scoring100.create(ScoreTracker, colors[i] + 'Score', {color: Color.Green});
+    score.player = game.players[i];
+    
     const playerSpace = playersSpace.create(PlayerSpace, 'playerSpace' + game.capitalize(colors[i]), {player: game.players[i]})
     playerSpace.onEnter(CustomerCard, x => {
       x.flipped = true;
@@ -577,6 +579,8 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     })
 
     const playerBoard = playerSpace.create(PlayerBoard, colors[i] + "Board")
+    playerBoard.player = game.players[i];
+    
     game.players[i].space = playerSpace
     game.players[i].board = playerBoard
     game.players[i].playerColor = colors[i]
@@ -600,7 +604,8 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     for(var k = 0; k < 16; k++) {
       const trackSpace = masteryTrack.create(MasterySpace, colors[i] + 'Mastery' + k, {index: k});
       if(k == 0) {
-        trackSpace.create(MasteryCube, colors[i] + 'Cube', {color: colors[i]});
+        const mastery = trackSpace.create(MasteryCube, colors[i] + 'Cube', {color: colors[i]});
+        mastery.player = game.players[i];
       }
     }    
 

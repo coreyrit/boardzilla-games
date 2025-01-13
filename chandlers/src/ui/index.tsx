@@ -40,8 +40,10 @@ render(setup, {
           .includes(a.name)),
       });
 
+      const tab1 = game.players[0].name;
+      const tab2 = game.players[1].name;
     $.playersSpace.layoutAsTabs({'Red': $.playerSpaceRed as Space<MyGame>, 'Green': $.playerSpaceGreen as Space<MyGame>},
-      { area: { left: 0, top: 10 , width: 100, height: 80 }, tabDirection: 'up', tabs: {Red: 'Red', Green: 'Green'},
+      { area: { left: 0, top: 10 , width: 100, height: 80 }, tabDirection: 'up', tabs: {Red: tab2, Green: tab1},
       setTabTo: actions => {
         if(game.currentPlayer() != undefined) {
           return game.capitalize(game.currentPlayer().playerColor)
@@ -385,7 +387,7 @@ render(setup, {
 
     game.all(MasteryCube).appearance({
       render: x => (
-        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" color={x.color == undefined ? "white" : x.color}>
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" color={x.color == undefined ? "white" : x.player!.color}>
           <rect x="0" y="0" width="100" height="100" fill="currentColor" opacity={x.color == undefined ? '0' : '100'}/>
         </svg>
       ),
@@ -471,9 +473,10 @@ render(setup, {
       render: x => ( 
       <div className='PlayerBoard'>
         <div className='front' />
-        {/* <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-          <rect x="0" y="0" width="100" height="100" />
-        </svg> */}
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" color={x.player!.color}>
+          <rect x="0" y="4" width="100" height="60" fill="white" />
+          <rect x="0" y="4" width="100" height="60" fill="currentColor" opacity='75%'/>
+        </svg>
       </div>
     ) });
 
@@ -628,7 +631,7 @@ render(setup, {
     
     game.all(ScoreTracker).appearance({
       render: x => (
-        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" color={x.color == undefined ? "white" : x.color}>
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" color={x.color == undefined ? "white" : x.player!.color}>
           <circle cx="50" cy="50" r="50"fill="currentColor" stroke="white" strokeWidth="5" opacity={x.color == undefined ? '0' : '100'}/>
         </svg>
       ),
