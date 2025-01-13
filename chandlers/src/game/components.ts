@@ -157,7 +157,9 @@ export class BackAlleyTile extends Piece<MyGame> {
         }
         case 'move-candle': {
           console.log(game.currentPlayer().space.all(CandlePawn).length);
-          if(game.currentPlayer().space.all(CustomerCard).all(CandlePawn).length > 0) {
+          if(game.currentPlayer().space.all(CustomerCard)
+              .filter(x => x.all(CandlePawn).length < x.requiredCandles().length)
+              .all(CandlePawn).length > 0) {
             game.followUp({name: 'chooseCandleToMove'})
           }
           break;

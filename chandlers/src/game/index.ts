@@ -920,12 +920,12 @@ export default createGame(ChandlersPlayer, MyGame, game => {
         actions = 3;
       }
       for(var i = 0; i < actions; i++) {
-        game.followUp({name: 'chooseBackAlleyAction', args: {space: space}});
+        game.followUp({name: 'chooseBackAlleyAction', args: {letter: space.letter}});
       }
 
       candle.putInto($.bag);
     }),
-
+    
     choosePowerTile: (player) => action({
       prompt: 'Choose power tile',
     }).chooseOnBoard(
@@ -935,10 +935,11 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       tile.flipped = true;
     }),
 
-    chooseBackAlleyAction: (player) => action<{space: BackAlley}>({
+    chooseBackAlleyAction: (player) => action<{letter: string}>({
       prompt: 'Choose back alley tile',
     }).chooseOnBoard(
-      'token', ({space}) => game.all(BackAlleySpace, {letter: space.letter}),
+      'token', ({letter}) => ['A', 'B'].includes(letter) ? game.all(BackAlleySpace, {letter: letter}) :
+        game.all(BackAlleySpace, {letter: 'A'}).concat(game.all(BackAlleySpace, {letter: 'B'})),
       { skipIf: 'never' }
     ).do(({ token }) => {
       token.first(BackAlleyTile)!.performActionAfterConfirmation(game);
@@ -947,7 +948,8 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     chooseCandleToMove: (player) => action({
       prompt: 'Choose candle to move',
     }).chooseOnBoard(
-      'candle', player.space.all(CustomerCard).all(CandlePawn),
+      'candle', player.space.all(CustomerCard)
+        .filter(x => x.all(CandlePawn).length < x.requiredCandles().length).all(CandlePawn),
       { skipIf: 'never' }
     ).chooseOnBoard(
       'space', ({candle}) => player.space.all(CandleSpace, {color: candle.color})
@@ -1022,6 +1024,10 @@ export default createGame(ChandlersPlayer, MyGame, game => {
             break;
           }
           case CustomerType.Rogue: {
+            var actions = player.space.all(CustomerCard, {customerType: CustomerType.Rogue}).length;
+            for(var i = 0; i < actions; i++) {
+              game.followUp({name: 'chooseBackAlleyAction', args: {letter: 'All'}});
+            }
             break;
           }
           case CustomerType.Witch: {    
