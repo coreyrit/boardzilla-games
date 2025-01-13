@@ -732,7 +732,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     ).do(({ key, die }) => {
       key.putInto(game.first(KeyHook, {color: key.color})!);
       die.roll();
-      die.putInto(player.nextEmptySpace());
+      die.putInto(player.nextEmptyDieSpace());
     }),
 
     chooseSpiltDie: (player) => action({
@@ -842,7 +842,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       player.gainCandle(melt, false, 1);
       melt.putInto($.meltSpillArea);  
       player.increaseScore();
-      if(count > 1) {
+      if(count > 1 && player.board.all(Melt).length > 0) {
         game.followUp({name: 'continueMolding', args: {count: count}});
       }
     }),
