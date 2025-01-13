@@ -567,7 +567,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   const colors = [Color.Green, Color.Red]
   
   for(var i = 0; i < game.players.length; i++) {
-    const score = $.scoring100.create(ScoreTracker, colors[i] + 'Score', {color: Color.Green});
+    const score = $.scoring100.create(ScoreTracker, colors[i] + 'Score', {color: colors[i]});
     score.player = game.players[i];
     
     const playerSpace = playersSpace.create(PlayerSpace, 'playerSpace' + game.capitalize(colors[i]), {player: game.players[i]})
