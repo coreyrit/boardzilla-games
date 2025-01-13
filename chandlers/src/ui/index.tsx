@@ -40,8 +40,27 @@ render(setup, {
           .includes(a.name)),
       });
 
-      const tab1 = game.players[0].name;
-      const tab2 = game.players[1].name;
+
+      const tab1 = (
+        <div>          
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" color={game.players[0].color}>            
+            <rect x="0" y="0" width="100" height="100" fill='currentColor'/>
+          </svg>
+          <div className='playerTab'>
+            {game.players[0].name}
+          </div>
+        </div>
+      );
+      const tab2 = (
+        <div>          
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" color={game.players[1].color}>            
+            <rect x="0" y="0" width="100" height="100" fill='currentColor'/>
+          </svg>
+          <div className='playerTab'>
+            {game.players[1].name}
+          </div>
+        </div>
+      );
     $.playersSpace.layoutAsTabs({'Red': $.playerSpaceRed as Space<MyGame>, 'Green': $.playerSpaceGreen as Space<MyGame>},
       { area: { left: 0, top: 10 , width: 100, height: 80 }, tabDirection: 'up', tabs: {Red: tab2, Green: tab1},
       setTabTo: actions => {
@@ -50,7 +69,8 @@ render(setup, {
         } else {
           return '';
         }
-      }}
+      }
+    }
     );
 
     // game.layoutAsDrawer($.playerSpaceGreen as Space<MyGame>, 

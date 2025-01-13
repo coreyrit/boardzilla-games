@@ -157,12 +157,32 @@
   }
   }
 
+  .tabs-tab {
+    // background: var(--player-color);
+    // opacity: 25%;
+    filter: brightness(0.5);
+    &.active {
+      // opacity: 100%;
+      filter: brightness(1.0);
+    }
+    &:hover {
+      opacity: 100%;
+      filter: brightness(1.5);
+    }
+  }
+
+  .playerTab {
+    position: absolute;
+    top: 0;
+    left: 40%;
+  }
+
   .drawer {
     z-index: 2000;
   }
   .drawer-tab {
     z-index: 2000;
-    // background-color: green;
+    // background-color: var(--player-color);
   }
   .drawer-content {
     z-index: 2100;
