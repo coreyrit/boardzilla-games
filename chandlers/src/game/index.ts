@@ -1296,7 +1296,23 @@ export default createGame(ChandlersPlayer, MyGame, game => {
         { skipIf: 'never' }
     ).do(({ space }) => {
       player.stack = false;
-      $.ready.first(WorkerPiece)?.putInto(space);
+
+      const worker = $.ready.first(WorkerPiece)!;    
+
+      if(game.setting('captureWorkers') && 
+        ![$.waxSpill, $.pigmentSpill, $.moldSpill].includes(space) && space.all(WorkerPiece).length > 0) {
+        const top = space.top(WorkerPiece)!;
+        if(worker instanceof CandlePawn && top instanceof ColorDie) {
+          const die = top as ColorDie;
+          die.roll();
+          die.putInto(player.nextEmptyDieSpace());
+        } else if(worker instanceof CandlePawn && top instanceof KeyShape) {
+          top.putInto(player.nextEmptySpace());
+        } else if(worker instanceof ColorDie && top instanceof KeyShape) {
+          top.putInto(player.nextEmptySpace());
+        }
+      }      
+      worker.putInto(space);
       player.placedWorker = true;
     }),
 

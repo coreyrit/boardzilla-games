@@ -1,5 +1,5 @@
 import React from 'react';
-import { Piece, render, Space } from '@boardzilla/core';
+import { Piece, render, Space, toggleSetting } from '@boardzilla/core';
 import { Color, MyGame, default as setup } from '../game/index.js';
 
 import './style.scss';
@@ -9,6 +9,7 @@ import { BackAlley, BackAlleySpace, Candelabra, CandleBottomRow, CandleSpace, Ca
 
 render(setup, {
   settings: {
+    captureWorkers: toggleSetting('Capture workers when stacking')
   },
   layout: game => {
 
