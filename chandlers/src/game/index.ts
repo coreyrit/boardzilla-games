@@ -12,7 +12,7 @@ import { WaxBuilding } from './building/wax.js';
 import { PigmentBuilding } from './building/pigment.js';
 import { MoldBuilding } from './building/mold.js';
 import { ChandlersPlayer } from './player.js';
-import { CustomerCard, EndGameTile, RoundEndTile, BackAlleyTile, ColorDie, KeyShape, CandlePawn, PowerTile, Wax, WorkerPiece, Pigment, Melt, MasteryCube, ScoreTracker, Bulb, GoalCard } from './components.js';
+import { CustomerCard, EndGameTile, RoundEndTile, BackAlleyTile, ColorDie, KeyShape, CandlePawn, PowerTile, Wax, WorkerPiece, Pigment, Melt, MasteryCube, ScoreTracker, Bulb, GoalCard, Lamp } from './components.js';
 import { BackAlley, BackAlleySpace, Candelabra, CandleBottomRow, CandleSpace, CandleTopRow, ChandlersBoard, ComponentSpace, CustomerSpace, DiceSpace, GameEndSpace, GoalSpace, KeyHook, MasterySpace, MasteryTrack, PlayerBoard, PlayerSpace, PlayersSpace, PowerSpace, ReadySpace, RoundEndSpace, RoundSpace, ScoringSpace, ScoringTrack, Spill, WorkerSpace } from './boards.js';
 import { timeLog } from 'console';
 
@@ -588,9 +588,11 @@ export default createGame(ChandlersPlayer, MyGame, game => {
 
   // players  
   const playersSpace = game.create(PlayersSpace, 'playersSpace')
-  
+
+  const firstPlayer = game.create(Lamp, 'firstPlayer');
+
   for(var i = 0; i < game.players.length; i++) {
-    const score = $.scoring100.create(ScoreTracker, 'p' + i + 'Score', 
+     const score = $.scoring100.create(ScoreTracker, 'p' + i + 'Score', 
       {color: Color.White, index: i}); // color will be fixed
     score.player = game.players[i];
     
@@ -608,6 +610,10 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     game.players[i].space = playerSpace
     game.players[i].board = playerBoard
     // game.players[i].playerColor = colors[i]
+
+    if(i == 0) {
+      firstPlayer.putInto(game.players[i].space);
+    }
 
     for(var l = 1; l <= 20; l++) {
       playerBoard.create(ComponentSpace, 'p' + i + 'Component' + l, {num: l});
@@ -1519,86 +1525,105 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   game.defineFlow(
 
     loop(
-    whileLoop({while: () => !game.allPlayersPassed(), do: ([
 
-      eachPlayer({
-        name: 'turn', do: [
-          () => {game.currentPlayer().placedWorker = false},
-          whileLoop({while: () => !game.currentPlayer().placedWorker, do: ([
-            playerActions({ actions: ['chooseWorker', 'usePower', 'pass']}),
-            playerActions({ actions: ['placeWorker', 'placeCandle', 'sellCandle', 'skip']}),
-            ifElse({
-              if: () => game.currentPlayer().componentCount() > 8, do: [playerActions({ actions: ['discardExtraComponents']})
-            ]}),
-          ])})
-        ]
-      }),
-    ])}),
+      () => {
+        const firstPlayer = game.first(Lamp)!;
+        game.players.setCurrent(game.players[0]);     
+        // move to the next player until you get to the first player token
+        for(var i = 0; i < firstPlayer.playerIndex; i++) {
+          game.players.next();
+        }
+      },
+
+      whileLoop({while: () => !game.allPlayersPassed(), do: ([        
+        () => {game.currentPlayer().placedWorker = false},
+        whileLoop({while: () => !game.currentPlayer().placedWorker, do: ([
+          playerActions({ actions: ['chooseWorker', 'usePower', 'pass']}),
+          playerActions({ actions: ['placeWorker', 'placeCandle', 'sellCandle', 'skip']}),
+          ifElse({
+            if: () => game.currentPlayer().componentCount() > 8, do: [playerActions({ actions: ['discardExtraComponents']})
+          ]}),
+        ])}),
+        () => {game.players.next();}
+      ])}),
+      
       () => {
         // check round end goals
         game.checkRoundEndGoals();
 
-        // reset players
-        for(const player of game.players) { player.pass = false; }
-
-        // reset space colors
-        ($.waxRepeater as WorkerSpace).color = undefined;
-        ($.waxBackroom as WorkerSpace).color = undefined;
-        ($.waxMiddle as WorkerSpace).color = undefined;
-        ($.pigmentRepeater as WorkerSpace).color = undefined;
-        ($.pigmentBackroom as WorkerSpace).color = undefined;
-        ($.pigmentMiddle as WorkerSpace).color = undefined;
-        ($.moldRepeater as WorkerSpace).color = undefined;
-        ($.moldBackroom as WorkerSpace).color = undefined;
-        ($.moldMiddle as WorkerSpace).color = undefined;
-
-        // discard used candles
-        game.all(WorkerSpace).all(CandlePawn).putInto($.bag);
-
-        // return shapes
-        game.first(KeyShape, {color: Color.Red})?.putInto($.redHook);
-        game.first(KeyShape, {color: Color.Yellow})?.putInto($.yellowHook);
-        game.first(KeyShape, {color: Color.Blue})?.putInto($.blueHook);
-        game.first(KeyShape, {color: Color.Orange})?.putInto($.orangeHook);
-        game.first(KeyShape, {color: Color.Green})?.putInto($.greenHook);
-        game.first(KeyShape, {color: Color.Purple})?.putInto($.purpleHook);
-
-        // reset the customers
-        for(const customer of [$.customer1, $.customer2, $.customer3, $.customer4]) {
-          customer.first(CustomerCard)?.putInto($.bag);
-          $.drawCustomer.top(CustomerCard)?.putInto(customer);
-        }
-
-        // set starting dice
-        game.all(ColorDie).putInto($.bag);
-        game.setup = true;
-        for(var i = 0; i < 4-game.players.length; i++) {
-          Object.values(Building).forEach((building: Building) =>{
-            const die = $.bag.first(ColorDie)!;
-            die.roll()
-            if(i == 2) {
-              // for solo randomly put one in mastery or backroom
-              if(Math.floor(game.random() * 2) % 2 == 0) {
-                die.putInto(game.first(WorkerSpace, { building: building, spaceType: SpaceType.Mastery })!)
-              } else {
-                die.putInto(game.first(WorkerSpace, { building: building, spaceType: SpaceType.Backroom })!)
-              }
-            } else {
-              die.putInto(game.first(WorkerSpace, { building: building, color: die.color })!)
-            }
-          });          
-        }
-        game.setup = false;
-
-        // start with new dice
-        for(const player of game.players) {
-          const die1 = $.bag.first(ColorDie); die1?.roll(); die1?.putInto(player.nextEmptyDieSpace());
-          const die2 = $.bag.first(ColorDie); die2?.roll(); die2?.putInto(player.nextEmptyDieSpace());
-          const die3 = $.bag.first(ColorDie); die3?.roll(); die3?.putInto(player.nextEmptyDieSpace());
-        }
-
         if(game.currentRound() < 4) {
+
+          // reset players
+          for(const player of game.players) { player.pass = false; }
+
+          // reset space colors
+          ($.waxRepeater as WorkerSpace).color = undefined;
+          ($.waxBackroom as WorkerSpace).color = undefined;
+          ($.waxMiddle as WorkerSpace).color = undefined;
+          ($.pigmentRepeater as WorkerSpace).color = undefined;
+          ($.pigmentBackroom as WorkerSpace).color = undefined;
+          ($.pigmentMiddle as WorkerSpace).color = undefined;
+          ($.moldRepeater as WorkerSpace).color = undefined;
+          ($.moldBackroom as WorkerSpace).color = undefined;
+          ($.moldMiddle as WorkerSpace).color = undefined;
+
+          // discard used candles
+          game.all(WorkerSpace).all(CandlePawn).putInto($.bag);
+
+          // return shapes
+          game.first(KeyShape, {color: Color.Red})?.putInto($.redHook);
+          game.first(KeyShape, {color: Color.Yellow})?.putInto($.yellowHook);
+          game.first(KeyShape, {color: Color.Blue})?.putInto($.blueHook);
+          game.first(KeyShape, {color: Color.Orange})?.putInto($.orangeHook);
+          game.first(KeyShape, {color: Color.Green})?.putInto($.greenHook);
+          game.first(KeyShape, {color: Color.Purple})?.putInto($.purpleHook);
+
+          // reset the customers
+          for(const customer of [$.customer1, $.customer2, $.customer3, $.customer4]) {
+            customer.first(CustomerCard)?.putInto($.bag);
+            $.drawCustomer.top(CustomerCard)?.putInto(customer);
+          }
+
+          // set starting dice
+          game.all(ColorDie).putInto($.bag);
+          game.setup = true;
+          for(var i = 0; i < 4-game.players.length; i++) {
+            Object.values(Building).forEach((building: Building) =>{
+              const die = $.bag.first(ColorDie)!;
+              die.roll()
+              if(i == 2) {
+                // for solo randomly put one in mastery or backroom
+                if(Math.floor(game.random() * 2) % 2 == 0) {
+                  die.putInto(game.first(WorkerSpace, { building: building, spaceType: SpaceType.Mastery })!)
+                } else {
+                  die.putInto(game.first(WorkerSpace, { building: building, spaceType: SpaceType.Backroom })!)
+                }
+              } else {
+                die.putInto(game.first(WorkerSpace, { building: building, color: die.color })!)
+              }
+            });          
+          }
+          game.setup = false;
+
+          // start with new dice
+          for(const player of game.players) {
+            const die1 = $.bag.first(ColorDie); die1?.roll(); die1?.putInto(player.nextEmptyDieSpace());
+            const die2 = $.bag.first(ColorDie); die2?.roll(); die2?.putInto(player.nextEmptyDieSpace());
+            const die3 = $.bag.first(ColorDie); die3?.roll(); die3?.putInto(player.nextEmptyDieSpace());
+          }
+
+          // move the first player token
+          const firstPlayer = game.first(Lamp)!;
+          if(firstPlayer.playerIndex < game.players.length-1) {
+            firstPlayer.playerIndex = firstPlayer.playerIndex+1;            
+          } else {
+            firstPlayer.playerIndex = 0;
+          }      
+          firstPlayer.putInto(game.players[firstPlayer.playerIndex].space);
+          
+          // move the round tracker
           game.nextRound();
+        
         } else {
 
           // do final scoring
@@ -1669,7 +1694,6 @@ export default createGame(ChandlersPlayer, MyGame, game => {
           game.finish(undefined)
         }
       }
-    )
-    
+    )    
   );
 });

@@ -3,7 +3,7 @@ import { Piece, render, Space, toggleSetting } from '@boardzilla/core';
 import { Color, MyGame, default as setup } from '../game/index.js';
 
 import './style.scss';
-import { BackAlleyTile, CandlePawn, ColorDie, CustomerCard, EndGameTile, KeyShape, RoundEndTile, Wax, PowerTile, Melt, MasteryCube, Pigment, ScoreTracker, Bulb, GoalCard } from '../game/components.js';
+import { BackAlleyTile, CandlePawn, ColorDie, CustomerCard, EndGameTile, KeyShape, RoundEndTile, Wax, PowerTile, Melt, MasteryCube, Pigment, ScoreTracker, Bulb, GoalCard, Lamp } from '../game/components.js';
 import { BackAlley, BackAlleySpace, Candelabra, CandleBottomRow, CandleSpace, CandleTopRow, ChandlersBoard, ComponentSpace, CustomerSpace, DiceSpace, GameEndSpace, KeyHook, MasterySpace, MasteryTrack, PlayerBoard, PlayerSpace, PlayersSpace, PowerSpace, ReadySpace, RoundEndSpace, RoundSpace, ScoringSpace, ScoringTrack, Spill, WorkerSpace } from '../game/boards.js';
 // import '@boardzilla/core/index.css';
 
@@ -192,6 +192,12 @@ render(setup, {
     game.all(Bulb).appearance({
       render: () => (
         <div className='Bulb' />
+      ),
+    });
+
+    game.all(Lamp).appearance({
+      render: () => (
+        <div className='Lamp' />
       ),
     });
 
@@ -500,6 +506,10 @@ render(setup, {
         rows: 3,
         columns: 3,
         gap: {x: 0.5, y: 0.5},
+      });
+
+      x.space.layout(Lamp, { 
+        area: { left: -1, top: 60, width: 8, height: 40 },
       });
 
       x.space.layout(GoalCard, { 
