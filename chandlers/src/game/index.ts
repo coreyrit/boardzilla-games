@@ -335,10 +335,10 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   // place ONE white candle in the bag
   $.bag.create(CandlePawn, 'whiteCandleBag', {color: Color.White});
 
-  for(var i = 0; i < 8; i++) {
+  for(var i = 0; i < 8 + game.players.length-2; i++) {
     $.whiteCandles.create(CandlePawn, 'whiteCandle' + i, {color: Color.White})
   }
-  for(var i = 0; i < 6; i++) {
+  for(var i = 0; i < 6 + game.players.length-2; i++) {
     $.redCandles.create(CandlePawn, 'redCandle' + i, {color: Color.Red})
     $.yellowCandles.create(CandlePawn, 'yellowCandle' + i, {color: Color.Yellow})
     $.blueCandles.create(CandlePawn, 'blueCandle' + i, {color: Color.Blue})
@@ -346,7 +346,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     $.greenCandles.create(CandlePawn, 'greenCandle' + i, {color: Color.Green})
     $.purpleCandles.create(CandlePawn, 'purpleCandle' + i, {color: Color.Purple})
   }
-  for(var i = 0; i < 4; i++) {
+  for(var i = 0; i < 4 + game.players.length-2; i++) {
     $.blackCandles.create(CandlePawn, 'blackCandle' + i, {color: Color.Black})
   }
 
@@ -1578,8 +1578,16 @@ export default createGame(ChandlersPlayer, MyGame, game => {
                   (player.space.all(CustomerCard, {color: goal.color1, scoredGoal: false}).length > 0 && 
                    player.space.all(CustomerCard, {color: goal.color2, scoredGoal: false}).length > 0)
                 ) {
-                  player.space.first(CustomerCard, {color: goal.color1, scoredGoal: false})!.scoredGoal = true;
-                  player.space.first(CustomerCard, {color: goal.color2, scoredGoal: false})!.scoredGoal = true;
+
+                  const goal1 = player.space.first(CustomerCard, {color: goal.color1, scoredGoal: false});
+                  const goal2 = player.space.first(CustomerCard, {color: goal.color2, scoredGoal: false});
+
+                  if(goal1 != undefined) {
+                    goal1.scoredGoal = true;
+                  }
+                  if(goal2 != undefined) {
+                    goal2.scoredGoal = true;
+                  }
 
                   game.message(player.name + ' scored 6 points for goal ' + goal.name);
                   player.increaseScore(6);
