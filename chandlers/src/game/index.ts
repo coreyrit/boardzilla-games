@@ -1589,18 +1589,18 @@ export default createGame(ChandlersPlayer, MyGame, game => {
             player.space.all(GoalCard).forEach(goal => {
               if (
                   (goal.color1 == goal.color2 &&
-                   player.space.all(CustomerCard, {color: goal.color1, scoredGoal: false}).length >= 2)
+                   player.space.all(CustomerCard, {color: goal.color1, scoredGoal: false}).filter(x => x.all(CandlePawn).length > 0).length >= 2)
                   ||
-                  (player.space.all(CustomerCard, {color: goal.color1, scoredGoal: false}).length > 0 && 
-                   player.space.all(CustomerCard, {color: goal.color2, scoredGoal: false}).length > 0)
+                  (player.space.all(CustomerCard, {color: goal.color1, scoredGoal: false}).filter(x => x.all(CandlePawn).length > 0).length > 0 && 
+                   player.space.all(CustomerCard, {color: goal.color2, scoredGoal: false}).filter(x => x.all(CandlePawn).length > 0).length > 0)
                 ) {
 
                   const goal1 = player.space.first(CustomerCard, {color: goal.color1, scoredGoal: false});
-                  const goal2 = player.space.first(CustomerCard, {color: goal.color2, scoredGoal: false});
-
                   if(goal1 != undefined) {
                     goal1.scoredGoal = true;
                   }
+
+                  const goal2 = player.space.first(CustomerCard, {color: goal.color2, scoredGoal: false});                  
                   if(goal2 != undefined) {
                     goal2.scoredGoal = true;
                   }
