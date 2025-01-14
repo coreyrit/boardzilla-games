@@ -334,6 +334,13 @@
     .WorkerSpace {
         z-index: 10;
 
+        h1 {
+          text-align: center; 
+        }
+        h1 span { 
+          background-color: white; 
+        }
+
         &.selectable {
           z-index: 15;
           > div {      
@@ -342,6 +349,19 @@
             width: 100%;
             height: 100%;
           }
+        }
+
+        .transform-wrapper:has(.KeyShape:hover) .KeyShape {
+          transform: translateX(25%) translateY(-25%) scale(1.1);
+          z-index: 100;
+        }
+        .transform-wrapper:has(.ColorDie:hover) .ColorDie {
+          transform: translateX(25%) translateY(-25%) scale(1.1);
+          z-index: 100;
+        }
+        .transform-wrapper:has(.CandlePawn:hover) .CandlePawn {
+          transform: translateX(25%) translateY(-25%) scale(1.1);
+          z-index: 100;
         }
     }
 

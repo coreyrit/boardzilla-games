@@ -3,7 +3,7 @@ import { Piece, render, Space, toggleSetting } from '@boardzilla/core';
 import { Color, MyGame, default as setup } from '../game/index.js';
 
 import './style.scss';
-import { BackAlleyTile, CandlePawn, ColorDie, CustomerCard, EndGameTile, KeyShape, RoundEndTile, Wax, PowerTile, Melt, MasteryCube, Pigment, ScoreTracker, Bulb, GoalCard, Lamp } from '../game/components.js';
+import { BackAlleyTile, CandlePawn, ColorDie, CustomerCard, EndGameTile, KeyShape, RoundEndTile, Wax, PowerTile, Melt, MasteryCube, Pigment, ScoreTracker, Bulb, GoalCard, Lamp, WorkerPiece } from '../game/components.js';
 import { BackAlley, BackAlleySpace, Candelabra, CandleBottomRow, CandleSpace, CandleTopRow, ChandlersBoard, ComponentSpace, CustomerSpace, DiceSpace, GameEndSpace, KeyHook, MasterySpace, MasteryTrack, PlayerBoard, PlayerSpace, PlayersSpace, PowerSpace, ReadySpace, RoundEndSpace, RoundSpace, ScoringSpace, ScoringTrack, Spill, WorkerSpace } from '../game/boards.js';
 // import '@boardzilla/core/index.css';
 
@@ -310,16 +310,11 @@ render(setup, {
       ),
     });
 
-    // game.all(WorkerSpace).appearance({
-    //   render: () => (
-    //     <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-    //       <circle cx="50" cy="50" r="50" />
-    //     </svg>
-    //   ),
-    // });
-
     game.all(WorkerSpace).appearance({ render: x => ( 
-      <div className='WorkerSpace' />
+      <div className='WorkerSpace'>
+        <br /><br /><br /><br />
+        <h1><span>{x.toHtml()}</span></h1>
+      </div>
     ) });
 
     game.all(DiceSpace).appearance({ render: x => ( 

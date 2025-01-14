@@ -1,6 +1,6 @@
 import { Piece, Space } from "@boardzilla/core";
 import { Building, Color, MyGame, SpaceType } from "./index.js";
-import { CandlePawn, ColorDie, KeyShape, Melt } from "./components.js";
+import { CandlePawn, ColorDie, KeyShape, Melt, WorkerPiece } from "./components.js";
 
 export class WorkerSpace extends Space<MyGame> {
     building: Building
@@ -15,6 +15,10 @@ export class WorkerSpace extends Space<MyGame> {
     }
     containsCandle() : boolean {
       return this.all(CandlePawn).length > 0;
+    }
+
+    toHtml() : string {
+      return this.all(WorkerPiece).length > 1 ? '‎ ‎ ‎' + this.all(WorkerPiece).length + '‎ ‎ ‎' : '';
     }
 }
   
