@@ -22,6 +22,14 @@ export enum Building {
   Mold = 'mold'
 }
 
+export enum SpaceType {
+  Color = 'color',
+  Mastery = 'mastery',
+  Backroom = 'backroom',
+  Middle = 'middle',
+  Spill = 'spill'
+}
+
 export enum Color {
   Red = 'red',
   Yellow = 'yellow',
@@ -108,21 +116,23 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
       space.color = space.top(WorkerPiece)?.color;
     }
 
-    switch(building) {
-      case Building.Wax: {
-        this.followUp({name: 'chooseWaxRepeater'});
-        break;
-      }
-      case Building.Pigment: {
-        this.followUp({name: 'choosePigmentColor', args: {firstChoice: true}}); 
-        for(var i = 1; i < this.currentPlayer().masteryLevel(); i++) {
-          this.followUp({name: 'choosePigmentColor', args: {firstChoice: false}});    
+    if(!this.setup) {
+      switch(building) {
+        case Building.Wax: {
+          this.followUp({name: 'chooseWaxRepeater'});
+          break;
+       }
+        case Building.Pigment: {
+          this.followUp({name: 'choosePigmentColor', args: {firstChoice: true}}); 
+          for(var i = 1; i < this.currentPlayer().masteryLevel(); i++) {
+            this.followUp({name: 'choosePigmentColor', args: {firstChoice: false}});    
+          }
+          break;
         }
-        break;
-      }
-      case Building. Mold: {
-        this.followUp({name: 'chooseMelt', args: {count:this.currentPlayer().masteryLevel()}});    
-        break;
+        case Building. Mold: {
+          this.followUp({name: 'chooseMelt', args: {count:this.currentPlayer().masteryLevel()}});    
+          break;
+        }
       }
     }
   }
@@ -132,22 +142,24 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
       space.color = space.top(WorkerPiece)?.color;
     }
 
-    switch(building) {
-      case Building.Wax: {
-        this.followUp({name: 'chooseCustomer'});
-        $.waxBackAlleySpaceA.first(BackAlleyTile)!.performAction(this);
-        break;
-      }
-      case Building.Pigment: {
-        this.currentPlayer().board.all(PowerTile).forEach(x => {x.flipped = true});
-        $.pigmentBackAlleySpaceA.first(BackAlleyTile)!.performAction(this);
-        $.pigmentBackAlleySpaceB.first(BackAlleyTile)!.performAction(this);
-        break;
-      }
-      case Building. Mold: {
-        this.followUp({name: 'chooseCandlesToTrade'});    
-        $.moldBackAlleySpaceB.first(BackAlleyTile)!.performAction(this);
-        break;
+    if(!this.setup) {
+      switch(building) {
+        case Building.Wax: {
+          this.followUp({name: 'chooseCustomer'});
+          $.waxBackAlleySpaceA.first(BackAlleyTile)!.performAction(this);
+          break;
+        }
+        case Building.Pigment: {
+          this.currentPlayer().board.all(PowerTile).forEach(x => {x.flipped = true});
+          $.pigmentBackAlleySpaceA.first(BackAlleyTile)!.performAction(this);
+          $.pigmentBackAlleySpaceB.first(BackAlleyTile)!.performAction(this);
+          break;
+        }
+        case Building. Mold: {
+          this.followUp({name: 'chooseCandlesToTrade'});    
+          $.moldBackAlleySpaceB.first(BackAlleyTile)!.performAction(this);
+          break;
+        }
       }
     }
   }
@@ -333,7 +345,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   const blackCandles = game.create(Candelabra, 'blackCandles');
 
   // place ONE white candle in the bag
-  $.bag.create(CandlePawn, 'whiteCandleBag', {color: Color.White});
+  // $.bag.create(CandlePawn, 'whiteCandleBag', {color: Color.White});
 
   for(var i = 0; i < 8 + game.players.length-2; i++) {
     $.whiteCandles.create(CandlePawn, 'whiteCandle' + i, {color: Color.White})
@@ -356,7 +368,17 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     Object.values(Building).forEach((building: Building) =>{
       const die = game.create(ColorDie, 'colorDie' + i);
       die.roll()
-      die.putInto(game.first(WorkerSpace, { building: building, color: die.color })!)
+
+      if(i == 2) {
+        // for solo randomly put one in mastery or backroom
+        if(Math.floor(game.random() * 2) % 2 == 0) {
+          die.putInto(game.first(WorkerSpace, { building: building, spaceType: SpaceType.Mastery })!)
+        } else {
+          die.putInto(game.first(WorkerSpace, { building: building, spaceType: SpaceType.Backroom })!)
+        }
+      } else {
+        die.putInto(game.first(WorkerSpace, { building: building, color: die.color })!)
+      }
     });
   }
   game.setup = false;
@@ -1554,7 +1576,16 @@ export default createGame(ChandlersPlayer, MyGame, game => {
           Object.values(Building).forEach((building: Building) =>{
             const die = $.bag.first(ColorDie)!;
             die.roll()
-            die.putInto(game.first(WorkerSpace, { building: building, color: die.color })!)
+            if(i == 2) {
+              // for solo randomly put one in mastery or backroom
+              if(Math.floor(game.random() * 2) % 2 == 0) {
+                die.putInto(game.first(WorkerSpace, { building: building, spaceType: SpaceType.Mastery })!)
+              } else {
+                die.putInto(game.first(WorkerSpace, { building: building, spaceType: SpaceType.Backroom })!)
+              }
+            } else {
+              die.putInto(game.first(WorkerSpace, { building: building, color: die.color })!)
+            }
           });          
         }
         game.setup = false;

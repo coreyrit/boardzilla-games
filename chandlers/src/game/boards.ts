@@ -1,9 +1,10 @@
 import { Piece, Space } from "@boardzilla/core";
-import { Building, Color, MyGame } from "./index.js";
+import { Building, Color, MyGame, SpaceType } from "./index.js";
 import { CandlePawn, ColorDie, KeyShape, Melt } from "./components.js";
 
 export class WorkerSpace extends Space<MyGame> {
     building: Building
+    spaceType: SpaceType
     color: Color | undefined
 
     containsKey() : boolean {

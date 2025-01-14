@@ -1,6 +1,6 @@
 import { WorkerSpace } from "../boards.js";
 import { Melt, Wax, WorkerPiece } from "../components.js";
-import { Building, Color, MyGame } from "../index.js";
+import { Building, Color, MyGame, SpaceType } from "../index.js";
 
 export class MoldBuilding {
 
@@ -24,31 +24,31 @@ export class MoldBuilding {
 
     createWorkerSpaces(game : MyGame) : void {
 
-        const moldRed = game.create(WorkerSpace, 'moldRed', {building: Building.Mold, color: Color.Red});
-        const moldYellow = game.create(WorkerSpace, 'moldYellow', {building: Building.Mold, color: Color.Yellow});
-        const moldBlue = game.create(WorkerSpace, 'moldBlue', {building: Building.Mold, color: Color.Blue});
+        const moldRed = game.create(WorkerSpace, 'moldRed', {building: Building.Mold, color: Color.Red, spaceType: SpaceType.Color});
+        const moldYellow = game.create(WorkerSpace, 'moldYellow', {building: Building.Mold, color: Color.Yellow, spaceType: SpaceType.Color});
+        const moldBlue = game.create(WorkerSpace, 'moldBlue', {building: Building.Mold, color: Color.Blue, spaceType: SpaceType.Color});
       
         moldRed.onEnter(WorkerPiece, x => { this.performPrimvaryColor(game, Color.Red) });
         moldYellow.onEnter(WorkerPiece, x => { this.performPrimvaryColor(game, Color.Yellow) });
         moldBlue.onEnter(WorkerPiece, x => { this.performPrimvaryColor(game, Color.Blue) });
       
-        const moldOrange = game.create(WorkerSpace, 'moldOrange', {building: Building.Mold, color: Color.Orange});
-        const moldGreen = game.create(WorkerSpace, 'moldGreen', {building: Building.Mold, color: Color.Green});
-        const moldPurple = game.create(WorkerSpace, 'moldPurple', {building: Building.Mold, color: Color.Purple});
+        const moldOrange = game.create(WorkerSpace, 'moldOrange', {building: Building.Mold, color: Color.Orange, spaceType: SpaceType.Color});
+        const moldGreen = game.create(WorkerSpace, 'moldGreen', {building: Building.Mold, color: Color.Green, spaceType: SpaceType.Color});
+        const moldPurple = game.create(WorkerSpace, 'moldPurple', {building: Building.Mold, color: Color.Purple, spaceType: SpaceType.Color});
       
         moldOrange.onEnter(WorkerPiece, x => { this.performSecondaryColor(game, Color.Orange) });
         moldGreen.onEnter(WorkerPiece, x => { this.performSecondaryColor(game, Color.Green) });
         moldPurple.onEnter(WorkerPiece, x => { this.performSecondaryColor(game, Color.Purple) });
         
-        const moldRepeater = game.create(WorkerSpace, 'moldRepeater', {building: Building.Mold});
-        const moldMiddle = game.create(WorkerSpace, 'moldMiddle', {building: Building.Mold});
-        const moldBackroom = game.create(WorkerSpace, 'moldBackroom', {building: Building.Mold});
+        const moldRepeater = game.create(WorkerSpace, 'moldRepeater', {building: Building.Mold, spaceType: SpaceType.Mastery});
+        const moldMiddle = game.create(WorkerSpace, 'moldMiddle', {building: Building.Mold, spaceType: SpaceType.Middle});
+        const moldBackroom = game.create(WorkerSpace, 'moldBackroom', {building: Building.Mold, spaceType: SpaceType.Backroom});
       
         moldRepeater.onEnter(WorkerPiece, x => { game.performMastery(Building.Mold, moldRepeater); })
         moldBackroom.onEnter(WorkerPiece, x => { game.performBackroom(Building.Mold, moldBackroom); })
         moldMiddle.onEnter(WorkerPiece, x => { game.performMiddle(Building.Mold, moldMiddle); })
 
-        const moldSpill = game.create(WorkerSpace, 'moldSpill', {building: Building.Mold});
+        const moldSpill = game.create(WorkerSpace, 'moldSpill', {building: Building.Mold, spaceType: SpaceType.Spill});
 
         moldSpill.onEnter(WorkerPiece, x => {    
             game.currentPlayer().increaseScore(); 
