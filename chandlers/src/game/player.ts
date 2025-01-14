@@ -1,4 +1,4 @@
-import { Piece, Player } from "@boardzilla/core";
+import { Piece, Player, Space } from "@boardzilla/core";
 import { Color, MyGame } from "./index.js";
 import { WorkerPiece, CandlePawn, ColorDie, KeyShape, Wax, Pigment, MasteryCube, Melt, ScoreTracker } from "./components.js";
 import { Candelabra, ComponentSpace, DiceSpace, KeyHook, MasterySpace, PlayerBoard, PlayerSpace, ScoringSpace, ScoringTrack } from "./boards.js";
@@ -23,9 +23,13 @@ export class ChandlersPlayer extends Player<MyGame, ChandlersPlayer> {
       return spaces.first(ComponentSpace)!
     }
 
-    nextEmptyDieSpace() : DiceSpace {
+    nextEmptyDieSpace() : Space<MyGame> {
       const spaces = this.board.all(DiceSpace).filter(x => x.all(Piece).length == 0);
-      return spaces.first(DiceSpace)!
+      if(spaces.length > 0) {
+        return spaces.first(DiceSpace)!
+      } else {
+        return this.nextEmptySpace();
+      }
     }
   
     gainWax(count: number = 1) : void {  
