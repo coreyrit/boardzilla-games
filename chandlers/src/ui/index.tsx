@@ -35,10 +35,11 @@ render(setup, {
         .includes(a.name)),
       closeIf: actions => actions.some(a => 
           [
-            'placeWorker', 'chooseSpiltPigmentToMix', 'chooseKey',
-            'chooseBackAlleyAction'
+            'chooseSpiltPigmentToMix', 'chooseKey',
+            'chooseBackAlleyAction', 'chooseDieFromBoard'
           ]
-          .includes(a.name)),
+          .includes(a.name)  || (a.name == 'placeWorker') && !($.ready.first(WorkerPiece) instanceof CandlePawn)
+          ),
       });
 
 
