@@ -756,16 +756,39 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       key.putInto(player.nextEmptySpace())
     }),
 
+    
+    chooseDieFromBoard: (player) => action<{key: KeyShape}>({
+      prompt: 'Choose die to take',
+    }).chooseOnBoard(
+      'die', game.all(WorkerSpace).all(ColorDie),
+      { skipIf: 'never' }
+    ).do(({ key, die }) => {
+      key.putInto(game.first(KeyHook, {color: key.color})!);
+      console.log('die = ' + die)
+      die.roll();
+      die.putInto(player.nextEmptyDieSpace());
+    }),
+
+    chooseKeyAndShape2: (player) => action({
+      prompt: 'Choose key to trade',
+    }).chooseOnBoard(
+      'key', player.board.all(KeyShape),
+      { skipIf: 'never' }
+    ).do(({ key }) => {
+      game.followUp({name: 'chooseDieFromBoard', args: {key: key}})
+    }),
+
     chooseKeyAndShape: (player) => action({
-      prompt: 'Choose key and die to trade',
+      prompt: 'Choose key to trade',
     }).chooseOnBoard(
       'key', player.board.all(KeyShape),
       { skipIf: 'never' }
     ).chooseOnBoard(
       'die', game.all(WorkerSpace).all(ColorDie),
       { skipIf: 'never' }
-    ).do(({ key, die }) => {
+    ).do(({ die, key }) => {
       key.putInto(game.first(KeyHook, {color: key.color})!);
+      console.log('die = ' + die)
       die.roll();
       die.putInto(player.nextEmptyDieSpace());
     }),
@@ -844,9 +867,17 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     }),
 
     chooseMiddleAction: () => action<{building: Building}>({
-      prompt: "Choose which action to perform"
+      prompt: "Choose which action to perform",
     }).chooseFrom(
       'action', ({ building }) => ['Mastery', 'Backroom']
+        .filter(x => building != Building.Wax || x != 'Mastery' || game.currentPlayer().board.all(Wax).length > 0)
+        .filter(x => building != Building.Pigment || x != 'Mastery' ||
+          game.currentPlayer().board.openingsForColor(Color.Red) > 0 || 
+          game.currentPlayer().board.openingsForColor(Color.Yellow) > 0 || 
+          game.currentPlayer().board.openingsForColor(Color.Blue) > 0)
+        .filter(x => building != Building.Mold || x != 'Mastery' || game.currentPlayer().board.all(Melt).length > 0)
+        .filter(x => building != Building.Mold || x != 'Backroom' || game.currentPlayer().board.all(CandlePawn).length > 0),
+        { skipIf: 'never' }
     ).do(
       ({ action, building }) => {
         if(action == 'Mastery') {
@@ -1262,15 +1293,21 @@ export default createGame(ChandlersPlayer, MyGame, game => {
         .concat(game.first(WorkerSpace, {name: 'pigmentSpill'})!)
         .concat(game.first(WorkerSpace, {name: 'moldSpill'})!)
         .filter(x => x.name != 'waxMiddle' || game.middleAvailable($.waxRepeater as WorkerSpace, $.waxBackroom as WorkerSpace, $.waxMiddle as WorkerSpace))
-        .filter(x => x.name != 'pigmentMiddle' || ($.pigmentRepeater.all(WorkerPiece).length > 0 && $.pigmentBackroom.all(WorkerPiece).length > 0))
-        .filter(x => x.name != 'moldMiddle' || ($.moldRepeater.all(WorkerPiece).length > 0 && $.moldBackroom.all(WorkerPiece).length > 0))
-
+        .filter(x => x.name != 'pigmentMiddle' || game.middleAvailable($.pigmentRepeater as WorkerSpace, $.pigmentBackroom as WorkerSpace, $.pigmentMiddle as WorkerSpace))
+        .filter(x => x.name != 'moldMiddle' || (
+          game.middleAvailable($.moldRepeater as WorkerSpace, $.moldBackroom as WorkerSpace, $.moldMiddle as WorkerSpace)
+          && 
+          game.currentPlayer().board.all(Melt).length + game.currentPlayer().board.all(CandlePawn).length > 0
+        ))
         // advanced filtering        
         .filter(x => x != $.waxOrange || player.board.all(Wax).length >= 2)
         .filter(x => x != $.waxGreen || player.board.all(Wax).length >= 2)
         .filter(x => x != $.waxPurple || player.board.all(Wax).length >= 2)
 
         .filter(x => x != $.waxRepeater || player.board.all(Wax).length > 0)
+        .filter(x => x != $.moldRepeater || player.board.all(Melt).length > 0)
+        .filter(x => x != $.moldBackroom || player.board.all(CandlePawn).length > 0)
+
         
         .filter(x => x != $.pigmentRed || player.board.openingsForColor(Color.Red) > 0)
         .filter(x => x != $.pigmentBlue || player.board.openingsForColor(Color.Blue) > 0)
