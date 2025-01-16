@@ -1,5 +1,5 @@
-import { WorkerSpace } from "../boards.js";
-import { Melt, Wax, WorkerPiece } from "../components.js";
+import { CheckSpace, WorkerSpace } from "../boards.js";
+import { Check, Melt, Wax, WorkerPiece } from "../components.js";
 import { Building, Color, MyGame, SpaceType } from "../index.js";
 
 export class MoldBuilding {
@@ -44,9 +44,20 @@ export class MoldBuilding {
         const moldMiddle = game.create(WorkerSpace, 'moldMiddle', {building: Building.Mold, spaceType: SpaceType.Middle});
         const moldBackroom = game.create(WorkerSpace, 'moldBackroom', {building: Building.Mold, spaceType: SpaceType.Backroom});
       
-        moldRepeater.onEnter(WorkerPiece, x => { game.performMastery(Building.Mold, moldRepeater); })
-        moldBackroom.onEnter(WorkerPiece, x => { game.performBackroom(Building.Mold, moldBackroom); })
-        moldMiddle.onEnter(WorkerPiece, x => { game.performMiddle(Building.Mold, moldMiddle); })
+        moldRepeater.onEnter(WorkerPiece, x => {         
+            moldRepeater.color = x.color;
+            game.performMastery(Building.Mold, moldRepeater);
+        })
+        moldBackroom.onEnter(WorkerPiece, x => { 
+            moldBackroom.color = x.color;
+            if(!game.setup) {
+                game.followUp({name: 'chooseBackroomAction', args: {building: Building.Mold, usedSpaces: []}});
+            }
+        })
+        moldMiddle.onEnter(WorkerPiece, x => { 
+            moldMiddle.color = x.color;
+            game.followUp({name: 'chooseMiddleAction', args: { workerSpace: moldMiddle }});
+        })
 
         const moldSpill = game.create(WorkerSpace, 'moldSpill', {building: Building.Mold, spaceType: SpaceType.Spill});
 

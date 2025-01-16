@@ -3,8 +3,8 @@ import { Piece, render, Space, toggleSetting } from '@boardzilla/core';
 import { Color, MyGame, default as setup } from '../game/index.js';
 
 import './style.scss';
-import { BackAlleyTile, CandlePawn, ColorDie, CustomerCard, EndGameTile, KeyShape, RoundEndTile, Wax, PowerTile, Melt, MasteryCube, Pigment, ScoreTracker, Bulb, GoalCard, Lamp, WorkerPiece, Trash } from '../game/components.js';
-import { BackAlley, BackAlleySpace, Candelabra, CandleBottomRow, CandleSpace, CandleTopRow, ChandlersBoard, ComponentSpace, CustomerSpace, DiceSpace, GameEndSpace, KeyHook, MasterySpace, MasteryTrack, PlayerBoard, PlayerSpace, PlayersSpace, PowerSpace, ReadySpace, RoundEndSpace, RoundSpace, ScoringSpace, ScoringTrack, Spill, WorkerSpace } from '../game/boards.js';
+import { BackAlleyTile, CandlePawn, ColorDie, CustomerCard, EndGameTile, KeyShape, RoundEndTile, Wax, PowerTile, Melt, MasteryCube, Pigment, ScoreTracker, Bulb, GoalCard, Lamp, WorkerPiece, Trash, Check } from '../game/components.js';
+import { BackAlley, BackAlleySpace, Candelabra, CandleBottomRow, CandleSpace, CandleTopRow, ChandlersBoard, CheckSpace, ComponentSpace, CustomerSpace, DiceSpace, GameEndSpace, KeyHook, MasterySpace, MasteryTrack, PlayerBoard, PlayerSpace, PlayersSpace, PowerSpace, ReadySpace, RoundEndSpace, RoundSpace, ScoringSpace, ScoringTrack, Spill, WorkerSpace } from '../game/boards.js';
 // import '@boardzilla/core/index.css';
 
 render(setup, {
@@ -30,13 +30,14 @@ render(setup, {
           'chooseSpiltPigment', 'chooseMelt', 'chooseCandlesToTrade',
           'discardExtraComponents', 'choosePigmentColor',
           'chooseWaxRepeater', 'chooseCandleToMove', 'choosePowerTile',
-          'choosePigmentsToRemove', 'chooseWhiteCandle', 'chooseCustomerToSwap', 'chooseKeyAndShape'
+          'choosePigmentsToRemove', 'chooseWhiteCandle', 'chooseCustomerToSwap', 'chooseKeyAndShape'          
         ]
         .includes(a.name)),
       closeIf: actions => actions.some(a => 
           [
             'chooseSpiltPigmentToMix', 'chooseKey',
-            'chooseBackAlleyAction', 'chooseDieFromBoard'
+            'chooseBackAlleyAction', 'chooseDieFromBoard',
+            'chooseBackroomAction'
           ]
           .includes(a.name)  || (a.name == 'placeWorker') && !($.ready.first(WorkerPiece) instanceof CandlePawn)
           ),
@@ -167,9 +168,14 @@ render(setup, {
     game.layout('backAlleyB', { area: { left: 71, top: 67, width: 6.5, height: 6.5 }});
 
     game.layout('waxBackAlleySpaceA', { area: { left: 14, top: 69.5, width: 6.5, height: 6.5 }});
+    game.layout('waxBackroomCheckSpace', { area: { left: 20.5, top: 69.5, width: 6.5, height: 6.5 }});
+
     game.layout('pigmentBackAlleySpaceA', { area: { left: 56.5, top: 69.5, width: 6.5, height: 6.5 }});
     game.layout('pigmentBackAlleySpaceB', { area: { left: 63.5, top: 69.5, width: 6.5, height: 6.5 }});
+    game.layout('pigmentBackroomCheckSpace', { area: { left: 70, top: 69.5, width: 6.5, height: 6.5 }});
+
     game.layout('moldBackAlleySpaceB', { area: { left: 111.5, top: 69.5, width: 6.5, height: 6.5 }});
+    game.layout('moldBackroomCheckSpace', { area: { left: 118, top: 69.5, width: 6.5, height: 6.5 }});
 
     game.layout('ready', { area: { left: 112, top: 7, width: 6.5, height: 6.5 }});
 
@@ -199,6 +205,14 @@ render(setup, {
     game.all(Trash).appearance({
       render: () => (
         <div className='Trash' />
+      ),
+    });
+
+    game.all(Check).appearance({
+      render: x => (
+        <div className='Check'>
+          <div className={x.flipped ? 'front' : 'back'} />
+        </div>
       ),
     });
 
@@ -374,7 +388,17 @@ render(setup, {
         {/* <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
           <circle cx="50" cy="50" r="50" />
         </svg> */}
-  </div>
+        </div>
+      ),
+    });
+
+    game.all(CheckSpace).appearance({
+      render: () => (
+        <div className='CheckSpace'>
+        {/* <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="50" cy="50" r="50" />
+        </svg> */}
+        </div>
       ),
     });
 

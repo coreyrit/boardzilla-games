@@ -1,5 +1,5 @@
 import { Piece } from "@boardzilla/core";
-import { Color, CustomerType, MyGame } from "./index.js";
+import { Building, Color, CustomerType, MyGame } from "./index.js";
 import { CandleSpace } from "./boards.js";
 import { ChandlersPlayer } from "./player.js";
 import { IdSet, SetLogic } from "./setlogic.js";
@@ -125,7 +125,8 @@ export class BackAlleyTile extends Piece<MyGame> {
     letter: String;
 
     performAction(game: MyGame) : void {
-      game.followUp({name: 'confirmAction', args: {tile: this}});
+      // game.followUp({name: 'confirmAction', args: {tile: this}});
+      this.performActionAfterConfirmation(game);
     }
 
     performActionAfterConfirmation(game: MyGame) : void {
@@ -240,6 +241,10 @@ export class Bulb extends Piece<MyGame> {
 
 export class Trash extends Piece<MyGame> {
   
+}
+
+export class Check extends Piece<MyGame> {
+  flipped: boolean = false;
 }
 
 export class Lamp extends Piece<MyGame> {

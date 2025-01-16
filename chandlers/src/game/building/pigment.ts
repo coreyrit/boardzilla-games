@@ -1,5 +1,5 @@
-import { WorkerSpace } from "../boards.js";
-import { CustomerCard, WorkerPiece, Pigment } from "../components.js";
+import { CheckSpace, WorkerSpace } from "../boards.js";
+import { CustomerCard, WorkerPiece, Pigment, Check } from "../components.js";
 import { Building, Color, MyGame, SpaceType } from "../index.js";
 
 export class PigmentBuilding {
@@ -60,9 +60,20 @@ export class PigmentBuilding {
         const pigmentMiddle = game.create(WorkerSpace, 'pigmentMiddle', {building: Building.Pigment, spaceType: SpaceType.Middle});
         const pigmentBackroom = game.create(WorkerSpace, 'pigmentBackroom', {building: Building.Pigment, spaceType: SpaceType.Backroom});
 
-        pigmentRepeater.onEnter(WorkerPiece, x => { game.performMastery(Building.Pigment, pigmentRepeater); })
-        pigmentBackroom.onEnter(WorkerPiece, x => { game.performBackroom(Building.Pigment, pigmentBackroom); })
-        pigmentMiddle.onEnter(WorkerPiece, x => { game.performMiddle(Building.Pigment, pigmentMiddle); })
+        pigmentRepeater.onEnter(WorkerPiece, x => {         
+            pigmentRepeater.color = x.color;
+            game.performMastery(Building.Mold, pigmentRepeater);
+        })
+        pigmentBackroom.onEnter(WorkerPiece, x => { 
+            pigmentBackroom.color = x.color;
+            if(!game.setup) {                
+                game.followUp({name: 'chooseBackroomAction', args: {building: Building.Pigment, usedSpaces: []}});
+            }
+        })
+        pigmentMiddle.onEnter(WorkerPiece, x => { 
+            pigmentMiddle.color = x.color;
+            game.followUp({name: 'chooseMiddleAction', args: { workerSpace: pigmentMiddle }});
+        })
 
         const pigmentSpill = game.create(WorkerSpace, 'pigmentSpill', {building: Building.Pigment, spaceType: SpaceType.Spill});
 

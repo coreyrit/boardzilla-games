@@ -79,6 +79,11 @@ export class RoundSpace extends Space<MyGame> {
   
 export class BackAlleySpace extends Space<MyGame> {
   letter: string = "";
+  building: Building;
+}
+
+export class CheckSpace extends Space<MyGame> {
+  building: Building;
 }
   
 export class PlayerSpace extends Space<MyGame> {

@@ -1,5 +1,5 @@
-import { WorkerSpace } from "../boards.js";
-import { Wax, WorkerPiece } from "../components.js";
+import { CheckSpace, WorkerSpace } from "../boards.js";
+import { Check, Wax, WorkerPiece } from "../components.js";
 import { Building, Color, MyGame, SpaceType } from "../index.js";
 
 export class WaxBuilding {
@@ -44,9 +44,20 @@ export class WaxBuilding {
         const waxMiddle = game.create(WorkerSpace, 'waxMiddle', {building: Building.Wax, spaceType: SpaceType.Middle});
         const waxBackroom = game.create(WorkerSpace, 'waxBackroom', {building: Building.Wax, spaceType: SpaceType.Backroom});
   
-        waxRepeater.onEnter(WorkerPiece, x => { game.performMastery(Building.Wax, waxRepeater); })
-        waxBackroom.onEnter(WorkerPiece, x => { game.performBackroom(Building.Wax, waxBackroom); })
-        waxMiddle.onEnter(WorkerPiece, x => { game.performMiddle(Building.Wax, waxMiddle); })
+        waxRepeater.onEnter(WorkerPiece, x => { 
+            waxRepeater.color = x.color;
+            game.performMastery(Building.Wax, waxRepeater);
+        })
+        waxBackroom.onEnter(WorkerPiece, x => { 
+            waxBackroom.color = x.color;
+            if(!game.setup) {
+                game.followUp({name: 'chooseBackroomAction', args: {building: Building.Wax, usedSpaces: []}});
+            }
+        })
+        waxMiddle.onEnter(WorkerPiece, x => { 
+            waxMiddle.color = x.color;
+            game.followUp({name: 'chooseMiddleAction', args: { workerSpace: waxMiddle }});
+        })
   
         const waxSpill = game.create(WorkerSpace, 'waxSpill', {building: Building.Wax, spaceType: SpaceType.Spill});
 

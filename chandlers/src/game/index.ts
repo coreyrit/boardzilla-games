@@ -12,8 +12,8 @@ import { WaxBuilding } from './building/wax.js';
 import { PigmentBuilding } from './building/pigment.js';
 import { MoldBuilding } from './building/mold.js';
 import { ChandlersPlayer } from './player.js';
-import { CustomerCard, EndGameTile, RoundEndTile, BackAlleyTile, ColorDie, KeyShape, CandlePawn, PowerTile, Wax, WorkerPiece, Pigment, Melt, MasteryCube, ScoreTracker, Bulb, GoalCard, Lamp, Trash } from './components.js';
-import { BackAlley, BackAlleySpace, Candelabra, CandleBottomRow, CandleSpace, CandleTopRow, ChandlersBoard, ComponentSpace, CustomerSpace, DiceSpace, GameEndSpace, GoalSpace, KeyHook, MasterySpace, MasteryTrack, PlayerBoard, PlayerSpace, PlayersSpace, PowerSpace, ReadySpace, RoundEndSpace, RoundSpace, ScoringSpace, ScoringTrack, Spill, WorkerSpace } from './boards.js';
+import { CustomerCard, EndGameTile, RoundEndTile, BackAlleyTile, ColorDie, KeyShape, CandlePawn, PowerTile, Wax, WorkerPiece, Pigment, Melt, MasteryCube, ScoreTracker, Bulb, GoalCard, Lamp, Trash, Check } from './components.js';
+import { BackAlley, BackAlleySpace, Candelabra, CandleBottomRow, CandleSpace, CandleTopRow, ChandlersBoard, CheckSpace, ComponentSpace, CustomerSpace, DiceSpace, GameEndSpace, GoalSpace, KeyHook, MasterySpace, MasteryTrack, PlayerBoard, PlayerSpace, PlayersSpace, PowerSpace, ReadySpace, RoundEndSpace, RoundSpace, ScoringSpace, ScoringTrack, Spill, WorkerSpace } from './boards.js';
 import { count, timeLog } from 'console';
 
 export enum Building {
@@ -112,10 +112,6 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
   }
 
   performMastery(building: Building, space: WorkerSpace | undefined = undefined) : void {
-    if(space != undefined) {
-      space.color = space.top(WorkerPiece)?.color;
-    }
-
     if(!this.setup) {
       switch(building) {
         case Building.Wax: {
@@ -138,35 +134,26 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
   }
 
   performBackroom(building: Building, space: WorkerSpace | undefined = undefined) : void {
-    if(space != undefined) {
-      space.color = space.top(WorkerPiece)?.color;
-    }
-
     if(!this.setup) {
       switch(building) {
         case Building.Wax: {
           this.followUp({name: 'chooseCustomer'});
-          $.waxBackAlleySpaceA.first(BackAlleyTile)!.performAction(this);
+          // $.waxBackAlleySpaceA.first(BackAlleyTile)!.performAction(this);
           break;
         }
         case Building.Pigment: {
           this.currentPlayer().board.all(PowerTile).forEach(x => {x.flipped = true});
-          $.pigmentBackAlleySpaceA.first(BackAlleyTile)!.performAction(this);
-          $.pigmentBackAlleySpaceB.first(BackAlleyTile)!.performAction(this);
+          // $.pigmentBackAlleySpaceA.first(BackAlleyTile)!.performAction(this);
+          // $.pigmentBackAlleySpaceB.first(BackAlleyTile)!.performAction(this);
           break;
         }
         case Building. Mold: {
           this.followUp({name: 'chooseCandlesToTrade'});    
-          $.moldBackAlleySpaceB.first(BackAlleyTile)!.performAction(this);
+          // $.moldBackAlleySpaceB.first(BackAlleyTile)!.performAction(this);
           break;
         }
       }
     }
-  }
-
-  performMiddle(building: Building, space: WorkerSpace) : void {
-    space.color = space.top(WorkerPiece)?.color;
-    this.followUp({name: 'chooseMiddleAction', args: { building: building }});
   }
 
   placeEndGameTile(tile : EndGameTile) {
@@ -528,10 +515,18 @@ export default createGame(ChandlersPlayer, MyGame, game => {
 
   game.create(BackAlley, 'backAlleyB', {letter: "B"});
 
-  game.create(BackAlleySpace, 'waxBackAlleySpaceA');
-  game.create(BackAlleySpace, 'pigmentBackAlleySpaceA');
-  game.create(BackAlleySpace, 'pigmentBackAlleySpaceB');
-  game.create(BackAlleySpace, 'moldBackAlleySpaceB');
+  game.create(BackAlleySpace, 'waxBackAlleySpaceA', {building: Building.Wax});
+  const waxCheckSpace = game.create(CheckSpace, 'waxBackroomCheckSpace', {building: Building.Wax});
+  const waxCheck = waxCheckSpace.create(Check, 'waxBackroomCheck');
+
+  game.create(BackAlleySpace, 'pigmentBackAlleySpaceA', {building: Building.Pigment});
+  game.create(BackAlleySpace, 'pigmentBackAlleySpaceB', {building: Building.Pigment});
+  const pigmentCheckSpace = game.create(CheckSpace, 'pigmentBackroomCheckSpace', {building: Building.Pigment});
+  const pigmentCheck = pigmentCheckSpace.create(Check, 'pigmentBackroomCheck');
+
+  game.create(BackAlleySpace, 'moldBackAlleySpaceB', {building: Building.Mold});
+  const moldCheckSpace = game.create(CheckSpace, 'moldBackroomCheckSpace', {building: Building.Mold});
+  const moldCheck = moldCheckSpace.create(Check, 'moldBackroomCheck');
 
   const refreshCustomers = game.create(BackAlleyTile, 'refresh-customers', {letter: "A"});
   const meltWax = game.create(BackAlleyTile, 'melt-wax', {letter: "A"});
@@ -877,28 +872,6 @@ export default createGame(ChandlersPlayer, MyGame, game => {
         }
       }
     }),
-
-    chooseMiddleAction: () => action<{building: Building}>({
-      prompt: "Choose which action to perform",
-    }).chooseFrom(
-      'action', ({ building }) => ['Mastery', 'Backroom']
-        .filter(x => building != Building.Wax || x != 'Mastery' || game.currentPlayer().board.all(Wax).length > 0)
-        .filter(x => building != Building.Pigment || x != 'Mastery' ||
-          game.currentPlayer().board.openingsForColor(Color.Red) > 0 || 
-          game.currentPlayer().board.openingsForColor(Color.Yellow) > 0 || 
-          game.currentPlayer().board.openingsForColor(Color.Blue) > 0)
-        .filter(x => building != Building.Mold || x != 'Mastery' || game.currentPlayer().board.all(Melt).length > 0)
-        .filter(x => building != Building.Mold || x != 'Backroom' || game.currentPlayer().board.all(CandlePawn).length > 0),
-        { skipIf: 'never' }
-    ).do(
-      ({ action, building }) => {
-        if(action == 'Mastery') {
-          game.performMastery(building);
-        } else {
-          game.performBackroom(building);
-        }
-      }
-    ),
 
     // continueMolding: (player) => action<{count: number}>({
     //   prompt: 'Do you want to continue molding?',
@@ -1492,6 +1465,85 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     .do(({ melt }) => {
       melt.putInto(player.nextEmptySpace());
       player.board.first(Wax)?.putInto($.bag);
+    }),
+
+    chooseMiddleAction: () => action<{workerSpace: WorkerSpace}>({
+      prompt: "Choose which action to perform",
+    }).chooseFrom(
+      'action', ({ workerSpace }) => ['Mastery', 'Backroom']
+        .filter(x => workerSpace.building != Building.Wax || x != 'Mastery' || game.currentPlayer().board.all(Wax).length > 0)
+        .filter(x => workerSpace.building != Building.Pigment || x != 'Mastery' ||
+          game.currentPlayer().board.openingsForColor(Color.Red) > 0 || 
+          game.currentPlayer().board.openingsForColor(Color.Yellow) > 0 || 
+          game.currentPlayer().board.openingsForColor(Color.Blue) > 0)
+        .filter(x => workerSpace.building != Building.Mold || x != 'Mastery' || game.currentPlayer().board.all(Melt).length > 0)
+        .filter(x => workerSpace.building != Building.Mold || x != 'Backroom' || game.currentPlayer().board.all(CandlePawn).length > 0),
+        { skipIf: 'never' }
+    ).do(
+      ({ action, workerSpace }) => {
+        if(workerSpace != undefined) {
+          workerSpace.color = workerSpace.top(WorkerPiece)?.color;
+        }
+                
+        if(action == 'Mastery') {          
+          game.performMastery(workerSpace.building);
+        } else {
+          game.followUp({name: 'chooseBackroomAction', args: {building: workerSpace.building, usedSpaces: []}});
+        }
+      }
+    ),
+
+    // choose backroom action based on building, the type, and what spaces have already been used
+    chooseBackroomAction: (player) => action<{building : Building, usedSpaces: Space<MyGame>[]}>({
+      prompt: 'Choose next action to perform',
+    }).chooseOnBoard(
+      'chosenSpace', ({building, usedSpaces}) => 
+        // return the worker space and add in the back alley spaces
+        [game.first(WorkerSpace, {building: building, spaceType: SpaceType.Backroom})! as Space<MyGame>]
+          .concat(game.all(BackAlleySpace, {building: building}).map(x => x as Space<MyGame>))
+          // filter out already used spaces
+          .filter(x => !usedSpaces.includes(x))
+          .concat(game.all(CheckSpace, {building: building})!.filter(x => x.first(Check)!.flipped)),
+      { skipIf: 'never' }
+    )
+    .do(({ building, usedSpaces, chosenSpace }) => {    
+
+      // if it is a check, then do nothing
+      if(chosenSpace instanceof CheckSpace) {
+        chosenSpace.first(Check)!.flipped = false;
+        return;
+      }
+
+      // if it is a worker space, do the normal work
+      else if(chosenSpace instanceof WorkerSpace) {
+                
+        if(chosenSpace != undefined) {
+          const workerSpace = chosenSpace as WorkerSpace;
+          workerSpace.color = chosenSpace.top(WorkerPiece)?.color;
+        }
+
+        game.performBackroom(building, chosenSpace)
+      } 
+      // otherwise perform the back alley tile action
+      else {
+        chosenSpace.first(BackAlleyTile)!.performAction(game);
+      }
+
+      // what were the choices again?
+      const choiceSpaces = [game.first(WorkerSpace, {building: building, spaceType: SpaceType.Backroom})! as Space<MyGame>]
+        .concat(game.all(BackAlleySpace, {building: building}).map(x => x as Space<MyGame>))
+        .filter(x => !usedSpaces.includes(x));
+
+      // if there are stil more things you can do, keep going
+      if(choiceSpaces.filter(x => x != chosenSpace).length > 0) {
+        const nextList = usedSpaces.concat(chosenSpace);
+        if(nextList.filter(x => x instanceof WorkerSpace).length > 0) {
+          game.first(CheckSpace, {building: building})!.first(Check)!.flipped = true; // allow cancel
+        }        
+        game.followUp({name: 'chooseBackroomAction', args: {building: building, usedSpaces: nextList}})
+      } else {
+        game.first(CheckSpace, {building: building})!.first(Check)!.flipped = false;
+      }
     }),
 
     chooseSpiltMelts: (player) => action({
