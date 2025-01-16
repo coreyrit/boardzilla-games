@@ -43,7 +43,7 @@ export class CustomerSpace extends Space<MyGame> {
 }
   
 export class Candelabra extends Space<MyGame> {
- 
+  color: Color;
 }
 
 export class CandleTopRow extends Piece<MyGame> {

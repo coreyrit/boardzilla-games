@@ -238,6 +238,10 @@ export class Bulb extends Piece<MyGame> {
   
 }
 
+export class Trash extends Piece<MyGame> {
+  
+}
+
 export class Lamp extends Piece<MyGame> {
   playerIndex: number = 0;
 }

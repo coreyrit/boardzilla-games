@@ -3,7 +3,7 @@ import { Piece, render, Space, toggleSetting } from '@boardzilla/core';
 import { Color, MyGame, default as setup } from '../game/index.js';
 
 import './style.scss';
-import { BackAlleyTile, CandlePawn, ColorDie, CustomerCard, EndGameTile, KeyShape, RoundEndTile, Wax, PowerTile, Melt, MasteryCube, Pigment, ScoreTracker, Bulb, GoalCard, Lamp, WorkerPiece } from '../game/components.js';
+import { BackAlleyTile, CandlePawn, ColorDie, CustomerCard, EndGameTile, KeyShape, RoundEndTile, Wax, PowerTile, Melt, MasteryCube, Pigment, ScoreTracker, Bulb, GoalCard, Lamp, WorkerPiece, Trash } from '../game/components.js';
 import { BackAlley, BackAlleySpace, Candelabra, CandleBottomRow, CandleSpace, CandleTopRow, ChandlersBoard, ComponentSpace, CustomerSpace, DiceSpace, GameEndSpace, KeyHook, MasterySpace, MasteryTrack, PlayerBoard, PlayerSpace, PlayersSpace, PowerSpace, ReadySpace, RoundEndSpace, RoundSpace, ScoringSpace, ScoringTrack, Spill, WorkerSpace } from '../game/boards.js';
 // import '@boardzilla/core/index.css';
 
@@ -196,6 +196,12 @@ render(setup, {
       ),
     });
 
+    game.all(Trash).appearance({
+      render: () => (
+        <div className='Trash' />
+      ),
+    });
+
     game.all(Lamp).appearance({
       render: () => (
         <div className='Lamp' />
@@ -246,14 +252,14 @@ render(setup, {
       ),
     });
 
-    $.whiteCandles.layout(CandlePawn, {columns: 2, rows: 5, gap: {x: 0, y: 0}, scaling: 'fill', alignment: 'bottom', direction: 'ltr-btt'})
-    $.redCandles.layout(CandlePawn, {columns: 2, rows: 4, gap: {x: 0, y: 0}, scaling: 'fill', alignment: 'bottom', direction: 'ltr-btt'})
-    $.yellowCandles.layout(CandlePawn, {columns: 2, rows: 4, gap: {x: 0, y: 0}, scaling: 'fill', alignment: 'bottom', direction: 'ltr-btt'})
-    $.blueCandles.layout(CandlePawn, {columns: 2, rows: 4, gap: {x: 0, y: 0}, scaling: 'fill', alignment: 'bottom', direction: 'ltr-btt'})
-    $.orangeCandles.layout(CandlePawn, {columns: 2, rows: 4, gap: {x: 0, y: 0}, scaling: 'fill', alignment: 'bottom', direction: 'ltr-btt'})
-    $.greenCandles.layout(CandlePawn, {columns: 2, rows: 4, gap: {x: 0, y: 0}, scaling: 'fill', alignment: 'bottom', direction: 'ltr-btt'})
-    $.purpleCandles.layout(CandlePawn, {columns: 2, rows: 4, gap: {x: 0, y: 0}, scaling: 'fill', alignment: 'bottom', direction: 'ltr-btt'})
-    $.blackCandles.layout(CandlePawn, {columns: 2, rows: 3, gap: {x: 0, y: 0}, scaling: 'fill', alignment: 'bottom', direction: 'ltr-btt'})
+    $.whiteCandles.layout(Piece, {columns: 2, rows: 5, gap: {x: 0, y: 0}, scaling: 'fill', alignment: 'bottom', direction: 'ltr-btt'})
+    $.redCandles.layout(Piece, {columns: 2, rows: 4, gap: {x: 0, y: 0}, scaling: 'fill', alignment: 'bottom', direction: 'ltr-btt'})
+    $.yellowCandles.layout(Piece, {columns: 2, rows: 4, gap: {x: 0, y: 0}, scaling: 'fill', alignment: 'bottom', direction: 'ltr-btt'})
+    $.blueCandles.layout(Piece, {columns: 2, rows: 4, gap: {x: 0, y: 0}, scaling: 'fill', alignment: 'bottom', direction: 'ltr-btt'})
+    $.orangeCandles.layout(Piece, {columns: 2, rows: 4, gap: {x: 0, y: 0}, scaling: 'fill', alignment: 'bottom', direction: 'ltr-btt'})
+    $.greenCandles.layout(Piece, {columns: 2, rows: 4, gap: {x: 0, y: 0}, scaling: 'fill', alignment: 'bottom', direction: 'ltr-btt'})
+    $.purpleCandles.layout(Piece, {columns: 2, rows: 4, gap: {x: 0, y: 0}, scaling: 'fill', alignment: 'bottom', direction: 'ltr-btt'})
+    $.blackCandles.layout(Piece, {columns: 2, rows: 3, gap: {x: 0, y: 0}, scaling: 'fill', alignment: 'bottom', direction: 'ltr-btt'})
 
     game.all(KeyHook).appearance({
       render: () => (

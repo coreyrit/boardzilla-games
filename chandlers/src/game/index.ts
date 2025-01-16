@@ -12,9 +12,9 @@ import { WaxBuilding } from './building/wax.js';
 import { PigmentBuilding } from './building/pigment.js';
 import { MoldBuilding } from './building/mold.js';
 import { ChandlersPlayer } from './player.js';
-import { CustomerCard, EndGameTile, RoundEndTile, BackAlleyTile, ColorDie, KeyShape, CandlePawn, PowerTile, Wax, WorkerPiece, Pigment, Melt, MasteryCube, ScoreTracker, Bulb, GoalCard, Lamp } from './components.js';
+import { CustomerCard, EndGameTile, RoundEndTile, BackAlleyTile, ColorDie, KeyShape, CandlePawn, PowerTile, Wax, WorkerPiece, Pigment, Melt, MasteryCube, ScoreTracker, Bulb, GoalCard, Lamp, Trash } from './components.js';
 import { BackAlley, BackAlleySpace, Candelabra, CandleBottomRow, CandleSpace, CandleTopRow, ChandlersBoard, ComponentSpace, CustomerSpace, DiceSpace, GameEndSpace, GoalSpace, KeyHook, MasterySpace, MasteryTrack, PlayerBoard, PlayerSpace, PlayersSpace, PowerSpace, ReadySpace, RoundEndSpace, RoundSpace, ScoringSpace, ScoringTrack, Spill, WorkerSpace } from './boards.js';
-import { timeLog } from 'console';
+import { count, timeLog } from 'console';
 
 export enum Building {
   Wax = 'wax',
@@ -190,6 +190,11 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   game.init();
 
   const bag = game.create(Space, 'bag')
+  bag.onEnter(CandlePawn, x => {
+    if(!game.setup) {
+      bag.first(Trash)!.putInto(game.first(Candelabra, {color: x.color})!);
+    }
+  })
 
   // create the board
   const board = game.create(ChandlersBoard, 'board');
@@ -335,17 +340,19 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   purpleHook.create(KeyShape, 'purple-key', {color: Color.Purple});
 
   // place the candles
-  const whiteCandles = game.create(Candelabra, 'whiteCandles');
-  const redCandles = game.create(Candelabra, 'redCandles');
-  const yellowCandles = game.create(Candelabra, 'yellowCandles');
-  const blueCandles = game.create(Candelabra, 'blueCandles');
-  const orangeCandles = game.create(Candelabra, 'orangeCandles');
-  const greenCandles = game.create(Candelabra, 'greenCandles');
-  const purpleCandles = game.create(Candelabra, 'purpleCandles');
-  const blackCandles = game.create(Candelabra, 'blackCandles');
+  const whiteCandles = game.create(Candelabra, 'whiteCandles', {color: Color.White});
+  const redCandles = game.create(Candelabra, 'redCandles', {color: Color.Red});
+  const yellowCandles = game.create(Candelabra, 'yellowCandles', {color: Color.Yellow});
+  const blueCandles = game.create(Candelabra, 'blueCandles', {color: Color.Blue});
+  const orangeCandles = game.create(Candelabra, 'orangeCandles', {color: Color.Orange});
+  const greenCandles = game.create(Candelabra, 'greenCandles', {color: Color.Green});
+  const purpleCandles = game.create(Candelabra, 'purpleCandles', {color: Color.Purple});
+  const blackCandles = game.create(Candelabra, 'blackCandles', {color: Color.Black});
 
   // place ONE white candle in the bag
   // $.bag.create(CandlePawn, 'whiteCandleBag', {color: Color.White});
+
+  game.setup = true;
 
   for(var i = 0; i < 8 + game.players.length-2; i++) {
     $.whiteCandles.create(CandlePawn, 'whiteCandle' + i, {color: Color.White})
@@ -363,7 +370,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   }
 
   // roll random dice to start the round
-  game.setup = true;
+  
   for(var i = 0; i < 4-game.players.length; i++) {
     Object.values(Building).forEach((building: Building) =>{
       const die = game.create(ColorDie, 'colorDie' + i);
@@ -475,6 +482,11 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   game.create(RoundSpace, 'round4', {round: 4});
 
   $.round1.create(Bulb, 'bulb');
+
+  // create some trash cans
+  for(var i = 0; i < 64; i++) {
+    $.bag.create(Trash, 'trash' + i);
+  }
 
   // round end goals
   game.create(RoundEndSpace, 'roundEndSpace1')
@@ -888,29 +900,31 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       }
     ),
 
-    continueMolding: (player) => action<{count: number}>({
-      prompt: 'Do you want to continue molding?',
-    }).chooseFrom(
-      "choice", () => ['Yes', 'No'],
-      { skipIf: 'never' }
-    ).do(({ choice, count }) => {
-      if(choice == 'Yes') {
-        game.followUp({name: 'chooseMelt', args: {count: count-1}});
-      }
-    }),
+    // continueMolding: (player) => action<{count: number}>({
+    //   prompt: 'Do you want to continue molding?',
+    // }).chooseFrom(
+    //   "choice", () => ['Yes', 'No'],
+    //   { skipIf: 'never' }
+    // ).do(({ choice, count }) => {
+    //   if(choice == 'Yes') {
+    //     game.followUp({name: 'chooseMelt', args: {count: count-1}});
+    //   }
+    // }),
 
-    chooseMelt: (player) => action<{count:number}>({
+    chooseMelt: (player) => action({
       prompt: 'Choose melt to mold',
     }).chooseOnBoard(
-      'melt', player.board.all(Melt),
-      { skipIf: 'never' }
-    ).do(({ melt, count }) => {
-      player.gainCandle(melt, false, 1);
-      melt.putInto($.meltSpillArea);  
-      player.increaseScore();
-      if(count > 1 && player.board.all(Melt).length > 0) {
-        game.followUp({name: 'continueMolding', args: {count: count}});
-      }
+      'melts', () => player.board.all(Melt),
+      { skipIf: 'never', min: 1, max: game.currentPlayer().masteryLevel() }
+    ).do(({ melts }) => {
+      melts.forEach(x => {
+        player.gainCandle(x, false, 1);
+        x.putInto($.meltSpillArea);  
+        player.increaseScore();
+      })
+      // if(count > 1 && player.board.all(Melt).length > 0) {
+      //   game.followUp({name: 'continueMolding', args: {count: count}});
+      // }
     }),
 
     choosePigmentColor: (player) => action<{firstChoice: boolean}>({
@@ -1101,7 +1115,10 @@ export default createGame(ChandlersPlayer, MyGame, game => {
             break;
           }
           case CustomerType.Priest: {
-            $.bag.first(CandlePawn, {color: Color.White})?.putInto(player.nextEmptySpace());
+            if($.bag.all(CandlePawn, {color: Color.White}).length > 0) {
+              $.bag.first(CandlePawn, {color: Color.White})?.putInto(player.nextEmptySpace());
+              game.first(Candelabra, {color: Color.White})!.top(Trash)!.putInto($.bag);
+            }
             break;
           }
           case CustomerType.Prince: {
