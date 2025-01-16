@@ -1565,13 +1565,6 @@ export default createGame(ChandlersPlayer, MyGame, game => {
           component.putInto($.bag);
         }
       }
-      // move the extra pieces onto the board
-      for(var i = 9; i <= 20; i++) {
-        const space = player.board.first(ComponentSpace, {num: i})!;
-        if(space.all(Piece).length > 0) {
-            space.first(Piece)?.putInto(player.nextEmptySpace());
-        }
-      }
     }),
 
   });
@@ -1597,6 +1590,14 @@ export default createGame(ChandlersPlayer, MyGame, game => {
           ifElse({
             if: () => game.currentPlayer().componentCount() > 8, do: [playerActions({ actions: ['discardExtraComponents']})
           ]}),
+          () => {
+            // make sure to pull any floating pieces back to the board
+            game.currentPlayer().board.all(ComponentSpace).filter(x => x.num > 8).forEach(y => {
+              if(y.all(Piece).length > 0) {
+                y.first(Piece)!.putInto(game.currentPlayer().nextEmptySpace());
+              }
+            });
+          }
         ])}),
         () => {game.players.next();}
       ])}),
