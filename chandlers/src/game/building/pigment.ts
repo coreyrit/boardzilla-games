@@ -62,7 +62,7 @@ export class PigmentBuilding {
 
         pigmentRepeater.onEnter(WorkerPiece, x => {         
             pigmentRepeater.color = x.color;
-            game.performMastery(Building.Mold, pigmentRepeater);
+            game.performMastery(Building.Pigment, pigmentRepeater);
         })
         pigmentBackroom.onEnter(WorkerPiece, x => { 
             pigmentBackroom.color = x.color;
