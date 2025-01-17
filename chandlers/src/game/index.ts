@@ -1670,7 +1670,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
           game.all(WorkerSpace).all(CandlePawn).putInto($.bag);
 
           // return shapes
-          game.all(KeyShape).forEach(x => x.putInto(game.first(KeyShape,{color: x.color})!));
+          game.all(KeyShape).forEach(x => x.putInto(game.first(KeyHook,{color: x.color})!));
 
           // reset the customers
           [$.customer1, $.customer2, $.customer3, $.customer4].forEach(customer => {
