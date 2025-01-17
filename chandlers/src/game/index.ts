@@ -429,9 +429,9 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   })
 
 
-  game.create(GameEndSpace, 'gameEndType1')
-  game.create(GameEndSpace, 'gameEndType2')
-  game.create(GameEndSpace, 'gameEndType3')
+  game.create(GameEndSpace, 'gameEndType1', {score: 5})
+  game.create(GameEndSpace, 'gameEndType2', {score: 3})
+  game.create(GameEndSpace, 'gameEndType3', {score: 2})
 
   $.gameEndType1.onEnter(EndGameTile, x => {
     x.flipped = false;
@@ -1664,32 +1664,19 @@ export default createGame(ChandlersPlayer, MyGame, game => {
           for(const player of game.players) { player.pass = false; }
 
           // reset space colors
-          ($.waxRepeater as WorkerSpace).color = undefined;
-          ($.waxBackroom as WorkerSpace).color = undefined;
-          ($.waxMiddle as WorkerSpace).color = undefined;
-          ($.pigmentRepeater as WorkerSpace).color = undefined;
-          ($.pigmentBackroom as WorkerSpace).color = undefined;
-          ($.pigmentMiddle as WorkerSpace).color = undefined;
-          ($.moldRepeater as WorkerSpace).color = undefined;
-          ($.moldBackroom as WorkerSpace).color = undefined;
-          ($.moldMiddle as WorkerSpace).color = undefined;
+          game.all(WorkerSpace).filter(x => x.spaceType != SpaceType.Color).forEach(x => x.color = undefined);
 
           // discard used candles
           game.all(WorkerSpace).all(CandlePawn).putInto($.bag);
 
           // return shapes
-          game.first(KeyShape, {color: Color.Red})?.putInto($.redHook);
-          game.first(KeyShape, {color: Color.Yellow})?.putInto($.yellowHook);
-          game.first(KeyShape, {color: Color.Blue})?.putInto($.blueHook);
-          game.first(KeyShape, {color: Color.Orange})?.putInto($.orangeHook);
-          game.first(KeyShape, {color: Color.Green})?.putInto($.greenHook);
-          game.first(KeyShape, {color: Color.Purple})?.putInto($.purpleHook);
+          game.all(KeyShape).forEach(x => x.putInto(game.first(KeyShape,{color: x.color})!));
 
           // reset the customers
-          for(const customer of [$.customer1, $.customer2, $.customer3, $.customer4]) {
+          [$.customer1, $.customer2, $.customer3, $.customer4].forEach(customer => {
             customer.first(CustomerCard)?.putInto($.bag);
             $.drawCustomer.top(CustomerCard)?.putInto(customer);
-          }
+          });
 
           // set starting dice
           game.all(ColorDie).putInto($.bag);
@@ -1735,15 +1722,15 @@ export default createGame(ChandlersPlayer, MyGame, game => {
 
           // do final scoring
           game.players.forEach(player => {
+            
             // score for customers
-            player.space.all(CustomerCard).forEach(card => {
+            player.space.all(CustomerCard).filter(x => x.customerType != CustomerType.None).forEach(card => {
               const candleCount = card.all(CandlePawn).length;
-              if(candleCount > 0) {
-                const candleScore = card.scoring[candleCount-1]
-                game.message(player.name + ' scored ' + candleScore + ' points for candles on ' + card.name);
-                player.increaseScore(candleScore);
-              }
+              const candleScore = candleCount > 0 ? card.scoring[candleCount-1] : 0;
+              game.message(player.name + ' scored ' + candleScore + ' points for candles on ' + card.name);
+              player.increaseScore(candleScore);
             })
+
             // score for mastery
             game.message(player.name + ' scored ' + player.masteryScore() + ' points for mastery');
             player.increaseScore(player.masteryScore());
@@ -1770,32 +1757,22 @@ export default createGame(ChandlersPlayer, MyGame, game => {
 
                   game.message(player.name + ' scored 6 points for goal ' + goal.name);
                   player.increaseScore(6);
+                } else {
+                  game.message(player.name + ' scored 0 points for goal ' + goal.name);
                 }
               }
             );
 
             // score for game end goals
-            if($.gameEndType1.all(EndGameTile).length > 0) {
-              const type1 = $.gameEndType1.first(EndGameTile)!
-              const score1 = player.space.all(CustomerCard, {customerType: type1.type})
-                .filter(x => x.all(CandlePawn).length > 0).length * 5;
-              player.increaseScore(score1);
-              game.message(player.name + ' scored ' + score1 + ' points for type ' + type1);
-            }
-            if($.gameEndType2.all(EndGameTile).length > 0) {
-              const type2 = $.gameEndType2.first(EndGameTile)!
-              const score2 = player.space.all(CustomerCard, {customerType: type2.type})
-                .filter(x => x.all(CandlePawn).length > 0).length * 3;
-              player.increaseScore(score2);
-              game.message(player.name + ' scored ' + score2 + ' points for type ' + type2);
-            }
-            if($.gameEndType3.all(EndGameTile).length > 0) {
-              const type3 = $.gameEndType3.first(EndGameTile)!
-              const score3 = player.space.all(CustomerCard, {customerType: type3.type})
-                .filter(x => x.all(CandlePawn).length > 0).length * 5;
-              player.increaseScore(score3);
-              game.message(player.name + ' scored ' + score3 + ' points for type ' + type3);
-            }
+            game.all(GameEndSpace).filter(x => x.score > 0).forEach(tile => {
+              if(tile.all(EndGameTile).length > 0) {
+                const type = tile.first(EndGameTile)!
+                const score = player.space.all(CustomerCard, {customerType: type.type})
+                  .filter(x => x.all(CandlePawn).length > 0).length * tile.score;
+                player.increaseScore(score);
+                game.message(player.name + ' scored ' + score + ' points for type ' + type);
+              }
+            })
           })
 
           game.finish(undefined)

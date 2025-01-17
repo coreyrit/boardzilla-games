@@ -66,7 +66,7 @@ export class Spill extends Space<MyGame> {
 }
   
 export class GameEndSpace extends Space<MyGame> {
-  
+    score: number = 0;
 }
   
 export class RoundEndSpace extends Space<MyGame> {
