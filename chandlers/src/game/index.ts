@@ -1016,7 +1016,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     chooseCustomerToSwap: (player) => action({
       prompt: 'Choose customers to swap',
     }).chooseOnBoard(
-      'customer1', player.space.all(CustomerCard).filter(x => x.all(CandlePawn).length == 0),
+      'customer1', player.space.all(CustomerCard).filter(x => x.customerType != CustomerType.None && x.all(CandlePawn).length == 0),
       { skipIf: 'never' }
     ).chooseOnBoard(
       'customer2', ({customer1}) => [$.customer1, $.customer2, $.customer3, $.customer4],
