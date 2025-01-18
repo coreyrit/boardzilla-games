@@ -1619,10 +1619,43 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       }
     }),
 
+    chooseStartingCustomer: (player) => action({
+      prompt: 'Choose starting customer',
+    }).chooseOnBoard(
+      'customer', player.space.all(CustomerCard).filter(x => x.customerType != CustomerType.None),
+      { skipIf: 'never' }
+    ).do(({ customer }) => {
+      player.space.all(CustomerCard)
+        .filter(x => x.customerType != CustomerType.None && x != customer)
+        .putInto($.bag);
+    }),
+
+    chooseStartingGoal: (player) => action({
+      prompt: 'Choose starting goal',
+    }).chooseOnBoard(
+      'goal', player.space.all(GoalCard),
+      { skipIf: 'never' }
+    ).do(({ goal }) => {
+      player.space.all(GoalCard)
+        .filter(x => x != goal)
+        .putInto($.bag);
+    }),
+
   });
 
   game.defineFlow(
 
+    // allow players to choose their first cards
+    eachPlayer({
+      name: 'turn', do: [
+        ({turn}) => {
+          $.drawCustomer.top(CustomerCard)!.putInto(turn.space);
+          $.goalDeck.top(GoalCard)!.putInto(turn.space);
+        },
+        playerActions({ actions: ['chooseStartingCustomer']}),
+        playerActions({ actions: ['chooseStartingGoal']}),
+      ]
+    }),
     loop(
 
       () => {
@@ -1767,8 +1800,11 @@ export default createGame(ChandlersPlayer, MyGame, game => {
             game.all(GameEndSpace).filter(x => x.score > 0).forEach(tile => {
               if(tile.all(EndGameTile).length > 0) {
                 const type = tile.first(EndGameTile)!
-                const score = player.space.all(CustomerCard, {customerType: type.type})
+                var score = player.space.all(CustomerCard, {customerType: type.type})
                   .filter(x => x.all(CandlePawn).length > 0).length * tile.score;
+                if(score == undefined) {
+                  score = 0;
+                }
                 player.increaseScore(score);
                 game.message(player.name + ' scored ' + score + ' points for type ' + type);
               }

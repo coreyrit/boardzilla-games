@@ -30,7 +30,8 @@ render(setup, {
           'chooseSpiltPigment', 'chooseMelt', 'chooseCandlesToTrade',
           'discardExtraComponents', 'choosePigmentColor',
           'chooseWaxRepeater', 'chooseCandleToMove', 'choosePowerTile',
-          'choosePigmentsToRemove', 'chooseWhiteCandle', 'chooseCustomerToSwap', 'chooseKeyAndShape'          
+          'choosePigmentsToRemove', 'chooseWhiteCandle', 'chooseCustomerToSwap', 'chooseKeyAndShape',
+          'chooseStartingCustomer', 'chooseStartingGoal'          
         ]
         .includes(a.name)),
       closeIf: actions => actions.some(a => 

@@ -838,12 +838,23 @@
         &[data-name="red-purple"] .front { background-image: url(./assets/goals/red-purple.jpg) } 
         &[data-name="red-yellow"] .front { background-image: url(./assets/goals/red-yellow.jpg) } 
 
+        &.selectable {
+          z-index: 220;
+          > div {      
+            .front {
+            border: 5px solid blue;
+            width: 100%;
+            height: 100%;
+            }
+          }
+        }
+        
         > div {
           width: 100%;
           height: 100%;
     
-          background-repeat: no-repeat;
-    
+          background-repeat: no-repeat;          
+
           .front, .back {
             position: absolute;
             top: 0;
