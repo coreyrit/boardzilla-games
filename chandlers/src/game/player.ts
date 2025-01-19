@@ -1,7 +1,7 @@
 import { Piece, Player, Space } from "@boardzilla/core";
 import { Color, MyGame } from "./index.js";
-import { WorkerPiece, CandlePawn, ColorDie, KeyShape, Wax, Pigment, MasteryCube, Melt, ScoreTracker } from "./components.js";
-import { Candelabra, ComponentSpace, DiceSpace, KeyHook, MasterySpace, PlayerBoard, PlayerSpace, ScoringSpace, ScoringTrack } from "./boards.js";
+import { WorkerPiece, CandlePawn, ColorDie, KeyShape, Wax, Pigment, MasteryCube, Melt, ScoreTracker, CustomerCard } from "./components.js";
+import { Candelabra, CandleSpace, ComponentSpace, DiceSpace, KeyHook, MasterySpace, PlayerBoard, PlayerSpace, ScoringSpace, ScoringTrack } from "./boards.js";
 
 export class ChandlersPlayer extends Player<MyGame, ChandlersPlayer> {
     space: PlayerSpace
@@ -18,6 +18,19 @@ export class ChandlersPlayer extends Player<MyGame, ChandlersPlayer> {
         .map(x => x.all(Piece).length == 0 ? 0 : 1)
         .reduce((sum, current) => sum + current, 0);
       return c;
+    }
+
+    hasSomewhereToPutACandle(candle: CandlePawn) : boolean {
+      var found: boolean = false;
+      this.space.all(CustomerCard).forEach(x => {
+        if(x.all(CandleSpace, {color: candle.color}).filter(y => y.all(CandlePawn).length == 0).length > 0) {
+          console.log('found a spot for ' + candle.color)
+          found = true;
+        } else {
+          console.log('no spot for ' + candle.color)
+        }
+      })
+      return found;
     }
 
     nextEmptySpace() : ComponentSpace {

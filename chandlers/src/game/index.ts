@@ -728,7 +728,8 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       prompt: 'Choose a worker',
       condition: player.workerCount() > 0 && !player.pass
     }).chooseOnBoard(
-      'worker', player.placedWorker ? player.board.all(CandlePawn) : player.board.all(WorkerPiece),
+      'worker', player.placedWorker ? player.board.all(CandlePawn).filter(x => player.hasSomewhereToPutACandle(x)) : 
+        player.board.all(WorkerPiece),
       { skipIf: 'never' }
     ).do(({ worker }) => {
       // player.selectedWorker = worker
