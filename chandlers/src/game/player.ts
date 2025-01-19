@@ -8,7 +8,9 @@ export class ChandlersPlayer extends Player<MyGame, ChandlersPlayer> {
     board: PlayerBoard
     pass: Boolean = false;
     stack: Boolean = false;
+    soldCandle: Boolean = false;
     placedWorker: Boolean = false;
+    finished: Boolean = false;
     playerColor: Color
   
     componentCount() : number {

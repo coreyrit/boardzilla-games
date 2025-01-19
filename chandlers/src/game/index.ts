@@ -726,9 +726,9 @@ export default createGame(ChandlersPlayer, MyGame, game => {
 
     chooseWorker: (player) => action({
       prompt: 'Choose a worker',
-      condition: player.workerCount() > 0 && !player.pass,
+      condition: player.workerCount() > 0 && !player.pass
     }).chooseOnBoard(
-      'worker', player.board.all(WorkerPiece),
+      'worker', player.placedWorker ? player.board.all(CandlePawn) : player.board.all(WorkerPiece),
       { skipIf: 'never' }
     ).do(({ worker }) => {
       // player.selectedWorker = worker
@@ -947,7 +947,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
 
     sellCandle: player => action({
       prompt: 'Sell the candle',
-      condition: $.ready.first(WorkerPiece)! instanceof CandlePawn
+      condition: $.ready.first(WorkerPiece)! instanceof CandlePawn && !player.placedWorker && !player.soldCandle
     }).chooseOnBoard(
       'space', game.all(BackAlley),
       { skipIf: 'never' }
@@ -1264,7 +1264,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
 
     placeWorker: (player) => action({
       prompt: 'Use the worker',
-      condition: $.ready.all(WorkerPiece).length > 0
+      condition: $.ready.all(WorkerPiece).length > 0 && !player.placedWorker
     }).chooseOnBoard(
       'space', game.all(WorkerSpace)
         .filter(x => x.all(WorkerPiece).length == 0 
@@ -1377,10 +1377,18 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       player.pass = true;
       player.placedWorker = true;
     }),
+    
     skip: (player) => action({
       condition: $.ready.all(WorkerPiece).length == 0,
     }).do(() => {
         // do nothing
+    }),
+
+    finish: (player) => action({
+      prompt: 'Finish',
+      condition: !player.pass && player.placedWorker,
+    }).do(() => {
+      player.finished = true;
     }),
 
     chooseDiceToRoll: (player) => action({
@@ -1668,9 +1676,13 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       },
 
       whileLoop({while: () => !game.allPlayersPassed(), do: ([        
-        () => {game.currentPlayer().placedWorker = false},
-        whileLoop({while: () => !game.currentPlayer().placedWorker, do: ([
-          playerActions({ actions: ['chooseWorker', 'usePower', 'pass']}),
+        () => {
+          game.currentPlayer().soldCandle = false
+          game.currentPlayer().finished = false
+          game.currentPlayer().placedWorker = false
+        },
+        whileLoop({while: () => !game.currentPlayer().finished, do: ([
+          playerActions({ actions: ['chooseWorker', 'usePower', 'finish', 'pass']}),
           playerActions({ actions: ['placeWorker', 'placeCandle', 'sellCandle', 'skip']}),
           ifElse({
             if: () => game.currentPlayer().componentCount() > 8, do: [playerActions({ actions: ['discardExtraComponents']})
