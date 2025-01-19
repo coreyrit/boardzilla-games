@@ -40,7 +40,7 @@ export class SetLogic {
       }
 
       static oneByFive(sets: IdSet[]) : boolean {
-        return sets.length >= 5;
+        return sets.filter(x => x.set.size > 0).length >= 5;
       }
 
       static threeByThreeOtherwise(sets: IdSet[]) : boolean {

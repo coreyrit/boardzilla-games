@@ -167,6 +167,16 @@ test('oneByFive2', () => {
   ])).toStrictEqual(true);
 })
 
+test('oneByFive3', () => {
+  expect(SetLogic.oneByFive([
+    new IdSet('A', ['A', 'B', 'C']),
+    new IdSet('A', ['A', 'B', 'D']),
+    new IdSet('A', ['A']),
+    new IdSet('A', []),
+    new IdSet('A', ['A', 'D']),
+  ])).toStrictEqual(false);
+})
+
 test('twoPairs1', () => {
   expect(SetLogic.twoPairs([
     new IdSet('A', ['A', 'B', 'C']),
