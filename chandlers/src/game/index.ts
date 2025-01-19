@@ -977,6 +977,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
         game.followUp({name: 'chooseBackAlleyAction', args: {letter: space.letter}});
       }
 
+      player.soldCandle = true;
       candle.putInto($.bag);
     }),
     
@@ -1374,6 +1375,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
 
     pass: (player) => action({
       prompt: 'Pass',
+      condition: !player.placedWorker,
     }).do(() => {
       player.pass = true;
       player.placedWorker = true;
@@ -1588,7 +1590,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
 
     usePower: (player) => action({
       prompt: 'Use a power tile',
-      condition: player.diceCount() > 0 && !player.pass,
+      condition: player.diceCount() > 0 && !player.pass && !player.placedWorker,
     }).chooseOnBoard(
       'power', player.board.all(PowerTile, {flipped: true}),
       { skipIf: 'never' }
