@@ -1376,6 +1376,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     }).do(() => {
       player.pass = true;
       player.placedWorker = true;
+      player.finished = true;
     }),
     
     skip: (player) => action({
