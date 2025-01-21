@@ -17,6 +17,10 @@ export class CustomerCard extends Piece<MyGame> {
     customerType: CustomerType = CustomerType.None;
     scoring: number[]
     scoredGoal: boolean = false;
+
+    override toString() : string {
+      return this.name;
+    }
     
     requiredCandles(): Color[] {
       var req: Color[] = []
@@ -224,11 +228,15 @@ export class ColorDie extends WorkerPiece {
 }
   
 export class CandlePawn extends WorkerPiece {
-  
+  override toString() : string {
+    return this.color + ' candle'
+  }
 }
   
 export class KeyShape extends WorkerPiece {
-  
+  override toString() : string {
+    return this.color + ' key';
+  }
 }
 
 export class Wax extends Piece<MyGame> {
@@ -253,6 +261,10 @@ export class Lamp extends Piece<MyGame> {
 
 export class PowerTile extends Piece<MyGame> {
   flipped: boolean = true;
+
+  override toString() : string {
+    return this.name;
+  }
 }
 
 export class MasteryCube extends Piece<MyGame> {
@@ -268,10 +280,18 @@ export class ScoreTracker extends Piece<MyGame> {
   
   export class Pigment extends Piece<MyGame> {
     color: Color = Color.Red;
+
+    override toString() : string {
+      return this.color + ' pigment'
+    }
   }
   
   export class Melt extends Piece<MyGame> {
     color: Color = Color.White
+
+    override toString() : string {
+      return this.color + ' melt'
+    }
   
     hasColor(color: Color): boolean {
       switch(color) {

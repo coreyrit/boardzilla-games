@@ -71,22 +71,29 @@ export class ChandlersPlayer extends Player<MyGame, ChandlersPlayer> {
       }
     }
   
-    meltWaxSpill(wax: Wax[]) : void {
+    meltWaxSpill(wax: Wax[]) : number {
+      var j = 0;
       for(var i = 0; i < wax.length; i += 2) {
         if(i+1 < wax.length) {
           wax[i].putInto($.bag);
           wax[i+1].putInto($.waxSpillArea);
           this.game.currentPlayer().increaseScore();
           $.bag.first(Melt)?.putInto(this.nextEmptySpace());
+
+          j++
         }
       }
+      return j;
     }
   
-    meltWax(wax: Wax[]) : void {
+    meltWax(wax: Wax[]) : number {
+      var j = 0;
       for(var i = 0; i < wax.length; i ++) {
         wax[i].putInto($.bag);
         $.bag.first(Melt)?.putInto(this.nextEmptySpace());
+        j++;
       }
+      return j;
     }
   
     workerCount(): number {
