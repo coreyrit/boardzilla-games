@@ -2,3 +2,5 @@
 /.save-states
 /build
 tsconfig.tsbuildinfo
+src/ui/assets/**/*.jpg
+src/ui/assets/**/*.png
