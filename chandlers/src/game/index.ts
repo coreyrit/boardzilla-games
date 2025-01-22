@@ -1148,6 +1148,8 @@ export default createGame(ChandlersPlayer, MyGame, game => {
             const mastery = player.currentMastery();
             if(mastery >= 2) {
               player.setMastery(mastery-2);
+
+              game.message(player.name + ' spends 2 mastery.');
               game.followUp({name: 'chooseAvailableColorAction'});
             }
             break;
@@ -1164,6 +1166,8 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       { skipIf: 'never' }
     ).do(({ melt }) => {
       melt.mix(Color.Red);
+
+      game.message(player.name + ' mixes red and makes a ' + melt + '.');
     }),
     chooseMeltYellow: player => action({
       prompt: 'Choose melt to pigment yellow',
@@ -1172,6 +1176,8 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       { skipIf: 'never' }
     ).do(({ melt }) => {
       melt.mix(Color.Yellow);
+
+      game.message(player.name + ' mixes yellow and makes a ' + melt + '.');
     }),
     chooseMeltBlue: player => action({
       prompt: 'Choose melt to pigment blue',
@@ -1180,6 +1186,8 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       { skipIf: 'never' }
     ).do(({ melt }) => {
       melt.mix(Color.Blue);
+
+      game.message(player.name + ' mixes blue and makes a ' + melt + '.');
     }),
 
     chooseMeltManyRed: player => action({
@@ -1191,9 +1199,11 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       melts.forEach(x => {
         x.mix(Color.Red);
         $.bag.first(Pigment, {color: Color.Red})?.putInto($.pigmentSpillArea);
-        player.increaseScore();
-      }
-    )}),
+        player.increaseScore();        
+      });
+      game.message(player.name + ' mixes red into ' + melts.length + ' melts.');
+      game.message(melts.length + ' red pigments spill and ' + player.name + ' scores ' + melts.length + ' points');
+    }),
     chooseMeltManyYellow: player => action({
       prompt: 'Choose melt(s) to pigment yellow',
     }).chooseOnBoard(
@@ -1204,8 +1214,10 @@ export default createGame(ChandlersPlayer, MyGame, game => {
         x.mix(Color.Yellow);
         $.bag.first(Pigment, {color: Color.Yellow})?.putInto($.pigmentSpillArea);
         player.increaseScore();
-      }
-    )}),
+      });
+      game.message(player.name + ' mixes yellow into ' + melts.length + ' melts.');
+      game.message(melts.length + ' yellow pigments spill and ' + player.name + ' scores ' + melts.length + ' points');
+    }),
     chooseMeltManyBlue: player => action({
       prompt: 'Choose melt(s) to pigment blue',
     }).chooseOnBoard(
@@ -1216,8 +1228,10 @@ export default createGame(ChandlersPlayer, MyGame, game => {
         x.mix(Color.Blue);
         $.bag.first(Pigment, {color: Color.Blue})?.putInto($.pigmentSpillArea);
         player.increaseScore();
-      }
-    )}),
+      });
+      game.message(player.name + ' mixes blue into ' + melts.length + ' melts.');
+      game.message(melts.length + ' blue pigments spill and ' + player.name + ' scores ' + melts.length + ' points');
+    }),
 
     chooseRedOrWhiteMelt: player => action({
       prompt: 'Choose red melt or white melt to mold',
@@ -1225,7 +1239,8 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       'melt', player.board.all(Melt, {color: Color.Red}).concat(player.board.all(Melt, {color: Color.White})),
       { skipIf: 'never' }
     ).do(({ melt }) => {
-      player.gainCandle(melt);
+      game.message(player.name + ' melts a ' + melt + ' into 2 ' + melt.color + ' candles.');
+      player.gainCandle(melt);      
     }),
     chooseYellowOrWhiteMelt: player => action({
       prompt: 'Choose yellow melt or white melt to mold',
@@ -1233,7 +1248,8 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       'melt', player.board.all(Melt, {color: Color.Yellow}).concat(player.board.all(Melt, {color: Color.White})),
       { skipIf: 'never' }
     ).do(({ melt }) => {
-      player.gainCandle(melt);
+      game.message(player.name + ' melts a ' + melt + ' into 2 ' + melt.color + ' candles.');
+      player.gainCandle(melt);      
     }),
     chooseBlueOrWhiteMelt: player => action({
       prompt: 'Choose blue melt or white melt to mold',
@@ -1241,7 +1257,8 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       'melt', player.board.all(Melt, {color: Color.Blue}).concat(player.board.all(Melt, {color: Color.White})),
       { skipIf: 'never' }
     ).do(({ melt }) => {
-      player.gainCandle(melt);
+      game.message(player.name + ' melts a ' + melt + ' into 2 ' + melt.color + ' candles.');
+      player.gainCandle(melt);      
     }),
     chooseOrangeOrBlackMelt: player => action({
       prompt: 'Choose orange melt or black melt to mold',
@@ -1249,7 +1266,8 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       'melt', player.board.all(Melt, {color: Color.Orange}).concat(player.board.all(Melt, {color: Color.Black})),
       { skipIf: 'never' }
     ).do(({ melt }) => {
-      player.gainCandle(melt);
+      game.message(player.name + ' melts a ' + melt + ' into 2 ' + melt.color + ' candles.');
+      player.gainCandle(melt);      
     }),
     chooseGreenOrBlackMelt: player => action({
       prompt: 'Choose green melt or black melt to mold',
@@ -1257,7 +1275,8 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       'melt', player.board.all(Melt, {color: Color.Green}).concat(player.board.all(Melt, {color: Color.Black})),
       { skipIf: 'never' }
     ).do(({ melt }) => {
-      player.gainCandle(melt);
+      game.message(player.name + ' melts a ' + melt + ' into 2 ' + melt.color + ' candles.');
+      player.gainCandle(melt);      
     }),
     choosePurpleOrBlackMelt: player => action({
       prompt: 'Choose purple melt or black melt to mold',
@@ -1265,7 +1284,8 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       'melt', player.board.all(Melt, {color: Color.Purple}).concat(player.board.all(Melt, {color: Color.Black})),
       { skipIf: 'never' }
     ).do(({ melt }) => {
-      player.gainCandle(melt);
+      game.message(player.name + ' melts a ' + melt + ' into 2 ' + melt.color + ' candles.');
+      player.gainCandle(melt);      
     }),
 
     placeCandle: player => action({
@@ -1277,9 +1297,14 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       { skipIf: 'never' }
     ).do(({ space }) => {
       const card = space.container(CustomerCard)!
-      card.placeCandle($.ready.first(WorkerPiece)!)
+      const candle = $.ready.first(CandlePawn)!
+      card.placeCandle(candle);
+
+      game.message(player.name + ' places a ' + candle + ' on customer ' + card + '.');
       if(card.all(CandlePawn).length == card.requiredCandles().length && card.requiredCandles().length == 3) {
         $.drawCustomer.top(CustomerCard)?.putInto(player.space);
+
+        game.message(player.name + ' finishes customer ' + card + ' and draws a new card.');
       }
       game.followUp({name: 'activateCustomer', args: {color: space.color}});
     }),
@@ -1293,11 +1318,17 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       { skipIf: 'never' }
     ).do(({ space }) => {
       const card = space.container(CustomerCard)!
-      $.ready.first(WorkerPiece)!.putInto(space);
+      const candle = $.ready.first(CandlePawn)!
+      candle.putInto(space);
+
+      game.message(player.name + ' places a ' + candle + ' on customer ' + card + '.');
       if(card.all(CandlePawn).length == card.requiredCandles().length && card.requiredCandles().length == 3) {
         $.drawCustomer.top(CustomerCard)?.putInto(player.space);
+
+        game.message(player.name + ' finishes customer ' + card + ' and draws a new card.');
       }
       player.increaseMastery(1);
+      game.message(player.name + ' gains 1 mastery.');
     }),
 
     placeWorker: (player) => action({
@@ -1399,10 +1430,18 @@ export default createGame(ChandlersPlayer, MyGame, game => {
           const die = top as ColorDie;
           die.roll();
           die.putInto(player.nextEmptyDieSpace());
+
+          game.message(player.name + ' captures a die and rolls ' + die.color + '.');
         } else if(worker instanceof CandlePawn && top instanceof KeyShape) {
-          top.putInto(player.nextEmptySpace());
+          const key = top as KeyShape;
+          key.putInto(player.nextEmptySpace());
+
+          game.message(player.name + ' captures the ' + key + '.');
         } else if(worker instanceof ColorDie && top instanceof KeyShape) {
-          top.putInto(player.nextEmptySpace());
+          const key = top as KeyShape;
+          key.putInto(player.nextEmptySpace());
+
+          game.message(player.name + ' captures the ' + key + '.');
         }
       }      
       worker.putInto(space);
@@ -1438,6 +1477,8 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       { skipIf: 'never', min: 1, max: 11 }
     ).do(({ dice }) => {
       dice.forEach(x => x.roll());
+
+      game.message(player.name + ' rolls their dice.');
     }),
 
     chooseDieToSet: (player) => action({
@@ -1452,6 +1493,8 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     )
     .do(({ die, color }) => {
       die.color = Color[color]
+
+      game.message(player.name + ' sets a die to ' + die.color + '.');
     }),
 
     confirmAction: (player) => action<{tile: BackAlleyTile}>({
@@ -1488,14 +1531,20 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       switch(color) {
         case 'Red': {
           melt.unmix(Color.Red);
+
+          game.message(player.name + ' removes a red and makes a ' + melt + '.');
           break;
         }
         case 'Blue': {
           melt.unmix(Color.Blue);
+
+          game.message(player.name + ' removes a blue and makes a ' + melt + '.');
           break;
         }
         case 'Yellow': {
           melt.unmix(Color.Yellow);
+
+          game.message(player.name + ' removes a yellow and makes a ' + melt + '.');
           break;
         }
       }
@@ -1513,6 +1562,8 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     .do(({ melt }) => {
       melt.putInto(player.nextEmptySpace());
       player.board.first(Wax)?.putInto($.bag);
+
+      game.message(player.name + ' spends melts 1 wax into 1 melt.');
     }),
 
     chooseMiddleAction: () => action<{workerSpace: WorkerSpace}>({
@@ -1604,13 +1655,17 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       melts.forEach(x => x.putInto(player.nextEmptySpace()));
       switch(melts.length) {
         case 1: {
-          player.board.first(Wax)?.putInto($.bag);          
+          player.board.first(Wax)?.putInto($.bag); 
+          
+          game.message(player.name + ' spends 1 wax to take 1 melt from the spill.');
           break;
         }
         case 2: {
           player.board.first(Wax)?.putInto($.bag);
           player.board.first(Wax)?.putInto($.bag);
           player.board.first(Wax)?.putInto($.bag);
+
+          game.message(player.name + ' spends 3 wax to take 2 melts from the spill.');
           break;
         }
         case 3: {
@@ -1619,6 +1674,8 @@ export default createGame(ChandlersPlayer, MyGame, game => {
           player.board.first(Wax)?.putInto($.bag);
           player.board.first(Wax)?.putInto($.bag);
           player.board.first(Wax)?.putInto($.bag);
+
+          game.message(player.name + ' spends 5 wax to take 3 melts from the spill.');
           break;
         }
       }
@@ -1642,6 +1699,8 @@ export default createGame(ChandlersPlayer, MyGame, game => {
         }
         case 'stack': {
           player.stack = true;
+
+          game.message(player.name + ' uses their stack power.');
           break;
         }
       }
@@ -1665,6 +1724,8 @@ export default createGame(ChandlersPlayer, MyGame, game => {
           component.putInto($.bag);
         }
       }
+
+      game.message(player.name + ' discards down to 8 components.');
     }),
 
     chooseStartingCustomer: (player) => action({
@@ -1676,6 +1737,8 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       player.space.all(CustomerCard)
         .filter(x => x.customerType != CustomerType.None && x != customer)
         .putInto($.bag);
+
+        game.message(player.name + ' chooses their starting customer.');
     }),
 
     chooseStartingGoal: (player) => action({
@@ -1687,6 +1750,8 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       player.space.all(GoalCard)
         .filter(x => x != goal)
         .putInto($.bag);
+
+        game.message(player.name + ' chooses their starting goal.');
     }),
 
   });
@@ -1715,6 +1780,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
         for(var i = 0; i < firstPlayer.playerIndex; i++) {
           game.players.next();
         }
+        game.message('Round ' + game.currentRound() + ' begins.');
       },
 
       whileLoop({while: () => !game.allPlayersPassed(), do: ([        
@@ -1742,6 +1808,8 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       ])}),
       
       () => {
+        game.message('Round ' + game.currentRound() + ' ends.');
+
         // check round end goals
         game.checkRoundEndGoals();
 

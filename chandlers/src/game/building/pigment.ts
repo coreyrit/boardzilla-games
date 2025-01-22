@@ -9,6 +9,7 @@ export class PigmentBuilding {
             game.followUp({name: 'chooseMeltMany' + game.capitalize(shape)}); 
             if(!skipShape) {
                 game.currentPlayer().gainShape(shape); 
+                game.message(game.currentPlayer().name + ' takes the ' + shape + ' key.');
             }
         }
     }
@@ -35,6 +36,7 @@ export class PigmentBuilding {
             game.followUp({name: 'chooseMelt' + game.capitalize(mix[1])}); 
             if(!skipShape) {
                 game.currentPlayer().gainShape(shape); 
+                game.message(game.currentPlayer().name + ' takes the ' + shape + ' key.');
             }
         }
     }

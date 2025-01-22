@@ -7,8 +7,10 @@ export class WaxBuilding {
     performPrimvaryColor(game: MyGame, shape: Color, skipShape : Boolean = false) : void{
         if(!game.setup) { 
             game.currentPlayer().gainWax(3); 
+            game.message(game.currentPlayer().name + ' takes 3 wax.');
             if(!skipShape) {
                 game.currentPlayer().gainShape(shape); 
+                game.message(game.currentPlayer().name + ' takes the ' + shape + ' key.');
             }
         } 
     }
@@ -18,6 +20,7 @@ export class WaxBuilding {
             game.followUp({name: 'chooseWax'}); 
             if(!skipShape) {
                 game.currentPlayer().gainShape(shape); 
+                game.message(game.currentPlayer().name + ' takes the ' + shape + ' key.');
             }
         } 
     }

@@ -9,6 +9,7 @@ export class MoldBuilding {
             game.followUp({name: 'choose' + game.capitalize(shape) + 'OrWhiteMelt'}); 
             if(!skipShape) {
                 game.currentPlayer().gainShape(shape); 
+                game.message(game.currentPlayer().name + ' takes the ' + shape + ' key.');
             }
         }
     }
@@ -18,6 +19,7 @@ export class MoldBuilding {
             game.followUp({name: 'choose' + game.capitalize(shape) + 'OrBlackMelt'}); 
             if(!skipShape) {
                 game.currentPlayer().gainShape(shape); 
+                game.message(game.currentPlayer().name + ' takes the ' + shape + ' key.');
             }
         }
     }
