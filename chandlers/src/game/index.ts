@@ -1456,13 +1456,6 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       player.placedWorker = true;
       player.finished = true;
     }),
-    
-    skip: (player) => action({
-      condition: $.ready.all(WorkerPiece).length == 0,
-    }).do(() => {
-        // do nothing
-        game.message(player.name + ' turn ends.');
-    }),
 
     finish: (player) => action({
       prompt: 'Finish',
@@ -1792,7 +1785,9 @@ export default createGame(ChandlersPlayer, MyGame, game => {
         },
         whileLoop({while: () => !game.currentPlayer().finished, do: ([
           playerActions({ actions: ['chooseWorker', 'usePower', 'finish', 'pass']}),
-          playerActions({ actions: ['placeWorker', 'placeCandle', 'sellCandle', 'skip']}),          
+          ifElse({
+            if: () => $.ready.all(WorkerPiece).length > 0, do: [playerActions({ actions: ['placeWorker', 'placeCandle', 'sellCandle']}),          
+          ]}),          
         ])}),
         ifElse({
           if: () => game.currentPlayer().componentCount() > 8, do: [playerActions({ actions: ['discardExtraComponents']})
