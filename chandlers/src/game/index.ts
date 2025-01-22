@@ -1461,6 +1461,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       condition: $.ready.all(WorkerPiece).length == 0,
     }).do(() => {
         // do nothing
+        game.message(player.name + ' turn ends.');
     }),
 
     finish: (player) => action({
