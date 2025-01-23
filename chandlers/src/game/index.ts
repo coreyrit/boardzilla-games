@@ -712,10 +712,11 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       'customer', [$.customer1, $.customer2, $.customer3, $.customer4],
       { skipIf: 'never' }
     ).do(({ customer }) => {
-      customer.first(CustomerCard)?.putInto(player.space);
+      const card = customer.first(CustomerCard)!;
+      card.putInto(player.space);
       $.drawCustomer.top(CustomerCard)?.putInto(customer);
 
-      game.message(player.name + ' takes the customer ' + customer + '.')
+      game.message(player.name + ' takes the customer ' + card + '.')
     }),
 
     chooseWorker: (player) => action({
@@ -1046,10 +1047,11 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       'customer2', ({customer1}) => [$.customer1, $.customer2, $.customer3, $.customer4],
       { skipIf: 'never' }
     ).do(({ customer1, customer2 }) => {
-      customer2.top(CustomerCard)?.putInto(player.space);
+      const card = customer2.top(CustomerCard)!;
+      card.putInto(player.space);
       customer1.putInto(customer2);
 
-      game.message(player.name + ' swaps customer ' + customer1 + ' for ' + customer2 + '.');
+      game.message(player.name + ' swaps customer ' + customer1 + ' for ' + card + '.');
     }),
 
     activateCustomer: (player) => action<{color: Color}>({
@@ -1455,6 +1457,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       player.pass = true;
       player.placedWorker = true;
       player.finished = true;
+      game.message(player.name + ' passes.');
     }),
 
     finish: (player) => action({
@@ -1784,9 +1787,19 @@ export default createGame(ChandlersPlayer, MyGame, game => {
           game.currentPlayer().placedWorker = false
         },
         whileLoop({while: () => !game.currentPlayer().finished, do: ([
-          playerActions({ actions: ['chooseWorker', 'usePower', 'finish', 'pass']}),
           ifElse({
-            if: () => $.ready.all(WorkerPiece).length > 0, do: [playerActions({ actions: ['placeWorker', 'placeCandle', 'sellCandle']}),          
+            if: () => game.currentPlayer().workerCount() > 0 && !game.currentPlayer().pass, do: [
+              playerActions({ actions: ['chooseWorker', 'usePower', 'finish', 'pass']}),
+            ],
+            else: () => {
+              game.currentPlayer().pass = true;
+              game.currentPlayer().placedWorker = true;
+              game.currentPlayer().finished = true;
+            }
+          }),              
+          ifElse({
+            if: () => $.ready.all(WorkerPiece).length > 0, do: [
+              playerActions({ actions: ['placeWorker', 'placeCandle', 'sellCandle']}),          
           ]}),          
         ])}),
         ifElse({
