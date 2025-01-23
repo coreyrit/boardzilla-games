@@ -55,6 +55,7 @@ export enum CustomerType {
 
 export class MyGame extends Game<MyGame, ChandlersPlayer> {
   setup: Boolean = false;
+  gameOver: Boolean = false;
 
   init(): void {    
   }
@@ -1768,7 +1769,8 @@ export default createGame(ChandlersPlayer, MyGame, game => {
         playerActions({ actions: ['chooseStartingGoal']}),
       ]
     }),
-    loop(
+    
+    whileLoop({while: () => !game.gameOver, do: ([
 
       () => {
         const firstPlayer = game.first(Lamp)!;
@@ -1883,6 +1885,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
           game.nextRound();
         
         } else {
+          game.gameOver = true;
 
           // do final scoring
           game.players.forEach(player => {
@@ -1940,11 +1943,12 @@ export default createGame(ChandlersPlayer, MyGame, game => {
                 game.message(player.name + ' scored ' + score + ' points for type ' + type);
               }
             })
-          })
-
-          game.finish(undefined)
+          })          
         }
       }
-    )    
+    ])}),    
+    () => {
+      game.finish(undefined)
+    }
   );
 });
