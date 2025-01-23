@@ -167,7 +167,13 @@ export class ChandlersPlayer extends Player<MyGame, ChandlersPlayer> {
 
     setScore(score: number): void {
         const tracker = this.game.first(ScoreTracker, {index: this.game.players.indexOf(this)})!
-        tracker.putInto(this.game.first(ScoringSpace, {score: score})!)
+        
+        if(score >= 100) {
+          tracker.flipped = true;
+          tracker.putInto(this.game.first(ScoringSpace, {score: score-100})!)
+        } else {
+          tracker.putInto(this.game.first(ScoringSpace, {score: score})!)
+        }
     }
 
     increaseScore(value: number = 1): void {

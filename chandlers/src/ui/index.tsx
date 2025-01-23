@@ -660,6 +660,7 @@ render(setup, {
       render: x => (
         <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" color={x.color == undefined ? "white" : x.player!.color}>
           <circle cx="50" cy="50" r="50"fill="currentColor" stroke="white" strokeWidth="5" opacity={x.color == undefined ? '0' : '100'}/>
+          <text x="8" y="65" fontSize="50" fill="white">{x.flipped ? '100' : ''}</text>
         </svg>
       ),
     });
