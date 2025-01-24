@@ -67,8 +67,8 @@ render(setup, {
     $.playersSpace.layoutAsTabs(tabSpaces,
       { area: { left: 0, top: 10 , width: 100, height: 80 }, tabDirection: 'up', tabs: tabDefs,
       setTabTo: actions => {
-        if(game.currentPlayer() != undefined) {
-          return 'player' + game.players.indexOf(game.currentPlayer());
+        if(game.players.allCurrent().length > 0) {
+          return 'player' + game.players.indexOf(game.players.allCurrent()[0]);
         } else {
           return '';
         }
