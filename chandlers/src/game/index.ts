@@ -88,7 +88,7 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
 
   setupPlayer(turn: ChandlersPlayer) : void {    
     if($.drawCustomer.all(CustomerCard).length > 0) {
-      this.initPlayer(turn);
+      // this.initPlayer(turn);
       $.drawCustomer.top(CustomerCard)!.putInto(turn.space);
       // $.drawCustomer.top(CustomerCard)!.putInto(turn.space);
       const goal1 = $.goalDeck.top(GoalCard)!
