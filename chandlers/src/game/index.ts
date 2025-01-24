@@ -383,10 +383,10 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
       }
       this.waxCount++;
 
-      $.drawCustomer.top(CustomerCard)?.putInto(player.space);
-      $.goalDeck.top(GoalCard)?.putInto(player.space);      
+      // $.drawCustomer.top(CustomerCard)?.putInto(player.space);
+      // $.goalDeck.top(GoalCard)?.putInto(player.space);      
 
-      player.space.all(GoalCard).forEach(x => x.showOnlyTo(player));
+      // player.space.all(GoalCard).forEach(x => x.showOnlyTo(player));
 
       // player.setScore(0);
       // player.setMastery(0);
