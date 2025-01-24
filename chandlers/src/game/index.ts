@@ -904,7 +904,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     power3.create(PowerTile, 'stack')
   }
 
-  game.setupGame();
+  // game.setupGame();
 
   // GAME ACTIONS
   game.defineActions({
