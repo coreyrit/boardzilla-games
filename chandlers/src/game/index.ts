@@ -378,10 +378,10 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     $.drawCustomer.top(CustomerCard)?.putInto($.customer4)
 
     // return keys
-    // this.all(KeyShape).forEach(x => x.putInto(this.first(KeyHook,{color: x.color})!));
+    this.all(KeyShape).forEach(x => x.putInto(this.first(KeyHook,{color: x.color})!));
 
     // return candles
-    // this.all(CandlePawn).forEach(x => x.putInto(this.first(Candelabra, {color: x.color})!));
+    this.all(CandlePawn).forEach(x => x.putInto(this.first(Candelabra, {color: x.color})!));
 
     // place dice
     this.all(ColorDie).putInto($.bag);
@@ -418,7 +418,7 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     $.bag.first(EndGameTile)?.putInto($.blackType);
     
     // set round to 1
-    // this.first(Bulb)!.putInto(this.first(RoundSpace, {round: 1})!);
+    this.first(Bulb)!.putInto(this.first(RoundSpace, {round: 1})!);
 
     // randomly choose round end tiles
     $.bag.all(RoundEndTile).putInto($.bag);
