@@ -359,10 +359,10 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     this.all(Melt).putInto($.bag);    
     this.all(Pigment).putInto($.bag);
     this.all(PowerTile).forEach(x => x.flipped = true);
-    this.setupGame();
+    this.setupGame(this.players.length);
   }
 
-  setupGame() : void {
+  setupGame(playerCount : number) : void {
     this.setup = true;
     try {
     // shuffle the goals
@@ -425,7 +425,7 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     $.bag.shuffle()
   
     const roundEndSpaces = this.all(RoundEndSpace);
-    for(var i = 0; i < this.players.length+1; i++) {
+    for(var i = 0; i < playerCount+1; i++) {
       $.bag.first(RoundEndTile)?.putInto(roundEndSpaces[i]);  
     }
 
@@ -447,7 +447,7 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     $.bag.first(BackAlleyTile, {letter: "B"})?.putInto($.pigmentBackAlleySpaceB);
     $.bag.first(BackAlleyTile, {letter: "B"})?.putInto($.moldBackAlleySpaceB);
 
-    for(var i = 0; i < this.players.length; i++) {
+    for(var i = 0; i < playerCount; i++) {
       // const diceSpaces = this.players[i].board.all(DiceSpace);
       // if(diceSpaces.length >= 3) {
       //   const die1 = $.bag.first(ColorDie)!; die1.roll(); die1.putInto(diceSpaces[0]);
@@ -2027,7 +2027,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   });
 
   game.defineFlow(
-    () => game.setupGame(),
+    () => game.setupGame(game.players.length),
     
     // allow players to choose their first cards
     eachPlayer({
