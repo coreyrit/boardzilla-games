@@ -378,32 +378,32 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     $.drawCustomer.top(CustomerCard)?.putInto($.customer4)
 
     // return keys
-    this.all(KeyShape).forEach(x => x.putInto(this.first(KeyHook,{color: x.color})!));
+    // this.all(KeyShape).forEach(x => x.putInto(this.first(KeyHook,{color: x.color})!));
 
     // return candles
-    this.all(CandlePawn).forEach(x => x.putInto(this.first(Candelabra, {color: x.color})!));
+    // this.all(CandlePawn).forEach(x => x.putInto(this.first(Candelabra, {color: x.color})!));
 
     // place dice
     this.all(ColorDie).putInto($.bag);
 
     // roll random dice to start the round      
-    for(var i = 0; i < 4-this.players.length; i++) {
-      Object.values(Building).forEach((building: Building) =>{
-        const die = this.first(ColorDie)!;
-        die.roll()
+    // for(var i = 0; i < 4-this.players.length; i++) {
+    //   Object.values(Building).forEach((building: Building) =>{
+    //     const die = this.first(ColorDie)!;
+    //     die.roll()
 
-        if(i == 2) {
-          // for solo randomly put one in mastery or backroom
-          if(Math.floor(this.random() * 2) % 2 == 0) {
-            die.putInto(this.first(WorkerSpace, { building: building, spaceType: SpaceType.Mastery })!)
-          } else {
-            die.putInto(this.first(WorkerSpace, { building: building, spaceType: SpaceType.Backroom })!)
-          }
-        } else {
-          die.putInto(this.first(WorkerSpace, { building: building, color: die.color })!)
-        }
-      });
-    }
+    //     if(i == 2) {
+    //       // for solo randomly put one in mastery or backroom
+    //       if(Math.floor(this.random() * 2) % 2 == 0) {
+    //         die.putInto(this.first(WorkerSpace, { building: building, spaceType: SpaceType.Mastery })!)
+    //       } else {
+    //         die.putInto(this.first(WorkerSpace, { building: building, spaceType: SpaceType.Backroom })!)
+    //       }
+    //     } else {
+    //       die.putInto(this.first(WorkerSpace, { building: building, color: die.color })!)
+    //     }
+    //   });
+    // }
 
     // set end game tiles
     this.all(EndGameTile).putInto($.bag);
@@ -418,7 +418,7 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     $.bag.first(EndGameTile)?.putInto($.blackType);
     
     // set round to 1
-    this.first(Bulb)!.putInto(this.first(RoundSpace, {round: 1})!);
+    // this.first(Bulb)!.putInto(this.first(RoundSpace, {round: 1})!);
 
     // randomly choose round end tiles
     $.bag.all(RoundEndTile).putInto($.bag);
@@ -2024,7 +2024,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   });
 
   game.defineFlow(
-    // () => game.setupGame(),
+    () => game.setupGame(),
     
     // allow players to choose their first cards
     eachPlayer({
