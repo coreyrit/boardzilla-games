@@ -2024,7 +2024,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   });
 
   game.defineFlow(
-    () => game.setupGame(),
+    // () => game.setupGame(),
     
     // allow players to choose their first cards
     eachPlayer({
