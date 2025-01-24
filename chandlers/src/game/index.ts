@@ -374,19 +374,21 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
       }
 
       const componentSpaces = player.board.all(ComponentSpace);
-      $.bag.first(Melt)?.putInto(componentSpaces[0]);
-      for(var j = 0; j < this.waxCount; j++) {
-        $.bag.first(Wax)?.putInto(componentSpaces[j+1]);
+      if(componentSpaces.length >= this.waxCount + 1) {
+        $.bag.first(Melt)?.putInto(componentSpaces[0]);
+        for(var j = 0; j < this.waxCount; j++) {
+          $.bag.first(Wax)?.putInto(componentSpaces[j+1]);
+        }
       }
       this.waxCount++;
 
-      $.drawCustomer.top(CustomerCard)!.putInto(player.space);
-      const goal1 = $.goalDeck.top(GoalCard)!
-      goal1.putInto(player.space);
-      goal1.showOnlyTo(player);
+      $.drawCustomer.top(CustomerCard)?.putInto(player.space);
+      $.goalDeck.top(GoalCard)?.putInto(player.space);      
 
-      player.setScore(0);
-      player.setMastery(0);
+      player.space.all(GoalCard).forEach(x => x.showOnlyTo(player));
+
+      // player.setScore(0);
+      // player.setMastery(0);
 
       player.pass = false;
       player.stack = false;
