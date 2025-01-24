@@ -1461,6 +1461,15 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       game.message(player.name + ' passes.');
     }),
 
+    goodGame: (player) => action({
+      prompt: 'Say good game',
+    }).chooseFrom(
+      "color", ['gg!'], 
+      { skipIf: 'never' }
+    ).do(() => {
+      game.message(player.name + ' says good game.');
+    }),
+
     finish: (player) => action({
       prompt: 'Finish',
       condition: !player.pass && player.placedWorker,
@@ -1768,7 +1777,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
         playerActions({ actions: ['chooseStartingCustomer']}),
         playerActions({ actions: ['chooseStartingGoal']}),
       ]
-    }),
+    }),    
     
     whileLoop({while: () => !game.gameOver, do: ([
 
@@ -1817,7 +1826,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
         },
         () => {game.players.next();}
       ])}),
-      
+            
       () => {
         game.message('Round ' + game.currentRound() + ' ends.');
 
@@ -1945,11 +1954,10 @@ export default createGame(ChandlersPlayer, MyGame, game => {
             })
           })          
         }
-      }
+      },      
     ])}),    
 
-    // I would rather sit idle than not see my final score
-    () => game.message('The game has ended.'),
-    playerActions({ actions: []})
+    eachPlayer({ name: 'turn', do: [playerActions({ actions: ['goodGame']})]}),
+    
   );
 });
