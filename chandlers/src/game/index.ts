@@ -432,7 +432,9 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     this.all(ColorDie).putInto($.bag);
 
     // roll random dice to start the round      
-    // if($.bag.all(ColorDie).length >= 9) {
+    if($.bag.all(ColorDie).length >= 9) {
+      this.message('there are ' + $.bag.all(ColorDie).length + ' dice');
+
     // for(var i = 0; i < 4-playerCount; i++) {
     //   Object.values(Building).forEach((building: Building) =>{
     //     const die = $.bag.first(ColorDie)!;
@@ -450,7 +452,7 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     //     }
     //   });
     // }
-    // }
+    }
 
     // set end game tiles
     this.all(EndGameTile).putInto($.bag);
