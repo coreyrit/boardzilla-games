@@ -449,19 +449,21 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
 
     for(var i = 0; i < this.players.length; i++) {
       const diceSpaces = this.players[i].board.all(DiceSpace);
-      const die1 = $.bag.first(ColorDie)!; die1.roll(); die1.putInto(diceSpaces[0]);
-      const die2 = $.bag.first(ColorDie)!; die2.roll(); die2.putInto(diceSpaces[1]);
-      const die3 = $.bag.first(ColorDie)!; die3.roll(); die3.putInto(diceSpaces[2]);
+      if(diceSpaces.length >= 3) {
+        const die1 = $.bag.first(ColorDie)!; die1.roll(); die1.putInto(diceSpaces[0]);
+        const die2 = $.bag.first(ColorDie)!; die2.roll(); die2.putInto(diceSpaces[1]);
+        const die3 = $.bag.first(ColorDie)!; die3.roll(); die3.putInto(diceSpaces[2]);
+      }
 
       $.bag.first(Melt)?.putInto(this.players[i].nextEmptySpace());
       for(var j = 0; j <= i; j++) {
         $.bag.first(Wax)?.putInto(this.players[i].nextEmptySpace());
       }
 
-      $.drawCustomer.top(CustomerCard)!.putInto(this.players[i].space);
-      const goal1 = $.goalDeck.top(GoalCard)!
-      goal1.putInto(this.players[i].space);
-      goal1.showOnlyTo(this.players[i]);
+      // $.drawCustomer.top(CustomerCard)!.putInto(this.players[i].space);
+      // const goal1 = $.goalDeck.top(GoalCard)!
+      // goal1.putInto(this.players[i].space);
+      // goal1.showOnlyTo(this.players[i]);
 
       this.players[i].setScore(0);
       this.players[i].setMastery(0);
