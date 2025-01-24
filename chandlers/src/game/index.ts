@@ -13,7 +13,7 @@ import { PigmentBuilding } from './building/pigment.js';
 import { MoldBuilding } from './building/mold.js';
 import { ChandlersPlayer } from './player.js';
 import { CustomerCard, EndGameTile, RoundEndTile, BackAlleyTile, ColorDie, KeyShape, CandlePawn, PowerTile, Wax, WorkerPiece, Pigment, Melt, MasteryCube, ScoreTracker, Bulb, GoalCard, Lamp, Trash, Check } from './components.js';
-import { BackAlley, BackAlleySpace, Candelabra, CandleBottomRow, CandleSpace, CandleTopRow, ChandlersBoard, CheckSpace, ComponentSpace, CustomerSpace, DiceSpace, GameEndSpace, GoalSpace, KeyHook, MasterySpace, MasteryTrack, PlayerBoard, PlayerSpace, PlayersSpace, PowerSpace, ReadySpace, RoundEndSpace, RoundSpace, ScoringSpace, ScoringTrack, Spill, WorkerSpace } from './boards.js';
+import { BackAlley, BackAlleySpace, Bag, Candelabra, CandleBottomRow, CandleSpace, CandleTopRow, ChandlersBoard, CheckSpace, ComponentSpace, CustomerSpace, DiceSpace, GameEndSpace, GoalSpace, KeyHook, MasterySpace, MasteryTrack, PlayerBoard, PlayerSpace, PlayersSpace, PowerSpace, ReadySpace, RoundEndSpace, RoundSpace, ScoringSpace, ScoringTrack, Spill, WorkerSpace } from './boards.js';
 import { count, timeLog } from 'console';
 import { disconnect } from 'process';
 
@@ -409,6 +409,8 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
 
     this.setup = true;
     try {
+      const bag = this.first(Bag)!
+
       this.waxCount = 1;
     // shuffle the goals
     this.all(GoalCard).putInto($.goalDeck);
@@ -429,15 +431,15 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     this.all(CandlePawn).forEach(x => x.putInto(this.first(Candelabra, {color: x.color})!));
 
     // place dice
-    this.all(ColorDie).putInto($.bag);
+    this.all(ColorDie).putInto(bag);
 
     // roll random dice to start the round      
-    if($.bag.all(ColorDie).length >= 9) {
-      this.message('there are ' + $.bag.all(ColorDie).length + ' dice');
+    if(bag.all(ColorDie).length >= 9) {
+      this.message('there are ' + bag.all(ColorDie).length + ' dice');
 
     // for(var i = 0; i < 4-playerCount; i++) {
     //   Object.values(Building).forEach((building: Building) =>{
-    //     const die = $.bag.first(ColorDie)!;
+    //     const die = bag.first(ColorDie)!;
     //     die.roll()
 
     //     if(i == 2) {
@@ -455,46 +457,46 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     }
 
     // set end game tiles
-    this.all(EndGameTile).putInto($.bag);
-    $.bag.shuffle()
-    $.bag.first(EndGameTile)?.putInto($.whiteType);
-    $.bag.first(EndGameTile)?.putInto($.redType);
-    $.bag.first(EndGameTile)?.putInto($.yellowType);
-    $.bag.first(EndGameTile)?.putInto($.blueType);
-    $.bag.first(EndGameTile)?.putInto($.orangeType);
-    $.bag.first(EndGameTile)?.putInto($.greenType);
-    $.bag.first(EndGameTile)?.putInto($.purpleType);
-    $.bag.first(EndGameTile)?.putInto($.blackType);
+    this.all(EndGameTile).putInto(bag);
+    bag.shuffle()
+    bag.first(EndGameTile)?.putInto($.whiteType);
+    bag.first(EndGameTile)?.putInto($.redType);
+    bag.first(EndGameTile)?.putInto($.yellowType);
+    bag.first(EndGameTile)?.putInto($.blueType);
+    bag.first(EndGameTile)?.putInto($.orangeType);
+    bag.first(EndGameTile)?.putInto($.greenType);
+    bag.first(EndGameTile)?.putInto($.purpleType);
+    bag.first(EndGameTile)?.putInto($.blackType);
     
     // set round to 1
     this.first(Bulb)!.putInto(this.first(RoundSpace, {round: 1})!);
 
     // randomly choose round end tiles
-    $.bag.all(RoundEndTile).putInto($.bag);
-    $.bag.shuffle()
+    bag.all(RoundEndTile).putInto(bag);
+    bag.shuffle()
   
     const roundEndSpaces = this.all(RoundEndSpace);
     for(var i = 0; i < playerCount+1; i++) {
-      $.bag.first(RoundEndTile)?.putInto(roundEndSpaces[i]);  
+      bag.first(RoundEndTile)?.putInto(roundEndSpaces[i]);  
     }
 
     // randomize back alley tiles
-    this.all(BackAlleyTile).putInto($.bag);
-    $.bag.shuffle()
+    this.all(BackAlleyTile).putInto(bag);
+    bag.shuffle()
     
-    $.bag.first(BackAlleyTile, {letter: "A"})?.putInto($.backAlleySpaceA1);
-    $.bag.first(BackAlleyTile, {letter: "A"})?.putInto($.backAlleySpaceA2);
-    $.bag.first(BackAlleyTile, {letter: "A"})?.putInto($.backAlleySpaceA3);
-    $.bag.first(BackAlleyTile, {letter: "A"})?.putInto($.backAlleySpaceA4);
-    $.bag.first(BackAlleyTile, {letter: "A"})?.putInto($.waxBackAlleySpaceA);
-    $.bag.first(BackAlleyTile, {letter: "A"})?.putInto($.pigmentBackAlleySpaceA);
+    bag.first(BackAlleyTile, {letter: "A"})?.putInto($.backAlleySpaceA1);
+    bag.first(BackAlleyTile, {letter: "A"})?.putInto($.backAlleySpaceA2);
+    bag.first(BackAlleyTile, {letter: "A"})?.putInto($.backAlleySpaceA3);
+    bag.first(BackAlleyTile, {letter: "A"})?.putInto($.backAlleySpaceA4);
+    bag.first(BackAlleyTile, {letter: "A"})?.putInto($.waxBackAlleySpaceA);
+    bag.first(BackAlleyTile, {letter: "A"})?.putInto($.pigmentBackAlleySpaceA);
   
-    $.bag.first(BackAlleyTile, {letter: "B"})?.putInto($.backAlleySpaceB1);
-    $.bag.first(BackAlleyTile, {letter: "B"})?.putInto($.backAlleySpaceB2);
-    $.bag.first(BackAlleyTile, {letter: "B"})?.putInto($.backAlleySpaceB3);
-    $.bag.first(BackAlleyTile, {letter: "B"})?.putInto($.backAlleySpaceB4);
-    $.bag.first(BackAlleyTile, {letter: "B"})?.putInto($.pigmentBackAlleySpaceB);
-    $.bag.first(BackAlleyTile, {letter: "B"})?.putInto($.moldBackAlleySpaceB);
+    bag.first(BackAlleyTile, {letter: "B"})?.putInto($.backAlleySpaceB1);
+    bag.first(BackAlleyTile, {letter: "B"})?.putInto($.backAlleySpaceB2);
+    bag.first(BackAlleyTile, {letter: "B"})?.putInto($.backAlleySpaceB3);
+    bag.first(BackAlleyTile, {letter: "B"})?.putInto($.backAlleySpaceB4);
+    bag.first(BackAlleyTile, {letter: "B"})?.putInto($.pigmentBackAlleySpaceB);
+    bag.first(BackAlleyTile, {letter: "B"})?.putInto($.moldBackAlleySpaceB);
 
     // reset space colors
     this.all(WorkerSpace).filter(x => x.spaceType != SpaceType.Color).forEach(x => x.color = undefined);
@@ -518,7 +520,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   game.init();
 
   // create a bag to hold stuff
-  const bag = game.create(Space, 'bag')
+  const bag = game.create(Bag, 'bag')
 
   // create some trash cans
   for(var i = 0; i < 64; i++) {

@@ -132,3 +132,6 @@ export class BackAlley extends Space<MyGame> {
     letter: string;
 }
 
+export class Bag extends Space<MyGame> {
+  
+}
