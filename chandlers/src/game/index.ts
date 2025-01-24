@@ -86,9 +86,9 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     this.message('Round ' + this.currentRound() + ' begins.');
   }
 
-  setupPlayer(turn: ChandlersPlayer) : void {
-    this.initPlayer(turn);
+  setupPlayer(turn: ChandlersPlayer) : void {    
     if($.drawCustomer.all(CustomerCard).length > 0) {
+      this.initPlayer(turn);
       $.drawCustomer.top(CustomerCard)!.putInto(turn.space);
       // $.drawCustomer.top(CustomerCard)!.putInto(turn.space);
       const goal1 = $.goalDeck.top(GoalCard)!
@@ -367,17 +367,16 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
   }
 
   initPlayer(player : ChandlersPlayer) : void {
-    if(player != undefined && player.board != undefined && player.space != undefined) {
-      const diceSpaces = player.board.all(DiceSpace);
-      this.message('dice spaces = ' + diceSpaces.length);
+      // const diceSpaces = player.board.all(DiceSpace);
+      // this.message('dice spaces = ' + diceSpaces.length);
       // if(diceSpaces.length >= 3 && $.bag.all(ColorDie).length >= 3) {
       //   const die1 = $.bag.first(ColorDie)!; die1.roll(); die1.putInto(diceSpaces[0]);
       //   const die2 = $.bag.first(ColorDie)!; die2.roll(); die2.putInto(diceSpaces[1]);
       //   const die3 = $.bag.first(ColorDie)!; die3.roll(); die3.putInto(diceSpaces[2]);
       // }
 
-      const componentSpaces = player.board.all(ComponentSpace);
-      this.message('component spaces = ' + componentSpaces.length);
+      // const componentSpaces = player.board.all(ComponentSpace);
+      // this.message('component spaces = ' + componentSpaces.length);
 
       // if(componentSpaces.length >= this.waxCount + 1) {
       //   $.bag.first(Melt)?.putInto(componentSpaces[0]);
@@ -401,7 +400,6 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
       player.placedWorker = false;
       player.finished = false;
       player.finalScore = false;
-    }
   }
 
   setupGame(playerCount : number) : void {
