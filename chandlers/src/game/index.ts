@@ -447,32 +447,32 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     $.bag.first(BackAlleyTile, {letter: "B"})?.putInto($.pigmentBackAlleySpaceB);
     $.bag.first(BackAlleyTile, {letter: "B"})?.putInto($.moldBackAlleySpaceB);
 
-    for(var i = 0; i < this.players.length; i++) {
-      const diceSpaces = this.players[i].board.all(DiceSpace);
-      const die1 = $.bag.first(ColorDie)!; die1.roll(); die1.putInto(diceSpaces[0]);
-      const die2 = $.bag.first(ColorDie)!; die2.roll(); die2.putInto(diceSpaces[1]);
-      const die3 = $.bag.first(ColorDie)!; die3.roll(); die3.putInto(diceSpaces[2]);
+    // for(var i = 0; i < this.players.length; i++) {
+    //   const diceSpaces = this.players[i].board.all(DiceSpace);
+    //   const die1 = $.bag.first(ColorDie)!; die1.roll(); die1.putInto(diceSpaces[0]);
+    //   const die2 = $.bag.first(ColorDie)!; die2.roll(); die2.putInto(diceSpaces[1]);
+    //   const die3 = $.bag.first(ColorDie)!; die3.roll(); die3.putInto(diceSpaces[2]);
 
-      $.bag.first(Melt)?.putInto(this.players[i].nextEmptySpace());
-      for(var j = 0; j <= i; j++) {
-        $.bag.first(Wax)?.putInto(this.players[i].nextEmptySpace());
-      }
+    //   $.bag.first(Melt)?.putInto(this.players[i].nextEmptySpace());
+    //   for(var j = 0; j <= i; j++) {
+    //     $.bag.first(Wax)?.putInto(this.players[i].nextEmptySpace());
+    //   }
 
-      $.drawCustomer.top(CustomerCard)!.putInto(this.players[i].space);
-      const goal1 = $.goalDeck.top(GoalCard)!
-      goal1.putInto(this.players[i].space);
-      goal1.showOnlyTo(this.players[i]);
+    //   $.drawCustomer.top(CustomerCard)!.putInto(this.players[i].space);
+    //   const goal1 = $.goalDeck.top(GoalCard)!
+    //   goal1.putInto(this.players[i].space);
+    //   goal1.showOnlyTo(this.players[i]);
 
-      this.players[i].setScore(0);
-      this.players[i].setMastery(0);
+    //   this.players[i].setScore(0);
+    //   this.players[i].setMastery(0);
 
-      this.players[i].pass = false;
-      this.players[i].stack = false;
-      this.players[i].soldCandle = false;
-      this.players[i].placedWorker = false;
-      this.players[i].finished = false;
-      this.players[i].finalScore = false;
-    };      
+    //   this.players[i].pass = false;
+    //   this.players[i].stack = false;
+    //   this.players[i].soldCandle = false;
+    //   this.players[i].placedWorker = false;
+    //   this.players[i].finished = false;
+    //   this.players[i].finalScore = false;
+    // };      
 
     // reset space colors
     this.all(WorkerSpace).filter(x => x.spaceType != SpaceType.Color).forEach(x => x.color = undefined);
@@ -2024,7 +2024,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   });
 
   game.defineFlow(
-    // () => game.setupGame(),
+    () => game.setupGame(),
     
     // allow players to choose their first cards
     eachPlayer({
