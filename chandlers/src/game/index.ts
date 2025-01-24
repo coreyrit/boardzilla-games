@@ -432,6 +432,7 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     this.all(ColorDie).putInto($.bag);
 
     // roll random dice to start the round      
+    if($.bag.all(ColorDie).length >= 9) {
     for(var i = 0; i < 4-playerCount; i++) {
       Object.values(Building).forEach((building: Building) =>{
         const die = $.bag.first(ColorDie)!;
@@ -448,6 +449,7 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
           die.putInto(this.first(WorkerSpace, { building: building, color: die.color })!)
         }
       });
+    }
     }
 
     // set end game tiles
