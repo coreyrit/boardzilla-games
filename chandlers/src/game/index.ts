@@ -111,6 +111,62 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     });
   }
 
+  calculatePlayerFinalScore(player: ChandlersPlayer) : void {
+    
+    // score for customers
+    player.space.all(CustomerCard).filter(x => x.customerType != CustomerType.None).forEach(card => {
+      const candleCount = card.all(CandlePawn).length;
+      const candleScore = candleCount > 0 ? card.scoring[candleCount-1] : 0;
+      this.message(player.name + ' scored ' + candleScore + ' points for candles on ' + card.name);
+      player.increaseScore(candleScore);
+    })
+
+    // score for mastery
+    this.message(player.name + ' scored ' + player.masteryScore() + ' points for mastery');
+    player.increaseScore(player.masteryScore());
+
+    // score for personal goals
+    player.space.all(GoalCard).forEach(goal => {
+      if (
+        (goal.color1 == goal.color2 &&
+        player.space.all(CustomerCard, {color: goal.color1, scoredGoal: false}).filter(x => x.all(CandlePawn).length > 0).length >= 2)
+        ||
+        (player.space.all(CustomerCard, {color: goal.color1, scoredGoal: false}).filter(x => x.all(CandlePawn).length > 0).length > 0 && 
+        player.space.all(CustomerCard, {color: goal.color2, scoredGoal: false}).filter(x => x.all(CandlePawn).length > 0).length > 0)
+      ) {
+
+        const goal1 = player.space.first(CustomerCard, {color: goal.color1, scoredGoal: false});
+        if(goal1 != undefined) {
+          goal1.scoredGoal = true;
+        }
+
+        const goal2 = player.space.first(CustomerCard, {color: goal.color2, scoredGoal: false});                  
+        if(goal2 != undefined) {
+          goal2.scoredGoal = true;
+        }
+
+        this.message(player.name + ' scored 6 points for goal ' + goal.name);
+        player.increaseScore(6);
+      } else {
+        this.message(player.name + ' scored 0 points for goal ' + goal.name);
+      }
+    });
+
+    // score for game end goals
+    this.all(GameEndSpace).filter(x => x.score > 0).forEach(tile => {
+      if(tile.all(EndGameTile).length > 0) {
+        const type = tile.first(EndGameTile)!
+        var score = player.space.all(CustomerCard, {customerType: type.type})
+          .filter(x => x.all(CandlePawn).length > 0).length * tile.score;
+        if(score == undefined) {
+          score = 0;
+        }
+        player.increaseScore(score);
+        this.message(player.name + ' scored ' + score + ' points for type ' + type);
+      }
+    });
+  }
+
   endRound() : void  {
     this.message('Round ' + this.currentRound() + ' ends.');
 
@@ -174,68 +230,10 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     } else if(this.currentRound() == 4) {
       // this.gameOver = true;
 
-/*
-      // do final scoring
-      this.players.forEach(player => {
-        
-        // score for customers
-        player.space.all(CustomerCard).filter(x => x.customerType != CustomerType.None).forEach(card => {
-          const candleCount = card.all(CandlePawn).length;
-          const candleScore = candleCount > 0 ? card.scoring[candleCount-1] : 0;
-          this.message(player.name + ' scored ' + candleScore + ' points for candles on ' + card.name);
-          player.increaseScore(candleScore);
-        })
-
-        // score for mastery
-        this.message(player.name + ' scored ' + player.masteryScore() + ' points for mastery');
-        player.increaseScore(player.masteryScore());
-
-        // score for personal goals
-        player.space.all(GoalCard).forEach(goal => {
-          if (
-              (goal.color1 == goal.color2 &&
-               player.space.all(CustomerCard, {color: goal.color1, scoredGoal: false}).filter(x => x.all(CandlePawn).length > 0).length >= 2)
-              ||
-              (player.space.all(CustomerCard, {color: goal.color1, scoredGoal: false}).filter(x => x.all(CandlePawn).length > 0).length > 0 && 
-               player.space.all(CustomerCard, {color: goal.color2, scoredGoal: false}).filter(x => x.all(CandlePawn).length > 0).length > 0)
-            ) {
-
-              const goal1 = player.space.first(CustomerCard, {color: goal.color1, scoredGoal: false});
-              if(goal1 != undefined) {
-                goal1.scoredGoal = true;
-              }
-
-              const goal2 = player.space.first(CustomerCard, {color: goal.color2, scoredGoal: false});                  
-              if(goal2 != undefined) {
-                goal2.scoredGoal = true;
-              }
-
-              this.message(player.name + ' scored 6 points for goal ' + goal.name);
-              player.increaseScore(6);
-            } else {
-              this.message(player.name + ' scored 0 points for goal ' + goal.name);
-            }
-          }
-        );
-
-        // score for game end goals
-        this.all(GameEndSpace).filter(x => x.score > 0).forEach(tile => {
-          if(tile.all(EndGameTile).length > 0) {
-            const type = tile.first(EndGameTile)!
-            var score = player.space.all(CustomerCard, {customerType: type.type})
-              .filter(x => x.all(CandlePawn).length > 0).length * tile.score;
-            if(score == undefined) {
-              score = 0;
-            }
-            player.increaseScore(score);
-            this.message(player.name + ' scored ' + score + ' points for type ' + type);
-          }
-        })
-      })
-*/
-      // move the round tracker
+      // move the round tracker to a fictional 5th round
       this.nextRound();
     } else {
+      // say gg and do final scoring
       this.followUp({name: 'goodGame'});
       this.moveFirstPlayerToken();      
     }    
@@ -1646,6 +1644,11 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       { skipIf: 'never' }
     ).do(() => {
       game.message(player.name + ' says good game.');      
+
+      if(!player.finalScore) {
+        game.calculatePlayerFinalScore(player);
+        player.finalScore = true;
+      }
     }),
 
     finish: (player) => action({

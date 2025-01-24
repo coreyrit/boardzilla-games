@@ -11,6 +11,7 @@ export class ChandlersPlayer extends Player<MyGame, ChandlersPlayer> {
     soldCandle: boolean = false;
     placedWorker: boolean = false;
     finished: boolean = false;
+    finalScore: boolean = false;
     playerColor: Color
   
     componentCount() : number {
