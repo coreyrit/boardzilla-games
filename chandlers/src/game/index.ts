@@ -902,13 +902,11 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     power1.create(PowerTile, 'roll')
     power2.create(PowerTile, 'set')
     power3.create(PowerTile, 'stack')
-  }
-
-  // game.setupGame();
+  }  
 
   // GAME ACTIONS
   game.defineActions({
-
+    
     chooseSpiltPigmentToMix: (player) => action<{melt: Melt}>({
       prompt: 'Choose pigment color'
     })
@@ -2019,7 +2017,8 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   });
 
   game.defineFlow(
-
+    () => game.setupGame(),
+    
     // allow players to choose their first cards
     eachPlayer({
       name: 'turn', do: [
