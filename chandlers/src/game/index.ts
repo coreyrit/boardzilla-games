@@ -448,18 +448,18 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     $.bag.first(BackAlleyTile, {letter: "B"})?.putInto($.moldBackAlleySpaceB);
 
     for(var i = 0; i < this.players.length; i++) {
-      const diceSpaces = this.players[i].board.all(DiceSpace);
-      if(diceSpaces.length >= 3) {
-        const die1 = $.bag.first(ColorDie)!; die1.roll(); die1.putInto(diceSpaces[0]);
-        const die2 = $.bag.first(ColorDie)!; die2.roll(); die2.putInto(diceSpaces[1]);
-        const die3 = $.bag.first(ColorDie)!; die3.roll(); die3.putInto(diceSpaces[2]);
-      }
+      // const diceSpaces = this.players[i].board.all(DiceSpace);
+      // if(diceSpaces.length >= 3) {
+      //   const die1 = $.bag.first(ColorDie)!; die1.roll(); die1.putInto(diceSpaces[0]);
+      //   const die2 = $.bag.first(ColorDie)!; die2.roll(); die2.putInto(diceSpaces[1]);
+      //   const die3 = $.bag.first(ColorDie)!; die3.roll(); die3.putInto(diceSpaces[2]);
+      // }
 
-      const componentSpaces = this.players[i].board.all(ComponentSpace);
-      $.bag.first(Melt)?.putInto(componentSpaces[0]);
-      for(var j = 0; j <= i; j++) {
-        $.bag.first(Wax)?.putInto(componentSpaces[j+1]);
-      }
+      // const componentSpaces = this.players[i].board.all(ComponentSpace);
+      // $.bag.first(Melt)?.putInto(componentSpaces[0]);
+      // for(var j = 0; j <= i; j++) {
+      //   $.bag.first(Wax)?.putInto(componentSpaces[j+1]);
+      // }
 
       // $.drawCustomer.top(CustomerCard)!.putInto(this.players[i].space);
       // const goal1 = $.goalDeck.top(GoalCard)!
@@ -469,12 +469,12 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
       // this.players[i].setScore(0);
       // this.players[i].setMastery(0);
 
-      this.players[i].pass = false;
-      this.players[i].stack = false;
-      this.players[i].soldCandle = false;
-      this.players[i].placedWorker = false;
-      this.players[i].finished = false;
-      this.players[i].finalScore = false;
+      // this.players[i].pass = false;
+      // this.players[i].stack = false;
+      // this.players[i].soldCandle = false;
+      // this.players[i].placedWorker = false;
+      // this.players[i].finished = false;
+      // this.players[i].finalScore = false;
     };      
 
     // reset space colors
