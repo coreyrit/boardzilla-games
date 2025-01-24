@@ -4,7 +4,7 @@ import { Building, Color, MyGame, SpaceType } from "../index.js";
 
 export class PigmentBuilding {
 
-    performPrimvaryColor(game: MyGame, shape: Color, skipShape: Boolean = false ) : void{
+    performPrimvaryColor(game: MyGame, shape: Color, skipShape: boolean = false ) : void{
         if(!game.setup) { 
             game.followUp({name: 'chooseMeltMany' + game.capitalize(shape)}); 
             if(!skipShape) {
@@ -29,7 +29,7 @@ export class PigmentBuilding {
         return []
     }
 
-    performSecondaryColor(game: MyGame, shape: Color, skipShape: Boolean = false ) : void{
+    performSecondaryColor(game: MyGame, shape: Color, skipShape: boolean = false ) : void{
         if(!game.setup) { 
             const mix: Color[] = this.getDerivedColors(shape);
             game.followUp({name: 'chooseMelt' + game.capitalize(mix[0])}); 

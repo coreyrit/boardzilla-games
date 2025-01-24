@@ -275,7 +275,7 @@ export class MasteryCube extends Piece<MyGame> {
 export class ScoreTracker extends Piece<MyGame> {
     color: Color;
     index: number;
-    flipped: Boolean = false;
+    flipped: boolean = false;
 }
   
   export class Pigment extends Piece<MyGame> {

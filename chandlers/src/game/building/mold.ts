@@ -4,7 +4,7 @@ import { Building, Color, MyGame, SpaceType } from "../index.js";
 
 export class MoldBuilding {
 
-    performPrimvaryColor(game: MyGame, shape: Color, skipShape : Boolean = false) : void{
+    performPrimvaryColor(game: MyGame, shape: Color, skipShape : boolean = false) : void{
         if(!game.setup) { 
             game.followUp({name: 'choose' + game.capitalize(shape) + 'OrWhiteMelt'}); 
             if(!skipShape) {
@@ -14,7 +14,7 @@ export class MoldBuilding {
         }
     }
     
-    performSecondaryColor(game: MyGame, shape: Color, skipShape : Boolean = false) : void{
+    performSecondaryColor(game: MyGame, shape: Color, skipShape : boolean = false) : void{
         if(!game.setup) { 
             game.followUp({name: 'choose' + game.capitalize(shape) + 'OrBlackMelt'}); 
             if(!skipShape) {

@@ -54,14 +54,190 @@ export enum CustomerType {
 }
 
 export class MyGame extends Game<MyGame, ChandlersPlayer> {
-  setup: Boolean = false;
-  gameOver: Boolean = false;
+  setup: boolean = false;
+  gameOver: boolean = false;
 
   init(): void {    
   }
 
   currentRound() : number {
     return this.first(Bulb)!.container(RoundSpace)!.round;
+  }
+
+  moveFirstPlayerToken() : void {
+    const firstPlayer = this.first(Lamp)!;
+    if(firstPlayer.playerIndex < this.players.length-1) {
+      firstPlayer.playerIndex = firstPlayer.playerIndex+1;            
+    } else {
+      firstPlayer.playerIndex = 0;
+    }      
+    firstPlayer.putInto(this.players[firstPlayer.playerIndex].space);  
+  }
+
+  moveToNextPlayer() : void {
+    const firstPlayer = this.first(Lamp)!;
+    this.players.setCurrent(this.players[0]); 
+    // move to the next player until you get to the first player token
+    for(var i = 0; i < firstPlayer.playerIndex; i++) {
+      this.players.next();
+    }
+    this.message('Round ' + this.currentRound() + ' begins.');
+  }
+
+  setupPlayer(turn: ChandlersPlayer) : void {
+    $.drawCustomer.top(CustomerCard)!.putInto(turn.space);
+    const goal = $.goalDeck.top(GoalCard)!
+    goal.putInto(turn.space);
+    goal.showOnlyTo(turn);
+  }
+
+  resetTurn() : void {
+    this.currentPlayer().soldCandle = false
+    this.currentPlayer().finished = false
+    this.currentPlayer().placedWorker = false
+  }
+
+  endTurn() : void {
+    this.currentPlayer().pass = true;
+    this.currentPlayer().placedWorker = true;
+    this.currentPlayer().finished = true;
+  }
+
+  collectComponents() : void {
+    this.currentPlayer().board.all(ComponentSpace).filter(x => x.num > 8).forEach(y => {
+      if(y.all(Piece).length > 0) {
+        y.first(Piece)!.putInto(this.currentPlayer().nextEmptySpace());
+      }
+    });
+  }
+
+  endRound() : void  {
+    this.message('Round ' + this.currentRound() + ' ends.');
+
+    // check round end goals
+    this.checkRoundEndGoals();
+
+    if(this.currentRound() < 4) {
+
+      // reset players
+      for(const player of this.players) { player.pass = false; }
+
+      // reset space colors
+      this.all(WorkerSpace).filter(x => x.spaceType != SpaceType.Color).forEach(x => x.color = undefined);
+
+      // discard used candles
+      this.all(WorkerSpace).all(CandlePawn).putInto($.bag);
+
+      // return shapes
+      this.all(KeyShape).forEach(x => x.putInto(this.first(KeyHook,{color: x.color})!));
+
+      // reset the customers
+      [$.customer1, $.customer2, $.customer3, $.customer4].forEach(customer => {
+        customer.first(CustomerCard)?.putInto($.bag);
+        $.drawCustomer.top(CustomerCard)?.putInto(customer);
+      });
+
+      // set starting dice
+      this.all(ColorDie).putInto($.bag);
+      this.setup = true;
+      for(var i = 0; i < 4-this.players.length; i++) {
+        Object.values(Building).forEach((building: Building) =>{
+          const die = $.bag.first(ColorDie)!;
+          die.roll()
+          if(i == 2) {
+            // for solo randomly put one in mastery or backroom
+            if(Math.floor(this.random() * 2) % 2 == 0) {
+              die.putInto(this.first(WorkerSpace, { building: building, spaceType: SpaceType.Mastery })!)
+            } else {
+              die.putInto(this.first(WorkerSpace, { building: building, spaceType: SpaceType.Backroom })!)
+            }
+          } else {
+            die.putInto(this.first(WorkerSpace, { building: building, color: die.color })!)
+          }
+        });          
+      }
+      this.setup = false;
+
+      // start with new dice
+      for(const player of this.players) {
+        const die1 = $.bag.first(ColorDie); die1?.roll(); die1?.putInto(player.nextEmptyDieSpace());
+        const die2 = $.bag.first(ColorDie); die2?.roll(); die2?.putInto(player.nextEmptyDieSpace());
+        const die3 = $.bag.first(ColorDie); die3?.roll(); die3?.putInto(player.nextEmptyDieSpace());
+      }
+
+      // move the first player token
+      this.moveFirstPlayerToken();          
+    
+      // move the round tracker
+      this.nextRound();
+
+    } else if(this.currentRound() == 4) {
+      // this.gameOver = true;
+
+      // do final scoring
+      this.players.forEach(player => {
+        
+        // score for customers
+        player.space.all(CustomerCard).filter(x => x.customerType != CustomerType.None).forEach(card => {
+          const candleCount = card.all(CandlePawn).length;
+          const candleScore = candleCount > 0 ? card.scoring[candleCount-1] : 0;
+          this.message(player.name + ' scored ' + candleScore + ' points for candles on ' + card.name);
+          player.increaseScore(candleScore);
+        })
+
+        // score for mastery
+        this.message(player.name + ' scored ' + player.masteryScore() + ' points for mastery');
+        player.increaseScore(player.masteryScore());
+
+        // score for personal goals
+        player.space.all(GoalCard).forEach(goal => {
+          if (
+              (goal.color1 == goal.color2 &&
+               player.space.all(CustomerCard, {color: goal.color1, scoredGoal: false}).filter(x => x.all(CandlePawn).length > 0).length >= 2)
+              ||
+              (player.space.all(CustomerCard, {color: goal.color1, scoredGoal: false}).filter(x => x.all(CandlePawn).length > 0).length > 0 && 
+               player.space.all(CustomerCard, {color: goal.color2, scoredGoal: false}).filter(x => x.all(CandlePawn).length > 0).length > 0)
+            ) {
+
+              const goal1 = player.space.first(CustomerCard, {color: goal.color1, scoredGoal: false});
+              if(goal1 != undefined) {
+                goal1.scoredGoal = true;
+              }
+
+              const goal2 = player.space.first(CustomerCard, {color: goal.color2, scoredGoal: false});                  
+              if(goal2 != undefined) {
+                goal2.scoredGoal = true;
+              }
+
+              this.message(player.name + ' scored 6 points for goal ' + goal.name);
+              player.increaseScore(6);
+            } else {
+              this.message(player.name + ' scored 0 points for goal ' + goal.name);
+            }
+          }
+        );
+
+        // score for game end goals
+        this.all(GameEndSpace).filter(x => x.score > 0).forEach(tile => {
+          if(tile.all(EndGameTile).length > 0) {
+            const type = tile.first(EndGameTile)!
+            var score = player.space.all(CustomerCard, {customerType: type.type})
+              .filter(x => x.all(CandlePawn).length > 0).length * tile.score;
+            if(score == undefined) {
+              score = 0;
+            }
+            player.increaseScore(score);
+            this.message(player.name + ' scored ' + score + ' points for type ' + type);
+          }
+        })
+      })
+
+      // move the round tracker
+      this.nextRound();
+    } else {
+      this.followUp({name: 'goodGame'});
+      this.moveFirstPlayerToken();      
+    }    
   }
 
   nextRound() : void {
@@ -101,7 +277,7 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     return pl;
   }
 
-  middleAvailable(left: WorkerSpace, right: WorkerSpace, middle: WorkerSpace) : Boolean {
+  middleAvailable(left: WorkerSpace, right: WorkerSpace, middle: WorkerSpace) : boolean {
     if(left.all(WorkerPiece).length == 0 || right.all(WorkerPiece).length == 0) {
       return false;
     }
@@ -468,6 +644,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   game.create(RoundSpace, 'round2', {round: 2});
   game.create(RoundSpace, 'round3', {round: 3});
   game.create(RoundSpace, 'round4', {round: 4});
+  $.bag.create(RoundSpace, 'fakeRound5', {round: 5})
 
   $.round1.create(Bulb, 'bulb');
 
@@ -1467,7 +1644,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       "color", ['gg!'], 
       { skipIf: 'never' }
     ).do(() => {
-      game.message(player.name + ' says good game.');
+      game.message(player.name + ' says good game.');      
     }),
 
     finish: (player) => action({
@@ -1768,196 +1945,49 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     // allow players to choose their first cards
     eachPlayer({
       name: 'turn', do: [
-        ({turn}) => {
-          $.drawCustomer.top(CustomerCard)!.putInto(turn.space);
-          const goal = $.goalDeck.top(GoalCard)!
-          goal.putInto(turn.space);
-          goal.showOnlyTo(turn);
-        },
+        ({turn}) => game.setupPlayer(turn),        
         playerActions({ actions: ['chooseStartingCustomer']}),
         playerActions({ actions: ['chooseStartingGoal']}),
       ]
     }),    
     
+    // loop game until it is over
     whileLoop({while: () => !game.gameOver, do: ([
 
-      () => {
-        const firstPlayer = game.first(Lamp)!;
-        game.players.setCurrent(game.players[0]);     
-        // move to the next player until you get to the first player token
-        for(var i = 0; i < firstPlayer.playerIndex; i++) {
-          game.players.next();
-        }
-        game.message('Round ' + game.currentRound() + ' begins.');
-      },
+      () => game.moveToNextPlayer(),
 
+      // round continues until everyone passes
       whileLoop({while: () => !game.allPlayersPassed(), do: ([        
-        () => {
-          game.currentPlayer().soldCandle = false
-          game.currentPlayer().finished = false
-          game.currentPlayer().placedWorker = false
-        },
+        () => game.resetTurn(),
+
+        // allow a player to take their turn
         whileLoop({while: () => !game.currentPlayer().finished, do: ([
           ifElse({
             if: () => game.currentPlayer().workerCount() > 0 && !game.currentPlayer().pass, do: [
               playerActions({ actions: ['chooseWorker', 'usePower', 'finish', 'pass']}),
             ],
-            else: () => {
-              game.currentPlayer().pass = true;
-              game.currentPlayer().placedWorker = true;
-              game.currentPlayer().finished = true;
-            }
+            else: () => game.endTurn(),          
           }),              
           ifElse({
-            if: () => $.ready.all(WorkerPiece).length > 0, do: [
+            if: () => !game.gameOver && $.ready.all(WorkerPiece).length > 0, do: [
               playerActions({ actions: ['placeWorker', 'placeCandle', 'sellCandle']}),          
           ]}),          
         ])}),
+
+        // discard down to 8
         ifElse({
           if: () => game.currentPlayer().componentCount() > 8, do: [playerActions({ actions: ['discardExtraComponents']})
         ]}),
-        () => {
-          // make sure to pull any floating pieces back to the board
-          game.currentPlayer().board.all(ComponentSpace).filter(x => x.num > 8).forEach(y => {
-            if(y.all(Piece).length > 0) {
-              y.first(Piece)!.putInto(game.currentPlayer().nextEmptySpace());
-            }
-          });
-        },
-        () => {game.players.next();}
+
+        // make sure to pull any floating pieces back to the board
+        () => game.collectComponents(),
+          
+        // move to the next player
+        () => game.players.next(),
       ])}),
             
-      () => {
-        game.message('Round ' + game.currentRound() + ' ends.');
-
-        // check round end goals
-        game.checkRoundEndGoals();
-
-        if(game.currentRound() < 4) {
-
-          // reset players
-          for(const player of game.players) { player.pass = false; }
-
-          // reset space colors
-          game.all(WorkerSpace).filter(x => x.spaceType != SpaceType.Color).forEach(x => x.color = undefined);
-
-          // discard used candles
-          game.all(WorkerSpace).all(CandlePawn).putInto($.bag);
-
-          // return shapes
-          game.all(KeyShape).forEach(x => x.putInto(game.first(KeyHook,{color: x.color})!));
-
-          // reset the customers
-          [$.customer1, $.customer2, $.customer3, $.customer4].forEach(customer => {
-            customer.first(CustomerCard)?.putInto($.bag);
-            $.drawCustomer.top(CustomerCard)?.putInto(customer);
-          });
-
-          // set starting dice
-          game.all(ColorDie).putInto($.bag);
-          game.setup = true;
-          for(var i = 0; i < 4-game.players.length; i++) {
-            Object.values(Building).forEach((building: Building) =>{
-              const die = $.bag.first(ColorDie)!;
-              die.roll()
-              if(i == 2) {
-                // for solo randomly put one in mastery or backroom
-                if(Math.floor(game.random() * 2) % 2 == 0) {
-                  die.putInto(game.first(WorkerSpace, { building: building, spaceType: SpaceType.Mastery })!)
-                } else {
-                  die.putInto(game.first(WorkerSpace, { building: building, spaceType: SpaceType.Backroom })!)
-                }
-              } else {
-                die.putInto(game.first(WorkerSpace, { building: building, color: die.color })!)
-              }
-            });          
-          }
-          game.setup = false;
-
-          // start with new dice
-          for(const player of game.players) {
-            const die1 = $.bag.first(ColorDie); die1?.roll(); die1?.putInto(player.nextEmptyDieSpace());
-            const die2 = $.bag.first(ColorDie); die2?.roll(); die2?.putInto(player.nextEmptyDieSpace());
-            const die3 = $.bag.first(ColorDie); die3?.roll(); die3?.putInto(player.nextEmptyDieSpace());
-          }
-
-          // move the first player token
-          const firstPlayer = game.first(Lamp)!;
-          if(firstPlayer.playerIndex < game.players.length-1) {
-            firstPlayer.playerIndex = firstPlayer.playerIndex+1;            
-          } else {
-            firstPlayer.playerIndex = 0;
-          }      
-          firstPlayer.putInto(game.players[firstPlayer.playerIndex].space);
-          
-          // move the round tracker
-          game.nextRound();
-        
-        } else {
-          game.gameOver = true;
-
-          // do final scoring
-          game.players.forEach(player => {
-            
-            // score for customers
-            player.space.all(CustomerCard).filter(x => x.customerType != CustomerType.None).forEach(card => {
-              const candleCount = card.all(CandlePawn).length;
-              const candleScore = candleCount > 0 ? card.scoring[candleCount-1] : 0;
-              game.message(player.name + ' scored ' + candleScore + ' points for candles on ' + card.name);
-              player.increaseScore(candleScore);
-            })
-
-            // score for mastery
-            game.message(player.name + ' scored ' + player.masteryScore() + ' points for mastery');
-            player.increaseScore(player.masteryScore());
-
-            // score for personal goals
-            player.space.all(GoalCard).forEach(goal => {
-              if (
-                  (goal.color1 == goal.color2 &&
-                   player.space.all(CustomerCard, {color: goal.color1, scoredGoal: false}).filter(x => x.all(CandlePawn).length > 0).length >= 2)
-                  ||
-                  (player.space.all(CustomerCard, {color: goal.color1, scoredGoal: false}).filter(x => x.all(CandlePawn).length > 0).length > 0 && 
-                   player.space.all(CustomerCard, {color: goal.color2, scoredGoal: false}).filter(x => x.all(CandlePawn).length > 0).length > 0)
-                ) {
-
-                  const goal1 = player.space.first(CustomerCard, {color: goal.color1, scoredGoal: false});
-                  if(goal1 != undefined) {
-                    goal1.scoredGoal = true;
-                  }
-
-                  const goal2 = player.space.first(CustomerCard, {color: goal.color2, scoredGoal: false});                  
-                  if(goal2 != undefined) {
-                    goal2.scoredGoal = true;
-                  }
-
-                  game.message(player.name + ' scored 6 points for goal ' + goal.name);
-                  player.increaseScore(6);
-                } else {
-                  game.message(player.name + ' scored 0 points for goal ' + goal.name);
-                }
-              }
-            );
-
-            // score for game end goals
-            game.all(GameEndSpace).filter(x => x.score > 0).forEach(tile => {
-              if(tile.all(EndGameTile).length > 0) {
-                const type = tile.first(EndGameTile)!
-                var score = player.space.all(CustomerCard, {customerType: type.type})
-                  .filter(x => x.all(CandlePawn).length > 0).length * tile.score;
-                if(score == undefined) {
-                  score = 0;
-                }
-                player.increaseScore(score);
-                game.message(player.name + ' scored ' + score + ' points for type ' + type);
-              }
-            })
-          })          
-        }
-      },      
-    ])}),    
-
-    eachPlayer({ name: 'turn', do: [playerActions({ actions: ['goodGame']})]}),
-    
+      // finish the round
+      () => game.endRound(),                  
+    ])}),
   );
 });

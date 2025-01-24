@@ -6,11 +6,11 @@ import { Candelabra, CandleSpace, ComponentSpace, DiceSpace, KeyHook, MasterySpa
 export class ChandlersPlayer extends Player<MyGame, ChandlersPlayer> {
     space: PlayerSpace
     board: PlayerBoard
-    pass: Boolean = false;
-    stack: Boolean = false;
-    soldCandle: Boolean = false;
-    placedWorker: Boolean = false;
-    finished: Boolean = false;
+    pass: boolean = false;
+    stack: boolean = false;
+    soldCandle: boolean = false;
+    placedWorker: boolean = false;
+    finished: boolean = false;
     playerColor: Color
   
     componentCount() : number {
@@ -57,7 +57,7 @@ export class ChandlersPlayer extends Player<MyGame, ChandlersPlayer> {
       this.game.first(KeyHook, {color: color})!.first(KeyShape)?.putInto(this.nextEmptySpace());
     }
   
-    gainCandle(melt: Melt, backToBag: Boolean = true, count: number = 2) : void {
+    gainCandle(melt: Melt, backToBag: boolean = true, count: number = 2) : void {
       if(backToBag) {
         melt.putInto($.bag)
       }
