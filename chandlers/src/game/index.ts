@@ -56,6 +56,7 @@ export enum CustomerType {
 export class MyGame extends Game<MyGame, ChandlersPlayer> {
   setup: boolean = false;
   gameOver: boolean = false;
+  waxCount: number = 1;
 
   init(): void {    
   }
@@ -85,6 +86,7 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
   }
 
   setupPlayer(turn: ChandlersPlayer) : void {
+    this.initPlayer(turn);
     if($.drawCustomer.all(CustomerCard).length > 0) {
       $.drawCustomer.top(CustomerCard)!.putInto(turn.space);
       // $.drawCustomer.top(CustomerCard)!.putInto(turn.space);
@@ -360,11 +362,44 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     this.all(Pigment).putInto($.bag);
     this.all(PowerTile).forEach(x => x.flipped = true);
     this.setupGame(this.players.length);
+    this.players.forEach(x => this.initPlayer(x));
+  }
+
+  initPlayer(player : ChandlersPlayer) : void {
+      const diceSpaces = player.board.all(DiceSpace);
+      if(diceSpaces.length >= 3 && $.bag.all(ColorDie).length >= 3) {
+        const die1 = $.bag.first(ColorDie)!; die1.roll(); die1.putInto(diceSpaces[0]);
+        const die2 = $.bag.first(ColorDie)!; die2.roll(); die2.putInto(diceSpaces[1]);
+        const die3 = $.bag.first(ColorDie)!; die3.roll(); die3.putInto(diceSpaces[2]);
+      }
+
+      const componentSpaces = player.board.all(ComponentSpace);
+      $.bag.first(Melt)?.putInto(componentSpaces[0]);
+      for(var j = 0; j < this.waxCount; j++) {
+        $.bag.first(Wax)?.putInto(componentSpaces[j+1]);
+      }
+      this.waxCount++;
+
+      $.drawCustomer.top(CustomerCard)!.putInto(player.space);
+      const goal1 = $.goalDeck.top(GoalCard)!
+      goal1.putInto(player.space);
+      goal1.showOnlyTo(player);
+
+      player.setScore(0);
+      player.setMastery(0);
+
+      player.pass = false;
+      player.stack = false;
+      player.soldCandle = false;
+      player.placedWorker = false;
+      player.finished = false;
+      player.finalScore = false;
   }
 
   setupGame(playerCount : number) : void {
     this.setup = true;
     try {
+      this.waxCount = 1;
     // shuffle the goals
     this.all(GoalCard).putInto($.goalDeck);
     $.goalDeck.shuffle();
@@ -387,23 +422,23 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     this.all(ColorDie).putInto($.bag);
 
     // roll random dice to start the round      
-    // for(var i = 0; i < 4-this.players.length; i++) {
-    //   Object.values(Building).forEach((building: Building) =>{
-    //     const die = this.first(ColorDie)!;
-    //     die.roll()
+    for(var i = 0; i < 4-playerCount; i++) {
+      Object.values(Building).forEach((building: Building) =>{
+        const die = this.first(ColorDie)!;
+        die.roll()
 
-    //     if(i == 2) {
-    //       // for solo randomly put one in mastery or backroom
-    //       if(Math.floor(this.random() * 2) % 2 == 0) {
-    //         die.putInto(this.first(WorkerSpace, { building: building, spaceType: SpaceType.Mastery })!)
-    //       } else {
-    //         die.putInto(this.first(WorkerSpace, { building: building, spaceType: SpaceType.Backroom })!)
-    //       }
-    //     } else {
-    //       die.putInto(this.first(WorkerSpace, { building: building, color: die.color })!)
-    //     }
-    //   });
-    // }
+        if(i == 2) {
+          // for solo randomly put one in mastery or backroom
+          if(Math.floor(this.random() * 2) % 2 == 0) {
+            die.putInto(this.first(WorkerSpace, { building: building, spaceType: SpaceType.Mastery })!)
+          } else {
+            die.putInto(this.first(WorkerSpace, { building: building, spaceType: SpaceType.Backroom })!)
+          }
+        } else {
+          die.putInto(this.first(WorkerSpace, { building: building, color: die.color })!)
+        }
+      });
+    }
 
     // set end game tiles
     this.all(EndGameTile).putInto($.bag);
@@ -446,36 +481,6 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     $.bag.first(BackAlleyTile, {letter: "B"})?.putInto($.backAlleySpaceB4);
     $.bag.first(BackAlleyTile, {letter: "B"})?.putInto($.pigmentBackAlleySpaceB);
     $.bag.first(BackAlleyTile, {letter: "B"})?.putInto($.moldBackAlleySpaceB);
-
-    for(var i = 0; i < playerCount; i++) {
-      // const diceSpaces = this.players[i].board.all(DiceSpace);
-      // if(diceSpaces.length >= 3) {
-      //   const die1 = $.bag.first(ColorDie)!; die1.roll(); die1.putInto(diceSpaces[0]);
-      //   const die2 = $.bag.first(ColorDie)!; die2.roll(); die2.putInto(diceSpaces[1]);
-      //   const die3 = $.bag.first(ColorDie)!; die3.roll(); die3.putInto(diceSpaces[2]);
-      // }
-
-      // const componentSpaces = this.players[i].board.all(ComponentSpace);
-      // $.bag.first(Melt)?.putInto(componentSpaces[0]);
-      // for(var j = 0; j <= i; j++) {
-      //   $.bag.first(Wax)?.putInto(componentSpaces[j+1]);
-      // }
-
-      // $.drawCustomer.top(CustomerCard)!.putInto(this.players[i].space);
-      // const goal1 = $.goalDeck.top(GoalCard)!
-      // goal1.putInto(this.players[i].space);
-      // goal1.showOnlyTo(this.players[i]);
-
-      // this.players[i].setScore(0);
-      // this.players[i].setMastery(0);
-
-      // this.players[i].pass = false;
-      // this.players[i].stack = false;
-      // this.players[i].soldCandle = false;
-      // this.players[i].placedWorker = false;
-      // this.players[i].finished = false;
-      // this.players[i].finalScore = false;
-    };      
 
     // reset space colors
     this.all(WorkerSpace).filter(x => x.spaceType != SpaceType.Color).forEach(x => x.color = undefined);
