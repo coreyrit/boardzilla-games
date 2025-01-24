@@ -403,6 +403,10 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
   }
 
   setupGame(playerCount : number) : void {
+    if(playerCount <= 0) {
+      return;
+    }
+
     this.setup = true;
     try {
       this.waxCount = 1;
@@ -428,23 +432,23 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     this.all(ColorDie).putInto($.bag);
 
     // roll random dice to start the round      
-    // for(var i = 0; i < 4-playerCount; i++) {
-    //   Object.values(Building).forEach((building: Building) =>{
-    //     const die = this.first(ColorDie)!;
-    //     die.roll()
+    for(var i = 0; i < 4-playerCount; i++) {
+      Object.values(Building).forEach((building: Building) =>{
+        const die = $.bag.first(ColorDie)!;
+        die.roll()
 
-    //     if(i == 2) {
-    //       // for solo randomly put one in mastery or backroom
-    //       if(Math.floor(this.random() * 2) % 2 == 0) {
-    //         die.putInto(this.first(WorkerSpace, { building: building, spaceType: SpaceType.Mastery })!)
-    //       } else {
-    //         die.putInto(this.first(WorkerSpace, { building: building, spaceType: SpaceType.Backroom })!)
-    //       }
-    //     } else {
-    //       die.putInto(this.first(WorkerSpace, { building: building, color: die.color })!)
-    //     }
-    //   });
-    // }
+        if(i == 2) {
+          // for solo randomly put one in mastery or backroom
+          if(Math.floor(this.random() * 2) % 2 == 0) {
+            die.putInto(this.first(WorkerSpace, { building: building, spaceType: SpaceType.Mastery })!)
+          } else {
+            die.putInto(this.first(WorkerSpace, { building: building, spaceType: SpaceType.Backroom })!)
+          }
+        } else {
+          die.putInto(this.first(WorkerSpace, { building: building, color: die.color })!)
+        }
+      });
+    }
 
     // set end game tiles
     this.all(EndGameTile).putInto($.bag);
