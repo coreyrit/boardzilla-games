@@ -1947,8 +1947,9 @@ export default createGame(ChandlersPlayer, MyGame, game => {
         }
       }
     ])}),    
-    () => {
-      game.finish(undefined)
-    }
+
+    // I would rather sit idle than not see my final score
+    () => game.message('The game has ended.'),
+    playerActions({ actions: []})
   );
 });
