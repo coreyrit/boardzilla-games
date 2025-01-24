@@ -366,6 +366,7 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
   }
 
   initPlayer(player : ChandlersPlayer) : void {
+    if(player != undefined && player.board != undefined && player.space != undefined) {
       const diceSpaces = player.board.all(DiceSpace);
       if(diceSpaces.length >= 3 && $.bag.all(ColorDie).length >= 3) {
         const die1 = $.bag.first(ColorDie)!; die1.roll(); die1.putInto(diceSpaces[0]);
@@ -396,6 +397,7 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
       player.placedWorker = false;
       player.finished = false;
       player.finalScore = false;
+    }
   }
 
   setupGame(playerCount : number) : void {
