@@ -174,6 +174,7 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     } else if(this.currentRound() == 4) {
       // this.gameOver = true;
 
+/*
       // do final scoring
       this.players.forEach(player => {
         
@@ -231,7 +232,7 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
           }
         })
       })
-
+*/
       // move the round tracker
       this.nextRound();
     } else {
