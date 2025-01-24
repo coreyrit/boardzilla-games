@@ -455,9 +455,10 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
         const die3 = $.bag.first(ColorDie)!; die3.roll(); die3.putInto(diceSpaces[2]);
       }
 
-      $.bag.first(Melt)?.putInto(this.players[i].nextEmptySpace());
+      const componentSpaces = this.players[i].board.all(ComponentSpace);
+      $.bag.first(Melt)?.putInto(componentSpaces[0]);
       for(var j = 0; j <= i; j++) {
-        $.bag.first(Wax)?.putInto(this.players[i].nextEmptySpace());
+        $.bag.first(Wax)?.putInto(componentSpaces[j+1]);
       }
 
       // $.drawCustomer.top(CustomerCard)!.putInto(this.players[i].space);
@@ -465,8 +466,8 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
       // goal1.putInto(this.players[i].space);
       // goal1.showOnlyTo(this.players[i]);
 
-      this.players[i].setScore(0);
-      this.players[i].setMastery(0);
+      // this.players[i].setScore(0);
+      // this.players[i].setMastery(0);
 
       this.players[i].pass = false;
       this.players[i].stack = false;
