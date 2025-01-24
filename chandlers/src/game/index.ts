@@ -364,7 +364,7 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
 
   setupGame() : void {
     this.setup = true;
-
+    try {
     // shuffle the goals
     this.all(GoalCard).putInto($.goalDeck);
     $.goalDeck.shuffle();
@@ -476,7 +476,14 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
 
     // reset space colors
     this.all(WorkerSpace).filter(x => x.spaceType != SpaceType.Color).forEach(x => x.color = undefined);
-
+    }
+    catch(e){
+      if (typeof e === "string") {
+        this.message(e);
+      } else if (e instanceof Error) {
+        this.message(e.message);
+      }
+    }
     this.setup = false;
   }
 }
