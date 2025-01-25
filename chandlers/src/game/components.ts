@@ -8,6 +8,7 @@ export class GoalCard extends Piece<MyGame> {
   flipped: boolean = false;
   color1: Color;
   color2: Color;
+  scored: boolean = false;
 }
 
 export class CustomerCard extends Piece<MyGame> {
@@ -16,6 +17,7 @@ export class CustomerCard extends Piece<MyGame> {
     color: Color = Color.White;
     customerType: CustomerType = CustomerType.None;
     scoring: number[]
+    scoredCandles: boolean = false;
     scoredGoal: boolean = false;
 
     override toString() : string {

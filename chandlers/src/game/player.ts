@@ -1,5 +1,5 @@
 import { Piece, Player, Space } from "@boardzilla/core";
-import { Color, MyGame } from "./index.js";
+import { Color, CustomerType, MyGame } from "./index.js";
 import { WorkerPiece, CandlePawn, ColorDie, KeyShape, Wax, Pigment, MasteryCube, Melt, ScoreTracker, CustomerCard } from "./components.js";
 import { Candelabra, CandleSpace, ComponentSpace, DiceSpace, KeyHook, MasterySpace, PlayerBoard, PlayerSpace, ScoringSpace, ScoringTrack } from "./boards.js";
 
@@ -14,6 +14,10 @@ export class ChandlersPlayer extends Player<MyGame, ChandlersPlayer> {
     finalScore: boolean = false;
     playerColor: Color
   
+    customerCount() : number {
+      return this.space.all(CustomerCard).filter(x => x.customerType != CustomerType.None).length;
+    }
+
     componentCount() : number {
       const c =  this.board.all(ComponentSpace)
         .map(x => x.all(Piece).length == 0 ? 0 : 1)
