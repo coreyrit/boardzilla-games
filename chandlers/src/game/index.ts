@@ -240,11 +240,7 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     } else if(this.currentRound() == 4) {
       // this.gameOver = true;
 
-      // calcuate final scores
-      this.players.forEach(player => {
-        this.calculatePlayerFinalScore(player);
-      });
-
+      this.followUp({name: 'showScore'});
       this.followUp({name: 'playNewGame'});
       
     } else {
@@ -1730,6 +1726,17 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       //   game.calculatePlayerFinalScore(player);
       //   player.finalScore = true;
       // }
+    }),
+
+    showScore: (player) => action({
+      prompt: 'Tally the final score?',
+    }).chooseFrom(
+      "choice", ['Yes'], 
+      { skipIf: 'never' }
+    ).do(({choice}) => {
+      game.players.forEach(player => {
+        game.calculatePlayerFinalScore(player);
+      });
     }),
 
     playNewGame: (player) => action({
