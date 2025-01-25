@@ -88,7 +88,7 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
 
   setupPlayer(turn: ChandlersPlayer) : void {    
     if($.drawCustomer.all(CustomerCard).length > 0) {
-      // this.initPlayer(turn);
+      this.initPlayer(turn);
       $.drawCustomer.top(CustomerCard)!.putInto(turn.space);
       // $.drawCustomer.top(CustomerCard)!.putInto(turn.space);
       const goal1 = $.goalDeck.top(GoalCard)!
@@ -433,29 +433,6 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     // place dice
     this.all(ColorDie).putInto(bag);
 
-    // roll random dice to start the round      
-    if(bag.all(ColorDie).length >= 9) {
-      this.message('there are ' + bag.all(ColorDie).length + ' dice');
-
-    // for(var i = 0; i < 4-playerCount; i++) {
-    //   Object.values(Building).forEach((building: Building) =>{
-    //     const die = bag.first(ColorDie)!;
-    //     die.roll()
-
-    //     if(i == 2) {
-    //       // for solo randomly put one in mastery or backroom
-    //       if(Math.floor(this.random() * 2) % 2 == 0) {
-    //         die.putInto(this.first(WorkerSpace, { building: building, spaceType: SpaceType.Mastery })!)
-    //       } else {
-    //         die.putInto(this.first(WorkerSpace, { building: building, spaceType: SpaceType.Backroom })!)
-    //       }
-    //     } else {
-    //       die.putInto(this.first(WorkerSpace, { building: building, color: die.color })!)
-    //     }
-    //   });
-    // }
-    }
-
     // set end game tiles
     this.all(EndGameTile).putInto(bag);
     bag.shuffle()
@@ -539,27 +516,27 @@ export default createGame(ChandlersPlayer, MyGame, game => {
 
   // set up the goal deck
   const goalDeck = game.create(GoalSpace, 'goalDeck');
-  bag.create(GoalCard, 'purple-purple', {color1: Color.Purple, color2: Color.Purple} );
-  bag.create(GoalCard, 'blue-blue', {color1: Color.Blue, color2: Color.Blue} );
-  bag.create(GoalCard, 'blue-purple', {color1: Color.Blue, color2: Color.Purple} );
-  bag.create(GoalCard, 'green-purple', {color1: Color.Green, color2: Color.Purple} );
-  bag.create(GoalCard, 'green-green', {color1: Color.Green, color2: Color.Green} );
-  bag.create(GoalCard, 'green-blue', {color1: Color.Green, color2: Color.Blue} );
-  bag.create(GoalCard, 'yellow-blue', {color1: Color.Yellow, color2: Color.Blue} );
-  bag.create(GoalCard, 'yellow-green', {color1: Color.Yellow, color2: Color.Green} );
-  bag.create(GoalCard, 'yellow-purple', {color1: Color.Yellow, color2: Color.Purple} );
-  bag.create(GoalCard, 'yellow-yellow', {color1: Color.Yellow, color2: Color.Yellow} );
-  bag.create(GoalCard, 'orange-blue', {color1: Color.Orange, color2: Color.Blue} );
-  bag.create(GoalCard, 'orange-green', {color1: Color.Orange, color2: Color.Green} );
-  bag.create(GoalCard, 'orange-orange', {color1: Color.Orange, color2: Color.Orange} );
-  bag.create(GoalCard, 'orange-purple', {color1: Color.Orange, color2: Color.Purple} );
-  bag.create(GoalCard, 'orange-yellow', {color1: Color.Orange, color2: Color.Yellow} );
-  bag.create(GoalCard, 'red-red', {color1: Color.Red, color2: Color.Red} );
-  bag.create(GoalCard, 'red-blue', {color1: Color.Red, color2: Color.Blue} );
-  bag.create(GoalCard, 'red-green', {color1: Color.Red, color2: Color.Green} );
-  bag.create(GoalCard, 'red-orange', {color1: Color.Red, color2: Color.Orange} );
-  bag.create(GoalCard, 'red-purple', {color1: Color.Red, color2: Color.Purple} );
-  bag.create(GoalCard, 'red-yellow', {color1: Color.Red, color2: Color.Yellow} );
+  goalDeck.create(GoalCard, 'purple-purple', {color1: Color.Purple, color2: Color.Purple} );
+  goalDeck.create(GoalCard, 'blue-blue', {color1: Color.Blue, color2: Color.Blue} );
+  goalDeck.create(GoalCard, 'blue-purple', {color1: Color.Blue, color2: Color.Purple} );
+  goalDeck.create(GoalCard, 'green-purple', {color1: Color.Green, color2: Color.Purple} );
+  goalDeck.create(GoalCard, 'green-green', {color1: Color.Green, color2: Color.Green} );
+  goalDeck.create(GoalCard, 'green-blue', {color1: Color.Green, color2: Color.Blue} );
+  goalDeck.create(GoalCard, 'yellow-blue', {color1: Color.Yellow, color2: Color.Blue} );
+  goalDeck.create(GoalCard, 'yellow-green', {color1: Color.Yellow, color2: Color.Green} );
+  goalDeck.create(GoalCard, 'yellow-purple', {color1: Color.Yellow, color2: Color.Purple} );
+  goalDeck.create(GoalCard, 'yellow-yellow', {color1: Color.Yellow, color2: Color.Yellow} );
+  goalDeck.create(GoalCard, 'orange-blue', {color1: Color.Orange, color2: Color.Blue} );
+  goalDeck.create(GoalCard, 'orange-green', {color1: Color.Orange, color2: Color.Green} );
+  goalDeck.create(GoalCard, 'orange-orange', {color1: Color.Orange, color2: Color.Orange} );
+  goalDeck.create(GoalCard, 'orange-purple', {color1: Color.Orange, color2: Color.Purple} );
+  goalDeck.create(GoalCard, 'orange-yellow', {color1: Color.Orange, color2: Color.Yellow} );
+  goalDeck.create(GoalCard, 'red-red', {color1: Color.Red, color2: Color.Red} );
+  goalDeck.create(GoalCard, 'red-blue', {color1: Color.Red, color2: Color.Blue} );
+  goalDeck.create(GoalCard, 'red-green', {color1: Color.Red, color2: Color.Green} );
+  goalDeck.create(GoalCard, 'red-orange', {color1: Color.Red, color2: Color.Orange} );
+  goalDeck.create(GoalCard, 'red-purple', {color1: Color.Red, color2: Color.Purple} );
+  goalDeck.create(GoalCard, 'red-yellow', {color1: Color.Red, color2: Color.Yellow} );
 
   // set up the market
   const drawCustomer = game.create(CustomerSpace, 'drawCustomer');
@@ -573,54 +550,54 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   customer4.onEnter(CustomerCard, x => { x.flipped = true; })
   
   // build the customer deck
-  bag.create(CustomerCard, 'audacity', {scoring: [2, 4, 8, 14], customerType: CustomerType.Adventurer, color: Color.Green, data: "bgpx"})
-  bag.create(CustomerCard, 'bamboozle', {scoring: [1, 4, 8], customerType: CustomerType.Charlatan, color: Color.Blue, data: "brp"})
-  bag.create(CustomerCard, 'blessing-of-autumn', {scoring: [2, 4, 7, 13], customerType: CustomerType.Priest, color: Color.Orange, data: "brgo"})
-  bag.create(CustomerCard, 'blessing-of-heaven', {scoring: [2, 4, 7, 13], customerType: CustomerType.Priest, color: Color.Blue, data: "bypo"})
-  bag.create(CustomerCard, 'blessing-of-midnight', {scoring: [1, 4, 8], customerType: CustomerType.Priest, color: Color.Purple, data: "rpo"})
-  bag.create(CustomerCard, 'blessing-of-moonlight', {scoring: [2, 4, 7, 13], customerType: CustomerType.Priest, color: Color.Yellow, data: "yrgo"})
-  bag.create(CustomerCard, 'blessing-of-spring', {scoring: [1, 4, 9], customerType: CustomerType.Priest, color: Color.Green, data: "bgx"})
-  bag.create(CustomerCard, 'blessing-of-summer', {scoring: [2, 4, 7, 13], customerType: CustomerType.Priest, color: Color.Red, data: "wyrx"})
-  bag.create(CustomerCard, 'broker', {scoring: [2, 4, 7, 13], customerType: CustomerType.Merchant, color: Color.Blue, data: "byrp"})
-  bag.create(CustomerCard, 'bypass', {scoring: [2, 4, 7, 13], customerType: CustomerType.Cartographer, color: Color.Yellow, data: "bygo"})
-  bag.create(CustomerCard, 'cleansing-flood', {scoring: [2, 4, 8, 14], customerType: CustomerType.Witch, color: Color.Blue, data: "bgpo"})
-  bag.create(CustomerCard, 'cutoff', {scoring: [1, 3, 7], customerType: CustomerType.Cartographer, color: Color.Purple, data: "wrp"})
-  bag.create(CustomerCard, 'daring', {scoring: [2, 4, 7, 13], customerType: CustomerType.Adventurer, color: Color.Blue, data: "bwrx"})
-  bag.create(CustomerCard, 'dealer', {scoring: [1, 3, 7], customerType: CustomerType.Merchant, color: Color.Purple, data: "wyp"})
-  bag.create(CustomerCard, 'deception', {scoring: [1, 4, 8], customerType: CustomerType.Rogue, color: Color.Yellow, data: "byx"})
-  bag.create(CustomerCard, 'detour', {scoring: [2, 4, 7, 13], customerType: CustomerType.Cartographer, color: Color.Orange, data: "wypo"})
-  bag.create(CustomerCard, 'discount', {scoring: [1, 4, 8], customerType: CustomerType.Rogue, color: Color.Blue, data: "byo"})
-  bag.create(CustomerCard, 'discovery', {scoring: [1, 4, 9], customerType: CustomerType.Adventurer, color: Color.Purple, data: "rpx"})
-  bag.create(CustomerCard, 'double-dip', {scoring: [2, 4, 7, 14], customerType: CustomerType.Rogue, color: Color.Red, data: "bwrp"})
-  bag.create(CustomerCard, 'exploit', {scoring: [2, 4, 7, 13], customerType: CustomerType.Rogue, color: Color.Purple, data: "bwpo"})
-  bag.create(CustomerCard, 'exploration', {scoring: [1, 4, 8], customerType: CustomerType.Adventurer, color: Color.Orange, data: "wgo"})
-  bag.create(CustomerCard, 'grift', {scoring: [2, 4, 7, 13], customerType: CustomerType.Charlatan, color: Color.Orange, data: "bwgo"})
-  bag.create(CustomerCard, 'heroism', {scoring: [2, 4, 7, 13], customerType: CustomerType.Adventurer, color: Color.Yellow, data: "byrg"})
-  bag.create(CustomerCard, 'hoodwink', {scoring: [2, 4, 7, 13], customerType: CustomerType.Charlatan, color: Color.Red, data: "wrgx"})
-  bag.create(CustomerCard, 'infernal-rush', {scoring: [2, 4, 7, 12], customerType: CustomerType.Witch, color: Color.Red, data: "wyro"})
-  bag.create(CustomerCard, 'intrepidity', {scoring: [2, 4, 8, 14], customerType: CustomerType.Adventurer, color: Color.Red, data: "rgpo"})
-  bag.create(CustomerCard, 'lightning-crash', {scoring: [1, 4, 8], customerType: CustomerType.Witch, color: Color.Yellow, data: "yrx"})
-  bag.create(CustomerCard, 'miscount', {scoring: [1, 4, 9], customerType: CustomerType.Rogue, color: Color.Green, data: "gox"})
-  bag.create(CustomerCard, 'nourishing-wave', {scoring: [2, 4, 7, 13], customerType: CustomerType.Witch, color: Color.Green, data: "wygx"})
-  bag.create(CustomerCard, 'operator', {scoring: [1, 3, 7], customerType: CustomerType.Merchant, color: Color.Orange, data: "bwo"})
-  bag.create(CustomerCard, 'passage', {scoring: [1, 4, 8], customerType: CustomerType.Cartographer, color: Color.Green, data: "wgp"})
-  bag.create(CustomerCard, 'prince-rohan', {scoring: [2, 4, 7, 12], customerType: CustomerType.Prince, color: Color.Red, data: "bwrg"})
-  bag.create(CustomerCard, 'prince-tyrion', {scoring: [2, 4, 8, 14], customerType: CustomerType.Prince, color: Color.Purple, data: "bypx"})
-  bag.create(CustomerCard, 'princess-buttercup', {scoring: [2, 4, 8, 14], customerType: CustomerType.Prince, color: Color.Yellow, data: "yrox"})
-  bag.create(CustomerCard, 'princess-evergreen', {scoring: [1, 3, 7], customerType: CustomerType.Prince, color: Color.Green, data: "wyg"})
-  bag.create(CustomerCard, 'princess-peach', {scoring: [2, 4, 7, 12], customerType: CustomerType.Prince, color: Color.Orange, data: "bwro"})
-  bag.create(CustomerCard, 'princess-perrywinkle', {scoring: [2, 4, 7, 12], customerType: CustomerType.Prince, color: Color.Blue, data: "bwyp"})
-  bag.create(CustomerCard, 'retailer', {scoring: [2, 4, 7, 13], customerType: CustomerType.Merchant, color: Color.Red, data: "wrox"})
-  bag.create(CustomerCard, 'scam', {scoring: [1, 4, 8], customerType: CustomerType.Charlatan, color: Color.Yellow, data: "byg"})
-  bag.create(CustomerCard, 'seller', {scoring: [2, 4, 7, 13], customerType: CustomerType.Merchant, color: Color.Green, data: "wygo"})
-  bag.create(CustomerCard, 'shadow-strike', {scoring: [2, 4, 7, 13], customerType: CustomerType.Witch, color: Color.Purple, data: "wrgp"})
-  bag.create(CustomerCard, 'shortcut', {scoring: [2, 4, 7, 12], customerType: CustomerType.Cartographer, color: Color.Red, data: "wyrg"})
-  bag.create(CustomerCard, 'sleight-of-hand', {scoring: [2, 4, 7, 13], customerType: CustomerType.Rogue, color: Color.Orange, data: "wrpo"})
-  bag.create(CustomerCard, 'sunlight-surge', {scoring: [2, 4, 7, 13], customerType: CustomerType.Witch, color: Color.Orange, data: "wgpo"})
-  bag.create(CustomerCard, 'tomfoolery', {scoring: [1, 4, 8], customerType: CustomerType.Charlatan, color: Color.Purple, data: "wpo"})
-  bag.create(CustomerCard, 'trail', {scoring: [2, 4, 7, 13], customerType: CustomerType.Cartographer, color: Color.Blue, data: "bwpx"})
-  bag.create(CustomerCard, 'trickery', {scoring: [1, 4, 9], customerType: CustomerType.Charlatan, color: Color.Green, data: "ygx"})
-  bag.create(CustomerCard, 'vendor', {scoring: [1, 4, 9], customerType: CustomerType.Merchant, color: Color.Yellow, data: "ypx"})
+  drawCustomer.create(CustomerCard, 'audacity', {scoring: [2, 4, 8, 14], customerType: CustomerType.Adventurer, color: Color.Green, data: "bgpx"})
+  drawCustomer.create(CustomerCard, 'bamboozle', {scoring: [1, 4, 8], customerType: CustomerType.Charlatan, color: Color.Blue, data: "brp"})
+  drawCustomer.create(CustomerCard, 'blessing-of-autumn', {scoring: [2, 4, 7, 13], customerType: CustomerType.Priest, color: Color.Orange, data: "brgo"})
+  drawCustomer.create(CustomerCard, 'blessing-of-heaven', {scoring: [2, 4, 7, 13], customerType: CustomerType.Priest, color: Color.Blue, data: "bypo"})
+  drawCustomer.create(CustomerCard, 'blessing-of-midnight', {scoring: [1, 4, 8], customerType: CustomerType.Priest, color: Color.Purple, data: "rpo"})
+  drawCustomer.create(CustomerCard, 'blessing-of-moonlight', {scoring: [2, 4, 7, 13], customerType: CustomerType.Priest, color: Color.Yellow, data: "yrgo"})
+  drawCustomer.create(CustomerCard, 'blessing-of-spring', {scoring: [1, 4, 9], customerType: CustomerType.Priest, color: Color.Green, data: "bgx"})
+  drawCustomer.create(CustomerCard, 'blessing-of-summer', {scoring: [2, 4, 7, 13], customerType: CustomerType.Priest, color: Color.Red, data: "wyrx"})
+  drawCustomer.create(CustomerCard, 'broker', {scoring: [2, 4, 7, 13], customerType: CustomerType.Merchant, color: Color.Blue, data: "byrp"})
+  drawCustomer.create(CustomerCard, 'bypass', {scoring: [2, 4, 7, 13], customerType: CustomerType.Cartographer, color: Color.Yellow, data: "bygo"})
+  drawCustomer.create(CustomerCard, 'cleansing-flood', {scoring: [2, 4, 8, 14], customerType: CustomerType.Witch, color: Color.Blue, data: "bgpo"})
+  drawCustomer.create(CustomerCard, 'cutoff', {scoring: [1, 3, 7], customerType: CustomerType.Cartographer, color: Color.Purple, data: "wrp"})
+  drawCustomer.create(CustomerCard, 'daring', {scoring: [2, 4, 7, 13], customerType: CustomerType.Adventurer, color: Color.Blue, data: "bwrx"})
+  drawCustomer.create(CustomerCard, 'dealer', {scoring: [1, 3, 7], customerType: CustomerType.Merchant, color: Color.Purple, data: "wyp"})
+  drawCustomer.create(CustomerCard, 'deception', {scoring: [1, 4, 8], customerType: CustomerType.Rogue, color: Color.Yellow, data: "byx"})
+  drawCustomer.create(CustomerCard, 'detour', {scoring: [2, 4, 7, 13], customerType: CustomerType.Cartographer, color: Color.Orange, data: "wypo"})
+  drawCustomer.create(CustomerCard, 'discount', {scoring: [1, 4, 8], customerType: CustomerType.Rogue, color: Color.Blue, data: "byo"})
+  drawCustomer.create(CustomerCard, 'discovery', {scoring: [1, 4, 9], customerType: CustomerType.Adventurer, color: Color.Purple, data: "rpx"})
+  drawCustomer.create(CustomerCard, 'double-dip', {scoring: [2, 4, 7, 14], customerType: CustomerType.Rogue, color: Color.Red, data: "bwrp"})
+  drawCustomer.create(CustomerCard, 'exploit', {scoring: [2, 4, 7, 13], customerType: CustomerType.Rogue, color: Color.Purple, data: "bwpo"})
+  drawCustomer.create(CustomerCard, 'exploration', {scoring: [1, 4, 8], customerType: CustomerType.Adventurer, color: Color.Orange, data: "wgo"})
+  drawCustomer.create(CustomerCard, 'grift', {scoring: [2, 4, 7, 13], customerType: CustomerType.Charlatan, color: Color.Orange, data: "bwgo"})
+  drawCustomer.create(CustomerCard, 'heroism', {scoring: [2, 4, 7, 13], customerType: CustomerType.Adventurer, color: Color.Yellow, data: "byrg"})
+  drawCustomer.create(CustomerCard, 'hoodwink', {scoring: [2, 4, 7, 13], customerType: CustomerType.Charlatan, color: Color.Red, data: "wrgx"})
+  drawCustomer.create(CustomerCard, 'infernal-rush', {scoring: [2, 4, 7, 12], customerType: CustomerType.Witch, color: Color.Red, data: "wyro"})
+  drawCustomer.create(CustomerCard, 'intrepidity', {scoring: [2, 4, 8, 14], customerType: CustomerType.Adventurer, color: Color.Red, data: "rgpo"})
+  drawCustomer.create(CustomerCard, 'lightning-crash', {scoring: [1, 4, 8], customerType: CustomerType.Witch, color: Color.Yellow, data: "yrx"})
+  drawCustomer.create(CustomerCard, 'miscount', {scoring: [1, 4, 9], customerType: CustomerType.Rogue, color: Color.Green, data: "gox"})
+  drawCustomer.create(CustomerCard, 'nourishing-wave', {scoring: [2, 4, 7, 13], customerType: CustomerType.Witch, color: Color.Green, data: "wygx"})
+  drawCustomer.create(CustomerCard, 'operator', {scoring: [1, 3, 7], customerType: CustomerType.Merchant, color: Color.Orange, data: "bwo"})
+  drawCustomer.create(CustomerCard, 'passage', {scoring: [1, 4, 8], customerType: CustomerType.Cartographer, color: Color.Green, data: "wgp"})
+  drawCustomer.create(CustomerCard, 'prince-rohan', {scoring: [2, 4, 7, 12], customerType: CustomerType.Prince, color: Color.Red, data: "bwrg"})
+  drawCustomer.create(CustomerCard, 'prince-tyrion', {scoring: [2, 4, 8, 14], customerType: CustomerType.Prince, color: Color.Purple, data: "bypx"})
+  drawCustomer.create(CustomerCard, 'princess-buttercup', {scoring: [2, 4, 8, 14], customerType: CustomerType.Prince, color: Color.Yellow, data: "yrox"})
+  drawCustomer.create(CustomerCard, 'princess-evergreen', {scoring: [1, 3, 7], customerType: CustomerType.Prince, color: Color.Green, data: "wyg"})
+  drawCustomer.create(CustomerCard, 'princess-peach', {scoring: [2, 4, 7, 12], customerType: CustomerType.Prince, color: Color.Orange, data: "bwro"})
+  drawCustomer.create(CustomerCard, 'princess-perrywinkle', {scoring: [2, 4, 7, 12], customerType: CustomerType.Prince, color: Color.Blue, data: "bwyp"})
+  drawCustomer.create(CustomerCard, 'retailer', {scoring: [2, 4, 7, 13], customerType: CustomerType.Merchant, color: Color.Red, data: "wrox"})
+  drawCustomer.create(CustomerCard, 'scam', {scoring: [1, 4, 8], customerType: CustomerType.Charlatan, color: Color.Yellow, data: "byg"})
+  drawCustomer.create(CustomerCard, 'seller', {scoring: [2, 4, 7, 13], customerType: CustomerType.Merchant, color: Color.Green, data: "wygo"})
+  drawCustomer.create(CustomerCard, 'shadow-strike', {scoring: [2, 4, 7, 13], customerType: CustomerType.Witch, color: Color.Purple, data: "wrgp"})
+  drawCustomer.create(CustomerCard, 'shortcut', {scoring: [2, 4, 7, 12], customerType: CustomerType.Cartographer, color: Color.Red, data: "wyrg"})
+  drawCustomer.create(CustomerCard, 'sleight-of-hand', {scoring: [2, 4, 7, 13], customerType: CustomerType.Rogue, color: Color.Orange, data: "wrpo"})
+  drawCustomer.create(CustomerCard, 'sunlight-surge', {scoring: [2, 4, 7, 13], customerType: CustomerType.Witch, color: Color.Orange, data: "wgpo"})
+  drawCustomer.create(CustomerCard, 'tomfoolery', {scoring: [1, 4, 8], customerType: CustomerType.Charlatan, color: Color.Purple, data: "wpo"})
+  drawCustomer.create(CustomerCard, 'trail', {scoring: [2, 4, 7, 13], customerType: CustomerType.Cartographer, color: Color.Blue, data: "bwpx"})
+  drawCustomer.create(CustomerCard, 'trickery', {scoring: [1, 4, 9], customerType: CustomerType.Charlatan, color: Color.Green, data: "ygx"})
+  drawCustomer.create(CustomerCard, 'vendor', {scoring: [1, 4, 9], customerType: CustomerType.Merchant, color: Color.Yellow, data: "ypx"})
 
   // create candle spaces
   game.all(CustomerCard).forEach(x => {
@@ -661,12 +638,12 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   const greenHook = game.create(KeyHook, 'greenHook', {color: Color.Green});
   const purpleHook = game.create(KeyHook, 'purpleHook', {color: Color.Purple});
 
-  bag.create(KeyShape, 'red-key', {color: Color.Red});
-  bag.create(KeyShape, 'yellow-key', {color: Color.Yellow});
-  bag.create(KeyShape, 'blue-key', {color: Color.Blue});
-  bag.create(KeyShape, 'orange-key', {color: Color.Orange});
-  bag.create(KeyShape, 'green-key', {color: Color.Green});
-  bag.create(KeyShape, 'purple-key', {color: Color.Purple});
+  redHook.create(KeyShape, 'red-key', {color: Color.Red});
+  yellowHook.create(KeyShape, 'yellow-key', {color: Color.Yellow});
+  blueHook.create(KeyShape, 'blue-key', {color: Color.Blue});
+  orangeHook.create(KeyShape, 'orange-key', {color: Color.Orange});
+  greenHook.create(KeyShape, 'green-key', {color: Color.Green});
+  purpleHook.create(KeyShape, 'purple-key', {color: Color.Purple});
 
   // place the candles
   const whiteCandles = game.create(Candelabra, 'whiteCandles', {color: Color.White});
@@ -682,23 +659,39 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   // $.bag.create(CandlePawn, 'whiteCandleBag', {color: Color.White});
 
   for(var i = 0; i < 8 + game.players.length-2; i++) {
-    bag.create(CandlePawn, 'whiteCandle' + i, {color: Color.White})
+    whiteCandles.create(CandlePawn, 'whiteCandle' + i, {color: Color.White})
   }
   for(var i = 0; i < 6 + game.players.length-2; i++) {
-    bag.create(CandlePawn, 'redCandle' + i, {color: Color.Red})
-    bag.create(CandlePawn, 'yellowCandle' + i, {color: Color.Yellow})
-    bag.create(CandlePawn, 'blueCandle' + i, {color: Color.Blue})
-    bag.create(CandlePawn, 'orangeCandle' + i, {color: Color.Orange})
-    bag.create(CandlePawn, 'greenCandle' + i, {color: Color.Green})
-    bag.create(CandlePawn, 'purpleCandle' + i, {color: Color.Purple})
+    redCandles.create(CandlePawn, 'redCandle' + i, {color: Color.Red})
+    yellowCandles.create(CandlePawn, 'yellowCandle' + i, {color: Color.Yellow})
+    blueCandles.create(CandlePawn, 'blueCandle' + i, {color: Color.Blue})
+    orangeCandles.create(CandlePawn, 'orangeCandle' + i, {color: Color.Orange})
+    greenCandles.create(CandlePawn, 'greenCandle' + i, {color: Color.Green})
+    purpleCandles.create(CandlePawn, 'purpleCandle' + i, {color: Color.Purple})
   }
   for(var i = 0; i < 4 + game.players.length-2; i++) {
-    bag.create(CandlePawn, 'blackCandle' + i, {color: Color.Black})
+    blackCandles.create(CandlePawn, 'blackCandle' + i, {color: Color.Black})
   }
 
-  for(var i = 0; i < 12; i++) {
-    bag.create(ColorDie, 'colorDie' + i);
-  }
+  game.setup = true;
+      for(var i = 0; i < 4-game.players.length; i++) {
+      Object.values(Building).forEach((building: Building) =>{
+        const die = game.create(ColorDie, 'colorDie' + building + 'd' + i);
+        die.roll()
+
+        if(i == 2) {
+          // for solo randomly put one in mastery or backroom
+          if(Math.floor(game.random() * 2) % 2 == 0) {
+            die.putInto(game.first(WorkerSpace, { building: building, spaceType: SpaceType.Mastery })!)
+          } else {
+            die.putInto(game.first(WorkerSpace, { building: building, spaceType: SpaceType.Backroom })!)
+          }
+        } else {
+          die.putInto(game.first(WorkerSpace, { building: building, color: die.color })!)
+        }
+      });
+    }
+    game.setup = false;
 
   // place the end game customer types
   game.create(GameEndSpace, 'whiteType');
@@ -910,9 +903,13 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       playerBoard.create(ComponentSpace, 'p' + i + 'Component' + l, {num: l});
     }
 
-    const playerDie1 = playerBoard.create(DiceSpace, 'p' + i + 'Die1');
+    const playerDie1 = playerBoard.create(DiceSpace, 'p' + i + 'Die1');    
     const playerDie2 = playerBoard.create(DiceSpace, 'p' + i + 'Die2');
     const playerDie3 = playerBoard.create(DiceSpace, 'p' + i + 'Die3');
+
+    const die1 = playerDie1.create(ColorDie, 'p' + i + 'd1'); die1.roll();
+    const die2 = playerDie2.create(ColorDie, 'p' + i + 'd2'); die2.roll();
+    const die3 = playerDie3.create(ColorDie, 'p' + i + 'd3'); die3.roll();
 
     const power1 = playerBoard.create(PowerSpace, 'p' + i + 'Power1')
     const power2 = playerBoard.create(PowerSpace, 'p' + i + 'Power2')

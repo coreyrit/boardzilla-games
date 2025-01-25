@@ -221,11 +221,9 @@ export class WorkerPiece extends Piece<MyGame> {
 
 export class ColorDie extends WorkerPiece {
     roll(): void {
-      this.color = Color.Red;
-      
-      // let index = Math.floor(this.game.random() * 6);
-      // const values = Object.values(Color);
-      // this.color = values[index];
+      let index = Math.floor(this.game.random() * 6);
+      const values = Object.values(Color);
+      this.color = values[index];
     }
 }
   
