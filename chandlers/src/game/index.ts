@@ -245,9 +245,6 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
         this.calculatePlayerFinalScore(player);
       });
 
-      // ask if new game
-      this.resetDice();
-
       this.followUp({name: 'playNewGame'});
       
     } else {
@@ -362,13 +359,14 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     }
   }
 
-  newGame() : void {
+  newGame() : void {  
     this.all(Melt).forEach(x => x.color = Color.White);
     this.all(Wax).putInto($.bag);
     this.all(Melt).putInto($.bag);    
     this.all(Pigment).putInto($.bag);
     this.all(PowerTile).forEach(x => x.flipped = true);
     
+    this.resetDice();
     this.setupGame(this.players.length);
     this.first(Bulb)!.putInto(this.first(RoundSpace, {round: 0})!);
     this.players.forEach(x => this.initPlayer(x));
