@@ -175,6 +175,28 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
       }
     });
   }
+  
+  resetDice() : void {
+    this.all(ColorDie).putInto($.bag);
+    this.setup = true;
+    for(var i = 0; i < 4-this.players.length; i++) {
+      Object.values(Building).forEach((building: Building) =>{
+        const die = $.bag.first(ColorDie)!;
+        die.roll()
+        if(i == 2) {
+          // for solo randomly put one in mastery or backroom
+          if(Math.floor(this.random() * 2) % 2 == 0) {
+            die.putInto(this.first(WorkerSpace, { building: building, spaceType: SpaceType.Mastery })!)
+          } else {
+            die.putInto(this.first(WorkerSpace, { building: building, spaceType: SpaceType.Backroom })!)
+          }
+        } else {
+          die.putInto(this.first(WorkerSpace, { building: building, color: die.color })!)
+        }
+      });          
+    }
+    this.setup = false;
+  }
 
   endRound() : void  {
     this.message('Round ' + this.currentRound() + ' ends.');    
@@ -200,25 +222,7 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
       });
 
       // set starting dice
-      this.all(ColorDie).putInto($.bag);
-      this.setup = true;
-      for(var i = 0; i < 4-this.players.length; i++) {
-        Object.values(Building).forEach((building: Building) =>{
-          const die = $.bag.first(ColorDie)!;
-          die.roll()
-          if(i == 2) {
-            // for solo randomly put one in mastery or backroom
-            if(Math.floor(this.random() * 2) % 2 == 0) {
-              die.putInto(this.first(WorkerSpace, { building: building, spaceType: SpaceType.Mastery })!)
-            } else {
-              die.putInto(this.first(WorkerSpace, { building: building, spaceType: SpaceType.Backroom })!)
-            }
-          } else {
-            die.putInto(this.first(WorkerSpace, { building: building, color: die.color })!)
-          }
-        });          
-      }
-      this.setup = false;
+      this.resetDice();
 
       // start with new dice
       for(const player of this.players) {
@@ -362,37 +366,30 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     this.all(Melt).putInto($.bag);    
     this.all(Pigment).putInto($.bag);
     this.all(PowerTile).forEach(x => x.flipped = true);
+
+    this.resetDice();
     this.setupGame(this.players.length);
     this.players.forEach(x => this.initPlayer(x));
   }
 
   initPlayer(player : ChandlersPlayer) : void {
-      // const diceSpaces = player.board.all(DiceSpace);
-      // this.message('dice spaces = ' + diceSpaces.length);
-      // if(diceSpaces.length >= 3 && $.bag.all(ColorDie).length >= 3) {
-      //   const die1 = $.bag.first(ColorDie)!; die1.roll(); die1.putInto(diceSpaces[0]);
-      //   const die2 = $.bag.first(ColorDie)!; die2.roll(); die2.putInto(diceSpaces[1]);
-      //   const die3 = $.bag.first(ColorDie)!; die3.roll(); die3.putInto(diceSpaces[2]);
-      // }
-
-      // const componentSpaces = player.board.all(ComponentSpace);
-      // this.message('component spaces = ' + componentSpaces.length);
-
-      // if(componentSpaces.length >= this.waxCount + 1) {
-      //   $.bag.first(Melt)?.putInto(componentSpaces[0]);
-      //   for(var j = 0; j < this.waxCount; j++) {
-      //     $.bag.first(Wax)?.putInto(componentSpaces[j+1]);
-      //   }
-      // }
+      const componentSpaces = player.board.all(ComponentSpace);
+      this.message('component spaces = ' + componentSpaces.length);
+      if(componentSpaces.length >= this.waxCount + 1) {
+        $.bag.first(Melt)?.putInto(componentSpaces[0]);
+        for(var j = 0; j < this.waxCount; j++) {
+          $.bag.first(Wax)?.putInto(componentSpaces[j+1]);
+        }
+      }
       this.waxCount++;
 
-      // $.drawCustomer.top(CustomerCard)?.putInto(player.space);
-      // $.goalDeck.top(GoalCard)?.putInto(player.space);      
+      $.drawCustomer.top(CustomerCard)?.putInto(player.space);
+      $.goalDeck.top(GoalCard)?.putInto(player.space);      
 
-      // player.space.all(GoalCard).forEach(x => x.showOnlyTo(player));
+      player.space.all(GoalCard).forEach(x => x.showOnlyTo(player));
 
-      // player.setScore(0);
-      // player.setMastery(0);
+      player.setScore(0);
+      player.setMastery(0);
 
       player.pass = false;
       player.stack = false;
@@ -428,10 +425,7 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     this.all(KeyShape).forEach(x => x.putInto(this.first(KeyHook,{color: x.color})!));
 
     // return candles
-    this.all(CandlePawn).forEach(x => x.putInto(this.first(Candelabra, {color: x.color})!));
-
-    // place dice
-    this.all(ColorDie).putInto(bag);
+    this.all(CandlePawn).forEach(x => x.putInto(this.first(Candelabra, {color: x.color})!));    
 
     // set end game tiles
     this.all(EndGameTile).putInto(bag);
