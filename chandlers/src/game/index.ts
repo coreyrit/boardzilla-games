@@ -184,6 +184,21 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     return false;
   }
 
+  announceWinner() : void {
+    var winners: ChandlersPlayer[] = []
+    var highScore: number = 0;
+
+    this.players.forEach(x => {
+      if(x.currentScore() > highScore) {
+        winners = [x];
+        highScore = x.currentScore();
+      } else if(x.currentScore() == highScore) {
+        winners.push(x);
+      }
+    });
+    this.finish(winners);
+  }
+
   calculatePlayerFinalScore(player: ChandlersPlayer) : void {
     while(this.scoreNextCustomer(player)) {}
     this.scoreForMastery(player);
@@ -2249,5 +2264,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       ifElse({if: ({turn}) => game.scoreEndGameTile(turn, 3), do: playerActions({actions: ['pause']})}),
       ifElse({if: ({turn}) => game.scoreEndGameTile(turn, 2), do: playerActions({actions: ['pause']})})
     ]}),
+
+    () => game.announceWinner()
   );
 });
