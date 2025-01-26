@@ -180,7 +180,8 @@ export class BackAlleyTile extends Piece<MyGame> {
 
         case 'add-pigment': {
           if(game.currentPlayer().board.all(Melt).length > 0) {
-            game.followUp({name: 'choosePigmentColor', args: {firstChoice: true}});
+            $.pigmentMasteryArea.all(Pigment).showToAll();
+            game.followUp({name: 'choosePigmentColor', args: {remaining: 1}});
           }
           break;
         }
@@ -281,7 +282,7 @@ export class ScoreTracker extends Piece<MyGame> {
 }
   
   export class Pigment extends Piece<MyGame> {
-    color: Color = Color.Red;
+    color: Color | undefined = undefined;
 
     override toString() : string {
       return this.color + ' pigment'

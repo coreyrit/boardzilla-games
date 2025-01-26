@@ -84,6 +84,7 @@ export class BackAlleySpace extends Space<MyGame> {
 
 export class CheckSpace extends Space<MyGame> {
   building: Building;
+  type: SpaceType;
 }
   
 export class PlayerSpace extends Space<MyGame> {

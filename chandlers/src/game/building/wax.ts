@@ -1,4 +1,4 @@
-import { CheckSpace, WorkerSpace } from "../boards.js";
+import { WorkerSpace } from "../boards.js";
 import { Check, Wax, WorkerPiece } from "../components.js";
 import { Building, Color, MyGame, SpaceType } from "../index.js";
 

@@ -17,6 +17,7 @@ import { CustomerCard, EndGameTile, RoundEndTile, BackAlleyTile, ColorDie, KeySh
 import { BackAlley, BackAlleySpace, Bag, Candelabra, CandleBottomRow, CandleSpace, CandleTopRow, ChandlersBoard, CheckSpace, ComponentSpace, CustomerSpace, DiceSpace, GameEndSpace, GoalSpace, KeyHook, MasterySpace, MasteryTrack, PlayerBoard, PlayerSpace, PlayersSpace, PowerSpace, ReadySpace, RoundEndSpace, RoundSpace, ScoringSpace, ScoringTrack, Spill, WorkerSpace } from './boards.js';
 import { count, timeLog } from 'console';
 import { disconnect } from 'process';
+import { Component } from 'react';
 
 export enum Building {
   Wax = 'wax',
@@ -321,11 +322,13 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
           this.followUp({name: 'chooseWaxRepeater'});
           break;
        }
-        case Building.Pigment: {
-          this.followUp({name: 'choosePigmentColor', args: {firstChoice: true}}); 
-          for(var i = 1; i < this.currentPlayer().masteryLevel(); i++) {
-            this.followUp({name: 'choosePigmentColor', args: {firstChoice: false}});    
-          }
+        case Building.Pigment: {          
+          $.pigmentMasteryArea.all(Pigment).showToAll();
+          this.followUp({name: 'choosePigmentColor', args: {remaining: this.currentPlayer().masteryLevel()}}); 
+          // for(var i = 1; i < this.currentPlayer().masteryLevel(); i++) {
+          //   this.first(CheckSpace, {building: Building.Pigment, type: SpaceType.Mastery})!.top(Check)!.flipped = true;
+          //   this.followUp({name: 'choosePigmentColor', args: {firstChoice: false}});    
+          // }
           break;
         }
         case Building. Mold: {
@@ -375,7 +378,7 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     this.all(Melt).forEach(x => x.color = Color.White);
     this.all(Wax).putInto($.bag);
     this.all(Melt).putInto($.bag);    
-    this.all(Pigment).putInto($.bag);
+    this.all(Pigment).filter(x => !$.pigmentMasteryArea.all(Pigment).includes(x)).putInto($.bag);
     this.all(PowerTile).forEach(x => x.flipped = true);
     
     this.resetDice();
@@ -640,7 +643,19 @@ export default createGame(ChandlersPlayer, MyGame, game => {
 
   // build out spill areas
   const waxSpillArea = game.create(Spill, 'waxSpillArea');
+  
+  const pigmentMasteryArea = game.create(Space, 'pigmentMasteryArea');
+  pigmentMasteryArea.create(Pigment,'pigmentMasteryRed', {color: Color.Red})
+  pigmentMasteryArea.create(Pigment,'pigmentMasteryYellow', {color: Color.Yellow})
+  pigmentMasteryArea.create(Pigment,'pigmentMasteryBlue', {color: Color.Blue})
+  pigmentMasteryArea.all(Pigment).hideFromAll();
+
   const pigmentSpillArea = game.create(Spill, 'pigmentSpillArea');
+  const pigmentSpillCheckSpace = game.create(CheckSpace, 'pigmentSpillCheckSpace', {building: Building.Pigment, type: SpaceType.Spill});
+  const pigmentSpillCheck = pigmentSpillCheckSpace.create(Check, 'pigmentSpillCheck');
+  const pigmentMasteryCheckSpace = game.create(CheckSpace, 'pigmentMasteryCheckSpace', {building: Building.Pigment, type: SpaceType.Mastery});
+  const pigmentMastertCheck = pigmentMasteryCheckSpace.create(Check, 'pigmentMasteryCheck');
+
   const meltpillArea = game.create(Spill, 'meltSpillArea');
 
   // place the keys
@@ -824,16 +839,16 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   game.create(BackAlley, 'backAlleyB', {letter: "B"});
 
   game.create(BackAlleySpace, 'waxBackAlleySpaceA', {building: Building.Wax});
-  const waxCheckSpace = game.create(CheckSpace, 'waxBackroomCheckSpace', {building: Building.Wax});
+  const waxCheckSpace = game.create(CheckSpace, 'waxBackroomCheckSpace', {building: Building.Wax, type: SpaceType.Backroom});
   const waxCheck = waxCheckSpace.create(Check, 'waxBackroomCheck');
 
   game.create(BackAlleySpace, 'pigmentBackAlleySpaceA', {building: Building.Pigment});
   game.create(BackAlleySpace, 'pigmentBackAlleySpaceB', {building: Building.Pigment});
-  const pigmentCheckSpace = game.create(CheckSpace, 'pigmentBackroomCheckSpace', {building: Building.Pigment});
+  const pigmentCheckSpace = game.create(CheckSpace, 'pigmentBackroomCheckSpace', {building: Building.Pigment, type: SpaceType.Backroom});
   const pigmentCheck = pigmentCheckSpace.create(Check, 'pigmentBackroomCheck');
 
   game.create(BackAlleySpace, 'moldBackAlleySpaceB', {building: Building.Mold});
-  const moldCheckSpace = game.create(CheckSpace, 'moldBackroomCheckSpace', {building: Building.Mold});
+  const moldCheckSpace = game.create(CheckSpace, 'moldBackroomCheckSpace', {building: Building.Mold, type: SpaceType.Backroom});
   const moldCheck = moldCheckSpace.create(Check, 'moldBackroomCheck');
 
   const refreshCustomers = bag.create(BackAlleyTile, 'refresh-customers', {letter: "A"});
@@ -948,42 +963,6 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   // GAME ACTIONS
   game.defineActions({
     
-    chooseSpiltPigmentToMix: (player) => action<{melt: Melt}>({
-      prompt: 'Choose pigment color'
-    })
-    .chooseOnBoard(
-      'pigment', ({melt}) => $.pigmentSpillArea.all(Pigment).filter(x => melt.canTakeColor(x.color)),
-      { skipIf: 'never' }
-    ).do(      
-      ({ melt, pigment }) => {
-        melt.mix(pigment.color);        
-        pigment.putInto($.bag);
-
-        game.message(player.name + ' mixes a ' + pigment + ' to make a ' + melt + '.');
-
-        if($.pigmentSpillArea.all(Pigment).length > 0) {
-          game.followUp({name: 'chooseSpiltPigment'})
-        }
-      }
-    ),
-
-    chooseSpiltPigment: (player) => action<{firstChoice: boolean}>({
-      prompt: 'Choose melt to pigment'
-    }).chooseFrom(
-      "continueMixing", () => ['Yes', 'No'],
-      { prompt: 'Mix from spilled pigment?', skipIf: 'never' }
-    ).chooseOnBoard(
-      'melt', ({continueMixing}) => continueMixing == 'Yes' ? player.board.all(Melt) : [],
-      { min: 0 }    
-    )
-    .do(      
-      ({ melt, continueMixing }) => {
-        if(melt.length > 0 && continueMixing == 'Yes') {
-          game.followUp({name: 'chooseSpiltPigmentToMix', args: {melt: melt[0]}})
-        }
-      }
-    ),
-
     chooseCustomer: (player) => action({
       prompt: 'Choose a customer'
     }).chooseOnBoard(
@@ -1189,40 +1168,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       game.message(melts.length + ' melts spill and ' + player.name + ' scores ' + melts.length + ' points.');
     }),
 
-    choosePigmentColor: (player) => action<{firstChoice: boolean}>({
-      prompt: 'Choose melt and pigment color'
-    }).chooseOnBoard(
-      'melt', () => player.board.all(Melt),
-      { skipIf: 'never' }
-    ).chooseFrom(
-      "color", ({firstChoice}) => ['Red', 'Yellow', 'Blue', 'Finish']
-        .filter(x => x == 'Red' && player.board.all(Melt).map(x => x.canTakeColor(Color.Red) ? 1 : 0).reduce((sum, current) => sum + current, 0) == 0 ? false : true)
-        .filter(x => x == 'Yellow' && player.board.all(Melt).map(x => x.canTakeColor(Color.Yellow) ? 1 : 0).reduce((sum, current) => sum + current, 0) == 0 ? false : true)
-        .filter(x => x == 'Blue' && player.board.all(Melt).map(x => x.canTakeColor(Color.Blue) ? 1 : 0).reduce((sum, current) => sum + current, 0) == 0 ? false : true)
-        .filter(x => x == 'Finish' && firstChoice ? false : true)
-        ,
-      { skipIf: 'never' }
-    ).do(
-      ({ melt, color }) => {
-        switch(color) {
-          case 'Red': {
-            melt.mix(Color.Red);
-            game.message(player.name + ' mixes red and makes a ' + melt);
-            break;
-          }
-          case 'Blue': {
-            melt.mix(Color.Blue);
-            game.message(player.name + ' mixes blue and makes a ' + melt);
-            break;
-          }
-          case 'Yellow': {
-            melt.mix(Color.Yellow);
-            game.message(player.name + ' mixes yellow and makes a ' + melt);
-            break;
-          }
-        }
-      }
-    ),
+  
 
     chooseCandlesToTrade: (player) => action<{color: Color}>({
       prompt: 'Choose candles to trade'
@@ -1904,6 +1850,156 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       }
     ),
 
+
+
+    // chooseSpiltPigmentToMix: (player) => action<{melt: Melt}>({
+    //   prompt: 'Choose pigment color'
+    // })
+    // .chooseOnBoard(
+    //   'pigment', ({melt}) => $.pigmentSpillArea.all(Pigment).filter(x => melt.canTakeColor(x.color)),
+    //   { skipIf: 'never' }
+    // ).do(      
+    //   ({ melt, pigment }) => {
+    //     melt.mix(pigment.color);        
+    //     pigment.putInto($.bag);
+
+    //     game.message(player.name + ' mixes a ' + pigment + ' to make a ' + melt + '.');
+
+    //     if($.pigmentSpillArea.all(Pigment).length > 0) {
+    //       game.followUp({name: 'chooseSpiltPigment'})
+    //     }
+    //   }
+    // ),
+
+    // chooseSpiltPigment2: (player) => action<{firstChoice: boolean}>({
+    //   prompt: 'Choose melt to pigment'
+    // }).chooseFrom(
+    //   "continueMixing", () => ['Yes', 'No'],
+    //   { prompt: 'Mix from spilled pigment?', skipIf: 'never' }
+    // ).chooseOnBoard(
+    //   'melt', ({continueMixing}) => continueMixing == 'Yes' ? player.board.all(Melt) : [],
+    //   { min: 0 }    
+    // )
+    // .do(      
+    //   ({ melt, continueMixing }) => {
+    //     if(melt.length > 0 && continueMixing == 'Yes') {
+    //       game.followUp({name: 'chooseSpiltPigmentToMix', args: {melt: melt[0]}})
+    //     }
+    //   }
+    // ),
+
+
+    choosePigmentColor2: (player) => action<{firstChoice: boolean}>({
+      prompt: 'Choose melt and pigment color'
+    }).chooseOnBoard(
+      'melt', () => player.board.all(Melt),
+      { skipIf: 'never' }
+    ).chooseFrom(
+      "color", ({firstChoice}) => ['Red', 'Yellow', 'Blue', 'Finish']
+        .filter(x => x == 'Red' && player.board.all(Melt).map(x => x.canTakeColor(Color.Red) ? 1 : 0).reduce((sum, current) => sum + current, 0) == 0 ? false : true)
+        .filter(x => x == 'Yellow' && player.board.all(Melt).map(x => x.canTakeColor(Color.Yellow) ? 1 : 0).reduce((sum, current) => sum + current, 0) == 0 ? false : true)
+        .filter(x => x == 'Blue' && player.board.all(Melt).map(x => x.canTakeColor(Color.Blue) ? 1 : 0).reduce((sum, current) => sum + current, 0) == 0 ? false : true)
+        .filter(x => x == 'Finish' && firstChoice ? false : true)
+        ,
+      { skipIf: 'never' }
+    ).do(
+      ({ melt, color }) => {
+        switch(color) {
+          case 'Red': {
+            melt.mix(Color.Red);
+            game.message(player.name + ' mixes red and makes a ' + melt);
+            break;
+          }
+          case 'Blue': {
+            melt.mix(Color.Blue);
+            game.message(player.name + ' mixes blue and makes a ' + melt);
+            break;
+          }
+          case 'Yellow': {
+            melt.mix(Color.Yellow);
+            game.message(player.name + ' mixes yellow and makes a ' + melt);
+            break;
+          }
+        }
+      }
+    ),
+
+    choosePigmentColor: (player) => action<{remaining: number}>({
+      prompt: 'Choose pigment to mix'
+    }).chooseOnBoard(
+      'pigment', () => $.pigmentMasteryArea.all(Pigment)
+        .filter(x => player.board.openingsForColor(x.color!) > 0)
+        .map(x => x as Piece<MyGame>)
+        .concat(game.all(CheckSpace, {building: Building.Pigment, type: SpaceType.Mastery}).map(x => x.first(Check)!)),
+      { skipIf: 'never' }
+    ).do(({pigment, remaining}) => {
+      if(pigment instanceof Pigment) {
+        game.followUp({name: 'chooseMeltToMixIntoFromMastery', args: {color: pigment.color!, remaining: remaining-1}})
+      } else {
+        $.pigmentMasteryArea.all(Pigment).hideFromAll();
+        game.first(CheckSpace, {building: Building.Pigment, type: SpaceType.Mastery})!.top(Check)!.flipped = false;
+      }
+    }),
+
+    chooseMeltToMixIntoFromMastery: (player) => action<{color: Color, remaining: number}>({
+      prompt: 'Choose melt to mix into'
+    }).chooseOnBoard(
+      'melt', ({color}) => player.board.all(Melt).filter(x => x.canTakeColor(color)),
+      { skipIf: 'never' }
+    ).do(({color, melt, remaining}) => {
+      if(color != undefined) {
+        melt.mix(color);        
+        game.message(player.name + ' mixes a ' + color + ' pigment to make a ' + melt + '.');
+
+        if(remaining > 0) {
+          game.first(CheckSpace, {building: Building.Pigment, type: SpaceType.Mastery})!.top(Check)!.flipped = true;
+          game.followUp({name: 'choosePigmentColor', args: {remaining: remaining}})
+        } else {
+          $.pigmentMasteryArea.all(Pigment).hideFromAll();
+          game.first(CheckSpace, {building: Building.Pigment, type: SpaceType.Mastery})!.top(Check)!.flipped = false;
+        }
+      }
+    }),
+
+
+    chooseMeltToMixInto: (player) => action<{color: Color}>({
+      prompt: 'Choose melt to mix into'
+    }).chooseOnBoard(
+      'melt', ({color}) => player.board.all(Melt).filter(x => x.canTakeColor(color)),
+      { skipIf: 'never' }
+    ).do(({color, melt}) => {
+      if(color != undefined) {
+        melt.mix(color);        
+        game.message(player.name + ' mixes a ' + color + ' pigment to make a ' + melt + '.');
+
+        const openings = $.pigmentSpillArea.all(Pigment).map(x => game.currentPlayer().board.openingsForColor(x.color!)).reduce((sum, current) => sum + current, 0);
+        if(openings > 0) {
+          game.followUp({name: 'chooseSpiltPigment'})
+        } else {
+          game.first(CheckSpace, {building: Building.Pigment, type: SpaceType.Spill})!.top(Check)!.flipped = false;
+        }
+      }
+    }),
+
+    chooseSpiltPigment: (player) => action({
+      prompt: 'Choose pigment to mix'
+    }).chooseOnBoard(
+      'pigment', () => $.pigmentSpillArea.all(Pigment)
+        .filter(x => player.board.openingsForColor(x.color!) > 0)
+        .map(x => x as Piece<MyGame>)
+        .concat(game.all(CheckSpace, {building: Building.Pigment, type: SpaceType.Spill}).map(x => x.first(Check)!)),
+      { skipIf: 'never' }
+    ).do(({pigment}) => {
+      if(pigment instanceof Pigment) {
+        pigment.putInto($.bag);
+        game.followUp({name: 'chooseMeltToMixInto', args: {color: pigment.color!}})
+      } else {
+        game.first(CheckSpace, {building: Building.Pigment, type: SpaceType.Spill})!.top(Check)!.flipped = false;
+      }
+    }),
+
+
+
     // choose backroom action based on building, the type, and what spaces have already been used
     chooseBackroomAction: (player) => action<{building : Building, usedSpaces: Space<MyGame>[]}>({
       prompt: 'Choose next action to perform',
@@ -1914,7 +2010,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
           .concat(game.all(BackAlleySpace, {building: building}).map(x => x as Space<MyGame>))
           // filter out already used spaces
           .filter(x => !usedSpaces.includes(x))
-          .concat(game.all(CheckSpace, {building: building})!.filter(x => x.first(Check)!.flipped)),
+          .concat(game.all(CheckSpace, {building: building, type: SpaceType.Backroom})!.filter(x => x.first(Check)!.flipped)),
       { skipIf: 'never' }
     )
     .do(({ building, usedSpaces, chosenSpace }) => {    
@@ -1949,11 +2045,11 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       if(choiceSpaces.filter(x => x != chosenSpace).length > 0) {
         const nextList = usedSpaces.concat(chosenSpace);
         if(nextList.filter(x => x instanceof WorkerSpace).length > 0) {
-          game.first(CheckSpace, {building: building})!.first(Check)!.flipped = true; // allow cancel
+          game.first(CheckSpace, {building: building, type: SpaceType.Backroom})!.first(Check)!.flipped = true; // allow cancel
         }        
         game.followUp({name: 'chooseBackroomAction', args: {building: building, usedSpaces: nextList}})
       } else {
-        game.first(CheckSpace, {building: building})!.first(Check)!.flipped = false;
+        game.first(CheckSpace, {building: building, type: SpaceType.Backroom})!.first(Check)!.flipped = false;
       }
     }),
 

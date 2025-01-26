@@ -28,17 +28,19 @@ render(setup, {
           'chooseRedOrWhiteMelt', 'chooseYellowOrWhiteMelt', 'chooseBlueOrWhiteMelt', 'chooseOrangeOrBlackMelt', 'chooseGreenOrBlackMelt', 'choosePurpleOrBlackMelt', 
           'chooseWax',
           'chooseSpiltPigment', 'chooseMelt', 'chooseCandlesToTrade',
-          'discardExtraComponents', 'choosePigmentColor',
+          'discardExtraComponents', // 'choosePigmentColor',
           'chooseWaxRepeater', 'chooseCandleToMove', 'choosePowerTile',
           'choosePigmentsToRemove', 'chooseWhiteCandle', 'chooseCustomerToSwap', 'chooseKeyAndShape',
-          'chooseStartingCustomer', 'chooseStartingGoal', 'usePower'          
+          'chooseStartingCustomer', 'chooseStartingGoal', 'usePower',
+          'chooseMeltToMixInto', 'chooseMeltToMixIntoFromMastery'
         ]
         .includes(a.name)),
       closeIf: actions => actions.some(a => 
           [
             'chooseSpiltPigmentToMix', 'chooseKey',
             'chooseBackAlleyAction',  // 'chooseDieFromBoard',
-            'chooseBackroomAction'
+            'chooseBackroomAction', 'chooseSpiltPigment',
+            'choosePigmentColor'
           ]
           .includes(a.name)  || (a.name == 'placeWorker') && !($.ready.first(WorkerPiece) instanceof CandlePawn)
           ),
@@ -299,7 +301,11 @@ render(setup, {
     game.layout('greenHook', { area: { left: 102, top: 90, width: 6, height: 6 }});
     game.layout('purpleHook', { area: { left: 106.5, top: 90, width: 6, height: 6 }});
 
+    game.layout('pigmentMasteryArea', { area: { left: 31, top: 70, width: 12.5, height: 4.5 }});
     game.layout('pigmentSpillArea', { area: { left: 37.5, top: 78, width: 22.5, height: 9 }});
+    game.layout('pigmentSpillCheckSpace', { area: { left: 31.75, top: 76.5, width: 6.5, height: 6.5 }});
+
+    game.layout('pigmentMasteryCheckSpace', { area: { left: 43, top: 69, width: 6.5, height: 6.5 }});
 
     game.all(Spill).appearance({
       render: () => (
@@ -308,6 +314,8 @@ render(setup, {
         </svg>
       ),
     });
+
+    $.pigmentMasteryArea.layout(Pigment, {columns: 3, rows: 1, gap: {x:0.5, y: 0}, scaling: 'fill', alignment: 'top', direction: 'ltr'})
 
     $.waxSpillArea.layout(Wax, {columns: 4, rows: 2, gap: {x: 0, y: 0}, scaling: 'fill', alignment: 'top', direction: 'ltr'})
     $.pigmentSpillArea.layout(Pigment, {columns: 5, rows: 2, gap: {x:0, y: 0}, scaling: 'fill', alignment: 'top', direction: 'ltr'})
@@ -326,7 +334,7 @@ render(setup, {
       render: x => (
         <div className='Pigment'>
           <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" color={x.color}>
-            <circle cx="50" cy="50" r="50" fill='currentColor'/>
+            <circle cx="50" cy="50" r={x.color == undefined ? '0' : '50'} fill='currentColor'/>
           </svg>
         </div>
       ),
