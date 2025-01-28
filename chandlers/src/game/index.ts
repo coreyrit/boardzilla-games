@@ -1253,8 +1253,9 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     chooseBackAlleyAction: (player) => action<{letter: string}>({
       prompt: 'Choose back alley tile',
     }).chooseOnBoard(
-      'token', ({letter}) => ['A', 'B'].includes(letter) ? game.all(BackAlleySpace, {letter: letter}) :
-        game.all(BackAlleySpace, {letter: 'A'}).concat(game.all(BackAlleySpace, {letter: 'B'})),
+      'token', ({letter}) => (['A', 'B'].includes(letter) ? game.all(BackAlleySpace, {letter: letter}) :
+        game.all(BackAlleySpace, {letter: 'A'}).concat(game.all(BackAlleySpace, {letter: 'B'})))
+        .filter(x => x.first(BackAlleyTile)!.isPossible(game, player)),
       { skipIf: 'never' }
     ).do(({ token }) => {
       token.first(BackAlleyTile)!.performActionAfterConfirmation(game);
@@ -1297,104 +1298,17 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       prompt: "Choose customer to activate"
     }).chooseOnBoard(
       'customer', ({ color }) => player.space.all(CustomerCard, {color: color}).concat(player.board.first(CustomerCard)!)
+        // filter available customers
+        .filter(x => x.isPossible(game, player))
       ,
       { skipIf: 'never' }
     ).do(
       ({ customer, color }) => {
         // perform the customer action
         if(customer.color == Color.White) {
-          switch(color) {
-            case Color.White: {
-              player.increaseMastery(1);
-              game.message(player.name + ' gains 1 mastery.');
-              break;
-            }
-            case Color.Red: {
-              player.increaseMastery(2);
-              game.message(player.name + ' gains 2 mastery.');
-              break;
-            }
-            case Color.Yellow: {
-              player.increaseMastery(2);
-              game.message(player.name + ' gains 2 mastery.');
-              break;
-            }
-            case Color.Blue: {
-              player.increaseMastery(2);
-              game.message(player.name + ' gains 2 mastery.');
-              break;
-            }
-            case Color.Green: {
-              player.increaseMastery(2);
-              game.message(player.name + ' gains 2 mastery.');
-              break;
-            }
-            case Color.Orange: {
-              player.increaseMastery(2);
-              game.message(player.name + ' gains 2 mastery.');
-              break;
-            }
-            case Color.Purple: {
-              player.increaseMastery(2);
-              game.message(player.name + ' gains 2 mastery.');
-              break;
-            }
-            case Color.Black: {
-              player.increaseMastery(3);
-              game.message(player.name + ' gains 3 mastery.');
-              break;
-            }
-          }
+          customer.gainMastery(game, player, color);
         } else {
-         switch(customer.customerType) {
-          case CustomerType.Adventurer: {
-            game.followUp({name: 'chooseKey'})
-            break;
-          }
-          case CustomerType.Rogue: {
-            var actions = player.space.all(CustomerCard, {customerType: CustomerType.Rogue}).length;
-            for(var i = 0; i < actions; i++) {
-              game.followUp({name: 'chooseBackAlleyAction', args: {letter: 'All'}});
-            }
-            break;
-          }
-          case CustomerType.Witch: {    
-            game.followUp({name: 'chooseCandlesToTrade', args: {color: Color.White}});
-            break;
-          }
-          case CustomerType.Priest: {
-            if($.bag.all(CandlePawn, {color: Color.White}).length > 0) {
-              $.bag.first(CandlePawn, {color: Color.White})?.putInto(player.nextEmptySpace());              
-
-              game.message(player.name + ' takes a white candle from the discard.');
-            }
-            break;
-          }
-          case CustomerType.Prince: {
-            player.increaseScore(3);
-
-            game.message(player.name + ' gains 3 points.');
-            break;
-          }
-          case CustomerType.Merchant: {
-            game.followUp({name: 'chooseNextCustomer'})
-            break;
-          }
-          case CustomerType.Charlatan: {
-            game.followUp({name: 'chooseSpiltDie'})
-            break;
-          }
-          case CustomerType.Cartographer: {
-            const mastery = player.currentMastery();
-            if(mastery >= 2) {
-              player.setMastery(mastery-2);
-
-              game.message(player.name + ' spends 2 mastery.');
-              game.followUp({name: 'chooseAvailableColorAction'});
-            }
-            break;
-          }
-         } 
+          customer.peformAbility(game, player);
         }
       }
     ),
@@ -1770,16 +1684,16 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       game.message(player.name + ' sets a die to ' + die.color + '.');
     }),
 
-    confirmAction: (player) => action<{tile: BackAlleyTile}>({
-      prompt: 'Do you want to perform the bonus?',
-    }).chooseFrom(
-      "choice", ({tile}) => [tile.name, 'Skip'], 
-      { skipIf: 'never' }
-    ).do(({ choice, tile }) => {
-      if(choice != 'Skip') {
-        tile.performActionAfterConfirmation(game);
-      }
-    }),
+    // confirmAction: (player) => action<{tile: BackAlleyTile}>({
+    //   prompt: 'Do you want to perform the bonus?',
+    // }).chooseFrom(
+    //   "choice", ({tile}) => [tile.name, 'Skip'], 
+    //   { skipIf: 'never' }
+    // ).do(({ choice, tile }) => {
+    //   if(choice != 'Skip') {
+    //     tile.performActionAfterConfirmation(game);
+    //   }
+    // }),
 
     choosePigmentsToRemove: (player) => action({
       prompt: 'Choose melt to remove pigments',
@@ -2022,7 +1936,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       'chosenSpace', ({building, usedSpaces}) => 
         // return the worker space and add in the back alley spaces
         [game.first(WorkerSpace, {building: building, spaceType: SpaceType.Backroom})! as Space<MyGame>]
-          .concat(game.all(BackAlleySpace, {building: building}).map(x => x as Space<MyGame>))
+          .concat(game.all(BackAlleySpace, {building: building}).filter(x => x.first(BackAlleyTile)!.isPossible(game, player)).map(x => x as Space<MyGame>))
           // filter out already used spaces
           .filter(x => !usedSpaces.includes(x))
           .concat(game.all(CheckSpace, {building: building, type: SpaceType.Backroom})!.filter(x => x.first(Check)!.flipped)),

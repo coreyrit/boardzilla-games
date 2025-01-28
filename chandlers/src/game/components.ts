@@ -1,6 +1,6 @@
 import { Piece } from "@boardzilla/core";
 import { Building, Color, CustomerType, MyGame } from "./index.js";
-import { CandleSpace } from "./boards.js";
+import { BackAlleySpace, CandleSpace, KeyHook, WorkerSpace } from "./boards.js";
 import { ChandlersPlayer } from "./player.js";
 import { IdSet, SetLogic } from "./setlogic.js";
 
@@ -22,6 +22,139 @@ export class CustomerCard extends Piece<MyGame> {
 
     override toString() : string {
       return this.name;
+    }
+
+    isPossible(game: MyGame, player: ChandlersPlayer) : boolean {
+      if(this.color == Color.White) {
+        return true;
+      }
+
+      switch(this.customerType) {
+        case CustomerType.Adventurer: {
+          return game.all(KeyHook).all(KeyShape).length > 0
+        }
+        case CustomerType.Rogue: {
+          return $.backAlleyA.all(BackAlleySpace).all(BackAlleyTile)
+            .concat($.backAlleyB.all(BackAlleySpace).all(BackAlleyTile))
+            .filter(x => x.isPossible(game, player)).length > 0;
+        }
+        case CustomerType.Witch: {    
+          return player.board.all(CandlePawn, {color: Color.White}).length > 0;
+        }
+        case CustomerType.Priest: {
+          return $.bag.all(CandlePawn, {color: Color.White}).length > 0;
+        }
+        case CustomerType.Prince: {
+          return true; // can always get points
+        }
+        case CustomerType.Merchant: {
+          return true; // can always get a customer
+        }
+        case CustomerType.Charlatan: {
+          return $.waxSpill.all(ColorDie).length + $.pigmentSpill.all(ColorDie).length + $.mooldSpill.all(ColorDie).length > 0;
+        }
+        case CustomerType.Cartographer: {
+          return player.currentMastery() >= 2 && game.all(WorkerSpace).filter(x => x.color != undefined && x.all(WorkerPiece).length == 0).length > 0
+        }
+      }
+      return false;
+    }
+
+    peformAbility(game: MyGame, player: ChandlersPlayer) : void {
+      switch(this.customerType) {
+        case CustomerType.Adventurer: {
+          game.followUp({name: 'chooseKey'})
+          break;
+        }
+        case CustomerType.Rogue: {
+          var actions = player.space.all(CustomerCard, {customerType: CustomerType.Rogue}).length;
+          for(var i = 0; i < actions; i++) {
+            game.followUp({name: 'chooseBackAlleyAction', args: {letter: 'All'}});
+          }
+          break;
+        }
+        case CustomerType.Witch: {    
+          game.followUp({name: 'chooseCandlesToTrade', args: {color: Color.White}});
+          break;
+        }
+        case CustomerType.Priest: {
+          if($.bag.all(CandlePawn, {color: Color.White}).length > 0) {
+            $.bag.first(CandlePawn, {color: Color.White})?.putInto(player.nextEmptySpace());              
+
+            game.message(player.name + ' takes a white candle from the discard.');
+          }
+          break;
+        }
+        case CustomerType.Prince: {
+          player.increaseScore(3);
+
+          game.message(player.name + ' gains 3 points.');
+          break;
+        }
+        case CustomerType.Merchant: {
+          game.followUp({name: 'chooseNextCustomer'})
+          break;
+        }
+        case CustomerType.Charlatan: {
+          game.followUp({name: 'chooseSpiltDie'})
+          break;
+        }
+        case CustomerType.Cartographer: {
+          const mastery = player.currentMastery();
+          if(mastery >= 2) {
+            player.setMastery(mastery-2);
+
+            game.message(player.name + ' spends 2 mastery.');
+            game.followUp({name: 'chooseAvailableColorAction'});
+          }
+          break;
+        }
+       } 
+    }
+
+    gainMastery(game: MyGame, player: ChandlersPlayer, color: Color) : void {
+      switch(color) {
+        case Color.White: {
+          player.increaseMastery(1);
+          game.message(player.name + ' gains 1 mastery.');
+          break;
+        }
+        case Color.Red: {
+          player.increaseMastery(2);
+          game.message(player.name + ' gains 2 mastery.');
+          break;
+        }
+        case Color.Yellow: {
+          player.increaseMastery(2);
+          game.message(player.name + ' gains 2 mastery.');
+          break;
+        }
+        case Color.Blue: {
+          player.increaseMastery(2);
+          game.message(player.name + ' gains 2 mastery.');
+          break;
+        }
+        case Color.Green: {
+          player.increaseMastery(2);
+          game.message(player.name + ' gains 2 mastery.');
+          break;
+        }
+        case Color.Orange: {
+          player.increaseMastery(2);
+          game.message(player.name + ' gains 2 mastery.');
+          break;
+        }
+        case Color.Purple: {
+          player.increaseMastery(2);
+          game.message(player.name + ' gains 2 mastery.');
+          break;
+        }
+        case Color.Black: {
+          player.increaseMastery(3);
+          game.message(player.name + ' gains 3 mastery.');
+          break;
+        }
+      }
     }
     
     requiredCandles(): Color[] {
@@ -133,6 +266,49 @@ export class BackAlleyTile extends Piece<MyGame> {
     performAction(game: MyGame) : void {
       // game.followUp({name: 'confirmAction', args: {tile: this}});
       this.performActionAfterConfirmation(game);
+    }
+
+    isPossible(game: MyGame, player: ChandlersPlayer): boolean {
+      switch(this.name) {
+        case 'refresh-customers': {
+          return true;
+        }
+        case 'melt-wax': {
+          return player.board.all(Wax).length > 0;
+        }
+        case 'purchace-spilt-wax': {
+          return player.board.all(Wax).length >= 2 && $.meltSpillArea.all(Melt).length > 0;
+        }
+        case 'convert-key-to-die': {
+          return player.board.all(KeyShape).length > 0;
+        }
+        case 'move-candle': {
+          // a lot more to it than this...
+          return player.space.all(CustomerCard).filter(x => x.color != Color.White && x.all(CandlePawn).length < x.requiredCandles().length).length > 0
+        }
+        case 'swap-customer': {
+          return player.space.all(CustomerCard).filter(x => x.color != Color.White && x.all(CandlePawn).length == 0).length > 0
+        }
+        case 'add-pigment': {
+          return player.board.all(Melt).filter(x => x.color != Color.Black).length > 0;
+        }
+        case 'advance-mastery': {
+          return true;
+        }
+        case 'gain-goal-card': {
+          return $.goalDeck.all(GoalCard).length > 0;
+        }
+        case 'place-white-candle': {
+          return player.board.all(CandlePawn, {color: Color.White}).length > 0;
+        }
+        case 'remove-pigment': {
+          return player.board.all(Melt).filter(x => x.color != Color.White).length > 0;
+        }
+        case 'two-wax': {
+          return true;
+        }
+      }
+      return false;
     }
 
     performActionAfterConfirmation(game: MyGame) : void {
