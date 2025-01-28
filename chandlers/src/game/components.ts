@@ -25,10 +25,6 @@ export class CustomerCard extends Piece<MyGame> {
     }
 
     isPossible(game: MyGame, player: ChandlersPlayer) : boolean {
-      if(this.color == Color.White) {
-        return true;
-      }
-
       switch(this.customerType) {
         case CustomerType.Adventurer: {
           return game.all(KeyHook).all(KeyShape).length > 0
@@ -51,13 +47,13 @@ export class CustomerCard extends Piece<MyGame> {
           return true; // can always get a customer
         }
         case CustomerType.Charlatan: {
-          return $.waxSpill.all(ColorDie).length + $.pigmentSpill.all(ColorDie).length + $.mooldSpill.all(ColorDie).length > 0;
+          return $.waxSpill.all(ColorDie).length + $.pigmentSpill.all(ColorDie).length + $.moldSpill.all(ColorDie).length > 0;
         }
         case CustomerType.Cartographer: {
           return player.currentMastery() >= 2 && game.all(WorkerSpace).filter(x => x.color != undefined && x.all(WorkerPiece).length == 0).length > 0
         }
       }
-      return false;
+      return true;
     }
 
     peformAbility(game: MyGame, player: ChandlersPlayer) : void {
