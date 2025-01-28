@@ -304,7 +304,7 @@ export class BackAlleyTile extends Piece<MyGame> {
           return true;
         }
       }
-      return false;
+      return true;
     }
 
     performActionAfterConfirmation(game: MyGame) : void {
