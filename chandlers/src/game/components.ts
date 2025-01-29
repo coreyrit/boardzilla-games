@@ -30,9 +30,10 @@ export class CustomerCard extends Piece<MyGame> {
           return game.all(KeyHook).all(KeyShape).length > 0
         }
         case CustomerType.Rogue: {
-          return $.backAlleyA.all(BackAlleySpace).all(BackAlleyTile)
-            .concat($.backAlleyB.all(BackAlleySpace).all(BackAlleyTile))
-            .filter(x => x.isPossible(game, player)).length > 0;
+          // return $.backAlleyA.all(BackAlleySpace).all(BackAlleyTile)
+          //   .concat($.backAlleyB.all(BackAlleySpace).all(BackAlleyTile))
+          //   .filter(x => x.isPossible(game, player)).length > 0;
+          return true; // seems to have a bug above
         }
         case CustomerType.Witch: {    
           return player.board.all(CandlePawn, {color: Color.White}).length > 0;
