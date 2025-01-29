@@ -198,7 +198,7 @@ export class EndGameTile extends Piece<MyGame> {
   
 export class RoundEndTile extends Piece<MyGame> {
     flipped: boolean = true;
-
+    scored: boolean = false;
 
     customerColorsToIdSets(player : ChandlersPlayer) : IdSet[] {
       return player.space.all(CustomerCard).map(x => new IdSet(x.color.toString(), 

@@ -60,6 +60,7 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
   setup: boolean = false;
   gameOver: boolean = false;
   waxCount: number = 1;
+  roundEndLoop: number = 0;
 
   init(): void {    
   }
@@ -120,6 +121,18 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
         y.first(Piece)!.putInto(this.currentPlayer().nextEmptySpace());
       }
     });
+  }
+
+  scoreNextRoundEndTile(player: ChandlersPlayer, tile: RoundEndTile) : boolean {
+    if(tile.achieved(player)) {
+      console.log(player.name + ' achieved round end goal: ' + tile.name + ' and scores 5 points.')
+      this.message(player.name + ' achieved round end goal: ' + tile.name + ' and scores 5 points.')
+      player.increaseScore(5);
+      tile.scored = true;
+      return true;
+    } else {
+      return false;
+    }
   }
 
   scoreNextCustomer(player: ChandlersPlayer) : boolean {    
@@ -286,20 +299,20 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     this.first(Bulb)!.putInto(this.first(RoundSpace, {round: this.currentRound()+1})!);
   }
 
-  checkRoundEndGoals() : void {
-    this.all(RoundEndSpace).all(RoundEndTile).forEach(x => {
-      if(x.flipped) {
-        for(const player of this.players) {
-          if(x.achieved(player)) {
-            console.log(player.name + ' achieved round end goal: ' + x.name + ' and scores 5 points.')
-            this.message(player.name + ' achieved round end goal: ' + x.name + ' and scores 5 points.')
-            player.increaseScore(5);
-            x.flipped = false;
-          }
-        }
-      }
-    })
-  }
+  // checkRoundEndGoals() : void {
+  //   this.all(RoundEndSpace).all(RoundEndTile).forEach(x => {
+  //     if(x.flipped) {
+  //       for(const player of this.players) {
+  //         if(x.achieved(player)) {
+  //           console.log(player.name + ' achieved round end goal: ' + x.name + ' and scores 5 points.')
+  //           this.message(player.name + ' achieved round end goal: ' + x.name + ' and scores 5 points.')
+  //           player.increaseScore(5);
+  //           x.flipped = false;
+  //         }
+  //       }
+  //     }
+  //   })
+  // }
 
   allPlayersPassed() : boolean {
     for (const player of this.players) {
@@ -387,19 +400,6 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     } else {
       tile.putInto($.bag);
     }
-  }
-
-  newGame() : void {  
-    this.all(Melt).forEach(x => x.color = Color.White);
-    this.all(Wax).putInto($.bag);
-    this.all(Melt).putInto($.bag);    
-    this.all(Pigment).filter(x => !$.pigmentMasteryArea.all(Pigment).includes(x)).putInto($.bag);
-    this.all(PowerTile).forEach(x => x.flipped = true);
-    
-    this.resetDice();
-    this.setupGame(this.players.length);
-    this.first(Bulb)!.putInto(this.first(RoundSpace, {round: 0})!);
-    this.players.forEach(x => this.initPlayer(x));
   }
 
   initPlayer(player : ChandlersPlayer) : void {
@@ -1626,30 +1626,6 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       // }
     }),
 
-    showScore: (player) => action({
-      prompt: 'Tally the final score?',
-    }).chooseFrom(
-      "choice", ['Yes'], 
-      { skipIf: 'never' }
-    ).do(({choice}) => {
-      game.players.forEach(player => {
-        game.calculatePlayerFinalScore(player);
-      });
-    }),
-
-    playNewGame: (player) => action({
-      prompt: 'Do you want to start a new game?',
-    }).chooseFrom(
-      "choice", ['Yes', 'No'], 
-      { skipIf: 'never' }
-    ).do(({choice}) => {
-      if(choice == 'Yes') {
-        game.newGame();
-      } else {
-        game.finish(undefined);
-      }
-    }),
-
     finish: (player) => action({
       prompt: 'Finish',
       condition: !player.pass && player.placedWorker,
@@ -2143,7 +2119,31 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       ])}),
             
       // check round end goals
-      () => game.checkRoundEndGoals(),
+      eachPlayer({name: 'turn', do: [
+        playerActions({actions: ['pause']}),
+        () => game.roundEndLoop = 0,
+        loop(
+          ifElse({
+            if: ({turn}) => game.roundEndLoop >= game.all(RoundEndSpace).all(RoundEndTile, {flipped: true}).length, do: () => Do.break()
+          }),
+          ifElse({
+            if: ({turn}) => game.scoreNextRoundEndTile(turn, game.all(RoundEndSpace).all(RoundEndTile, {flipped: true})[game.roundEndLoop]), do: playerActions({actions: ['pause']})
+          }),
+          () => game.roundEndLoop = game.roundEndLoop + 1
+        )
+      ]}),
+
+      // eachPlayer({name: 'turn', do: [        
+      //   ({turn}) => game.message('Check round end goals for ' + turn.name),
+      //   forLoop({name: 'x', initial: 0, next: x => x + 1, while: x => x < game.all(RoundEndSpace).all(RoundEndTile, {flipped: true}).length, do: ({ x }) => {
+      //     ifElse({
+      //       if: ({turn}) => game.scoreNextRoundEndTile(turn, game.all(RoundEndSpace).all(RoundEndTile, {flipped: true})[x]), do: playerActions({actions: ['pause']})
+      //     })
+      //   }})
+      // ]}),
+
+      // now flip all scored round end tiles over
+      () => game.all(RoundEndSpace).all(RoundEndTile, {scored: true}).forEach(x => x.flipped = false),
 
       // finish the round
       () => game.endRound(),                 
