@@ -1577,9 +1577,29 @@ export default createGame(ChandlersPlayer, MyGame, game => {
 
       const worker = $.ready.first(WorkerPiece)!;    
 
-      if(game.setting('captureWorkers') && 
-        ![$.waxSpill, $.pigmentSpill, $.moldSpill].includes(space) && space.all(WorkerPiece).length > 0) {
-        const top = space.top(WorkerPiece)!;
+      if(game.setting('captureWorkers') && player.currentMastery() >= 2 &&
+        ![$.waxSpill, $.pigmentSpill, $.moldSpill].includes(space) && space.all(WorkerPiece).length > 0 &&
+      (
+        (worker instanceof CandlePawn && space.top(WorkerPiece)! instanceof ColorDie) ||
+        (worker instanceof CandlePawn && space.top(WorkerPiece)! instanceof KeyShape) ||
+        (worker instanceof ColorDie && space.top(WorkerPiece)! instanceof KeyShape)
+      )) {
+        const top = space.all(ColorDie).length > 0 ? space.first(ColorDie)! : space.first(KeyShape)!;
+        game.followUp({name: 'confirmCapture', args: {top: top, worker: worker}});
+      }
+        
+      // will do this also AFTER a confirmation is made
+      worker.putInto(space);
+      player.placedWorker = true;
+    }),
+
+    confirmCapture: (player) => action<{top: WorkerPiece, worker: WorkerPiece}>({
+      prompt: 'Would you like to spend 2 mastery to capture the top worker?',
+    }).chooseFrom(
+      "choice", ['Yes', 'No'], 
+      { skipIf: 'never' }
+    ).do(({choice, top, worker}) => {
+      if(choice == 'Yes') {        
         if(worker instanceof CandlePawn && top instanceof ColorDie) {
           const die = top as ColorDie;
           die.roll();
@@ -1597,9 +1617,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
 
           game.message(player.name + ' captures the ' + key + '.');
         }
-      }      
-      worker.putInto(space);
-      player.placedWorker = true;
+      }
     }),
 
     pass: (player) => action({
