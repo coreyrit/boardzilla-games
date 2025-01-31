@@ -1599,7 +1599,9 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       "choice", ['Yes', 'No'], 
       { skipIf: 'never' }
     ).do(({choice, top, worker}) => {
-      if(choice == 'Yes') {        
+      if(choice == 'Yes') {
+        player.setMastery(player.currentMastery()-2);
+
         if(worker instanceof CandlePawn && top instanceof ColorDie) {
           const die = top as ColorDie;
           die.roll();
@@ -2166,6 +2168,9 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       // finish the round
       () => game.endRound(),                 
     ])}),
+
+    // reveal private goals
+    () => game.all(GoalCard).forEach(x => x.showToAll()),
 
     // score for customers
     eachPlayer({name: 'turn', do: [
