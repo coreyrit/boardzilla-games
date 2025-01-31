@@ -246,7 +246,7 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
   endRound() : void  {
     this.message('Round ' + this.currentRound() + ' ends.');    
 
-    if(this.currentRound() < 4) {
+    if(this.currentRound() < 3) {
 
       // reset players
       for(const player of this.players) { player.pass = false; }
@@ -282,7 +282,7 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
       // move the round tracker
       this.nextRound();
 
-    } else if(this.currentRound() == 4) {
+    } else if(this.currentRound() == 3) {
       this.gameOver = true;
 
       // this.followUp({name: 'showScore'});
