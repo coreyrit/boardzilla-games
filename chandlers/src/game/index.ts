@@ -870,13 +870,13 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   const meltWax = bag.create(BackAlleyTile, 'melt-wax', {letter: "A"});
   const purchaseSpiltWax = bag.create(BackAlleyTile, 'purchace-spilt-wax', {letter: "A"});
   const convertKeyToDie = bag.create(BackAlleyTile, 'convert-key-to-die', {letter: "A"});
-  const moveCandle = bag.create(BackAlleyTile, 'move-candle', {letter: "A"});
+  const placeWhiteCandle = bag.create(BackAlleyTile, 'place-white-candle', {letter: "A"});  
   const swapCustomer = bag.create(BackAlleyTile, 'swap-customer', {letter: "A"});
 
   const addPigment = bag.create(BackAlleyTile, 'add-pigment', {letter: "B"});
   const advanceMastery = bag.create(BackAlleyTile, 'advance-mastery', {letter: "B"});
   const gainGoalCard = bag.create(BackAlleyTile, 'gain-goal-card', {letter: "B"});
-  const placeWhiteCandle = bag.create(BackAlleyTile, 'place-white-candle', {letter: "B"});
+  const moveCandle = bag.create(BackAlleyTile, 'move-candle', {letter: "B"});
   const removePigment = bag.create(BackAlleyTile, 'remove-pigment', {letter: "B"});
   const twoWax = bag.create(BackAlleyTile, 'two-wax', {letter: "B"});
 
@@ -1268,7 +1268,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
         .filter(x => x.all(CandlePawn).length < x.requiredCandles().length).all(CandlePawn),
       { skipIf: 'never' }
     ).chooseOnBoard(
-      'space', ({candle}) => player.space.all(CandleSpace, {color: candle.color})
+      'space', ({candle}) => player.space.all(CandleSpace) //, {color: candle.color}) // buff to allow movmeent to any color
         .filter(x => x.all(CandlePawn).length == 0).concat(candle.container(CandleSpace)!),
       { skipIf: 'never' }
     )
@@ -1577,7 +1577,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
 
       const worker = $.ready.first(WorkerPiece)!;    
 
-      if(game.setting('captureWorkers') && player.currentMastery() >= 2 &&
+      if(game.setting('captureWorkers') && player.currentMastery() >= 1 &&
         ![$.waxSpill, $.pigmentSpill, $.moldSpill].includes(space) && space.all(WorkerPiece).length > 0 &&
       (
         (worker instanceof CandlePawn && space.top(WorkerPiece)! instanceof ColorDie) ||
@@ -1594,13 +1594,13 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     }),
 
     confirmCapture: (player) => action<{top: WorkerPiece, worker: WorkerPiece}>({
-      prompt: 'Would you like to spend 2 mastery to capture the top worker?',
+      prompt: 'Would you like to spend 1 mastery to capture the top worker?',
     }).chooseFrom(
       "choice", ['Yes', 'No'], 
       { skipIf: 'never' }
     ).do(({choice, top, worker}) => {
       if(choice == 'Yes') {
-        player.setMastery(player.currentMastery()-2);
+        player.setMastery(player.currentMastery()-1);
 
         if(worker instanceof CandlePawn && top instanceof ColorDie) {
           const die = top as ColorDie;
@@ -1714,18 +1714,21 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       switch(color) {
         case 'Red': {
           melt.unmix(Color.Red);
+          player.increaseScore();
 
           game.message(player.name + ' removes a red and makes a ' + melt + '.');
           break;
         }
         case 'Blue': {
           melt.unmix(Color.Blue);
+          player.increaseScore();
 
           game.message(player.name + ' removes a blue and makes a ' + melt + '.');
           break;
         }
         case 'Yellow': {
           melt.unmix(Color.Yellow);
+          player.increaseScore();
 
           game.message(player.name + ' removes a yellow and makes a ' + melt + '.');
           break;

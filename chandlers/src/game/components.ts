@@ -274,7 +274,7 @@ export class BackAlleyTile extends Piece<MyGame> {
           return player.board.all(Wax).length > 0;
         }
         case 'purchace-spilt-wax': {
-          return player.board.all(Wax).length >= 2 && $.meltSpillArea.all(Melt).length > 0;
+          return player.board.all(Wax).length >= 1 && $.meltSpillArea.all(Melt).length > 0; // cheaper
         }
         case 'convert-key-to-die': {
           return player.board.all(KeyShape).length > 0;
@@ -336,7 +336,7 @@ export class BackAlleyTile extends Piece<MyGame> {
           break;
         }
         case 'move-candle': {
-          console.log(game.currentPlayer().space.all(CandlePawn).length);
+          // console.log(game.currentPlayer().space.all(CandlePawn).length);
           if(game.currentPlayer().space.all(CustomerCard)
               .filter(x => x.all(CandlePawn).length < x.requiredCandles().length)
               .all(CandlePawn).length > 0) {
