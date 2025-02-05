@@ -1268,13 +1268,15 @@ export default createGame(ChandlersPlayer, MyGame, game => {
         .filter(x => x.all(CandlePawn).length < x.requiredCandles().length).all(CandlePawn),
       { skipIf: 'never' }
     ).chooseOnBoard(
-      'space', ({candle}) => player.space.all(CandleSpace) //, {color: candle.color}) // buff to allow movmeent to any color
-        .filter(x => x.all(CandlePawn).length == 0).concat(candle.container(CandleSpace)!),
+      'space', ({candle}) => candle.container(CustomerCard)!
+        .all(CandleSpace)
+        .filter(x => x.all(CandlePawn).length == 0)
+        .concat(candle.container(CandleSpace)!)
+        ,
       { skipIf: 'never' }
     )
     .do(({ candle, space }) => {
       candle.putInto(space);
-
       game.message(player.name + ' moves a ' + candle + ' to customer ' + space.container(CustomerCard)! + '.' );
     }),
 

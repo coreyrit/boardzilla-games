@@ -281,7 +281,9 @@ export class BackAlleyTile extends Piece<MyGame> {
         }
         case 'move-candle': {
           // a lot more to it than this...
-          return player.space.all(CustomerCard).filter(x => x.color != Color.White && x.all(CandlePawn).length < x.requiredCandles().length).length > 0
+          return player.space.all(CustomerCard)
+            .filter(x => x.color != Color.White && x.all(CandlePawn).length < x.requiredCandles().length && x.all(CandlePawn).length > 0)
+            .length > 0
         }
         case 'swap-customer': {
           return player.space.all(CustomerCard).filter(x => x.color != Color.White && x.all(CandlePawn).length == 0).length > 0
@@ -338,8 +340,8 @@ export class BackAlleyTile extends Piece<MyGame> {
         case 'move-candle': {
           // console.log(game.currentPlayer().space.all(CandlePawn).length);
           if(game.currentPlayer().space.all(CustomerCard)
-              .filter(x => x.all(CandlePawn).length < x.requiredCandles().length)
-              .all(CandlePawn).length > 0) {
+            .filter(x => x.color != Color.White && x.all(CandlePawn).length < x.requiredCandles().length && x.all(CandlePawn).length > 0)
+            .length > 0) {
             game.followUp({name: 'chooseCandleToMove'})
           }
           break;
