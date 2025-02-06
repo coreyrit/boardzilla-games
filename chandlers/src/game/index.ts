@@ -77,6 +77,11 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
       firstPlayer.playerIndex = 0;
     }      
     firstPlayer.putInto(this.players[firstPlayer.playerIndex].space);  
+
+    // give everyone one wax for the next round
+    this.game.players.forEach(x => {
+      $.bag.first(Wax)?.putInto(x.nextEmptySpace());
+    })
   }
 
   moveToNextPlayer() : void {
