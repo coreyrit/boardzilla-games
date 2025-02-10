@@ -1589,10 +1589,11 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       (
         (worker instanceof CandlePawn && space.top(WorkerPiece)! instanceof ColorDie) ||
         (worker instanceof CandlePawn && space.top(WorkerPiece)! instanceof KeyShape) ||
+        (worker instanceof ColorDie && space.top(WorkerPiece)! instanceof ColorDie) ||
         (worker instanceof ColorDie && space.top(WorkerPiece)! instanceof KeyShape)
-      )) {
+      )) {        
         const top = space.all(ColorDie).length > 0 ? space.first(ColorDie)! : space.first(KeyShape)!;
-        game.followUp({name: 'confirmCapture', args: {top: top, worker: worker}});
+        game.followUp({name: 'confirmCapture', args: {top: top, space: space}});
       }
         
       // will do this also AFTER a confirmation is made
@@ -1600,31 +1601,34 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       player.placedWorker = true;
     }),
 
-    confirmCapture: (player) => action<{top: WorkerPiece, worker: WorkerPiece}>({
+    confirmCapture: (player) => action<{top: WorkerPiece, space: WorkerSpace}>({
       prompt: 'Would you like to spend 1 mastery to capture the top worker?',
     }).chooseFrom(
       "choice", ['Yes', 'No'], 
       { skipIf: 'never' }
-    ).do(({choice, top, worker}) => {
+    ).do(({choice, top, space}) => {
+
       if(choice == 'Yes') {
         player.setMastery(player.currentMastery()-1);
 
-        if(worker instanceof CandlePawn && top instanceof ColorDie) {
+        console.log(top);
+
+        if(top instanceof ColorDie) {
           const die = top as ColorDie;
           die.roll();
           die.putInto(player.nextEmptyDieSpace());
 
           game.message(player.name + ' captures a die and rolls ' + die.color + '.');
-        } else if(worker instanceof CandlePawn && top instanceof KeyShape) {
+        } else if(top instanceof KeyShape) {
           const key = top as KeyShape;
           key.putInto(player.nextEmptySpace());
 
           game.message(player.name + ' captures the ' + key + '.');
-        } else if(worker instanceof ColorDie && top instanceof KeyShape) {
-          const key = top as KeyShape;
-          key.putInto(player.nextEmptySpace());
+        }
 
-          game.message(player.name + ' captures the ' + key + '.');
+        // make sure to reset the color
+        if(space.all(WorkerPiece).length == 0 && [SpaceType.Backroom, SpaceType.Mastery, SpaceType.Middle].includes(space.spaceType)) {
+          space.color = undefined;
         }
       }
     }),
