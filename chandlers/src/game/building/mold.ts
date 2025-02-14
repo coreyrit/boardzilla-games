@@ -1,5 +1,5 @@
-import { WorkerSpace } from "../boards.js";
-import { Check, Melt, Wax, WorkerPiece } from "../components.js";
+import { KeyHook, WorkerSpace } from "../boards.js";
+import { Check, KeyShape, Melt, Wax, WorkerPiece } from "../components.js";
 import { Building, Color, MyGame, SpaceType } from "../index.js";
 
 export class MoldBuilding {
@@ -7,7 +7,7 @@ export class MoldBuilding {
     performPrimvaryColor(game: MyGame, shape: Color, skipShape : boolean = false) : void{
         if(!game.setup) { 
             game.followUp({name: 'choose' + game.capitalize(shape) + 'OrWhiteMelt'}); 
-            if(!skipShape) {
+            if(!skipShape && game.all(KeyHook, {color: shape}).all(KeyShape).length > 0) {
                 game.currentPlayer().gainShape(shape); 
                 game.message(game.currentPlayer().name + ' takes the ' + shape + ' key.');
             }
@@ -17,7 +17,7 @@ export class MoldBuilding {
     performSecondaryColor(game: MyGame, shape: Color, skipShape : boolean = false) : void{
         if(!game.setup) { 
             game.followUp({name: 'choose' + game.capitalize(shape) + 'OrBlackMelt'}); 
-            if(!skipShape) {
+            if(!skipShape && game.all(KeyHook, {color: shape}).all(KeyShape).length > 0) {
                 game.currentPlayer().gainShape(shape); 
                 game.message(game.currentPlayer().name + ' takes the ' + shape + ' key.');
             }

@@ -1,5 +1,5 @@
-import { WorkerSpace } from "../boards.js";
-import { Check, Wax, WorkerPiece } from "../components.js";
+import { KeyHook, WorkerSpace } from "../boards.js";
+import { Check, KeyShape, Wax, WorkerPiece } from "../components.js";
 import { Building, Color, MyGame, SpaceType } from "../index.js";
 
 export class WaxBuilding {
@@ -8,7 +8,7 @@ export class WaxBuilding {
         if(!game.setup) { 
             game.currentPlayer().gainWax(3); 
             game.message(game.currentPlayer().name + ' takes 3 wax.');
-            if(!skipShape) {
+            if(!skipShape && game.all(KeyHook, {color: shape}).all(KeyShape).length > 0) {
                 game.currentPlayer().gainShape(shape); 
                 game.message(game.currentPlayer().name + ' takes the ' + shape + ' key.');
             }
@@ -18,7 +18,7 @@ export class WaxBuilding {
     performSecondaryColor(game: MyGame, shape: Color, skipShape: boolean = false) : void{
         if(!game.setup) { 
             game.followUp({name: 'chooseWax'}); 
-            if(!skipShape) {
+            if(!skipShape && game.all(KeyHook, {color: shape}).all(KeyShape).length > 0) {
                 game.currentPlayer().gainShape(shape); 
                 game.message(game.currentPlayer().name + ' takes the ' + shape + ' key.');
             }
@@ -64,11 +64,14 @@ export class WaxBuilding {
   
         const waxSpill = game.create(WorkerSpace, 'waxSpill', {building: Building.Wax, spaceType: SpaceType.Spill});
 
-        waxSpill.onEnter(WorkerPiece, x => {     
+        waxSpill.onEnter(WorkerPiece, x => {
+            const count = $.waxSpillArea.all(Wax).length + 1;
             $.waxSpillArea.all(Wax).forEach(x => {
                 x.putInto(game.currentPlayer().nextEmptySpace());
             })
             game.currentPlayer().gainWax();
+
+            game.message(game.currentPlayer().name + ' collects ' + count + ' wax from the spill.');
         });
     }
 }

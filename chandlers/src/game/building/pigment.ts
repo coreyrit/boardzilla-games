@@ -1,5 +1,5 @@
-import { CheckSpace, WorkerSpace } from "../boards.js";
-import { CustomerCard, WorkerPiece, Pigment, Check } from "../components.js";
+import { CheckSpace, KeyHook, WorkerSpace } from "../boards.js";
+import { CustomerCard, WorkerPiece, Pigment, Check, KeyShape } from "../components.js";
 import { Building, Color, MyGame, SpaceType } from "../index.js";
 
 export class PigmentBuilding {
@@ -7,7 +7,7 @@ export class PigmentBuilding {
     performPrimvaryColor(game: MyGame, shape: Color, skipShape: boolean = false ) : void{
         if(!game.setup) { 
             game.followUp({name: 'chooseMeltMany' + game.capitalize(shape)}); 
-            if(!skipShape) {
+            if(!skipShape && game.all(KeyHook, {color: shape}).all(KeyShape).length > 0) {
                 game.currentPlayer().gainShape(shape); 
                 game.message(game.currentPlayer().name + ' takes the ' + shape + ' key.');
             }
@@ -34,7 +34,7 @@ export class PigmentBuilding {
             const mix: Color[] = this.getDerivedColors(shape);
             game.followUp({name: 'chooseMelt' + game.capitalize(mix[0])}); 
             game.followUp({name: 'chooseMelt' + game.capitalize(mix[1])}); 
-            if(!skipShape) {
+            if(!skipShape && game.all(KeyHook, {color: shape}).all(KeyShape).length > 0) {
                 game.currentPlayer().gainShape(shape); 
                 game.message(game.currentPlayer().name + ' takes the ' + shape + ' key.');
             }
