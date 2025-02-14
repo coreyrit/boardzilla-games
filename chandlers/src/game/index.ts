@@ -115,6 +115,9 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
   }
 
   endTurn() : void {
+    if(!this.currentPlayer().pass) {
+      this.message(this.currentPlayer().name + ' passes.');
+    }
     this.currentPlayer().pass = true;
     this.currentPlayer().placedWorker = true;
     this.currentPlayer().finished = true;
@@ -425,6 +428,10 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
 
       player.setScore(0);
       player.setMastery(0);
+
+      if(this.waxCount > 3) {
+        player.increaseMastery(1);
+      }
 
       player.pass = false;
       player.stack = false;
@@ -1072,8 +1079,16 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       { skipIf: 'never' }
     ).do(({ die, key }) => {
       key.putInto(game.first(KeyHook, {color: key.color})!);
+
+      const space = die.container(WorkerSpace)!;
+
       die.roll();
       die.putInto(player.nextEmptyDieSpace());
+
+      // make sure to reset the color
+      if(space.all(WorkerPiece).length == 0 && [SpaceType.Backroom, SpaceType.Mastery, SpaceType.Middle].includes(space.spaceType)) {
+        space.color = undefined;
+      }
 
       game.message(player.name + ' trades the ' + key + ' for a die and rolls ' + die.color + '.');
     }),
@@ -1174,7 +1189,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     chooseMelt: (player) => action({
       prompt: 'Choose melt to mold',
     }).chooseOnBoard(
-      'melts', () => player.board.all(Melt),
+      'melts', () => player.board.all(Melt).filter(x => game.all(Candelabra, {color: x.color}).all(CandlePawn).length > 0),
       { skipIf: 'never', min: 1, max: game.currentPlayer().masteryLevel() }
     ).do(({ melts }) => {
       melts.forEach(x => {
@@ -1196,7 +1211,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       'playerCandle', ({ color }) => color == undefined ? player.board.all(CandlePawn) : player.board.all(CandlePawn, {color: color}),
       { skipIf: 'never' }
     ).chooseOnBoard(
-      'candle', game.all(Candelabra).all(CandlePawn),
+      'candle', ({playerCandle}) => game.all(Candelabra).all(CandlePawn).filter(x => x.color != playerCandle.color),
       { skipIf: 'never' }
     ).do(({ playerCandle, candle }) => {
       playerCandle.putInto($.bag);
@@ -1400,7 +1415,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       'melt', player.board.all(Melt, {color: Color.Red}).concat(player.board.all(Melt, {color: Color.White})),
       { skipIf: 'never' }
     ).do(({ melt }) => {
-      game.message(player.name + ' melts a ' + melt + ' into 2 ' + melt.color + ' candles.');
+      game.message(player.name + ' molds a ' + melt + ' into 2 ' + melt.color + ' candles.');
       player.gainCandle(melt);      
     }),
     chooseYellowOrWhiteMelt: player => action({
@@ -1409,7 +1424,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       'melt', player.board.all(Melt, {color: Color.Yellow}).concat(player.board.all(Melt, {color: Color.White})),
       { skipIf: 'never' }
     ).do(({ melt }) => {
-      game.message(player.name + ' melts a ' + melt + ' into 2 ' + melt.color + ' candles.');
+      game.message(player.name + ' molds a ' + melt + ' into 2 ' + melt.color + ' candles.');
       player.gainCandle(melt);      
     }),
     chooseBlueOrWhiteMelt: player => action({
@@ -1418,7 +1433,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       'melt', player.board.all(Melt, {color: Color.Blue}).concat(player.board.all(Melt, {color: Color.White})),
       { skipIf: 'never' }
     ).do(({ melt }) => {
-      game.message(player.name + ' melts a ' + melt + ' into 2 ' + melt.color + ' candles.');
+      game.message(player.name + ' molds a ' + melt + ' into 2 ' + melt.color + ' candles.');
       player.gainCandle(melt);      
     }),
     chooseOrangeOrBlackMelt: player => action({
@@ -1427,7 +1442,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       'melt', player.board.all(Melt, {color: Color.Orange}).concat(player.board.all(Melt, {color: Color.Black})),
       { skipIf: 'never' }
     ).do(({ melt }) => {
-      game.message(player.name + ' melts a ' + melt + ' into 2 ' + melt.color + ' candles.');
+      game.message(player.name + ' molds a ' + melt + ' into 2 ' + melt.color + ' candles.');
       player.gainCandle(melt);      
     }),
     chooseGreenOrBlackMelt: player => action({
@@ -1436,7 +1451,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       'melt', player.board.all(Melt, {color: Color.Green}).concat(player.board.all(Melt, {color: Color.Black})),
       { skipIf: 'never' }
     ).do(({ melt }) => {
-      game.message(player.name + ' melts a ' + melt + ' into 2 ' + melt.color + ' candles.');
+      game.message(player.name + ' molds a ' + melt + ' into 2 ' + melt.color + ' candles.');
       player.gainCandle(melt);      
     }),
     choosePurpleOrBlackMelt: player => action({
@@ -1445,7 +1460,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       'melt', player.board.all(Melt, {color: Color.Purple}).concat(player.board.all(Melt, {color: Color.Black})),
       { skipIf: 'never' }
     ).do(({ melt }) => {
-      game.message(player.name + ' melts a ' + melt + ' into 2 ' + melt.color + ' candles.');
+      game.message(player.name + ' molds a ' + melt + ' into 2 ' + melt.color + ' candles.');
       player.gainCandle(melt);      
     }),
 
@@ -1542,6 +1557,12 @@ export default createGame(ChandlersPlayer, MyGame, game => {
             (player.board.openingsForColor(Color.Red) > 0 || 
              player.board.openingsForColor(Color.Yellow) > 0 || 
              player.board.openingsForColor(Color.Blue) > 0))
+
+        // make sure the candle still exists
+        .filter(x => x != $.moldRepeater ||
+          player.board.all(Melt).map(y => game.all(Candelabra, {color: y.color}).all(CandlePawn).length > 0  ? 1 : 0)
+          .reduce((sum, current) => sum + current, 0) > 0)
+
         .filter(x => x != $.moldRed ||
            (
             (player.board.all(Melt, {color: Color.White}).length > 0 && game.all(Candelabra).all(CandlePawn, {color: Color.White}).length > 1) ||
@@ -1584,7 +1605,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
 
       const worker = $.ready.first(WorkerPiece)!;    
 
-      if(game.setting('captureWorkers') && player.currentMastery() >= 1 &&
+      if(game.setting('captureWorkers') && player.currentMastery() >= game.currentRound() &&
         ![$.waxSpill, $.pigmentSpill, $.moldSpill].includes(space) && space.all(WorkerPiece).length > 0 &&
       (
         (worker instanceof CandlePawn && space.top(WorkerPiece)! instanceof ColorDie) ||
@@ -1602,14 +1623,14 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     }),
 
     confirmCapture: (player) => action<{top: WorkerPiece, space: WorkerSpace}>({
-      prompt: 'Would you like to spend 1 mastery to capture the top worker?',
+      prompt: 'Would you like to spend ' + game.currentRound() + ' mastery to capture the top worker?',
     }).chooseFrom(
       "choice", ['Yes', 'No'], 
       { skipIf: 'never' }
     ).do(({choice, top, space}) => {
 
       if(choice == 'Yes') {
-        player.setMastery(player.currentMastery()-1);
+        player.setMastery(player.currentMastery()-game.currentRound());
 
         console.log(top);
 
