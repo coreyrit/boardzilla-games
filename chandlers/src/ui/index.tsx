@@ -185,6 +185,9 @@ render(setup, {
     game.layout('waxSpillArea', { area: { left: -10, top: 78, width: 20, height: 9 }});    
     game.layout('meltSpillArea', { area: { left: 87.5, top: 78, width: 25, height: 9 }});
 
+    game.layout('alleyACheckSpace', { area: { left: 22.5, top: 66.5, width: 6.5, height: 6.5 }});
+    game.layout('alleyBCheckSpace', { area: { left: 71, top: 66.5, width: 6.5, height: 6.5 }});
+
     game.all(ChandlersBoard).appearance({
       render: () => (
         <div>

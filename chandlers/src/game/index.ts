@@ -22,7 +22,8 @@ import { Component } from 'react';
 export enum Building {
   Wax = 'wax',
   Pigment = 'pigment',
-  Mold = 'mold'
+  Mold = 'mold',
+  None = 'none'
 }
 
 export enum SpaceType {
@@ -30,7 +31,8 @@ export enum SpaceType {
   Mastery = 'mastery',
   Backroom = 'backroom',
   Middle = 'middle',
-  Spill = 'spill'
+  Spill = 'spill',
+  Alley = 'alley'
 }
 
 export enum Color {
@@ -233,7 +235,7 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     this.all(ColorDie).putInto($.bag);
     this.setup = true;
     for(var i = 0; i < 4-this.players.length; i++) {
-      Object.values(Building).forEach((building: Building) =>{
+      [Building.Wax, Building.Pigment, Building.Mold].forEach((building: Building) =>{
         const die = $.bag.first(ColorDie)!;
         die.roll()
         if(i == 2) {
@@ -730,7 +732,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
 
   game.setup = true;
       for(var i = 0; i < 4-game.players.length; i++) {
-      Object.values(Building).forEach((building: Building) =>{
+      [Building.Wax, Building.Pigment, Building.Mold].forEach((building: Building) =>{
         const die = game.create(ColorDie, 'colorDie' + building + 'd' + i);
         die.roll()
 
@@ -855,6 +857,8 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   game.create(BackAlleySpace, 'backAlleySpaceA2', {letter: "A"});
   game.create(BackAlleySpace, 'backAlleySpaceA3', {letter: "A"});
   game.create(BackAlleySpace, 'backAlleySpaceA4', {letter: "A"});
+  const alleyACheckSpace = game.create(CheckSpace, 'alleyACheckSpace', {building: Building.None, type: SpaceType.Alley});
+  const alleyACheck = alleyACheckSpace.create(Check, 'alleyACheck');
 
   game.create(BackAlley, 'backAlleyA', {letter: "A"});
 
@@ -862,6 +866,8 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   game.create(BackAlleySpace, 'backAlleySpaceB2', {letter: "B"});
   game.create(BackAlleySpace, 'backAlleySpaceB3', {letter: "B"});
   game.create(BackAlleySpace, 'backAlleySpaceB4', {letter: "B"});
+  const alleyBCheckSpace = game.create(CheckSpace, 'alleyBCheckSpace', {building: Building.None, type: SpaceType.Alley});
+  const alleyBCheck = alleyBCheckSpace.create(Check, 'alleyBCheck');
 
   game.create(BackAlley, 'backAlleyB', {letter: "B"});
 
@@ -1251,9 +1257,10 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       } else if(candle.color == Color.Black) {
         actions = 3;
       }
-      for(var i = 0; i < actions; i++) {
-        game.followUp({name: 'chooseBackAlleyAction', args: {letter: space.letter}});
-      }
+
+      const checkSpace = space.letter == 'A' ? $.alleyACheckSpace : $.alleyBCheckSpace;
+      checkSpace.first(Check)!.flipped = true;
+      game.followUp({name: 'chooseBackAlleyAction', args: {letter: space.letter, actions: actions}});
 
       player.soldCandle = true;
       candle.putInto($.bag);
@@ -1270,15 +1277,30 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       game.message(player.name + ' uses power tile ' + tile + '.');
     }),
 
-    chooseBackAlleyAction: (player) => action<{letter: string}>({
+    chooseBackAlleyAction: (player) => action<{letter: string, actions: number}>({
       prompt: 'Choose back alley tile',
     }).chooseOnBoard(
       'token', ({letter}) => (['A', 'B'].includes(letter) ? game.all(BackAlleySpace, {letter: letter}) :
         game.all(BackAlleySpace, {letter: 'A'}).concat(game.all(BackAlleySpace, {letter: 'B'})))
-        .filter(x => x.first(BackAlleyTile)!.isPossible(game, player)),
+        .filter(x => x.first(BackAlleyTile)!.isPossible(game, player))
+        .map(x => x as Space<MyGame>)
+        .concat(letter == 'A' ? $.alleyACheckSpace as Space<MyGame> : $.alleyBCheckSpace as Space<MyGame>)
+        ,
       { skipIf: 'never' }
-    ).do(({ token }) => {
-      token.first(BackAlleyTile)!.performActionAfterConfirmation(game);
+    ).do(({ token, letter, actions }) => {
+      if(token != $.alleyACheckSpace  && token != $.alleyBCheckSpace) {
+        token.first(BackAlleyTile)!.performActionAfterConfirmation(game);
+
+        if(actions > 1) {
+          game.followUp({name: 'chooseBackAlleyAction', args: {letter: letter, actions: actions-1}});
+        } else {
+          $.alleyACheckSpace.first(Check)!.flipped = false;
+          $.alleyBCheckSpace.first(Check)!.flipped = false;  
+        }
+      } else {
+        $.alleyACheckSpace.first(Check)!.flipped = false;
+        $.alleyBCheckSpace.first(Check)!.flipped = false;
+      }
     }),
     
     chooseCandleToMove: (player) => action({

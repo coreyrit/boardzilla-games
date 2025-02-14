@@ -65,9 +65,8 @@ export class CustomerCard extends Piece<MyGame> {
         }
         case CustomerType.Rogue: {
           var actions = player.space.all(CustomerCard, {customerType: CustomerType.Rogue}).length;
-          for(var i = 0; i < actions; i++) {
-            game.followUp({name: 'chooseBackAlleyAction', args: {letter: 'All'}});
-          }
+          $.alleyBCheckSpace.first(Check)!.flipped = true;
+          game.followUp({name: 'chooseBackAlleyAction', args: {letter: 'All', actions: actions}});
           break;
         }
         case CustomerType.Witch: {    
