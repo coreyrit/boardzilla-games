@@ -81,7 +81,7 @@ export class PigmentBuilding {
 
         pigmentSpill.onEnter(WorkerPiece, x => {     
             // draw a random customer
-            $.drawCustomer.top(CustomerCard)?.putInto(game.currentPlayer().space);
+            game.drawTopCustomer().putInto(game.currentPlayer().space);
         
             const openings = $.pigmentSpillArea.all(Pigment).map(x => game.currentPlayer().board.openingsForColor(x.color!)).reduce((sum, current) => sum + current, 0);
             if(openings > 0) {
