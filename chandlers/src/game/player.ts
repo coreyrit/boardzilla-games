@@ -76,19 +76,26 @@ export class ChandlersPlayer extends Player<MyGame, ChandlersPlayer> {
       }
     }
   
-    meltWaxSpill(wax: Wax[]) : number {
-      var j = 0;
+    meltWaxSpill(wax: Wax[]) : {meltCount: number, pointCount: number} {
+      var melts = 0;
+      var points = 0;
       for(var i = 0; i < wax.length; i += 2) {
         if(i+1 < wax.length) {
           wax[i].putInto($.bag);
-          wax[i+1].putInto($.waxSpillArea);
-          this.game.currentPlayer().increaseScore();
-          $.bag.first(Melt)?.putInto(this.nextEmptySpace());
 
-          j++
+          if($.waxSpillArea.all(Wax).length < 8) {
+            wax[i+1].putInto($.waxSpillArea);
+            this.game.currentPlayer().increaseScore();
+            points++;          
+          } else {
+            wax[i+1].putInto($.bag);
+          }
+
+          $.bag.first(Melt)?.putInto(this.nextEmptySpace());
+          melts++
         }
       }
-      return j;
+      return {meltCount: melts, pointCount: points};
     }
   
     meltWax(wax: Wax[]) : number {

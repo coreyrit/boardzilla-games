@@ -1052,10 +1052,10 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       'wax', player.board.all(Wax),
       { skipIf: 'never', min: 2, max: 48 }
     ).do(({ wax }) => {
-      const melts = player.meltWaxSpill(wax);
+      const counts = player.meltWaxSpill(wax);
 
-      game.message(player.name + ' melts ' + (wax.length) + ' wax into ' + melts + ' melts.');
-      game.message(melts + ' wax spills and ' + player.name + ' scores ' + melts + ' points.');
+      game.message(player.name + ' melts ' + (wax.length) + ' wax into ' + counts.meltCount + ' melts.');
+      game.message(counts.pointCount + ' wax spills and ' + player.name + ' scores ' + counts.pointCount + ' points.');
     }),
 
     chooseKey: (player) => action({
@@ -1215,15 +1215,24 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       'melts', () => player.board.all(Melt).filter(x => game.all(Candelabra, {color: x.color}).all(CandlePawn).length > 0),
       { skipIf: 'never', min: 1, max: game.currentPlayer().masteryLevel() }
     ).do(({ melts }) => {
+
+      var points = 0;
       melts.forEach(x => {
         player.gainCandle(x, false, 1);
-        x.putInto($.meltSpillArea);  
-        player.increaseScore();
+
+        if($.meltSpillArea.all(Melt).length < 5) {
+          x.putInto($.meltSpillArea);  
+          player.increaseScore();
+          points++;
+        } else {
+          x.color = Color.White;
+          x.putInto($.bag);
+        }
 
         game.message(player.name + ' molds a ' + x + ' into a ' + x.color + ' candle.');
       });
       
-      game.message(melts.length + ' melts spill and ' + player.name + ' scores ' + melts.length + ' points.');
+      game.message(points+ ' melts spill and ' + player.name + ' scores ' + points + ' points.');
     }),
 
   
@@ -1411,13 +1420,17 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       'melts', player.board.all(Melt).filter(x => x.canTakeColor(Color.Red)),
       { skipIf: 'never', min: 1, max: 8 }
     ).do(({ melts }) => {
+      var points = 0;
       melts.forEach(x => {
         x.mix(Color.Red);
-        $.bag.first(Pigment, {color: Color.Red})?.putInto($.pigmentSpillArea);
-        player.increaseScore();        
+        if($.pigmentSpillArea.all(Pigment).length < 10) {
+          $.bag.first(Pigment, {color: Color.Red})?.putInto($.pigmentSpillArea);
+          player.increaseScore();
+          points++;
+        }
       });
       game.message(player.name + ' mixes red into ' + melts.length + ' melts.');
-      game.message(melts.length + ' red pigments spill and ' + player.name + ' scores ' + melts.length + ' points');
+      game.message(points+ ' red pigments spill and ' + player.name + ' scores ' + points + ' points');
     }),
     chooseMeltManyYellow: player => action({
       prompt: 'Choose melt(s) to pigment yellow',
@@ -1425,13 +1438,17 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       'melts', player.board.all(Melt).filter(x => x.canTakeColor(Color.Yellow)),
       { skipIf: 'never', min: 1, max: 8 }
     ).do(({ melts }) => {
+      var points = 0;
       melts.forEach(x => {
         x.mix(Color.Yellow);
-        $.bag.first(Pigment, {color: Color.Yellow})?.putInto($.pigmentSpillArea);
-        player.increaseScore();
+        if($.pigmentSpillArea.all(Pigment).length < 10) {
+          $.bag.first(Pigment, {color: Color.Yellow})?.putInto($.pigmentSpillArea);
+          player.increaseScore();
+          points++;
+        }
       });
       game.message(player.name + ' mixes yellow into ' + melts.length + ' melts.');
-      game.message(melts.length + ' yellow pigments spill and ' + player.name + ' scores ' + melts.length + ' points');
+      game.message(points + ' yellow pigments spill and ' + player.name + ' scores ' + points+ ' points');
     }),
     chooseMeltManyBlue: player => action({
       prompt: 'Choose melt(s) to pigment blue',
@@ -1439,13 +1456,17 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       'melts', player.board.all(Melt).filter(x => x.canTakeColor(Color.Blue)),
       { skipIf: 'never', min: 1, max: 8 }
     ).do(({ melts }) => {
+      var points = 0;
       melts.forEach(x => {
         x.mix(Color.Blue);
-        $.bag.first(Pigment, {color: Color.Blue})?.putInto($.pigmentSpillArea);
-        player.increaseScore();
+        if($.pigmentSpillArea.all(Pigment).length < 10) {
+          $.bag.first(Pigment, {color: Color.Blue})?.putInto($.pigmentSpillArea);
+          player.increaseScore();
+          points++;
+        }
       });
       game.message(player.name + ' mixes blue into ' + melts.length + ' melts.');
-      game.message(melts.length + ' blue pigments spill and ' + player.name + ' scores ' + melts.length + ' points');
+      game.message(points + ' blue pigments spill and ' + player.name + ' scores ' + points + ' points');
     }),
 
     chooseRedOrWhiteMelt: player => action({
@@ -1849,45 +1870,6 @@ export default createGame(ChandlersPlayer, MyGame, game => {
         }
       }
     ),
-
-
-
-    // chooseSpiltPigmentToMix: (player) => action<{melt: Melt}>({
-    //   prompt: 'Choose pigment color'
-    // })
-    // .chooseOnBoard(
-    //   'pigment', ({melt}) => $.pigmentSpillArea.all(Pigment).filter(x => melt.canTakeColor(x.color)),
-    //   { skipIf: 'never' }
-    // ).do(      
-    //   ({ melt, pigment }) => {
-    //     melt.mix(pigment.color);        
-    //     pigment.putInto($.bag);
-
-    //     game.message(player.name + ' mixes a ' + pigment + ' to make a ' + melt + '.');
-
-    //     if($.pigmentSpillArea.all(Pigment).length > 0) {
-    //       game.followUp({name: 'chooseSpiltPigment'})
-    //     }
-    //   }
-    // ),
-
-    // chooseSpiltPigment2: (player) => action<{firstChoice: boolean}>({
-    //   prompt: 'Choose melt to pigment'
-    // }).chooseFrom(
-    //   "continueMixing", () => ['Yes', 'No'],
-    //   { prompt: 'Mix from spilled pigment?', skipIf: 'never' }
-    // ).chooseOnBoard(
-    //   'melt', ({continueMixing}) => continueMixing == 'Yes' ? player.board.all(Melt) : [],
-    //   { min: 0 }    
-    // )
-    // .do(      
-    //   ({ melt, continueMixing }) => {
-    //     if(melt.length > 0 && continueMixing == 'Yes') {
-    //       game.followUp({name: 'chooseSpiltPigmentToMix', args: {melt: melt[0]}})
-    //     }
-    //   }
-    // ),
-
 
     choosePigmentColor2: (player) => action<{firstChoice: boolean}>({
       prompt: 'Choose melt and pigment color'
