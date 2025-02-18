@@ -888,6 +888,14 @@
     }
 
     .CustomerCard {
+
+        h2 {
+          text-align: right; 
+        }
+        h2 span { 
+          background-color: white; 
+        }
+
         z-index: 100;
         
         width: 100%; 

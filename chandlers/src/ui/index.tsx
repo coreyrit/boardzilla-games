@@ -82,7 +82,7 @@ render(setup, {
 
     game.layout('goalDeck', { area: { left: 0, top: 0, width: 0, height: 0 }});
 
-    game.layout('drawCustomer', { area: { left: -19.5, top: 6, width: 19.5, height: 13.5 }});
+    game.layout('drawCustomer', { area: { left: -19.5, top: 6, width: 24.5, height: 13.5 }});
     game.layout('customer1', { area: { left: 5.5, top: 6, width: 19.5, height: 13.5 }});
     game.layout('customer2', { area: { left: 25.5, top: 6, width: 19.5, height: 13.5 }});
     game.layout('customer3', { area: { left: 5.5, top: 20.5, width: 19.5, height: 13.5 }});
@@ -448,8 +448,16 @@ render(setup, {
 
     $.drawCustomer.layout(CustomerCard, {
       offsetColumn: {x: 0, y: 0},
-      alignment: 'left'
+      alignment: 'left',
+      margin: {top: 0, bottom: 0, left: 0, right:5}
     });
+
+    $.drawCustomer.appearance({ render: x => ( 
+      <div className='CustomerCard'>
+        <br /><br />
+        <h2><span>{game.deckSize()}</span></h2>
+      </div>
+    ) });
     
     game.all(WorkerSpace).layout(KeyShape, {
       offsetColumn: {x: 0, y: 0},

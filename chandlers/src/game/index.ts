@@ -80,9 +80,11 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     }      
     firstPlayer.putInto(this.players[firstPlayer.playerIndex].space);  
 
-    // give everyone one wax for the next round
+    // give everyone wax for the next round
     this.game.players.forEach(x => {
-      $.bag.first(Wax)?.putInto(x.nextEmptySpace());
+      for(var i = 0; i < x.masteryLevel(); i++) {
+        $.bag.first(Wax)?.putInto(x.nextEmptySpace());
+      }
     })
   }
 
@@ -96,17 +98,32 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     this.message('Round ' + this.currentRound() + ' begins.');
   }
 
+  drawTopCustomer() : CustomerCard {
+    if($.drawCustomer.all(CustomerCard).length == 0) {
+      $.bag.all(CustomerCard).putInto($.drawCustomer);
+      $.drawCustomer.all(CustomerCard).forEach(x => {
+        x.flipped = false;
+      })
+      $.drawCustomer.shuffle();
+    }
+    return $.drawCustomer.top(CustomerCard)!
+  }
+
+  deckSize() : string {
+    return $.drawCustomer.all(CustomerCard).length.toString();
+  }
+
+  drawTopGoal() : GoalCard {
+    return $.goalDeck.top(GoalCard)!
+  }
+
   setupPlayer(turn: ChandlersPlayer) : void {    
     if($.drawCustomer.all(CustomerCard).length > 0) {
       this.initPlayer(turn);
-      $.drawCustomer.top(CustomerCard)!.putInto(turn.space);
-      // $.drawCustomer.top(CustomerCard)!.putInto(turn.space);
-      const goal1 = $.goalDeck.top(GoalCard)!
+      this.drawTopCustomer().putInto(turn.space);
+      const goal1 = this.drawTopGoal()
       goal1.putInto(turn.space);
       goal1.showOnlyTo(turn);
-      // const goal2 = $.goalDeck.top(GoalCard)!
-      // goal2.putInto(turn.space);
-      // goal2.showOnlyTo(turn);
     }
   }
 
@@ -273,7 +290,7 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
       // reset the customers
       [$.customer1, $.customer2, $.customer3, $.customer4].forEach(customer => {
         customer.first(CustomerCard)?.putInto($.bag);
-        $.drawCustomer.top(CustomerCard)?.putInto(customer);
+        this.drawTopCustomer().putInto(customer);
       });
 
       // set starting dice
@@ -423,13 +440,13 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
       }
       this.waxCount++;
 
-      $.drawCustomer.top(CustomerCard)?.putInto(player.space);
-      $.goalDeck.top(GoalCard)?.putInto(player.space);      
+      this.drawTopCustomer().putInto(player.space);
+      this.drawTopGoal().putInto(player.space);      
 
       player.space.all(GoalCard).forEach(x => x.showOnlyTo(player));
 
       player.setScore(0);
-      player.setMastery(0);
+      player.setMastery(2);
 
       if(this.waxCount > 3) {
         player.increaseMastery(1);
@@ -467,10 +484,10 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
       x.scoredCandles = false;
     });
     $.drawCustomer.shuffle()
-    $.drawCustomer.top(CustomerCard)?.putInto($.customer1)
-    $.drawCustomer.top(CustomerCard)?.putInto($.customer2)
-    $.drawCustomer.top(CustomerCard)?.putInto($.customer3)
-    $.drawCustomer.top(CustomerCard)?.putInto($.customer4)
+    this.drawTopCustomer().putInto($.customer1)
+    this.drawTopCustomer().putInto($.customer2)
+    this.drawTopCustomer().putInto($.customer3)
+    this.drawTopCustomer().putInto($.customer4)
 
     // return keys
     this.all(KeyShape).forEach(x => x.putInto(this.first(KeyHook,{color: x.color})!));
@@ -1004,7 +1021,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     ).do(({ customer }) => {
       const card = customer.first(CustomerCard)!;
       card.putInto(player.space);
-      $.drawCustomer.top(CustomerCard)?.putInto(customer);
+      game.drawTopCustomer().putInto(customer);
 
       game.message(player.name + ' takes the customer ' + card + '.')
     }),
@@ -1033,7 +1050,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       prompt: 'Choose wax to melt',
     }).chooseOnBoard(
       'wax', player.board.all(Wax),
-      { skipIf: 'never', min: 2, max: 8 }
+      { skipIf: 'never', min: 2, max: 48 }
     ).do(({ wax }) => {
       const melts = player.meltWaxSpill(wax);
 
@@ -1131,13 +1148,13 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       { skipIf: 'never' }
     ).do(({ customer }) => {
       if( customer == $.drawCustomer) {
-        $.drawCustomer.top(CustomerCard)?.putInto(player.space);
+        game.drawTopCustomer().putInto(player.space);
 
         game.message(player.name + ' draws the top customer.');
       } else {
         const card = customer.first(CustomerCard)!;
         card.putInto(player.space);
-        $.drawCustomer.top(CustomerCard)?.putInto(customer);
+        game.drawTopCustomer().putInto(customer);
         
         game.message(player.name + ' takes the customer ' + card + '.');
       }
@@ -1500,7 +1517,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
 
       game.message(player.name + ' places a ' + candle + ' on customer ' + card + '.');
       if(card.all(CandlePawn).length == card.requiredCandles().length && card.requiredCandles().length == 3) {
-        $.drawCustomer.top(CustomerCard)?.putInto(player.space);
+        game.drawTopCustomer().putInto(player.space);
 
         game.message(player.name + ' finishes customer ' + card + ' and draws a new card.');
       }
@@ -1521,7 +1538,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
 
       game.message(player.name + ' places a ' + candle + ' on customer ' + card + '.');
       if(card.all(CandlePawn).length == card.requiredCandles().length && card.requiredCandles().length == 3) {
-        $.drawCustomer.top(CustomerCard)?.putInto(player.space);
+        game.drawTopCustomer().putInto(player.space);
 
         game.message(player.name + ' finishes customer ' + card + ' and draws a new card.');
       }
@@ -1802,8 +1819,9 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     .do(({ melt }) => {
       melt.putInto(player.nextEmptySpace());
       player.board.first(Wax)?.putInto($.bag);
+      player.board.first(Wax)?.putInto($.bag);
 
-      game.message(player.name + ' spends melts 1 wax into 1 melt.');
+      game.message(player.name + ' spends 2 wax for 1 spilt melt.');
     }),
 
     chooseMiddleAction: () => action<{workerSpace: WorkerSpace}>({

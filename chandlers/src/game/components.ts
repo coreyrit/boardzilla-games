@@ -273,7 +273,7 @@ export class BackAlleyTile extends Piece<MyGame> {
           return player.board.all(Wax).length > 0;
         }
         case 'purchace-spilt-wax': {
-          return player.board.all(Wax).length >= 1 && $.meltSpillArea.all(Melt).length > 0; // cheaper
+          return player.board.all(Wax).length >= 1 && $.meltSpillArea.all(Melt).length >= 2;
         }
         case 'convert-key-to-die': {
           return player.board.all(KeyShape).length > 0;
@@ -314,7 +314,7 @@ export class BackAlleyTile extends Piece<MyGame> {
         case 'refresh-customers': {
           for(const customer of [$.customer1, $.customer2, $.customer3, $.customer4]) {
             customer.first(CustomerCard)?.putInto($.bag);
-            $.drawCustomer.top(CustomerCard)?.putInto(customer);
+            game.drawTopCustomer().putInto(customer);
           }
           break;
         }
@@ -325,7 +325,7 @@ export class BackAlleyTile extends Piece<MyGame> {
           break;
         }
         case 'purchace-spilt-wax': {
-          if(game.currentPlayer().board.all(Wax).length > 0) {
+          if(game.currentPlayer().board.all(Wax).length >= 2) {
             game.followUp({name: 'chooseOneSpiltMelt'})
           }
           break;
@@ -364,11 +364,13 @@ export class BackAlleyTile extends Piece<MyGame> {
           break;
         }
         case 'gain-goal-card': {
-          const goal = $.goalDeck.top(GoalCard)!
-          console.log(goal.name);
-          console.log(game.currentPlayer().space.name);
-          goal.putInto(game.currentPlayer().space);
-          goal.showOnlyTo(game.currentPlayer());
+          if($.goalDeck.all(GoalCard).length > 0) {
+            const goal = game.drawTopGoal()
+            console.log(goal.name);
+            console.log(game.currentPlayer().space.name);
+            goal.putInto(game.currentPlayer().space);
+            goal.showOnlyTo(game.currentPlayer());
+          }
           break;
         }
         case 'place-white-candle': {
