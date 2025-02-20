@@ -273,7 +273,7 @@ export class BackAlleyTile extends Piece<MyGame> {
           return player.board.all(Wax).length > 0;
         }
         case 'purchace-spilt-wax': {
-          return player.board.all(Wax).length >= 1 && $.meltSpillArea.all(Melt).length >= 2;
+          return player.board.all(Wax).length >= 2 && $.meltSpillArea.all(Melt).length >= 1;
         }
         case 'convert-key-to-die': {
           return player.board.all(KeyShape).length > 0;
