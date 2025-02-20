@@ -446,7 +446,7 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
       player.space.all(GoalCard).forEach(x => x.showOnlyTo(player));
 
       player.setScore(0);
-      player.setMastery(2);
+      player.setMastery(1);
 
       if(this.waxCount > 3) {
         player.increaseMastery(1);
