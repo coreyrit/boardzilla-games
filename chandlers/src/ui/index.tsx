@@ -28,7 +28,7 @@ render(setup, {
           'chooseRedOrWhiteMelt', 'chooseYellowOrWhiteMelt', 'chooseBlueOrWhiteMelt', 'chooseOrangeOrBlackMelt', 'chooseGreenOrBlackMelt', 'choosePurpleOrBlackMelt', 
           'chooseWax',
           'chooseSpiltPigment', 'chooseMelt', 'chooseCandlesToTrade',
-          'discardExtraComponents', // 'choosePigmentColor',
+          'discardExtraComponents', 'discardExtraCustomers', 'discardExtraGoals',
           'chooseWaxRepeater', 'chooseCandleToMove', 'choosePowerTile',
           'choosePigmentsToRemove', 'chooseWhiteCandle', 'chooseCustomerToSwap', 'chooseKeyAndShape',
           'chooseStartingCustomer', 'chooseStartingGoal', 'usePower',
@@ -143,10 +143,10 @@ render(setup, {
     game.layout('gameEndType2', { area: { left: -12, top: 25.6, width: 8, height: 4.5 }});
     game.layout('gameEndType3', { area: { left: -12, top: 30.25, width: 8, height: 4.5 }});
 
-    game.layout('round1', { area: { left: 85.5, top: 6, width: 5, height: 5 }});
-    game.layout('round2', { area: { left: 91.5, top: 6, width: 5, height: 5 }});
-    game.layout('round3', { area: { left: 97, top: 6, width: 5, height: 5 }});
-    game.layout('round4', { area: { left: 102.5, top: 6, width: 5, height: 5 }});
+    game.layout('round1', { area: { left: 84.5, top: 6, width: 5, height: 5 }});
+    game.layout('round2', { area: { left: 93, top: 6, width: 5, height: 5 }});
+    game.layout('round3', { area: { left: 101.5, top: 6, width: 5, height: 5 }});
+    // game.layout('round4', { area: { left: 102.5, top: 6, width: 5, height: 5 }});
 
     game.layout('roundEndSpace1', { area: { left: -19.5, top: 88, width: 16.6, height: 6.5 }});
     game.layout('roundEndSpace2', { area: { left: -1, top: 88, width: 16.6, height: 6.5 }});

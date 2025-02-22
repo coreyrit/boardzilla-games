@@ -848,6 +848,17 @@
             }
           }
         }
+
+        &.selected {
+          z-index: 220;
+          > div {      
+            .front {
+            border: 5px solid yellow;
+            width: 100%;
+            height: 100%;
+            }
+          }
+        }
         
         > div {
           width: 100%;
@@ -960,6 +971,17 @@
           > div {      
             .front {
             border: 5px solid blue;
+            width: 100%;
+            height: 100%;
+            }
+          }
+        }
+
+        &.selected {
+          z-index: 220;
+          > div {      
+            .front {
+            border: 5px solid yellow;
             width: 100%;
             height: 100%;
             }

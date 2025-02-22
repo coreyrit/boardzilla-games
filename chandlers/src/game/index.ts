@@ -114,6 +114,10 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
   }
 
   drawTopGoal() : GoalCard {
+    if($.goalDeck.all(GoalCard).length == 0) {
+      $.bag.all(GoalCard).putInto($.goalDeck);
+      $.goalDeck.shuffle();
+    }
     return $.goalDeck.top(GoalCard)!
   }
 
@@ -2097,13 +2101,29 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       power.flipped = false;
     }),
 
+    discardExtraCustomers: (player) => action({
+      prompt: 'Discard down to 8 customers',
+    }).chooseOnBoard(
+      'customers', player.space.all(CustomerCard).filter(x => x.customerType != CustomerType.None),
+      { skipIf: 'never', number: player.customerCount() - 8 }
+    ).do(({ customers }) => {
+      customers.forEach(customer=> {      
+        // throw out any candles on it
+        customer.all(CandlePawn).forEach(x => {
+          x.putInto($.bag);
+        })
+        customer.putInto($.bag);
+      })
+      game.message(player.name + ' discards down to 8 customers.');
+    }),
+
     discardExtraComponents: (player) => action({
-      prompt: 'Discard Down to 8 components',
+      prompt: 'Discard down to 8 components',
     }).chooseOnBoard(
       'components', player.board.all(ComponentSpace).all(Piece),
       { skipIf: 'never', number: player.componentCount() - 8 }
     ).do(({ components }) => {
-      for(const component of components) {      
+      components.forEach(component=> {      
         if(component instanceof KeyShape) {
           const key = component as KeyShape;
           key.putInto(game.first(KeyHook, {color: key.color})!);
@@ -2113,9 +2133,21 @@ export default createGame(ChandlersPlayer, MyGame, game => {
         } else {
           component.putInto($.bag);
         }
-      }
+      })
 
       game.message(player.name + ' discards down to 8 components.');
+    }),
+
+    discardExtraGoals: (player) => action({
+      prompt: 'Discard down to 3 goals',
+    }).chooseOnBoard(
+      'goals', player.space.all(GoalCard),
+      { skipIf: 'never', number: player.goalCount() - 3 }
+    ).do(({ goals }) => {
+      goals.forEach(goal=> {              
+        goal.putInto($.bag);
+      })
+      game.message(player.name + ' discards down to 3 goals.');
     }),
 
     chooseStartingCustomer: (player) => action({
@@ -2183,9 +2215,19 @@ export default createGame(ChandlersPlayer, MyGame, game => {
           ]}),          
         ])}),
 
-        // discard down to 8
+        // discard down to 8 customers
+        ifElse({
+          if: () => game.currentPlayer().customerCount() > 8, do: [playerActions({ actions: ['discardExtraCustomers']})
+        ]}),
+
+        // discard down to 8 components
         ifElse({
           if: () => game.currentPlayer().componentCount() > 8, do: [playerActions({ actions: ['discardExtraComponents']})
+        ]}),
+
+        // discard down to 3 goals
+        ifElse({
+          if: () => game.currentPlayer().goalCount() > 3, do: [playerActions({ actions: ['discardExtraGoals']})
         ]}),
 
         // make sure to pull any floating pieces back to the board
