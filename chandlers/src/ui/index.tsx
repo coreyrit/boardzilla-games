@@ -9,7 +9,7 @@ import { BackAlley, BackAlleySpace, Candelabra, CandleBottomRow, CandleSpace, Ca
 
 render(setup, {
   settings: {
-    captureWorkers: toggleSetting('Capture workers when stacking')
+    // captureWorkers: toggleSetting('Capture workers when stacking')
   },
   layout: game => {
 

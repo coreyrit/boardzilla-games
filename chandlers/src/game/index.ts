@@ -1669,7 +1669,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
 
       const worker = $.ready.first(WorkerPiece)!;    
 
-      if(game.setting('captureWorkers') && player.currentMastery() >= game.currentRound() &&
+      if(/*game.setting('captureWorkers') &&*/ player.currentMastery() >= game.currentRound() &&
         ![$.waxSpill, $.pigmentSpill, $.moldSpill].includes(space) && space.all(WorkerPiece).length > 0 &&
       (
         (worker instanceof CandlePawn && space.top(WorkerPiece)! instanceof ColorDie) ||
