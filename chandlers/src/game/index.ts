@@ -822,9 +822,9 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     }
   })
 
-  game.create(GameEndSpace, 'gameEndType1', {score: 5})
-  game.create(GameEndSpace, 'gameEndType2', {score: 3})
-  game.create(GameEndSpace, 'gameEndType3', {score: 2})
+  game.create(GameEndSpace, 'gameEndType1', {score: 3})
+  game.create(GameEndSpace, 'gameEndType2', {score: 2})
+  game.create(GameEndSpace, 'gameEndType3', {score: 1})
 
   $.gameEndType1.onEnter(EndGameTile, x => {
     x.flipped = false;
