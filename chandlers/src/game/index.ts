@@ -2296,9 +2296,9 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     // score for end game
     eachPlayer({name: 'turn', do: [
       playerActions({actions: ['pause']}),
-      ifElse({if: ({turn}) => game.scoreEndGameTile(turn, 5), do: playerActions({actions: ['pause']})}),
       ifElse({if: ({turn}) => game.scoreEndGameTile(turn, 3), do: playerActions({actions: ['pause']})}),
-      ifElse({if: ({turn}) => game.scoreEndGameTile(turn, 2), do: playerActions({actions: ['pause']})})
+      ifElse({if: ({turn}) => game.scoreEndGameTile(turn, 2), do: playerActions({actions: ['pause']})}),
+      ifElse({if: ({turn}) => game.scoreEndGameTile(turn, 1), do: playerActions({actions: ['pause']})})
     ]}),
 
     () => game.announceWinner()
