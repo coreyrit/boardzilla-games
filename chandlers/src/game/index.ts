@@ -146,12 +146,20 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     this.currentPlayer().finished = true;
   }
 
+  relocateDice() : void {
+    if(this.currentPlayer().board.all(DiceSpace).filter(x => x.all(ColorDie).length == 0).length > 0) {
+      this.currentPlayer().board.all(ColorDie).filter(x => x.container(ComponentSpace) != null).forEach(x => {
+        x.putInto(this.currentPlayer().nextEmptyDieSpace());
+      });
+    }
+  }
+
   collectComponents() : void {
     this.currentPlayer().board.all(ComponentSpace).filter(x => x.num > 8).forEach(y => {
       if(y.all(Piece).length > 0) {
         y.first(Piece)!.putInto(this.currentPlayer().nextEmptySpace());
       }
-    });
+    });  
   }
 
   scoreNextRoundEndTile(player: ChandlersPlayer, tile: RoundEndTile) : boolean {
@@ -203,8 +211,8 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
         goal2.scoredGoal = true;
       }
 
-      this.message(player.name + ' scored 6 points for goal ' + goal.name);
-      player.increaseScore(6);
+      this.message(player.name + ' scored 3 points for goal ' + goal.name);
+      player.increaseScore(3);
     } else {
       this.message(player.name + ' scored 0 points for goal ' + goal.name);
     }
@@ -305,6 +313,9 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
         const die1 = $.bag.first(ColorDie); die1?.roll(); die1?.putInto(player.nextEmptyDieSpace());
         const die2 = $.bag.first(ColorDie); die2?.roll(); die2?.putInto(player.nextEmptyDieSpace());
         const die3 = $.bag.first(ColorDie); die3?.roll(); die3?.putInto(player.nextEmptyDieSpace());
+        if(this.currentRound() == 2) {
+          const die4 = $.bag.first(ColorDie); die4?.roll(); die4?.putInto(player.nextEmptyDieSpace());
+        }
       }
 
       // move the first player token
@@ -991,7 +1002,9 @@ export default createGame(ChandlersPlayer, MyGame, game => {
 
     const die1 = playerDie1.create(ColorDie, 'p' + i + 'd1'); die1.roll();
     const die2 = playerDie2.create(ColorDie, 'p' + i + 'd2'); die2.roll();
-    const die3 = playerDie3.create(ColorDie, 'p' + i + 'd3'); die3.roll();
+    
+    const die3 = playerDie3.create(ColorDie, 'p' + i + 'd3'); die3.roll();die3.putInto($.bag);
+    const die4 = playerDie3.create(ColorDie, 'p' + i + 'd3'); die4.roll();die4.putInto($.bag);
 
     const power1 = playerBoard.create(PowerSpace, 'p' + i + 'Power1')
     const power2 = playerBoard.create(PowerSpace, 'p' + i + 'Power2')
@@ -2214,6 +2227,9 @@ export default createGame(ChandlersPlayer, MyGame, game => {
               playerActions({ actions: ['placeWorker', 'placeCandle', 'sellCandle']}),          
           ]}),          
         ])}),
+
+        // try to relocate dice
+        () => game.relocateDice(),
 
         // discard down to 8 customers
         ifElse({
