@@ -313,7 +313,7 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
         const die1 = $.bag.first(ColorDie); die1?.roll(); die1?.putInto(player.nextEmptyDieSpace());
         const die2 = $.bag.first(ColorDie); die2?.roll(); die2?.putInto(player.nextEmptyDieSpace());
         const die3 = $.bag.first(ColorDie); die3?.roll(); die3?.putInto(player.nextEmptyDieSpace());
-        if(this.currentRound() == 2) {
+        if(this.currentRound() == 2 && this.game.players.length < 4) {
           const die4 = $.bag.first(ColorDie); die4?.roll(); die4?.putInto(player.nextEmptyDieSpace());
         }
       }
@@ -747,10 +747,11 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   // place ONE white candle in the bag
   // $.bag.create(CandlePawn, 'whiteCandleBag', {color: Color.White});
 
-  for(var i = 0; i < 8 + game.players.length-2; i++) {
+  const playerCountCandles = game.players.length == 1 ? -2 : game.players.length-2;
+  for(var i = 0; i < 8 + playerCountCandles; i++) {
     whiteCandles.create(CandlePawn, 'whiteCandle' + i, {color: Color.White})
   }
-  for(var i = 0; i < 6 + game.players.length-2; i++) {
+  for(var i = 0; i < 6 + playerCountCandles; i++) {
     redCandles.create(CandlePawn, 'redCandle' + i, {color: Color.Red})
     yellowCandles.create(CandlePawn, 'yellowCandle' + i, {color: Color.Yellow})
     blueCandles.create(CandlePawn, 'blueCandle' + i, {color: Color.Blue})
@@ -758,7 +759,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     greenCandles.create(CandlePawn, 'greenCandle' + i, {color: Color.Green})
     purpleCandles.create(CandlePawn, 'purpleCandle' + i, {color: Color.Purple})
   }
-  for(var i = 0; i < 4 + game.players.length-2; i++) {
+  for(var i = 0; i < 4 + playerCountCandles; i++) {
     blackCandles.create(CandlePawn, 'blackCandle' + i, {color: Color.Black})
   }
 
@@ -999,12 +1000,13 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     const playerDie1 = playerBoard.create(DiceSpace, 'p' + i + 'Die1');    
     const playerDie2 = playerBoard.create(DiceSpace, 'p' + i + 'Die2');
     const playerDie3 = playerBoard.create(DiceSpace, 'p' + i + 'Die3');
+    const playerDie4 = playerBoard.create(DiceSpace, 'p' + i + 'Die4');
 
     const die1 = playerDie1.create(ColorDie, 'p' + i + 'd1'); die1.roll();
     const die2 = playerDie2.create(ColorDie, 'p' + i + 'd2'); die2.roll();
     
     const die3 = playerDie3.create(ColorDie, 'p' + i + 'd3'); die3.roll();die3.putInto($.bag);
-    const die4 = playerDie3.create(ColorDie, 'p' + i + 'd3'); die4.roll();die4.putInto($.bag);
+    const die4 = playerDie4.create(ColorDie, 'p' + i + 'd4'); die4.roll();die4.putInto($.bag);
 
     const power1 = playerBoard.create(PowerSpace, 'p' + i + 'Power1')
     const power2 = playerBoard.create(PowerSpace, 'p' + i + 'Power2')

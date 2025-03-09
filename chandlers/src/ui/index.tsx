@@ -686,9 +686,10 @@ render(setup, {
 
     game.players.forEach(x => {
       const dieSpaces = x.board.all(DiceSpace);
-      x.board.layout(dieSpaces[0], { area: { left: 21, top: 71, width: 10, height: 15 }});
-      x.board.layout(dieSpaces[1], { area: { left: 33.5, top: 71, width: 10, height: 15 }});
-      x.board.layout(dieSpaces[2], { area: { left: 46, top: 71, width: 10, height: 15 }});
+      x.board.layout(dieSpaces[0], { area: { left: 16, top: 71, width: 10, height: 15 }});
+      x.board.layout(dieSpaces[1], { area: { left: 28.5, top: 71, width: 10, height: 15 }});
+      x.board.layout(dieSpaces[2], { area: { left: 41, top: 71, width: 10, height: 15 }});
+      x.board.layout(dieSpaces[3], { area: { left: 53.5, top: 71, width: 10, height: 15 }});
 
       const compSpaces = x.board.all(ComponentSpace);
       x.board.layout(compSpaces[0], { area: { left: 15, top: 40, width: 10, height: 10 }});
