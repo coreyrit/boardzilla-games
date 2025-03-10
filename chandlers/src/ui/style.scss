@@ -647,6 +647,65 @@
       }
     }
 
+    .CaptureTile {
+      z-index: 100;
+
+      width: 100%; 
+      height: 100%;
+   
+      border: 2px solid black;
+
+      &.selectable {
+        z-index: 220;
+        > div {      
+          .front {
+          border: 5px solid blue;
+          width: 100%;
+          height: 100%;
+          }
+        }
+      }
+
+      &.selectable {
+        z-index: 220;
+        > div {      
+          .back {
+          border: 5px solid blue;
+          width: 100%;
+          height: 100%;
+          }
+        }
+      }
+
+      > div {
+        width: 100%;
+        height: 100%;
+  
+        background-repeat: no-repeat;
+  
+        .front, .back {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          border-radius: 0.25em;
+          border-color: black;
+          background-size: 100% 100%;
+        }
+  
+        /* front pane, placed above back */
+        .front {
+          background-image: url(./assets/power/capture.jpg);
+        }
+  
+        /* back, initially hidden pane */
+        .back {
+          background-image: url(./assets/power/capture-back.jpg);
+        }
+      }
+    }
+
     .RoundSpace {
       z-index: 2;
     }

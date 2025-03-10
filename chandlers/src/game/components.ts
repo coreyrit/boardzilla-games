@@ -438,6 +438,10 @@ export class Lamp extends Piece<MyGame> {
   playerIndex: number = 0;
 }
 
+export class CaptureTile extends Piece<MyGame> {
+  flipped: boolean = true;
+}
+
 export class PowerTile extends Piece<MyGame> {
   flipped: boolean = true;
 

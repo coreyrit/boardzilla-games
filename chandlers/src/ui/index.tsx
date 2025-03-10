@@ -3,7 +3,7 @@ import { Piece, render, Space, toggleSetting } from '@boardzilla/core';
 import { Color, MyGame, default as setup } from '../game/index.js';
 
 import './style.scss';
-import { BackAlleyTile, CandlePawn, ColorDie, CustomerCard, EndGameTile, KeyShape, RoundEndTile, Wax, PowerTile, Melt, MasteryCube, Pigment, ScoreTracker, Bulb, GoalCard, Lamp, WorkerPiece, Trash, Check } from '../game/components.js';
+import { BackAlleyTile, CandlePawn, ColorDie, CustomerCard, EndGameTile, KeyShape, RoundEndTile, Wax, PowerTile, Melt, MasteryCube, Pigment, ScoreTracker, Bulb, GoalCard, Lamp, WorkerPiece, Trash, Check, CaptureTile } from '../game/components.js';
 import { BackAlley, BackAlleySpace, Candelabra, CandleBottomRow, CandleSpace, CandleTopRow, ChandlersBoard, CheckSpace, ComponentSpace, CustomerSpace, DiceSpace, GameEndSpace, KeyHook, MasterySpace, MasteryTrack, PlayerBoard, PlayerSpace, PlayersSpace, PowerSpace, ReadySpace, RoundEndSpace, RoundSpace, ScoringSpace, ScoringTrack, Spill, WorkerSpace } from '../game/boards.js';
 // import '@boardzilla/core/index.css';
 
@@ -226,7 +226,7 @@ render(setup, {
       render: () => (
         <div className='Lamp' />
       ),
-    });
+    });    
 
     game.all(Melt).appearance({
       render: x => (
@@ -501,6 +501,12 @@ render(setup, {
       </div>
     ) });
 
+    game.all(CaptureTile).appearance({ render: x => ( 
+      <div className='CaptureTile'>
+        <div className={x.flipped ? 'front' : 'back'} />
+      </div>
+    ) });
+
     game.all(RoundEndTile).appearance({ render: x => ( 
       <div className='RoundEndTile'>
         <div className={x.flipped ? 'front' : 'back'} />
@@ -556,6 +562,10 @@ render(setup, {
 
       x.space.layout(Lamp, { 
         area: { left: -1, top: 60, width: 8, height: 40 },
+      });
+
+      x.space.layout(CaptureTile, { 
+        area: { left: 90, top: 60, width: 5, height: 20 },
       });
 
       x.space.layout(GoalCard, { 
@@ -686,10 +696,10 @@ render(setup, {
 
     game.players.forEach(x => {
       const dieSpaces = x.board.all(DiceSpace);
-      x.board.layout(dieSpaces[0], { area: { left: 16, top: 71, width: 10, height: 15 }});
-      x.board.layout(dieSpaces[1], { area: { left: 28.5, top: 71, width: 10, height: 15 }});
-      x.board.layout(dieSpaces[2], { area: { left: 41, top: 71, width: 10, height: 15 }});
-      x.board.layout(dieSpaces[3], { area: { left: 53.5, top: 71, width: 10, height: 15 }});
+      x.board.layout(dieSpaces[0], { area: { left: 22, top: 71, width: 10, height: 15 }});
+      x.board.layout(dieSpaces[1], { area: { left: 34.5, top: 71, width: 10, height: 15 }});
+      x.board.layout(dieSpaces[2], { area: { left: 47, top: 71, width: 10, height: 15 }});
+      // x.board.layout(dieSpaces[3], { area: { left: 53.5, top: 71, width: 10, height: 15 }});
 
       const compSpaces = x.board.all(ComponentSpace);
       x.board.layout(compSpaces[0], { area: { left: 15, top: 40, width: 10, height: 10 }});
