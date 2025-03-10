@@ -497,10 +497,6 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
       player.setScore(0);
       player.setMastery(1);
 
-      if(this.waxCount > 3) {
-        player.increaseMastery(1);
-      }
-
       player.pass = false;
       player.stack = false;
       player.soldCandle = false;
