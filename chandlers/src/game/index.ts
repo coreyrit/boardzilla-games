@@ -421,7 +421,11 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     if(!this.setup) {
       switch(building) {
         case Building.Wax: {
-          this.followUp({name: 'chooseCustomer'});
+          if(this.currentPlayer().currentMastery() > 0) {
+            this.followUp({name: 'chooseCustomer'});
+          } else {
+            this.followUp({name: 'chooseCustomerFinish'});
+          }
           // $.waxBackAlleySpaceA.first(BackAlleyTile)!.performAction(this);
           break;
         }
@@ -1068,7 +1072,29 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   // GAME ACTIONS
   game.defineActions({
     
-    chooseCustomer: (player) => action({
+    chooseCustomer: (player) => action<{top: WorkerPiece, space: WorkerSpace}>({
+      prompt: 'Would you like to spend 1 mastery to cycle the customers?',
+    }).chooseFrom(
+      "choice", ['Yes', 'No'], 
+      { skipIf: 'never' }
+    ).do(({choice, top, space}) => {
+      if(choice == 'Yes') {
+        player.setMastery(player.currentMastery()-game.currentRound());      
+        for(const customer of [$.customer1, $.customer2, $.customer3, $.customer4]) {
+          customer.first(CustomerCard)?.putInto($.bag);
+          game.drawTopCustomer().putInto(customer);
+        }
+        if(player.currentMastery() > 0) {
+          game.followUp({name: 'chooseCustomer'});
+        } else {
+          game.followUp({name: 'chooseCustomerFinish'});
+        }
+      } else {
+        game.followUp({name: 'chooseCustomerFinish'});
+      }
+    }),
+
+    chooseCustomerFinish: (player) => action({
       prompt: 'Choose a customer'
     }).chooseOnBoard(
       'customer', [$.customer1, $.customer2, $.customer3, $.customer4],
