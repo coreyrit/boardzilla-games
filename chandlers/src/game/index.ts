@@ -106,7 +106,7 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     // }
 
 
-    this.playerTurn = 1;
+    this.playerTurn = this.players.length == 1 ? 4 : 1;
     const cube = this.first(PlayerOrderSpace, {num: this.playerTurn})!.first(PlayerOrderCube)!;
     this.players.setCurrent(this.players[cube.index]);
 
