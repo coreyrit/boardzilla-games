@@ -455,6 +455,11 @@ export class MasteryCube extends Piece<MyGame> {
     index: number;
 }
 
+export class PlayerOrderCube extends Piece<MyGame> {
+  color: Color
+  index: number;
+}
+
 export class ScoreTracker extends Piece<MyGame> {
     color: Color;
     index: number;

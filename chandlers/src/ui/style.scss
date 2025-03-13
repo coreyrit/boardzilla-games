@@ -586,6 +586,13 @@
       height: 100%;
     }
 
+    .PlayerOrderCube {
+      z-index: 100;
+
+      width: 100%; 
+      height: 100%;
+    }
+
     .PowerTile {
       z-index: 100;
 
@@ -713,6 +720,10 @@
     .RoundEndSpace {
       // z-index: 10;
     }
+    .PlayerOrderSpace {
+      z-index: 10;
+    }
+
     .RoundEndTile {
       
       &[data-name="customer-satisfaction"] .front { background-image: url(./assets/roundend/customer-satisfaction.jpg) }
@@ -961,6 +972,7 @@
 
         h2 {
           text-align: right; 
+          font-size: 100%;
         }
         h2 span { 
           background-color: white; 

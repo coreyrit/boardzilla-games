@@ -3,8 +3,8 @@ import { Piece, render, Space, toggleSetting } from '@boardzilla/core';
 import { Color, MyGame, default as setup } from '../game/index.js';
 
 import './style.scss';
-import { BackAlleyTile, CandlePawn, ColorDie, CustomerCard, EndGameTile, KeyShape, RoundEndTile, Wax, PowerTile, Melt, MasteryCube, Pigment, ScoreTracker, Bulb, GoalCard, Lamp, WorkerPiece, Trash, Check, CaptureTile } from '../game/components.js';
-import { BackAlley, BackAlleySpace, Candelabra, CandleBottomRow, CandleSpace, CandleTopRow, ChandlersBoard, CheckSpace, ComponentSpace, CustomerSpace, DiceSpace, GameEndSpace, KeyHook, MasterySpace, MasteryTrack, PlayerBoard, PlayerSpace, PlayersSpace, PowerSpace, ReadySpace, RoundEndSpace, RoundSpace, ScoringSpace, ScoringTrack, Spill, WorkerSpace } from '../game/boards.js';
+import { BackAlleyTile, CandlePawn, ColorDie, CustomerCard, EndGameTile, KeyShape, RoundEndTile, Wax, PowerTile, Melt, MasteryCube, Pigment, ScoreTracker, Bulb, GoalCard, Lamp, WorkerPiece, Trash, Check, CaptureTile, PlayerOrderCube } from '../game/components.js';
+import { BackAlley, BackAlleySpace, Candelabra, CandleBottomRow, CandleSpace, CandleTopRow, ChandlersBoard, CheckSpace, ComponentSpace, CustomerSpace, DiceSpace, GameEndSpace, KeyHook, MasterySpace, MasteryTrack, PlayerBoard, PlayerOrderSpace, PlayerSpace, PlayersSpace, PowerSpace, ReadySpace, RoundEndSpace, RoundSpace, ScoringSpace, ScoringTrack, Spill, WorkerSpace } from '../game/boards.js';
 // import '@boardzilla/core/index.css';
 
 render(setup, {
@@ -82,7 +82,7 @@ render(setup, {
 
     game.layout('goalDeck', { area: { left: 0, top: 0, width: 0, height: 0 }});
 
-    game.layout('drawCustomer', { area: { left: -19.5, top: 6, width: 24.5, height: 13.5 }});
+    game.layout('drawCustomer', { area: { left: -19.5, top: 6, width: 20.5, height: 13.5 }});
     game.layout('customer1', { area: { left: 5.5, top: 6, width: 19.5, height: 13.5 }});
     game.layout('customer2', { area: { left: 25.5, top: 6, width: 19.5, height: 13.5 }});
     game.layout('customer3', { area: { left: 5.5, top: 20.5, width: 19.5, height: 13.5 }});
@@ -153,6 +153,16 @@ render(setup, {
     game.layout('roundEndSpace3', { area: { left: 17, top: 88, width: 16.6, height: 6.5 }});
     game.layout('roundEndSpace4', { area: { left: 35.5, top: 88, width: 16.6, height: 6.5 }});
     game.layout('roundEndSpace5', { area: { left: 54, top: 88, width: 16.6, height: 6.5 }});
+
+    game.layout('playerOrder1', { area: { left: 2.1, top: 10, width: 2.5, height: 2.5 }});
+    game.layout('playerOrder2', { area: { left: 2.1, top: 12.7, width: 2.5, height: 2.5 }});
+    game.layout('playerOrder3', { area: { left: 2.1, top: 15.4, width: 2.5, height: 2.5 }});
+    game.layout('playerOrder4', { area: { left: 2.1, top: 18.1, width: 2.5, height: 2.5 }});
+
+    game.layout('playerOrderPass1', { area: { left: 1.3, top: 24, width: 2.5, height: 2.5 }});
+    game.layout('playerOrderPass2', { area: { left: 1.3, top: 26.7, width: 2.5, height: 2.5 }});
+    game.layout('playerOrderPass3', { area: { left: 1.3, top: 29.4, width: 2.5, height: 2.5 }});
+    game.layout('playerOrderPass4', { area: { left: 1.3, top: 32.1, width: 2.5, height: 2.5 }});
 
     game.layout('bag', { area: { left: 0, top: 0, width: 0, height: 0 }});
     
@@ -394,6 +404,15 @@ render(setup, {
       ),
     });
 
+    game.all(PlayerOrderSpace).appearance({
+      render: x => (
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <rect x="0" y="0" width="100" height="100" stroke='black'
+            strokeWidth={!x.pass && game.playerTurn == x.num ? '30' : '0'} fillOpacity='0'/>
+        </svg>
+      ),
+    });
+
     game.all(BackAlleySpace).appearance({
       render: () => (
         <div className='BackAlleySpace'>
@@ -446,15 +465,23 @@ render(setup, {
       ),
     });
 
+    game.all(PlayerOrderCube).appearance({
+      render: x => (
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" color={x.color == undefined ? "white" : x.player!.color}>
+          <rect x="10" y="10" width="80" height="80" fill="currentColor" opacity={x.color == undefined ? '0' : '100'}/>
+        </svg>
+      ),
+    });
+
     $.drawCustomer.layout(CustomerCard, {
       offsetColumn: {x: 0, y: 0},
       alignment: 'left',
-      margin: {top: 0, bottom: 0, left: 0, right:5}
+      margin: {top: 0, bottom: 0, left: 0, right:1}
     });
 
     $.drawCustomer.appearance({ render: x => ( 
       <div className='CustomerCard'>
-        <br /><br />
+        <br /><br /><br /><br />
         <h2><span>{game.deckSize()}</span></h2>
       </div>
     ) });

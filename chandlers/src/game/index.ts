@@ -13,8 +13,8 @@ import { WaxBuilding } from './building/wax.js';
 import { PigmentBuilding } from './building/pigment.js';
 import { MoldBuilding } from './building/mold.js';
 import { ChandlersPlayer } from './player.js';
-import { CustomerCard, EndGameTile, RoundEndTile, BackAlleyTile, ColorDie, KeyShape, CandlePawn, PowerTile, Wax, WorkerPiece, Pigment, Melt, MasteryCube, ScoreTracker, Bulb, GoalCard, Lamp, Trash, Check, CaptureTile } from './components.js';
-import { BackAlley, BackAlleySpace, Bag, Candelabra, CandleBottomRow, CandleSpace, CandleTopRow, ChandlersBoard, CheckSpace, ComponentSpace, CustomerSpace, DiceSpace, GameEndSpace, GoalSpace, KeyHook, MasterySpace, MasteryTrack, PlayerBoard, PlayerSpace, PlayersSpace, PowerSpace, ReadySpace, RoundEndSpace, RoundSpace, ScoringSpace, ScoringTrack, Spill, WorkerSpace } from './boards.js';
+import { CustomerCard, EndGameTile, RoundEndTile, BackAlleyTile, ColorDie, KeyShape, CandlePawn, PowerTile, Wax, WorkerPiece, Pigment, Melt, MasteryCube, ScoreTracker, Bulb, GoalCard, Lamp, Trash, Check, CaptureTile, PlayerOrderCube } from './components.js';
+import { BackAlley, BackAlleySpace, Bag, Candelabra, CandleBottomRow, CandleSpace, CandleTopRow, ChandlersBoard, CheckSpace, ComponentSpace, CustomerSpace, DiceSpace, GameEndSpace, GoalSpace, KeyHook, MasterySpace, MasteryTrack, PlayerBoard, PlayerOrderSpace, PlayerSpace, PlayersSpace, PowerSpace, ReadySpace, RoundEndSpace, RoundSpace, ScoringSpace, ScoringTrack, Spill, WorkerSpace } from './boards.js';
 import { count, timeLog } from 'console';
 import { disconnect } from 'process';
 import { Component } from 'react';
@@ -63,6 +63,7 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
   gameOver: boolean = false;
   waxCount: number = 1;
   roundEndLoop: number = 0;
+  playerTurn: number = 1;
 
   init(): void {    
   }
@@ -80,13 +81,13 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     }      
     firstPlayer.putInto(this.players[firstPlayer.playerIndex].space);  
 
-    const lastPlayer = this.first(CaptureTile)!;
-    var lastPlayerIndex = firstPlayer.playerIndex-1;
-    if(lastPlayerIndex < 0) {
-      lastPlayerIndex = this.players.length-1;
-    }
-    lastPlayer.putInto(this.players[lastPlayerIndex].space);
-    lastPlayer.flipped = true;
+    // const lastPlayer = this.first(CaptureTile)!;
+    // var lastPlayerIndex = firstPlayer.playerIndex-1;
+    // if(lastPlayerIndex < 0) {
+    //   lastPlayerIndex = this.players.length-1;
+    // }
+    // lastPlayer.putInto(this.players[lastPlayerIndex].space);
+    // lastPlayer.flipped = true;
 
     // give everyone wax for the next round
     this.game.players.forEach(x => {
@@ -96,14 +97,42 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     })
   }
 
-  moveToNextPlayer() : void {
-    const firstPlayer = this.first(Lamp)!;
-    this.players.setCurrent(this.players[0]); 
-    // move to the next player until you get to the first player token
-    for(var i = 0; i < firstPlayer.playerIndex; i++) {
-      this.players.next();
-    }
+  moveToFirstPlayer() : void {
+    // const firstPlayer = this.first(Lamp)!;
+    // this.players.setCurrent(this.players[0]); 
+    // // move to the next player until you get to the first player token
+    // for(var i = 0; i < firstPlayer.playerIndex; i++) {
+    //   this.players.next();
+    // }
+
+
+    this.playerTurn = 1;
+    const cube = this.first(PlayerOrderSpace, {num: this.playerTurn})!.first(PlayerOrderCube)!;
+    this.players.setCurrent(this.players[cube.index]);
+
     this.message('Round ' + this.currentRound() + ' begins.');
+  }
+
+  nextPlayerInTurnOrder() : void {
+    console.log('all players passed: ' + this.allPlayersPassed());
+    for(var i = 0; i < 4; i++) {      
+      this.playerTurn = this.playerTurn == 4 ? 1 : this.playerTurn+1;
+      console.log('checking: ' + this.playerTurn);
+
+      if(this.first(PlayerOrderSpace, {num: this.playerTurn, pass: false})!.all(Piece).length > 0) {
+        console.log('next player turn is: ' + this.playerTurn);
+        
+        const cube = this.first(PlayerOrderSpace, {num: this.playerTurn})!.first(PlayerOrderCube)!;
+
+        console.log('moving to index: ' + cube.index);
+
+        this.players.setCurrent(this.players[cube.index]);
+        return;
+      }      
+    }
+    // if all else fails, return the first player
+    console.log("I don't know what I'm doing");
+    this.players.next();
   }
 
   drawTopCustomer() : CustomerCard {
@@ -146,11 +175,14 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
   }
 
   endTurn() : void {
-    if(!this.currentPlayer().pass) {
+    if(!this.currentPlayer().placedWorker && !this.currentPlayer().pass) {
+      const cube = this.first(PlayerOrderCube, {index: this.players.indexOf(this.currentPlayer())})!;
+      cube.putInto(this.nextAvailablePlayerOrderPass());
       this.message(this.currentPlayer().name + ' passes.');
-    }
-    this.currentPlayer().pass = true;
-    this.currentPlayer().placedWorker = true;
+
+      this.currentPlayer().pass = true;
+      this.currentPlayer().placedWorker = true;
+    }    
     this.currentPlayer().finished = true;
   }
 
@@ -197,6 +229,31 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     // score for mastery
     this.message(player.name + ' scored ' + player.masteryScore() + ' points for mastery');
     player.increaseScore(player.masteryScore());
+  }
+
+  scoreForPlayerOrder(player: ChandlersPlayer) : void {
+    // score for player order
+    const index = this.players.indexOf(player);
+    const cube = this.first(PlayerOrderCube, {index: index});
+    const space = cube?.container(PlayerOrderSpace)!;
+    
+    var points = 0;
+    switch(space.num) {
+      case 1: {
+        points = 3;
+        break;
+      }
+      case 2: {
+        points = 2;
+        break;
+      }
+      case 3: {
+        points = 1;
+        break;
+      }
+    }
+    this.message(player.name + ' scored ' + points + ' points for player order');
+    player.increaseScore(points);
   }
 
   scoreNextGoal(player: ChandlersPlayer) : boolean {
@@ -259,14 +316,14 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     this.finish(winners);
   }
 
-  calculatePlayerFinalScore(player: ChandlersPlayer) : void {
-    while(this.scoreNextCustomer(player)) {}
-    this.scoreForMastery(player);
-    while(this.scoreNextGoal(player)) {}
-    this.scoreEndGameTile(player, 5);
-    this.scoreEndGameTile(player, 3);
-    this.scoreEndGameTile(player, 2);
-  }
+  // calculatePlayerFinalScore(player: ChandlersPlayer) : void {
+  //   while(this.scoreNextCustomer(player)) {}
+  //   this.scoreForMastery(player);
+  //   while(this.scoreNextGoal(player)) {}
+  //   this.scoreEndGameTile(player, 5);
+  //   this.scoreEndGameTile(player, 3);
+  //   this.scoreEndGameTile(player, 2);
+  // }
   
   resetDice() : void {
     this.all(ColorDie).putInto($.bag);
@@ -327,7 +384,10 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
       }
 
       // move the first player token
-      this.moveFirstPlayerToken();          
+      // this.moveFirstPlayerToken();
+      
+      // move player order cubes up
+      this.movePlayerOrderUp();
     
       // move the round tracker
       this.nextRound();
@@ -341,8 +401,13 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     } else {
       // say gg and do final scoring
       this.followUp({name: 'goodGame'});
-      this.moveFirstPlayerToken();      
     }    
+  }
+
+  movePlayerOrderUp() : void {
+    this.all(PlayerOrderSpace, {pass: true}).all(PlayerOrderCube).forEach(x => {
+      x.putInto(this.nextAvailablePlayerOrder());
+    });
   }
 
   nextRound() : void {
@@ -365,12 +430,14 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
   // }
 
   allPlayersPassed() : boolean {
-    for (const player of this.players) {
-      if(!player.pass) {
-        return false;
-      }
-    }
-    return true;
+    // for (const player of this.players) {
+    //   if(!player.pass) {
+    //     return false;
+    //   }
+    // }
+    // return true;
+
+    return this.game.all(PlayerOrderSpace, {pass: false}).filter(x => x.all(Piece).length > 0).length == 0;
   }
 
   capitalize(color: Color) : string {
@@ -397,6 +464,7 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     if(!this.setup) {
       switch(building) {
         case Building.Wax: {
+          this.currentPlayer().increaseMastery(1);
           this.followUp({name: 'chooseWaxRepeater'});
           break;
        }
@@ -476,6 +544,33 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     if(space.all(WorkerPiece).length == 0 && [SpaceType.Backroom, SpaceType.Mastery, SpaceType.Middle].includes(space.spaceType)) {
       space.color = undefined;
     }
+  }
+
+  nextAvailablePlayerOrder() : PlayerOrderSpace {
+    switch(this.players.length) {
+      case 1: {
+        return this.all(PlayerOrderSpace, {pass: false})
+          .filter(x => x.num == 4)
+          .filter(x => x.all(Piece).length == 0).first(PlayerOrderSpace)!;
+      }
+      case 2: {
+        return this.all(PlayerOrderSpace, {pass: false})
+          .filter(x => x.num == 1 || x.num == 4)
+          .filter(x => x.all(Piece).length == 0).first(PlayerOrderSpace)!;
+      }
+      case 3: {
+        return this.all(PlayerOrderSpace, {pass: false})
+          .filter(x => x.num == 1 || x.num >= 3)
+          .filter(x => x.all(Piece).length == 0).first(PlayerOrderSpace)!;
+      }      
+    }
+    return this.all(PlayerOrderSpace, {pass: false})
+          .filter(x => x.all(Piece).length == 0).first(PlayerOrderSpace)!;
+  }
+
+  nextAvailablePlayerOrderPass() : PlayerOrderSpace {
+    const spaces = this.all(PlayerOrderSpace, {pass: true}).filter(x => x.all(Piece).length == 0);
+    return spaces.first(PlayerOrderSpace)!
   }
 
   initPlayer(player : ChandlersPlayer) : void {
@@ -897,6 +992,17 @@ export default createGame(ChandlersPlayer, MyGame, game => {
 
   bag.create(Bulb, 'bulb');
 
+  // player order
+  game.create(PlayerOrderSpace, 'playerOrder1', {num: 1, pass: false});
+  game.create(PlayerOrderSpace, 'playerOrder2', {num: 2, pass: false});
+  game.create(PlayerOrderSpace, 'playerOrder3', {num: 3, pass: false});
+  game.create(PlayerOrderSpace, 'playerOrder4', {num: 4, pass: false});
+
+  game.create(PlayerOrderSpace, 'playerOrderPass1', {num: 1, pass: true});
+  game.create(PlayerOrderSpace, 'playerOrderPass2', {num: 2, pass: true});
+  game.create(PlayerOrderSpace, 'playerOrderPass3', {num: 3, pass: true});
+  game.create(PlayerOrderSpace, 'playerOrderPass4', {num: 4, pass: true});
+
   // round end goals
   game.create(RoundEndSpace, 'roundEndSpace1')
   game.create(RoundEndSpace, 'roundEndSpace2')
@@ -997,9 +1103,9 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   // players  
   const playersSpace = game.create(PlayersSpace, 'playersSpace')
 
-  const firstPlayer = game.create(Lamp, 'firstPlayer');
+  // const firstPlayer = game.create(Lamp, 'firstPlayer');
 
-  const lastPlayer = game.create(CaptureTile, 'captureTile');
+  // const lastPlayer = game.create(CaptureTile, 'captureTile');
 
   for(var i = 0; i < game.players.length; i++) {
     const score = $.scoring100.create(ScoreTracker, 'p' + i + 'Score', 
@@ -1021,13 +1127,13 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     game.players[i].board = playerBoard
     // game.players[i].playerColor = colors[i]
 
-    if(i == 0) {
-      firstPlayer.putInto(game.players[i].space);
-    }
+    // if(i == 0) {
+    //   firstPlayer.putInto(game.players[i].space);
+    // }
 
-    if(i == game.players.length-1) {
-      lastPlayer.putInto(game.players[i].space);
-    }
+    // if(i == game.players.length-1) {
+    //   lastPlayer.putInto(game.players[i].space);
+    // }
 
     for(var l = 1; l <= 20; l++) {
       playerBoard.create(ComponentSpace, 'p' + i + 'Component' + l, {num: l});
@@ -1058,7 +1164,11 @@ export default createGame(ChandlersPlayer, MyGame, game => {
         const mastery = trackSpace.create(MasteryCube, 'p' + i + 'Cube', {index: i, color: Color.White}); // color will be fixed
         mastery.player = game.players[i];
       }
-    }    
+    }
+
+    const playerOrderCube = game.create(PlayerOrderCube, 'po' + i + 'Cube', {index: i, color: Color.White}); // color will be fixed
+    playerOrderCube.player = game.players[i];
+    playerOrderCube.putInto(game.nextAvailablePlayerOrder());
 
     power1.create(PowerTile, 'roll')
     power2.create(PowerTile, 'set')
@@ -1299,7 +1409,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
 
         if($.meltSpillArea.all(Melt).length < 5) {
           x.putInto($.meltSpillArea);  
-          player.increaseScore();
+          player.increaseScore(2);
           points++;
         } else {
           x.color = Color.White;
@@ -1751,9 +1861,9 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       )) {        
         const top = space.all(ColorDie).length > 0 ? space.first(ColorDie)! : space.first(KeyShape)!;
 
-        if(player.space.all(CaptureTile).filter(x => x.flipped).length > 0) {
+        /*if(player.space.all(CaptureTile).filter(x => x.flipped).length > 0) {
           game.followUp({name: 'confirmFreeCapture', args: {top: top, space: space}});
-        } else if(player.currentMastery() >= game.currentRound()) {
+        } else*/ if(player.currentMastery() >= game.currentRound()) {
           game.followUp({name: 'confirmCapture', args: {top: top, space: space}});
         }
       }
@@ -1794,6 +1904,10 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       player.pass = true;
       player.placedWorker = true;
       player.finished = true;
+
+      const cube = game.first(PlayerOrderCube, {index: game.players.indexOf(player)})!;
+      cube.putInto(game.nextAvailablePlayerOrderPass());
+
       game.message(player.name + ' passes.');
     }),
 
@@ -2263,8 +2377,8 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     
     // loop game until it is over
     whileLoop({while: () => !game.gameOver, do: ([
-
-      () => game.moveToNextPlayer(),
+      
+      () => game.moveToFirstPlayer(),
 
       // round continues until everyone passes
       whileLoop({while: () => !game.allPlayersPassed(), do: ([        
@@ -2306,7 +2420,8 @@ export default createGame(ChandlersPlayer, MyGame, game => {
         () => game.collectComponents(),
           
         // move to the next player
-        () => game.players.next(),
+        // () => game.players.next(),
+        () => game.nextPlayerInTurnOrder(),
       ])}),
             
       // check round end goals
@@ -2340,6 +2455,9 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       () => game.endRound(),                 
     ])}),
 
+    // move player order cubes up
+    () => game.movePlayerOrderUp(),
+
     // reveal private goals
     () => game.all(GoalCard).forEach(x => x.showToAll()),
 
@@ -2363,6 +2481,12 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       loop(ifElse({
         if: ({turn}) => game.scoreNextGoal(turn), do: playerActions({actions: ['pause']}), else: () => Do.break()
       }))
+    ]}),
+
+    // score for player order
+    eachPlayer({name: 'turn', do: [
+      playerActions({actions: ['pause']}),
+      ({turn}) => game.scoreForPlayerOrder(turn),
     ]}),
 
     // score for end game

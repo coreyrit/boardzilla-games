@@ -25,7 +25,12 @@ export class WorkerSpace extends Space<MyGame> {
 export class ComponentSpace extends Space<MyGame> {
   num: number;
 }
-  
+
+export class PlayerOrderSpace extends Space<MyGame> {
+  num: number;
+  pass: boolean;
+}
+
 export class DiceSpace extends Space<MyGame> {
   
 }
