@@ -87,8 +87,10 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
     //   lastPlayerIndex = this.players.length-1;
     // }
     // lastPlayer.putInto(this.players[lastPlayerIndex].space);
-    // lastPlayer.flipped = true;
+    // lastPlayer.flipped = true;    
+  }
 
+  playersGainIncome() : void {
     // give everyone wax for the next round
     this.game.players.forEach(x => {
       for(var i = 0; i < x.masteryLevel(); i++) {
@@ -388,6 +390,9 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
       
       // move player order cubes up
       this.movePlayerOrderUp();
+
+      // give each player some wax
+      this.playersGainIncome();
     
       // move the round tracker
       this.nextRound();
