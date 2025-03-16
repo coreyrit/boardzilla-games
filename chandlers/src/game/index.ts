@@ -392,7 +392,7 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
       this.movePlayerOrderUp();
 
       // give each player some wax
-      this.playersGainIncome();
+      // this.playersGainIncome();
     
       // move the round tracker
       this.nextRound();
