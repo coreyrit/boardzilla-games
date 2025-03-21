@@ -98,7 +98,7 @@ export class CustomerCard extends Piece<MyGame> {
         case CustomerType.Cartographer: {
           const mastery = player.currentMastery();
           if(mastery >= 2) {
-            player.setMastery(mastery-2);
+            player.decreaseMastery(2);
 
             game.message(player.name + ' spends 2 mastery.');
             game.followUp({name: 'chooseAvailableColorAction'});

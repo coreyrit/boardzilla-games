@@ -1192,7 +1192,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       { skipIf: 'never' }
     ).do(({choice, top, space}) => {
       if(choice == 'Yes') {
-        player.setMastery(player.currentMastery()-1);      
+        player.decreaseMastery(1);
         for(const customer of [$.customer1, $.customer2, $.customer3, $.customer4]) {
           customer.first(CustomerCard)?.putInto($.bag);
           game.drawTopCustomer().putInto(customer);
@@ -1887,7 +1887,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       { skipIf: 'never' }
     ).do(({choice, top, space}) => {
       if(choice == 'Yes') {
-        player.setMastery(player.currentMastery()-game.currentRound());
+        player.decreaseMastery(game.currentRound());
         game.doCapture(player, top, space);
       }
     }),

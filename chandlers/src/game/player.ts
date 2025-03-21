@@ -176,6 +176,14 @@ export class ChandlersPlayer extends Player<MyGame, ChandlersPlayer> {
       }
     }
 
+    decreaseMastery(value: number = 1): void {
+      if(this.currentMastery()-value < 1) {
+        this.setMastery(0);
+      } else {
+        this.setMastery(this.currentMastery()-value);
+      }
+    }
+
     currentScore(): number {
         const tracker = this.game.first(ScoreTracker, {index: this.game.players.indexOf(this)})!
         return tracker.flipped ? tracker.container(ScoringSpace)!.score + 100 : tracker.container(ScoringSpace)!.score;
