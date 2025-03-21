@@ -385,6 +385,8 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
         // }
       }
 
+      
+
       // move the first player token
       // this.moveFirstPlayerToken();
       
@@ -1190,7 +1192,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       { skipIf: 'never' }
     ).do(({choice, top, space}) => {
       if(choice == 'Yes') {
-        player.setMastery(player.currentMastery()-game.currentRound());      
+        player.setMastery(player.currentMastery()-1);      
         for(const customer of [$.customer1, $.customer2, $.customer3, $.customer4]) {
           customer.first(CustomerCard)?.putInto($.bag);
           game.drawTopCustomer().putInto(customer);
