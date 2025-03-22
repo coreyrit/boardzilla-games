@@ -222,6 +222,14 @@ test('threeByThreeLikewise3', () => {
   ])).toStrictEqual(false);
 })
 
+test('threeByThreeLikewise4', () => {
+  expect(SetLogic.threeByThreeLikewise([
+    new IdSet('A', ['A', 'A']),
+    new IdSet('A', ['A', 'D']),
+    new IdSet('A', ['B', 'D']),
+  ])).toStrictEqual(false);
+})
+
 test('twoByThree1', () => {
   expect(SetLogic.twoByThree([
     new IdSet('A', ['A']),
