@@ -14,7 +14,7 @@ import { PigmentBuilding } from './building/pigment.js';
 import { MoldBuilding } from './building/mold.js';
 import { ChandlersPlayer } from './player.js';
 import { CustomerCard, EndGameTile, RoundEndTile, BackAlleyTile, ColorDie, KeyShape, CandlePawn, PowerTile, Wax, WorkerPiece, Pigment, Melt, MasteryCube, ScoreTracker, Bulb, GoalCard, Lamp, Trash, Check, CaptureTile, PlayerOrderCube } from './components.js';
-import { BackAlley, BackAlleySpace, Bag, Candelabra, CandleBottomRow, CandleSpace, CandleTopRow, ChandlersBoard, CheckSpace, ComponentSpace, CustomerSpace, DiceSpace, GameEndSpace, GoalSpace, KeyHook, MasterySpace, MasteryTrack, PlayerBoard, PlayerOrderSpace, PlayerSpace, PlayersSpace, PowerSpace, ReadySpace, RoundEndSpace, RoundSpace, ScoringSpace, ScoringTrack, Spill, WorkerSpace } from './boards.js';
+import { BackAlley, BackAlleySpace, Bag, Candelabra, CandleBottomRow, CandleSpace, CandleTopRow, ChandlersBoard, CheckSpace, ComponentSpace, CustomerCubeSpace, CustomerSpace, DiceSpace, GameEndSpace, GoalSpace, KeyHook, MasterySpace, MasteryTrack, PlayerBoard, PlayerOrderSpace, PlayerSpace, PlayersSpace, PowerSpace, ReadySpace, RoundEndSpace, RoundSpace, ScoringSpace, ScoringTrack, Spill, WorkerSpace } from './boards.js';
 import { count, timeLog } from 'console';
 import { disconnect } from 'process';
 import { Component } from 'react';
@@ -419,6 +419,7 @@ export class MyGame extends Game<MyGame, ChandlersPlayer> {
 
   nextRound() : void {
     this.first(Bulb)!.putInto(this.first(RoundSpace, {round: this.currentRound()+1})!);
+    this.all(CustomerCubeSpace).forEach(x => {x.used = false});
   }
 
   // checkRoundEndGoals() : void {
@@ -822,6 +823,8 @@ export default createGame(ChandlersPlayer, MyGame, game => {
     if(x.requiredCandles().includes(Color.Purple)) { bottomRow.create(CandleSpace, x.name + '-purple', {color: Color.Purple}); }
     if(x.requiredCandles().includes(Color.Orange)) { bottomRow.create(CandleSpace, x.name + '-orange', {color: Color.Orange}); }
     if(x.requiredCandles().includes(Color.Black)) { bottomRow.create(CandleSpace, x.name + '-black', {color: Color.Black}); }
+
+    x.create(CustomerCubeSpace, x.name + '-customerCube');
   })
 
   // set up the worker spaces
@@ -1564,6 +1567,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
       'customer', ({ color }) => player.space.all(CustomerCard, {color: color}).concat(player.board.first(CustomerCard)!)
         // filter available customers
         .filter(x => x.isPossible(game, player))
+        .filter(x => x.first(CustomerCubeSpace) == undefined || !x.first(CustomerCubeSpace)!.used)
       ,
       { skipIf: 'never' }
     ).do(
@@ -1572,6 +1576,7 @@ export default createGame(ChandlersPlayer, MyGame, game => {
         if(customer.color == Color.White) {
           customer.gainMastery(game, player, color);
         } else {
+          customer.first(CustomerCubeSpace)!.used = true;
           customer.peformAbility(game, player);
         }
       }

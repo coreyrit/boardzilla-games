@@ -123,6 +123,10 @@ export class MasterySpace extends Space<MyGame> {
   index: number = 0;
 }
 
+export class CustomerCubeSpace extends Piece<MyGame> {
+  used: boolean = false;
+}
+
 export class ScoringTrack extends Space<MyGame> {
 
 }

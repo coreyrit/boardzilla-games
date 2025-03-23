@@ -4,7 +4,7 @@ import { Color, MyGame, default as setup } from '../game/index.js';
 
 import './style.scss';
 import { BackAlleyTile, CandlePawn, ColorDie, CustomerCard, EndGameTile, KeyShape, RoundEndTile, Wax, PowerTile, Melt, MasteryCube, Pigment, ScoreTracker, Bulb, GoalCard, Lamp, WorkerPiece, Trash, Check, CaptureTile, PlayerOrderCube } from '../game/components.js';
-import { BackAlley, BackAlleySpace, Candelabra, CandleBottomRow, CandleSpace, CandleTopRow, ChandlersBoard, CheckSpace, ComponentSpace, CustomerSpace, DiceSpace, GameEndSpace, KeyHook, MasterySpace, MasteryTrack, PlayerBoard, PlayerOrderSpace, PlayerSpace, PlayersSpace, PowerSpace, ReadySpace, RoundEndSpace, RoundSpace, ScoringSpace, ScoringTrack, Spill, WorkerSpace } from '../game/boards.js';
+import { BackAlley, BackAlleySpace, Candelabra, CandleBottomRow, CandleSpace, CandleTopRow, ChandlersBoard, CheckSpace, ComponentSpace, CustomerCubeSpace, CustomerSpace, DiceSpace, GameEndSpace, KeyHook, MasterySpace, MasteryTrack, PlayerBoard, PlayerOrderSpace, PlayerSpace, PlayersSpace, PowerSpace, ReadySpace, RoundEndSpace, RoundSpace, ScoringSpace, ScoringTrack, Spill, WorkerSpace } from '../game/boards.js';
 // import '@boardzilla/core/index.css';
 
 render(setup, {
@@ -510,6 +510,12 @@ render(setup, {
       </div>
     ) });
 
+    game.all(CustomerCubeSpace).appearance({ render: x => ( 
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" color="black">
+          <rect x="0" y="0" width="100" height="100" fill="currentColor" opacity={!x.used ? '0' : '100'}/>
+        </svg>
+    ) })
+
     game.all(GoalCard).appearance({ render: x => ( 
       <div className='GoalCard'>
         <div className={x.flipped ? 'front' : 'back'} />
@@ -687,6 +693,9 @@ render(setup, {
           }
         }
       }
+      x.layout(CustomerCubeSpace, {
+        area: { left: 15, top: 75, width: 20, height: 20 }
+      })
     });    
     game.all(CandleTopRow).layout(CandleSpace, {
       rows: 1
