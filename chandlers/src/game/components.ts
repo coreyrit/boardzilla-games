@@ -555,7 +555,7 @@ export class ScoreTracker extends Piece<MyGame> {
           }
           break;
         }
-        case Color.Purple: {
+        case Color.Black: {
           if(color == Color.Blue) {
             this.color = Color.Orange;
           } else if(color == Color.Red) {
