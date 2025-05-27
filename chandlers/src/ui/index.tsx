@@ -32,7 +32,8 @@ render(setup, {
           'chooseWaxRepeater', 'chooseCandleToMove', 'choosePowerTile',
           'choosePigmentsToRemove', 'chooseWhiteCandle', 'chooseCustomerToSwap', 'chooseKeyAndShape',
           'chooseStartingCustomer', 'chooseStartingGoal', 'usePower',
-          'chooseMeltToMixInto', 'chooseMeltToMixIntoFromMastery'
+          'chooseMeltToMixInto', 'chooseMeltToMixIntoFromMastery',
+          'choosePassAction'
         ]
         .includes(a.name)),
       closeIf: actions => actions.some(a => 

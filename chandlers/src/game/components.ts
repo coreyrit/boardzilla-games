@@ -51,7 +51,7 @@ export class CustomerCard extends Piece<MyGame> {
           return $.waxSpill.all(ColorDie).length + $.pigmentSpill.all(ColorDie).length + $.moldSpill.all(ColorDie).length > 0;
         }
         case CustomerType.Cartographer: {
-          return player.currentMastery() >= 2 && game.all(WorkerSpace).filter(x => x.color != undefined && x.all(WorkerPiece).length == 0).length > 0
+          return /*player.currentMastery() >= 2 && */ game.all(WorkerSpace).filter(x => x.color != undefined && x.all(WorkerPiece).length == 0).length > 0;
         }
       }
       return true;
@@ -97,12 +97,12 @@ export class CustomerCard extends Piece<MyGame> {
         }
         case CustomerType.Cartographer: {
           const mastery = player.currentMastery();
-          if(mastery >= 2) {
-            player.decreaseMastery(2);
+          // if(mastery >= 2) {
+            // player.decreaseMastery(2);
 
-            game.message(player.name + ' spends 2 mastery.');
+            // game.message(player.name + ' spends 2 mastery.');
             game.followUp({name: 'chooseAvailableColorAction'});
-          }
+          // }
           break;
         }
        } 
