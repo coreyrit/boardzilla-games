@@ -524,7 +524,8 @@
       width: 100%; 
       height: 100%;
       
-      &[data-name="add-pigment"] .front { background-image: url(./assets/backalley/add-pigment.jpg) }
+      // &[data-name="add-pigment"] .front { background-image: url(./assets/backalley/add-pigment.jpg) }
+      &[data-name="add-pigment"] .front { background-image: url(./assets/backalley/back-alley-b.jpg) }
       &[data-name="add-pigment"] .back { background-image: url(./assets/backalley/back-alley-b.jpg) }
 
       &[data-name="advance-mastery"] .front { background-image: url(./assets/backalley/advance-mastery.jpg) }
