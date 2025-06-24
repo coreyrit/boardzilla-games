@@ -12,15 +12,16 @@ render(setup, {
     // captureWorkers: toggleSetting('Capture workers when stacking')
   },
   layout: game => {
+    const LEFT_POSITION_OFFSET = 25; // formerly -25
 
     game.appearance({
       render: () => null
     });
 
-    game.layout('board', { area: { left: -25, top: 0, width: 150, height: 100 }});
+    game.layout('board', { area: { left: -25 + LEFT_POSITION_OFFSET, top: 0, width: 150, height: 100 }});
     
     game.layoutAsDrawer($.playersSpace as Space<MyGame>, 
-      { area: { left: -25, top: 50, width: 150, height: 50 }, openDirection: 'up', tab: 'Players',
+      { area: { left: -25 + LEFT_POSITION_OFFSET, top: 50, width: 150, height: 50 }, openDirection: 'up', tab: 'Players',
       openIf: actions => actions.some(a => 
         [
           'chooseWorker',
@@ -81,123 +82,123 @@ render(setup, {
 
     game.layoutAsTabs
 
-    game.layout('goalDeck', { area: { left: 0, top: 0, width: 0, height: 0 }});
+    game.layout('goalDeck', { area: { left: 0 + LEFT_POSITION_OFFSET, top: 0, width: 0, height: 0 }});
 
-    game.layout('drawCustomer', { area: { left: -19.5, top: 6, width: 20.5, height: 13.5 }});
-    game.layout('customer1', { area: { left: 5.5, top: 6, width: 19.5, height: 13.5 }});
-    game.layout('customer2', { area: { left: 25.5, top: 6, width: 19.5, height: 13.5 }});
-    game.layout('customer3', { area: { left: 5.5, top: 20.5, width: 19.5, height: 13.5 }});
-    game.layout('customer4', { area: { left: 25.5, top: 20.5, width: 19.5, height: 13.5 }});
+    game.layout('drawCustomer', { area: { left: -19.5 + LEFT_POSITION_OFFSET, top: 6, width: 20.5, height: 13.5 }});
+    game.layout('customer1', { area: { left: 5.5 + LEFT_POSITION_OFFSET, top: 6, width: 19.5, height: 13.5 }});
+    game.layout('customer2', { area: { left: 25.5 + LEFT_POSITION_OFFSET, top: 6, width: 19.5, height: 13.5 }});
+    game.layout('customer3', { area: { left: 5.5 + LEFT_POSITION_OFFSET, top: 20.5, width: 19.5, height: 13.5 }});
+    game.layout('customer4', { area: { left: 25.5 + LEFT_POSITION_OFFSET, top: 20.5, width: 19.5, height: 13.5 }});
 
-    game.layout('waxRed', { area: { left: -18.5, top: 36, width: 5, height: 5 }});
-    game.layout('waxYellow', { area: { left: -5, top: 36, width: 5, height: 5 }});
-    game.layout('waxBlue', { area: { left: 8, top: 36, width: 5, height: 5 }});
-    game.layout('waxOrange', { area: { left: -18.5, top: 49.5, width: 5, height: 5 }});
-    game.layout('waxGreen', { area: { left: -5, top: 49.5, width: 5, height: 5 }});
-    game.layout('waxPurple', { area: { left: 8, top: 49.5, width: 5, height: 5 }});
-    game.layout('waxRepeater', { area: { left: -7.5, top: 64, width: 5, height: 5 }});
-    game.layout('waxMiddle', { area: { left: -0.5, top: 65, width: 5, height: 5 }});
-    game.layout('waxBackroom', { area: { left: 6.5, top: 64, width: 5, height: 5 }});
-    game.layout('waxSpill', { area: { left: -16.5, top: 79.5, width: 5, height: 5 }});
+    game.layout('waxRed', { area: { left: -18.5 + LEFT_POSITION_OFFSET, top: 36, width: 5, height: 5 }});
+    game.layout('waxYellow', { area: { left: -5 + LEFT_POSITION_OFFSET, top: 36, width: 5, height: 5 }});
+    game.layout('waxBlue', { area: { left: 8 + LEFT_POSITION_OFFSET, top: 36, width: 5, height: 5 }});
+    game.layout('waxOrange', { area: { left: -18.5 + LEFT_POSITION_OFFSET, top: 49.5, width: 5, height: 5 }});
+    game.layout('waxGreen', { area: { left: -5 + LEFT_POSITION_OFFSET, top: 49.5, width: 5, height: 5 }});
+    game.layout('waxPurple', { area: { left: 8 + LEFT_POSITION_OFFSET, top: 49.5, width: 5, height: 5 }});
+    game.layout('waxRepeater', { area: { left: -7.5 + LEFT_POSITION_OFFSET, top: 64, width: 5, height: 5 }});
+    game.layout('waxMiddle', { area: { left: -0.5 + LEFT_POSITION_OFFSET, top: 65, width: 5, height: 5 }});
+    game.layout('waxBackroom', { area: { left: 6.5 + LEFT_POSITION_OFFSET, top: 64, width: 5, height: 5 }});
+    game.layout('waxSpill', { area: { left: -16.5 + LEFT_POSITION_OFFSET, top: 79.5, width: 5, height: 5 }});
 
-    game.layout('pigmentRed', { area: { left: 30, top: 36, width: 5, height: 5 }});
-    game.layout('pigmentYellow', { area: { left: 43.5, top: 36, width: 5, height: 5 }});
-    game.layout('pigmentBlue', { area: { left: 56.5, top: 36, width: 5, height: 5 }});
-    game.layout('pigmentOrange', { area: { left: 30, top: 49.5, width: 5, height: 5 }});
-    game.layout('pigmentGreen', { area: { left: 43.5, top: 49.5, width: 5, height: 5 }});
-    game.layout('pigmentPurple', { area: { left: 56.5, top: 49.5, width: 5, height: 5 }});
-    game.layout('pigmentRepeater', { area: { left: 41, top: 64, width: 5, height: 5 }});
-    game.layout('pigmentMiddle', { area: { left: 48, top: 65, width: 5, height: 5 }});
-    game.layout('pigmentBackroom', { area: { left: 55, top: 64, width: 5, height: 5 }});
-    game.layout('pigmentSpill', { area: { left: 32.5, top: 79.5, width: 5, height: 5 }});
+    game.layout('pigmentRed', { area: { left: 30 + LEFT_POSITION_OFFSET, top: 36, width: 5, height: 5 }});
+    game.layout('pigmentYellow', { area: { left: 43.5 + LEFT_POSITION_OFFSET, top: 36, width: 5, height: 5 }});
+    game.layout('pigmentBlue', { area: { left: 56.5 + LEFT_POSITION_OFFSET, top: 36, width: 5, height: 5 }});
+    game.layout('pigmentOrange', { area: { left: 30 + LEFT_POSITION_OFFSET, top: 49.5, width: 5, height: 5 }});
+    game.layout('pigmentGreen', { area: { left: 43.5 + LEFT_POSITION_OFFSET, top: 49.5, width: 5, height: 5 }});
+    game.layout('pigmentPurple', { area: { left: 56.5 + LEFT_POSITION_OFFSET, top: 49.5, width: 5, height: 5 }});
+    game.layout('pigmentRepeater', { area: { left: 41 + LEFT_POSITION_OFFSET, top: 64, width: 5, height: 5 }});
+    game.layout('pigmentMiddle', { area: { left: 48 + LEFT_POSITION_OFFSET, top: 65, width: 5, height: 5 }});
+    game.layout('pigmentBackroom', { area: { left: 55 + LEFT_POSITION_OFFSET, top: 64, width: 5, height: 5 }});
+    game.layout('pigmentSpill', { area: { left: 32.5 + LEFT_POSITION_OFFSET, top: 79.5, width: 5, height: 5 }});
 
-    game.layout('moldRed', { area: { left: 78.5, top: 36, width: 5, height: 5 }});
-    game.layout('moldYellow', { area: { left: 92, top: 36, width: 5, height: 5 }});
-    game.layout('moldBlue', { area: { left: 105.5, top: 36, width: 5, height: 5 }});
-    game.layout('moldOrange', { area: { left: 78.5, top: 49.5, width: 5, height: 5 }});
-    game.layout('moldGreen', { area: { left: 92, top: 49.5, width: 5, height: 5 }});
-    game.layout('moldPurple', { area: { left: 105.5, top: 49.5, width: 5, height: 5 }});
-    game.layout('moldRepeater', { area: { left: 89.5, top: 64, width: 5, height: 5 }});
-    game.layout('moldMiddle', { area: { left: 96.5, top: 65, width: 5, height: 5 }});
-    game.layout('moldBackroom', { area: { left: 103.5, top: 64, width: 5, height: 5 }});
-    game.layout('moldSpill', { area: { left: 81, top: 79.5, width: 5, height: 5 }});
+    game.layout('moldRed', { area: { left: 78.5 + LEFT_POSITION_OFFSET, top: 36, width: 5, height: 5 }});
+    game.layout('moldYellow', { area: { left: 92 + LEFT_POSITION_OFFSET, top: 36, width: 5, height: 5 }});
+    game.layout('moldBlue', { area: { left: 105.5 + LEFT_POSITION_OFFSET, top: 36, width: 5, height: 5 }});
+    game.layout('moldOrange', { area: { left: 78.5 + LEFT_POSITION_OFFSET, top: 49.5, width: 5, height: 5 }});
+    game.layout('moldGreen', { area: { left: 92 + LEFT_POSITION_OFFSET, top: 49.5, width: 5, height: 5 }});
+    game.layout('moldPurple', { area: { left: 105.5 + LEFT_POSITION_OFFSET, top: 49.5, width: 5, height: 5 }});
+    game.layout('moldRepeater', { area: { left: 89.5 + LEFT_POSITION_OFFSET, top: 64, width: 5, height: 5 }});
+    game.layout('moldMiddle', { area: { left: 96.5 + LEFT_POSITION_OFFSET, top: 65, width: 5, height: 5 }});
+    game.layout('moldBackroom', { area: { left: 103.5 + LEFT_POSITION_OFFSET, top: 64, width: 5, height: 5 }});
+    game.layout('moldSpill', { area: { left: 81 + LEFT_POSITION_OFFSET, top: 79.5, width: 5, height: 5 }});
 
-    game.layout('whiteCandles', { area: { left: 45, top: 6, width: 9, height: 22 }});
-    game.layout('redCandles', { area: { left: 54.5, top: 10.5, width: 9, height: 17.5 }});
-    game.layout('yellowCandles', { area: { left: 64, top: 11, width: 9, height: 17.5 }});
-    game.layout('blueCandles', { area: { left: 73.5, top: 11, width: 9, height: 17.5 }});
-    game.layout('orangeCandles', { area: { left: 82.5, top: 11, width: 9, height: 17.5 }});
-    game.layout('greenCandles', { area: { left: 92, top: 11, width: 9, height: 17.5 }});
-    game.layout('purpleCandles', { area: { left: 101.5, top: 11, width: 9, height: 17.5 }});
-    game.layout('blackCandles', { area: { left: 110.5, top: 14.5, width: 9, height: 14 }});
+    game.layout('whiteCandles', { area: { left: 45 + LEFT_POSITION_OFFSET, top: 6, width: 9, height: 22 }});
+    game.layout('redCandles', { area: { left: 54.5 + LEFT_POSITION_OFFSET, top: 10.5, width: 9, height: 17.5 }});
+    game.layout('yellowCandles', { area: { left: 64 + LEFT_POSITION_OFFSET, top: 11, width: 9, height: 17.5 }});
+    game.layout('blueCandles', { area: { left: 73.5 + LEFT_POSITION_OFFSET, top: 11, width: 9, height: 17.5 }});
+    game.layout('orangeCandles', { area: { left: 82.5 + LEFT_POSITION_OFFSET, top: 11, width: 9, height: 17.5 }});
+    game.layout('greenCandles', { area: { left: 92 + LEFT_POSITION_OFFSET, top: 11, width: 9, height: 17.5 }});
+    game.layout('purpleCandles', { area: { left: 101.5 + LEFT_POSITION_OFFSET, top: 11, width: 9, height: 17.5 }});
+    game.layout('blackCandles', { area: { left: 110.5 + LEFT_POSITION_OFFSET, top: 14.5, width: 9, height: 14 }});
 
-    game.layout('whiteType', { area: { left: 45.5, top: 30, width: 8, height: 4.5 }});
-    game.layout('redType', { area: { left: 55, top: 30, width: 8, height: 4.5 }});
-    game.layout('yellowType', { area: { left: 64.5, top: 30, width: 8, height: 4.5 }});
-    game.layout('blueType', { area: { left: 74, top: 30, width: 8, height: 4.5 }});
-    game.layout('orangeType', { area: { left: 83.5, top: 30, width: 8, height: 4.5 }});
-    game.layout('greenType', { area: { left: 92.5, top: 30, width: 8, height: 4.5 }});
-    game.layout('purpleType', { area: { left: 102, top: 30, width: 8, height: 4.5 }});
-    game.layout('blackType', { area: { left: 111.5, top: 30, width: 8, height: 4.5 }});
+    game.layout('whiteType', { area: { left: 45.5 + LEFT_POSITION_OFFSET, top: 30, width: 8, height: 4.5 }});
+    game.layout('redType', { area: { left: 55 + LEFT_POSITION_OFFSET, top: 30, width: 8, height: 4.5 }});
+    game.layout('yellowType', { area: { left: 64.5 + LEFT_POSITION_OFFSET, top: 30, width: 8, height: 4.5 }});
+    game.layout('blueType', { area: { left: 74 + LEFT_POSITION_OFFSET, top: 30, width: 8, height: 4.5 }});
+    game.layout('orangeType', { area: { left: 83.5 + LEFT_POSITION_OFFSET, top: 30, width: 8, height: 4.5 }});
+    game.layout('greenType', { area: { left: 92.5 + LEFT_POSITION_OFFSET, top: 30, width: 8, height: 4.5 }});
+    game.layout('purpleType', { area: { left: 102 + LEFT_POSITION_OFFSET, top: 30, width: 8, height: 4.5 }});
+    game.layout('blackType', { area: { left: 111.5 + LEFT_POSITION_OFFSET, top: 30, width: 8, height: 4.5 }});
 
-    game.layout('gameEndType1', { area: { left: -12, top: 21, width: 8, height: 4.5 }});
-    game.layout('gameEndType2', { area: { left: -12, top: 25.6, width: 8, height: 4.5 }});
-    game.layout('gameEndType3', { area: { left: -12, top: 30.25, width: 8, height: 4.5 }});
+    game.layout('gameEndType1', { area: { left: -12 + LEFT_POSITION_OFFSET, top: 21, width: 8, height: 4.5 }});
+    game.layout('gameEndType2', { area: { left: -12 + LEFT_POSITION_OFFSET, top: 25.6, width: 8, height: 4.5 }});
+    game.layout('gameEndType3', { area: { left: -12 + LEFT_POSITION_OFFSET, top: 30.25, width: 8, height: 4.5 }});
 
-    game.layout('round1', { area: { left: 84.5, top: 6, width: 5, height: 5 }});
-    game.layout('round2', { area: { left: 93, top: 6, width: 5, height: 5 }});
-    game.layout('round3', { area: { left: 101.5, top: 6, width: 5, height: 5 }});
-    // game.layout('round4', { area: { left: 102.5, top: 6, width: 5, height: 5 }});
+    game.layout('round1', { area: { left: 84.5 + LEFT_POSITION_OFFSET, top: 6, width: 5, height: 5 }});
+    game.layout('round2', { area: { left: 93 + LEFT_POSITION_OFFSET, top: 6, width: 5, height: 5 }});
+    game.layout('round3', { area: { left: 101.5 + LEFT_POSITION_OFFSET, top: 6, width: 5, height: 5 }});
+    // game.layout('round4', { area: { left: 102.5 + LEFT_OFFSET, top: 6, width: 5, height: 5 }});
 
-    game.layout('roundEndSpace1', { area: { left: -19.5, top: 88, width: 16.6, height: 6.5 }});
-    game.layout('roundEndSpace2', { area: { left: -1, top: 88, width: 16.6, height: 6.5 }});
-    game.layout('roundEndSpace3', { area: { left: 17, top: 88, width: 16.6, height: 6.5 }});
-    game.layout('roundEndSpace4', { area: { left: 35.5, top: 88, width: 16.6, height: 6.5 }});
-    game.layout('roundEndSpace5', { area: { left: 54, top: 88, width: 16.6, height: 6.5 }});
+    game.layout('roundEndSpace1', { area: { left: -19.5 + LEFT_POSITION_OFFSET, top: 88, width: 16.6, height: 6.5 }});
+    game.layout('roundEndSpace2', { area: { left: -1 + LEFT_POSITION_OFFSET, top: 88, width: 16.6, height: 6.5 }});
+    game.layout('roundEndSpace3', { area: { left: 17 + LEFT_POSITION_OFFSET, top: 88, width: 16.6, height: 6.5 }});
+    game.layout('roundEndSpace4', { area: { left: 35.5 + LEFT_POSITION_OFFSET, top: 88, width: 16.6, height: 6.5 }});
+    game.layout('roundEndSpace5', { area: { left: 54 + LEFT_POSITION_OFFSET, top: 88, width: 16.6, height: 6.5 }});
 
-    game.layout('playerOrder1', { area: { left: 2.1, top: 10, width: 2.5, height: 2.5 }});
-    game.layout('playerOrder2', { area: { left: 2.1, top: 12.7, width: 2.5, height: 2.5 }});
-    game.layout('playerOrder3', { area: { left: 2.1, top: 15.4, width: 2.5, height: 2.5 }});
-    game.layout('playerOrder4', { area: { left: 2.1, top: 18.1, width: 2.5, height: 2.5 }});
+    game.layout('playerOrder1', { area: { left: 2.1 + LEFT_POSITION_OFFSET, top: 10, width: 2.5, height: 2.5 }});
+    game.layout('playerOrder2', { area: { left: 2.1 + LEFT_POSITION_OFFSET, top: 12.7, width: 2.5, height: 2.5 }});
+    game.layout('playerOrder3', { area: { left: 2.1 + LEFT_POSITION_OFFSET, top: 15.4, width: 2.5, height: 2.5 }});
+    game.layout('playerOrder4', { area: { left: 2.1 + LEFT_POSITION_OFFSET, top: 18.1, width: 2.5, height: 2.5 }});
 
-    game.layout('playerOrderPass1', { area: { left: 1.3, top: 24, width: 2.5, height: 2.5 }});
-    game.layout('playerOrderPass2', { area: { left: 1.3, top: 26.7, width: 2.5, height: 2.5 }});
-    game.layout('playerOrderPass3', { area: { left: 1.3, top: 29.4, width: 2.5, height: 2.5 }});
-    game.layout('playerOrderPass4', { area: { left: 1.3, top: 32.1, width: 2.5, height: 2.5 }});
+    game.layout('playerOrderPass1', { area: { left: 1.3 + LEFT_POSITION_OFFSET, top: 24, width: 2.5, height: 2.5 }});
+    game.layout('playerOrderPass2', { area: { left: 1.3 + LEFT_POSITION_OFFSET, top: 26.7, width: 2.5, height: 2.5 }});
+    game.layout('playerOrderPass3', { area: { left: 1.3 + LEFT_POSITION_OFFSET, top: 29.4, width: 2.5, height: 2.5 }});
+    game.layout('playerOrderPass4', { area: { left: 1.3 + LEFT_POSITION_OFFSET, top: 32.1, width: 2.5, height: 2.5 }});
 
-    game.layout('bag', { area: { left: 0, top: 0, width: 0, height: 0 }});
+    game.layout('bag', { area: { left: 0 + LEFT_POSITION_OFFSET, top: 0, width: 0, height: 0 }});
     
-    game.layout('backAlleySpaceA1', { area: { left: 22.5, top: 36, width: 6.5, height: 6.5 }});
-    game.layout('backAlleySpaceA2', { area: { left: 22.5, top: 43, width: 6.5, height: 6.5 }});
-    game.layout('backAlleySpaceA3', { area: { left: 22.5, top: 50, width: 6.5, height: 6.5 }});
-    game.layout('backAlleySpaceA4', { area: { left: 22.5, top: 57, width: 6.5, height: 6.5 }});
+    game.layout('backAlleySpaceA1', { area: { left: 22.5 + LEFT_POSITION_OFFSET, top: 36, width: 6.5, height: 6.5 }});
+    game.layout('backAlleySpaceA2', { area: { left: 22.5 + LEFT_POSITION_OFFSET, top: 43, width: 6.5, height: 6.5 }});
+    game.layout('backAlleySpaceA3', { area: { left: 22.5 + LEFT_POSITION_OFFSET, top: 50, width: 6.5, height: 6.5 }});
+    game.layout('backAlleySpaceA4', { area: { left: 22.5 + LEFT_POSITION_OFFSET, top: 57, width: 6.5, height: 6.5 }});
     
-    game.layout('backAlleyA', { area: { left: 22.5, top: 67, width: 6.5, height: 6.5 }});
+    game.layout('backAlleyA', { area: { left: 22.5 + LEFT_POSITION_OFFSET, top: 67, width: 6.5, height: 6.5 }});
 
-    game.layout('backAlleySpaceB1', { area: { left: 71, top: 36, width: 6.5, height: 6.5 }});
-    game.layout('backAlleySpaceB2', { area: { left: 71, top: 43, width: 6.5, height: 6.5 }});
-    game.layout('backAlleySpaceB3', { area: { left: 71, top: 50, width: 6.5, height: 6.5 }});
-    game.layout('backAlleySpaceB4', { area: { left: 71, top: 57, width: 6.5, height: 6.5 }});
+    game.layout('backAlleySpaceB1', { area: { left: 71 + LEFT_POSITION_OFFSET, top: 36, width: 6.5, height: 6.5 }});
+    game.layout('backAlleySpaceB2', { area: { left: 71 + LEFT_POSITION_OFFSET, top: 43, width: 6.5, height: 6.5 }});
+    game.layout('backAlleySpaceB3', { area: { left: 71 + LEFT_POSITION_OFFSET, top: 50, width: 6.5, height: 6.5 }});
+    game.layout('backAlleySpaceB4', { area: { left: 71 + LEFT_POSITION_OFFSET, top: 57, width: 6.5, height: 6.5 }});
 
-    game.layout('backAlleyB', { area: { left: 71, top: 67, width: 6.5, height: 6.5 }});
+    game.layout('backAlleyB', { area: { left: 71 + LEFT_POSITION_OFFSET, top: 67, width: 6.5, height: 6.5 }});
 
-    game.layout('waxBackAlleySpaceA', { area: { left: 14, top: 69.5, width: 6.5, height: 6.5 }});
-    game.layout('waxBackroomCheckSpace', { area: { left: 20.5, top: 69.5, width: 6.5, height: 6.5 }});
+    game.layout('waxBackAlleySpaceA', { area: { left: 14 + LEFT_POSITION_OFFSET, top: 69.5, width: 6.5, height: 6.5 }});
+    game.layout('waxBackroomCheckSpace', { area: { left: 20.5 + LEFT_POSITION_OFFSET, top: 69.5, width: 6.5, height: 6.5 }});
 
-    game.layout('pigmentBackAlleySpaceA', { area: { left: 56.5, top: 69.5, width: 6.5, height: 6.5 }});
-    game.layout('pigmentBackAlleySpaceB', { area: { left: 63.5, top: 69.5, width: 6.5, height: 6.5 }});
-    game.layout('pigmentBackroomCheckSpace', { area: { left: 70, top: 69.5, width: 6.5, height: 6.5 }});
+    game.layout('pigmentBackAlleySpaceA', { area: { left: 56.5 + LEFT_POSITION_OFFSET, top: 69.5, width: 6.5, height: 6.5 }});
+    game.layout('pigmentBackAlleySpaceB', { area: { left: 63.5 + LEFT_POSITION_OFFSET, top: 69.5, width: 6.5, height: 6.5 }});
+    game.layout('pigmentBackroomCheckSpace', { area: { left: 70 + LEFT_POSITION_OFFSET, top: 69.5, width: 6.5, height: 6.5 }});
 
-    game.layout('moldBackAlleySpaceB', { area: { left: 111.5, top: 69.5, width: 6.5, height: 6.5 }});
-    game.layout('moldBackroomCheckSpace', { area: { left: 118, top: 69.5, width: 6.5, height: 6.5 }});
+    game.layout('moldBackAlleySpaceB', { area: { left: 111.5 + LEFT_POSITION_OFFSET, top: 69.5, width: 6.5, height: 6.5 }});
+    game.layout('moldBackroomCheckSpace', { area: { left: 118 + LEFT_POSITION_OFFSET, top: 69.5, width: 6.5, height: 6.5 }});
 
-    game.layout('ready', { area: { left: 112, top: 7, width: 6.5, height: 6.5 }});
+    game.layout('ready', { area: { left: 112 + LEFT_POSITION_OFFSET, top: 7, width: 6.5, height: 6.5 }});
 
-    game.layout('waxSpillArea', { area: { left: -10, top: 78, width: 20, height: 9 }});    
-    game.layout('meltSpillArea', { area: { left: 87.5, top: 78, width: 25, height: 9 }});
+    game.layout('waxSpillArea', { area: { left: -10 + LEFT_POSITION_OFFSET, top: 78, width: 20, height: 9 }});    
+    game.layout('meltSpillArea', { area: { left: 87.5 + LEFT_POSITION_OFFSET, top: 78, width: 25, height: 9 }});
 
-    game.layout('alleyACheckSpace', { area: { left: 22.5, top: 66.5, width: 6.5, height: 6.5 }});
-    game.layout('alleyBCheckSpace', { area: { left: 71, top: 66.5, width: 6.5, height: 6.5 }});
+    game.layout('alleyACheckSpace', { area: { left: 22.5 + LEFT_POSITION_OFFSET, top: 66.5, width: 6.5, height: 6.5 }});
+    game.layout('alleyBCheckSpace', { area: { left: 71 + LEFT_POSITION_OFFSET, top: 66.5, width: 6.5, height: 6.5 }});
 
     game.all(ChandlersBoard).appearance({
       render: () => (
@@ -308,18 +309,18 @@ render(setup, {
       ),
     });
 
-    game.layout('redHook', { area: { left: 84, top: 90, width: 6, height: 6 }});
-    game.layout('blueHook', { area: { left: 93.5, top: 90, width: 6, height: 6 }});
-    game.layout('yellowHook', { area: { left: 89, top: 90, width: 6, height: 6 }});
-    game.layout('orangeHook', { area: { left: 97.5, top: 90, width: 6, height: 6 }});
-    game.layout('greenHook', { area: { left: 102, top: 90, width: 6, height: 6 }});
-    game.layout('purpleHook', { area: { left: 106.5, top: 90, width: 6, height: 6 }});
+    game.layout('redHook', { area: { left: 84 + LEFT_POSITION_OFFSET, top: 90, width: 6, height: 6 }});
+    game.layout('blueHook', { area: { left: 93.5 + LEFT_POSITION_OFFSET, top: 90, width: 6, height: 6 }});
+    game.layout('yellowHook', { area: { left: 89 + LEFT_POSITION_OFFSET, top: 90, width: 6, height: 6 }});
+    game.layout('orangeHook', { area: { left: 97.5 + LEFT_POSITION_OFFSET, top: 90, width: 6, height: 6 }});
+    game.layout('greenHook', { area: { left: 102 + LEFT_POSITION_OFFSET, top: 90, width: 6, height: 6 }});
+    game.layout('purpleHook', { area: { left: 106.5 + LEFT_POSITION_OFFSET, top: 90, width: 6, height: 6 }});
 
-    game.layout('pigmentMasteryArea', { area: { left: 31, top: 70, width: 12.5, height: 4.5 }});
-    game.layout('pigmentSpillArea', { area: { left: 37.5, top: 78, width: 22.5, height: 9 }});
-    game.layout('pigmentSpillCheckSpace', { area: { left: 31.75, top: 76.5, width: 6.5, height: 6.5 }});
+    game.layout('pigmentMasteryArea', { area: { left: 31 + LEFT_POSITION_OFFSET, top: 70, width: 12.5, height: 4.5 }});
+    game.layout('pigmentSpillArea', { area: { left: 37.5 + LEFT_POSITION_OFFSET, top: 78, width: 22.5, height: 9 }});
+    game.layout('pigmentSpillCheckSpace', { area: { left: 31.75 + LEFT_POSITION_OFFSET, top: 76.5, width: 6.5, height: 6.5 }});
 
-    game.layout('pigmentMasteryCheckSpace', { area: { left: 43, top: 69, width: 6.5, height: 6.5 }});
+    game.layout('pigmentMasteryCheckSpace', { area: { left: 43 + LEFT_POSITION_OFFSET, top: 69, width: 6.5, height: 6.5 }});
 
     game.all(Spill).appearance({
       render: () => (
@@ -634,16 +635,16 @@ render(setup, {
     });
 
     game.layout('scoringTrack1_20', { 
-      area: { left: -22.75, top: 2, width: 3, height: 93 }
+      area: { left: -22.75 + LEFT_POSITION_OFFSET, top: 2, width: 3, height: 93 }
     });
     game.layout('scoringTrack21_50', { 
-      area: { left: -19.75, top: 2, width: 142.50, height: 3 }
+      area: { left: -19.75 + LEFT_POSITION_OFFSET, top: 2, width: 142.50, height: 3 }
     });
     game.layout('scoringTrack51_70', { 
-      area: { left: 120, top: 5, width: 3, height: 93 }
+      area: { left: 120 + LEFT_POSITION_OFFSET, top: 5, width: 3, height: 93 }
     });
     game.layout('scoringTrack71_100', { 
-      area: { left: -22.75, top: 95, width: 142.50, height: 3 }
+      area: { left: -22.75 + LEFT_POSITION_OFFSET, top: 95, width: 142.50, height: 3 }
     });
     $.scoringTrack1_20.layout(ScoringSpace, {     
       rows: 20,
@@ -761,7 +762,7 @@ render(setup, {
     game.layoutControls({
       element: game,
       top: 0,
-      center: -5,
+      center: -5 + LEFT_POSITION_OFFSET,
       width: 30
     });
   }
