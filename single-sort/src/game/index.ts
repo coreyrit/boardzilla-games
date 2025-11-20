@@ -234,8 +234,10 @@ export default createGame(SingleSortPlayer, MyGame, game => {
     }).chooseOnBoard(
       'plastic', player.hand.all(Plastic),
       { min: 1, max: game.players.length >= 5 ? 3 : 2, skipIf: 'never', validate: ({plastic}) => {
-        return plastic.length != 2 || game.players.length >= 3 || 
-          (plastic[0].color == plastic[1].color && table.all(Glass, {color: plastic[0].color}).length > 0);
+        return plastic.length == 1 || 
+          (plastic.length == 2 && plastic[0].color == plastic[1].color && table.all(Glass, {color: plastic[0].color}).length > 0) ||
+          (plastic.length == 2 && plastic[0].color != plastic[1].color) ||
+          (plastic.length == 3 && plastic[0].color != plastic[1].color && plastic[1].color != plastic[2].color && plastic[0].color != plastic[2].color);
       } }
     ).chooseOnBoard(
       'what', ({plastic}) => plastic.length == 2 && plastic[0].color == plastic[1].color ? 
@@ -266,9 +268,8 @@ export default createGame(SingleSortPlayer, MyGame, game => {
               (game.players.length > 3 && glass.length == 2 && table.all(Metal).length > 0);
       } }
     ).chooseOnBoard(
-      'what', ({glass}) => glass.length > 1 && glass[0].color == glass[1].color ? 
-        table.all(Metal)
-        : table.all(Plastic, {color: glass[0].color, face: 6}),
+      'what', ({glass}) => glass.length > 1 ? 
+        table.all(Metal) : table.all(Plastic, {color: glass[0].color, face: 6}),
       { skipIf: 'never', validate: ({what}) => {
         return true;
       } }
