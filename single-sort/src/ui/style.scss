@@ -1,2 +1,26 @@
 #play-area {
+    .Cardboard {
+        &.selected {
+            > div {      
+                border: 3px solid black;
+            }
+        }
+        &.selectable {
+            > div {      
+                border: 3px solid red;
+            }
+        }
+    }
+    .Plastic {
+        &.selected {
+            > div {      
+                border: 3px solid black;
+            }
+        }
+        &.selectable {
+            > div {      
+                border: 3px solid red;
+            }
+        }
+    }
 }

@@ -11,20 +11,33 @@ import { Component } from "./component/component.js";
 import { Cardboard } from "./component/cardboard.js";
 import { Plastic } from "./component/plastic.js";
 import { Glass } from "./component/glass.js";
+import { Metal } from "./component/metal.js";
 
 import { Hand } from "./hand.js";
 import { Goal } from "./component/goal.js";
 
 export class SingleSortPlayer extends Player<MyGame, SingleSortPlayer> {
+  public hand: Hand;
+  public take: Cardboard[] = [];
+}
+
+export class PlayersSpace extends Space<MyGame> {
+ 
 }
 
 export class MyGame extends Game<MyGame, SingleSortPlayer> {
 }
 
+export class Table extends Space<MyGame> {
+}
+
+export class Box extends Space<MyGame> {
+}
+
 export default createGame(SingleSortPlayer, MyGame, game => {
 
   const { action } = game;
-  const { playerActions, loop, eachPlayer } = game.flowCommands;
+  const { playerActions, loop, forLoop, whileLoop, eachPlayer } = game.flowCommands;
 
   const ROWS = 9;
   const COLUMNS = 15;
@@ -77,7 +90,16 @@ export default createGame(SingleSortPlayer, MyGame, game => {
   // const hands: Hand[] = [];
   // let goals: Goal[] = [];
 
-  const box = game.create(Space<MyGame>, 'box');
+  const table = game.create(Table, 'table');
+  const box = game.create(Box, 'box');
+
+  const playersSpace = game.create(PlayersSpace, 'playersSpace')
+  for(var i = 0; i < game.players.length; i++) {
+    const playerSpace = playersSpace.create(Hand, 'hand' + i, {player: game.players[i]});
+    game.players[i].hand = playerSpace
+  }
+
+
 
   // if(players == 1) {
   //   goals.push(new Goal([
@@ -120,7 +142,6 @@ export default createGame(SingleSortPlayer, MyGame, game => {
   // }
 
   let state = State.Take;
-  let take: Cardboard[] = [];
   let rotSelection: Component | undefined = undefined;
 
   const cleanCardboards: number[] = [7, 6, 3, 2, 1, 1, 1];
@@ -152,10 +173,13 @@ export default createGame(SingleSortPlayer, MyGame, game => {
     Glass.createYellowGlass(box);
   }
 
+  Metal.createGoldMetal(box);
+  Metal.createSilverMetal(box);
+  Metal.createBronzeMetal(box);
+
   box.shuffle();
 
-
-
+  box.all(Piece).forEach(c => c.putInto(table));
 
 
 
@@ -172,15 +196,73 @@ export default createGame(SingleSortPlayer, MyGame, game => {
 
   
   game.defineActions({
+
+    collectCardboard: (player) => action({
+      prompt: 'Collect',
+    }).chooseOnBoard(
+      'cardboard', table.all(Cardboard, {faceUp: false}),
+      { skipIf: 'never' }
+    ).do(({ cardboard }) => {
+      cardboard.flip()
+      cardboard.putInto(player.hand)
+      player.take.push(cardboard);
+      game.message(game.players.length.toString());
+      game.message(player.take.length.toString());
+    }),
+
+    recycleChoice: (player) => action({
+      prompt: 'Recycle',
+    }).chooseOnBoard(
+      'component', player.hand.all(Component),
+      { skipIf: 'never' }
+    ).do(({ component }) => {
+      if(component != undefined) {
+        game.followUp({name: 'recycleWhat', args: {recycle: component}})
+      }
+    }),
+
+    recycleWhat: (player) =>  action<{recycle: Component}>({
+      prompt: 'Recycle',
+    }).chooseOnBoard(
+      'what', ({recycle}) => 
+        table.all(Glass, {color: recycle.color}).map(x => x as Component)
+        .concat(recycle instanceof Cardboard ? 
+          table.all(Cardboard, {faceUp: true, color: recycle.color, face: (recycle as Cardboard).face}).map(x => x as Component)
+          .concat(
+            table.all(Plastic, {color: recycle.color, face: (recycle as Cardboard).face}).map(x => x as Component)
+          ) : [])
+        .concat(recycle instanceof Plastic ? 
+          table.all(Cardboard, {faceUp: true, color: recycle.color, face: (recycle as Plastic).face}).map(x => x as Component)
+          .concat(
+            table.all(Plastic, {color: recycle.color, face: (recycle as Plastic).face}).map(x => x as Component)
+          ) : []),
+      { skipIf: 'never' }
+    ).do(({ recycle, what }) => {
+      recycle.putInto(table);
+      what.putInto(player.hand);      
+    }),
+
+    skip: (player) => action({
+      prompt: 'Skip',
+    }),
+
   });
 
   game.defineFlow(
     
-    () => game.message('Start 1'),
-    () => game.message('Start 2'),
-    () => game.message('Start 3'),
-    () => game.message('Start 4'),
-
-  );
+    eachPlayer({
+      name: 'turn', do: [
+        // Collect
+        whileLoop({while: () => (
+          (game.players.length == 1 && game.players.current()!.take.length < 2) || 
+          (game.players.current()!.take.length == 0 || !game.players.current()!.take[game.players.current()!.take.length-1].clean)
+        ), do: ([
+            playerActions({ actions: ['collectCardboard']}),
+        ])}),
+        // Recycle
+        playerActions({ actions: ['recycleChoice', 'skip']}),
+      ]   
+    })
+  )
 
 });

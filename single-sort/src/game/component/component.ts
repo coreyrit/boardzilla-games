@@ -11,9 +11,11 @@ export enum Material {
     Metal,
 }
 
-export abstract class Component extends Piece<MyGame> {
+export class Component extends Piece<MyGame> {
   public color: string;
   public highlight: boolean = false;
 
-  public abstract getMaterial(): Material;
+  public getMaterial(): Material {
+    return Material.None;
+  }
 }
