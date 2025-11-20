@@ -19,23 +19,18 @@ render(setup, {
       render: () => null
     });
 
-    game.layout('table', { area: { left: 15, top: 22, width: 85, height: 78 }});
+    game.layout('table', { area: { left: 15, top: 22, width: 80, height: 78 }});
     game.layout('box', { area: { left: 0, top: 0, width: 0, height: 0 }});
-    game.layout('playersSpace', { area: { left: 15, top: 0, width: 85, height: 22 }});
+    game.layout('playersSpace', { area: { left: 15, top: 0, width: 80, height: 22 }});
 
-    //  game.layoutAsDrawer($.playersSpace as Space<MyGame>, 
-    //   { area: { left: 0, top: 90, width: 100, height: 10 }, openDirection: 'up', tab: 'Players',
-    //   openIf: actions => actions.some(a => 
-    //     [
-    //       'recycleChoice'
-    //     ]
-    //     .includes(a.name)),
-    //   closeIf: actions => actions.some(a => 
-    //       [
-    //         'recycleWhat'
-    //       ]
-    //       .includes(a.name)),
-    //   });
+    game.layout('trash', { area: { left: 0, top: 0, width: 15, height: 75 }});
+    $.trash.layout(Component, {area: { left: 0, top: 0, width: 100, height: 100 },
+      columns: 2, rows: 15, gap: {x: 0, y: 15}, scaling: 'fill'
+    })
+
+     game.layoutAsDrawer($.trash as Space<MyGame>, 
+      { area: { left: 80, top: 0, width: 20, height: 100 }, openDirection: 'left', tab: 'Trash' }
+     );
 
       var index = 0;
       let tabSpaces: Record<string, Space<MyGame> | string> = {};
@@ -103,9 +98,11 @@ render(setup, {
     ) });
 
     game.all(Metal).appearance({ render: x => ( 
+      <div className="Metal">
       <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" color={x.color}>      
         <rect x="30" y="30" width="40" height="40" fill='currentColor'/>
       </svg>
+      </div>
     ) });
 
     // $.box.appearance({render: x=> ( <div /> )})

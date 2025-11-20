@@ -35,6 +35,9 @@ export class Table extends Space<MyGame> {
 export class Box extends Space<MyGame> {
 }
 
+export class Trash extends Space<MyGame> {
+}
+
 export class Junk extends Piece<MyGame> {
 }
 
@@ -87,6 +90,7 @@ export default createGame(SingleSortPlayer, MyGame, game => {
 
   const table = game.create(Table, 'table');
   const box = game.create(Box, 'box');
+  const trash = game.create(Trash, 'trash');
 
   const playersSpace = game.create(PlayersSpace, 'playersSpace')
   for(var i = 0; i < game.players.length; i++) {
@@ -154,7 +158,7 @@ export default createGame(SingleSortPlayer, MyGame, game => {
   
   game.defineActions({
 
-    collectCardboard: (player) => action({
+    collect: (player) => action({
       prompt: 'Collect',
     }).chooseOnBoard(
       'cardboard', table.all(Cardboard, {faceUp: false}),
@@ -167,20 +171,12 @@ export default createGame(SingleSortPlayer, MyGame, game => {
       game.message(player.take.length.toString());
     }),
 
-    recycleChoice: (player) => action({
+    recycle: (player) => action({
       prompt: 'Recycle',
     }).chooseOnBoard(
-      'component', player.hand.all(Component),
+      'recycle', player.hand.all(Component),
       { skipIf: 'never' }
-    ).do(({ component }) => {
-      if(component != undefined) {
-        game.followUp({name: 'recycleWhat', args: {recycle: component}})
-      }
-    }),
-
-    recycleWhat: (player) =>  action<{recycle: Component}>({
-      prompt: 'Recycle',
-    }).chooseOnBoard(
+    ).chooseOnBoard(
       'what', ({recycle}) => table.all(Component).filter(x => 
         (recycle instanceof Cardboard && x instanceof Cardboard && x.color != recycle.color && x.face == recycle.face && x.faceUp) ||
         (recycle instanceof Plastic && x instanceof Plastic && x.color != recycle.color && x.face == recycle.face) ||
@@ -195,7 +191,7 @@ export default createGame(SingleSortPlayer, MyGame, game => {
       player.recycled = true;
     }),
 
-    repairOrReduceCardboard: (player) => action({
+    repairOrReduce: (player) => action({
       prompt: 'Repair or Reduce',
     }).chooseOnBoard(
       'cardboard', player.hand.all(Cardboard),
@@ -208,114 +204,88 @@ export default createGame(SingleSortPlayer, MyGame, game => {
                 cardboard.length == 1                
               );
       } }
-    ).do(({ cardboard }) => {
-      if(cardboard.length > 1) {
-        game.followUp({name: 'reduceWhat', args: {reduce: cardboard}})
-      } else if(cardboard.length == 1) {
-        if(table.all(Plastic, {color: cardboard[0].color, face: cardboard.reduce((sum, cb) => sum + cb.face, 0)}).filter(x => x.face != 6).length > 0) {
-          game.followUp({name: 'repairOrReduceWhat', args: {repairOrReduce: cardboard[0]}})
-        } else {
-          game.followUp({name: 'repairWhat', args: {repair: cardboard[0]}})
-        }        
-      }
+    ).chooseOnBoard(
+      'what', ({cardboard}) => cardboard.length > 1 ? 
+        table.all(Plastic, {color: cardboard[0].color, face: cardboard.reduce((sum, cb) => sum + cb.face, 0)}).filter(x => x.face != 6) : 
+        table.all(Plastic, {color: cardboard[0].color, face: cardboard[0].face}).filter(x => x.face != 6).map(x => x as Component)
+          .concat(table.all(Cardboard, {color: cardboard[0].color, faceUp: true}).filter(x => x.face < cardboard[0].face)),
+      { min: 1, max: ({cardboard}) => cardboard.length > 1 ? 1 : 3, skipIf: 'never', validate: ({cardboard, what}) => {
+        return  (
+                  what[0] instanceof Cardboard && 
+                  what.filter(x => x instanceof Cardboard).length == what.length && 
+                  what.reduce((sum, cb) => sum + (cb as Cardboard).face, 0) == cardboard[0].face
+                ) 
+                ||
+                (
+                  what[0] instanceof Plastic &&
+                  what.length == 1 &&
+                  what[0].face == cardboard.reduce((sum, cb) => sum + cb.face, 0)
+                )
+      } }
+    ).confirm(
+       ({ cardboard, what }) => what[0] instanceof Plastic ? 'Confirm Reduce' : 'Confirm Repair'
+    ).do(({ cardboard, what }) => {
+      cardboard.forEach( x => x.putInto(table) );
+      what.forEach( x => x.putInto(player.hand) );
     }),
 
-    reduceWhat: (player) =>  action<{reduce: Cardboard[]}>({
-      prompt: 'Reduce',
-    }).chooseOnBoard(
-      'what', ({reduce}) => table.all(Plastic, {color: reduce[0].color, face: reduce.reduce((sum, cb) => sum + cb.face, 0)}).filter(x => x.face != 6),
-      { skipIf: 'never', validate: ({what, reduce}) => {
-        return what.face == reduce.reduce((sum, cb) => sum + cb.face, 0)
-      } } 
-    ).do(({ reduce, what }) => {
-      reduce.forEach(x => x.putInto(table));
-      what.putInto(player.hand);
-    }),
-
-    repairWhat: (player) =>  action<{repair: Cardboard}>({
-      prompt: 'Repair',
-    }).chooseOnBoard(
-      'what', ({repair}) => table.all(Cardboard, {color: repair.color, faceUp: true}).filter(x => x.face <= repair.face)
-      ,
-      { min: 1, max: 3, skipIf: 'never', validate: ({what, repair}) => {
-        return repair.face == what.reduce((sum, cb) => sum + cb.face, 0)
-      } } 
-    ).do(({ repair, what }) => {
-      what.forEach(x => x.putInto(table));
-      repair.putInto(player.hand);
-    }),
-
-    repairOrReduceWhat: (player) => action<{repairOrReduce: Cardboard}>({
-      prompt: 'Repair or Reduce',
-    }).chooseOnBoard(
-      'what', ({repairOrReduce}) => table.all(Cardboard, {color: repairOrReduce.color, faceUp: true}).filter(x => x.face <= repairOrReduce.face).map(x => x as Component)
-        .concat(table.all(Plastic, {color: repairOrReduce.color, face: repairOrReduce.face}).filter(x => x.face != 6).map(x => x as Component)
-      ),
-      { min: 1, max: 3, skipIf: 'never', validate: ({what, repairOrReduce}) => {
-        return (what.length >= 1 && 
-                what.filter(x => x instanceof Cardboard).length == what.length && 
-                repairOrReduce.face == what.reduce((sum, cb) => sum + (cb as Cardboard).face, 0)) ||
-               (what.length == 1 && what[0] instanceof Plastic && (what[0] as Plastic).face == repairOrReduce.face)
-      } } 
-    ).do(({ repairOrReduce, what }) => {
-      repairOrReduce.putInto(table);
-      what.forEach(x => x.putInto(player.hand));
-    }),
-
-    rethinkOrRepurposePlastic: (player) => action({
+    rethinkOrRepurpose: (player) => action({
       prompt: 'Rethink or Repurpose',
     }).chooseOnBoard(
       'plastic', player.hand.all(Plastic),
       { min: 1, max: game.players.length >= 5 ? 3 : 2, skipIf: 'never', validate: ({plastic}) => {
-        return true;
+        return plastic.length != 2 || game.players.length >= 3 || 
+          (plastic[0].color == plastic[1].color && table.all(Glass, {color: plastic[0].color}).length > 0);
       } }
-    ).do(({ plastic }) => {
-      if(plastic.length == 2 && plastic[0].color == plastic[1].color && game.players.length < 3 && table.all(Glass, {color: plastic[0].color}).length > 0) {
-        game.followUp({name: 'repurposeWhat', args: {repurpose: plastic}})
-      } else if(plastic.length == 2 && plastic[0].color == plastic[1].color && game.players.length >= 3 && table.all(Glass, {color: plastic[0].color}).length > 0) {
-        game.followUp({name: 'rethinkOrRepurposeWhat', args: {rethinkOrRepurpose: plastic}})
-      } else {
-        game.followUp({name: 'rethinkWhat', args: {rethink: plastic}})
-      }
-    }),
-
-    rethinkWhat: (player) => action<{rethink: Plastic[]}>({
-      prompt: 'Rethink',
-    }).confirm(
-       ({ rethink }) => 'Confirm Rethink'
-    ).do(({ rethink }) => {
-      rethink.forEach(x => x.roll(game));
-    }),
-
-    repurposeWhat: (player) => action<{repurpose: Plastic[]}>({
-      prompt: 'Repurpose',
-    }).chooseOnBoard(
-      'what', ({repurpose}) => table.all(Glass, {color: repurpose[0].color}),
-      { skipIf: 'never', validate: ({what}) => {
-        return true;
-      } }
-    ).do(({ repurpose, what }) => {
-      repurpose.forEach(x => x.roll(game));
-      what.putInto(player.hand);
-      repurpose.forEach(x => x.putInto(table));
-    }),
-
-    rethinkOrRepurposeWhat: (player) => action<{rethinkOrRepurpose: Plastic[]}>({
-      prompt: 'Rethink or Repurpose',
-    }).chooseOnBoard(
-      'what', ({rethinkOrRepurpose}) => table.all(Glass, {color: rethinkOrRepurpose[0].color})
-        .concat(rethinkOrRepurpose),
+    ).chooseOnBoard(
+      'what', ({plastic}) => plastic.length == 2 && plastic[0].color == plastic[1].color ? 
+        table.all(Glass, {color: plastic[0].color}).concat(plastic)
+        : plastic,
       { skipIf: 'never', validate: ({what}) => {
         return true;
       } }
     ).confirm(
-       ({ rethinkOrRepurpose, what }) => what instanceof Glass ? 'Repurpose?' : 'Rethink?'
-    ).do(({ rethinkOrRepurpose, what }) => {
-      rethinkOrRepurpose.forEach(x => x.roll(game));
+       ({ plastic, what }) => what instanceof Glass ? 'Confirm Repurpose' : 'Confirm Rethink'
+    ).do(({ plastic, what }) => {
+      plastic.forEach
       if(what instanceof Glass) {
+        plastic.forEach(x => {
+          x.putInto(table);
+        });
         what.putInto(player.hand);
-        rethinkOrRepurpose.forEach(x => x.putInto(table));
       }
+    }),
+
+    reuseOrReturn: (player) => action({
+      prompt: 'Reuse or Return',
+    }).chooseOnBoard(
+      'glass', player.hand.all(Glass),
+      { min: 1, max: game.players.length <= 3 ? 3 : 2, skipIf: 'never', validate: ({glass}) => {
+        return (glass.length == 1 && table.all(Plastic, {color: glass[0].color, face: 6}).length > 0) ||
+              (game.players.length <= 3 && glass.length == 3 && table.all(Metal).length > 0) ||
+              (game.players.length > 3 && glass.length == 2 && table.all(Metal).length > 0);
+      } }
+    ).chooseOnBoard(
+      'what', ({glass}) => glass.length > 1 && glass[0].color == glass[1].color ? 
+        table.all(Metal)
+        : table.all(Plastic, {color: glass[0].color, face: 6}),
+      { skipIf: 'never', validate: ({what}) => {
+        return true;
+      } }
+    ).confirm(
+       ({ glass, what }) => what instanceof Metal ? 'Confirm Return' : 'Confirm Reuse'
+    ).do(({ glass, what }) => {
+      glass.forEach(x => x.putInto(table));
+      what.putInto(player.hand);
+    }),
+
+    cleanup: (player) => action({
+      prompt: 'Clean Up',     
+    }).chooseOnBoard(
+      'garbage', player.hand.all(Component).filter(x => !(x instanceof Plastic) || (x as Plastic).face != 4),
+      { skipIf: 'never', number: player.hand.all(Component).filter(x => !(x instanceof Plastic) || (x as Plastic).face != 4).length-10 }
+    ).do(({ garbage }) => {
+      garbage.forEach(x => x.putInto(table));
     }),
 
     skip: (player) => action({
@@ -326,33 +296,46 @@ export default createGame(SingleSortPlayer, MyGame, game => {
 
   game.defineFlow(
     
-    loop(
+    whileLoop({while: () => (table.all(Cardboard, {faceUp: false}).length > 0), do: ([
       eachPlayer({
         name: 'turn', do: [
-          // Collect
+          // COLLECT
           () => game.players.current()!.recycled = false,
-          whileLoop({while: () => (
-            (game.players.length == 1 && game.players.current()!.take.length < 2) || 
-            (game.players.current()!.take.length == 0 || !game.players.current()!.take[game.players.current()!.take.length-1].clean)
+          whileLoop({while: () => ( table.all(Cardboard, {faceUp: false}).length > 0 && 
+            (
+              (game.players.length == 1 && game.players.current()!.take.length < 2) || 
+              (game.players.current()!.take.length == 0 || !game.players.current()!.take[game.players.current()!.take.length-1].clean)
+            )
           ), do: ([
-            playerActions({ actions: ['collectCardboard']}),
+            playerActions({ actions: ['collect']}),
           ])}),
           () => game.players.current()!.take = [],
-          // Recycle
-          playerActions({ actions: ['recycleChoice', 'skip']}),
-          // Sort
+          
+          // RECYCLE
+          playerActions({ actions: ['recycle', 'skip']}), 
           ifElse({
             if: () => !game.players.current()!.recycled, do: [
-              // Cardboard Actions
-              playerActions({ actions: ['repairOrReduceCardboard', 'skip']}),
+              
+              // SORT
+              // 1. Cardboard Actions
+              playerActions({ actions: ['repairOrReduce', 'skip']}),
+              // 2. Plastic Actions
+              playerActions({ actions: ['rethinkOrRepurpose', 'skip']}),
+              // 3. Glass Actions
+              playerActions({ actions: ['reuseOrReturn', 'skip']}),
+            ]
+          }),
 
-              // Plastic Actions
-              playerActions({ actions: ['rethinkOrRepurposePlastic', 'skip']}),
+          // CLEANUP
+          () => game.players.current()!.hand.all(Cardboard, {clean: false}).forEach(x => x.putInto(trash)),
+          ifElse({
+            if: () => game.players.current()!.hand.all(Component).filter(x => !(x instanceof Plastic) || (x as Plastic).face != 4).length > 10, do: [
+              playerActions({ actions: ['cleanup']}),
             ]
           }),
         ]   
       })
-    )
+    ])})
   )
 
 });

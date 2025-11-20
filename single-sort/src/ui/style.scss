@@ -2,37 +2,49 @@
     .Cardboard {
          &.selectable {
             > div {      
-                border: 3px solid red;
+                border: 3px solid black;                
             }
         }
         &.selected {
             z-index: 100;
             > div {      
-                border: 3px solid black;
+                background-color: red;
             }
         }       
     }
     .Plastic {
         &.selectable {
             > div {      
-                border: 3px solid red;
+                border: 3px solid black;
             }
         }
         &.selected {
             > div {      
-                border: 3px solid black;
+                background-color: red;
             }
         } 
     }
     .Glass {
         &.selectable {
             > div {      
-                border: 3px solid red;
+                border: 3px solid black;
             }
         }
         &.selected {
             > div {      
+                background-color: red;
+            }
+        } 
+    }
+    .Metal {
+        &.selectable {
+            > div {      
                 border: 3px solid black;
+            }
+        }
+        &.selected {
+            > div {      
+                background-color: red;
             }
         } 
     }
