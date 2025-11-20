@@ -15,7 +15,7 @@ export class Goal {
     return this.targets.some(
       (cardboard) =>
         cardboard.color === color &&
-        cardboard.face.value === value
+        cardboard.face === value
     );
   }
 }

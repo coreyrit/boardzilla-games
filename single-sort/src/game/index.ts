@@ -7,7 +7,8 @@ import {
 } from '@boardzilla/core';
 
 import { Component } from "./component/component.js";
-import { Cardboard, CardboardFace } from "./component/cardboard.js";
+import { Cardboard } from "./component/cardboard.js";
+import { Plastic } from "./component/plastic.js";
 import { Hand } from "./hand.js";
 import { Goal } from "./component/goal.js";
 
@@ -134,6 +135,12 @@ export default createGame(SingleSortPlayer, MyGame, game => {
       Cardboard.createBlueDirtyCardboard(box, v);
       Cardboard.createYellowDirtyCardboard(box, v);
     }
+  }
+
+  for(let i = 0; i < 10; i++) {
+    Plastic.createGreenPlastic(box);
+    Plastic.createBluePlastic(box);
+    Plastic.createYellowPlastic(box);
   }
 
 
