@@ -8,7 +8,7 @@ import { MyGame } from "../index.js";
 
 export class Cardboard extends Component {
 
-  private faceUp: boolean;
+  public faceUp: boolean;
   public face: number;
   public clean: boolean;
   public textColor: string;
@@ -17,58 +17,74 @@ export class Cardboard extends Component {
     this.faceUp = !this.faceUp;
   }
 
+  public toss(game: MyGame): void {
+    this.faceUp = (Math.floor(game.random() * 2) + 1) % 2 == 0;
+  }
+
   public static createGreenCleanCardboard(box: Space<MyGame>, value: number): Cardboard {
-    return box.create(Cardboard, 'greenCleanCB', {
+    const cb = box.create(Cardboard, 'greenCleanCB', {
       face: value,
       clean: true,
       color: "darkgreen",
       textColor: "white"
     });
+    cb.toss(box.game);
+    return cb;
   }
 
   public static createBlueCleanCardboard(box: Space<MyGame>, value: number): Cardboard {
-    return box.create(Cardboard, 'blueCleanCB', {
+    const cb = box.create(Cardboard, 'blueCleanCB', {
       face: value,
       clean: true,
       color: "blue",
       textColor: "white"
     });
+    cb.toss(box.game);
+    return cb;
   }
 
   public static createYellowCleanCardboard(box: Space<MyGame>, value: number): Cardboard {
-    return box.create(Cardboard, 'yellowCleanCB', {
+    const cb = box.create(Cardboard, 'yellowCleanCB', {
       face: value,
       clean: true,
       color: "yellow",
       textColor: "black"
     });
+    cb.toss(box.game);
+    return cb;
   }
 
   public static createGreenDirtyCardboard(box: Space<MyGame>, value: number): Cardboard {
-    return box.create(Cardboard, 'greenDirtyCB', {
+    const cb = box.create(Cardboard, 'greenDirtyCB', {
       face: value,
       clean: false,
       color: "darkgreen",
       textColor: "white"
     });
+    cb.toss(box.game);
+    return cb;
   }
 
   public static createBlueDirtyCardboard(box: Space<MyGame>, value: number): Cardboard {
-    return box.create(Cardboard, 'blueDirtyCB', {
+    const cb = box.create(Cardboard, 'blueDirtyCB', {
       face: value,
       clean: false,
       color: "blue",
       textColor: "white"
     });
+    cb.toss(box.game);
+    return cb;
   }
 
   public static createYellowDirtyCardboard(box: Space<MyGame>, value: number): Cardboard {
-    return box.create(Cardboard, 'yellowDirtyCB', {
+    const cb = box.create(Cardboard, 'yellowDirtyCB', {
       face: value,
       clean: false,
       color: "yellow",
       textColor: "white"
     });
+    cb.toss(box.game);
+    return cb;
   }
 
   public getMaterial(): Material {

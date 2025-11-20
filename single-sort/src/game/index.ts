@@ -7,8 +7,11 @@ import {
 } from '@boardzilla/core';
 
 import { Component } from "./component/component.js";
+
 import { Cardboard } from "./component/cardboard.js";
 import { Plastic } from "./component/plastic.js";
+import { Glass } from "./component/glass.js";
+
 import { Hand } from "./hand.js";
 import { Goal } from "./component/goal.js";
 
@@ -142,6 +145,14 @@ export default createGame(SingleSortPlayer, MyGame, game => {
     Plastic.createBluePlastic(box);
     Plastic.createYellowPlastic(box);
   }
+
+  for(let i = 0; i < 4; i++) {
+    Glass.createGreenGlass(box);
+    Glass.createBlueGlass(box);
+    Glass.createYellowGlass(box);
+  }
+
+  box.shuffle();
 
 
 
