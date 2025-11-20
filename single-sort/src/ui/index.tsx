@@ -8,5 +8,10 @@ render(setup, {
   settings: {
   },
   layout: game => {
+
+    game.appearance({
+      render: () => null
+    });
+    
   }
 });

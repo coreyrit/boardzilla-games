@@ -21,5 +21,12 @@ export default createGame(SingleSortPlayer, MyGame, game => {
   });
 
   game.defineFlow(
+    
+    () => game.message('Start 1'),
+    () => game.message('Start 2'),
+    () => game.message('Start 3'),
+    () => game.message('Start 4'),
+
   );
+
 });
