@@ -2,7 +2,7 @@ import {
   Space
 } from '@boardzilla/core';
 
-import { Material, Component } from "./component.js";
+import { Component } from "./component.js";
 import { MyGame } from "../index.js";
 
 
@@ -85,9 +85,5 @@ export class Cardboard extends Component {
     });
     cb.toss(box.game);
     return cb;
-  }
-
-  public getMaterial(): Material {
-    return Material.Cardboard;
   }
 }

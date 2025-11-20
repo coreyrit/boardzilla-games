@@ -19,9 +19,9 @@ render(setup, {
       render: () => null
     });
 
-    game.layout('table', { area: { left: 15, top: 15, width: 85, height: 85 }});
+    game.layout('table', { area: { left: 15, top: 22, width: 85, height: 78 }});
     game.layout('box', { area: { left: 0, top: 0, width: 0, height: 0 }});
-    game.layout('playersSpace', { area: { left: 15, top: 0, width: 85, height: 15 }});
+    game.layout('playersSpace', { area: { left: 15, top: 0, width: 85, height: 22 }});
 
     //  game.layoutAsDrawer($.playersSpace as Space<MyGame>, 
     //   { area: { left: 0, top: 90, width: 100, height: 10 }, openDirection: 'up', tab: 'Players',
@@ -54,7 +54,7 @@ render(setup, {
         );
         tabDefs['player' + index]  = tab;
 
-        game.players[index].hand.layout(Component, {columns: 10, rows: 1, gap: {x: 0, y: 0}, scaling: 'fill', alignment: 'bottom', direction: 'ltr-btt'})
+        game.players[index].hand.layout(Component, {columns: 10, rows: 2, gap: {x: 0, y: 0}, scaling: 'fill', alignment: 'bottom', direction: 'ltr-btt'})
         index++;        
       });
 
@@ -95,9 +95,11 @@ render(setup, {
     ) });
 
     game.all(Glass).appearance({ render: x => ( 
+      <div className="Glass">
       <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" color={x.color}>      
           <circle cx="50" cy="50" r="40" fill="currentColor" />
       </svg>
+      </div>
     ) });
 
     game.all(Metal).appearance({ render: x => ( 

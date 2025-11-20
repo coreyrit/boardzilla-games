@@ -3,7 +3,7 @@ import {
 } from '@boardzilla/core';
 
 import { MyGame } from "../index.js";
-import { Material, Component } from "./component.js";
+import { Component } from "./component.js";
 
 
 export class Plastic extends Component {
@@ -31,9 +31,5 @@ export class Plastic extends Component {
     const p = box.create(Plastic, "yellowPlastic", {color: "yellow", textColor: "black"});
     p.roll(box.game);
     return p;
-  }
-  
-  public getMaterial(): Material {
-    return Material.Plastic;
   }
 }

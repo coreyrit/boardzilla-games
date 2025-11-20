@@ -3,7 +3,7 @@ import {
 } from '@boardzilla/core';
 
 import { MyGame } from "../index.js";
-import { Component, Material } from "./component.js";
+import { Component } from "./component.js";
 
 export class Metal extends Component {
 
@@ -17,9 +17,5 @@ export class Metal extends Component {
 
   public static createBronzeMetal(box: Space<MyGame>): Metal {
     return box.create(Metal, "bronzeMetal", {color: "#8B4513"});
-  }
-
-  public getMaterial(): Material {
-    return Material.Metal;
   }
 }
