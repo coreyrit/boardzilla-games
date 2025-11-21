@@ -7,6 +7,10 @@ import { Component } from "./component.js";
 
 export class Metal extends Component {
 
+  override toString(): string {
+      return this.colorText() + " metal";
+  }
+
   public static createGoldMetal(box: Space<MyGame>): Metal {
     return box.create(Metal, "goldMetal", {color: "#B8860B"});
   }

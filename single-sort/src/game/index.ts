@@ -186,6 +186,11 @@ export default createGame(SingleSortPlayer, MyGame, game => {
   const scoreRef = reference.create(ScoreReference, 'scoreRef');
   const theVoid = game.create(TheVoid, 'theVoid');
 
+  // I need some temporary dice in the void
+  theVoid.create(Plastic, "dummyPlastic1");
+  theVoid.create(Plastic, "dummyPlastic2");
+  theVoid.create(Plastic, "dummyPlastic3");
+
   // goals
   theVoid.create(Goal, 'goal1', {targetColor: 'darkgreen', targetNumbers: [1, 2]});
   theVoid.create(Goal, 'goal2', {targetColor: 'darkgreen', targetNumbers: [3, 4]});
@@ -262,7 +267,7 @@ export default createGame(SingleSortPlayer, MyGame, game => {
       player.take.push(cardboard);
       game.message(game.players.length.toString());
       game.message(player.take.length.toString());
-    }),
+    }).message(`{{player}} collects a {{cardboard}}.`),
 
     recycle: (player) => action({
       prompt: 'Recycle',
@@ -282,7 +287,7 @@ export default createGame(SingleSortPlayer, MyGame, game => {
       recycle.putInto(table);
       what.putInto(player.hand);
       player.recycled = true;
-    }),
+    }).message(`{{player}} recycles a {{recycle}} into a {{what}}.`),
 
     repairOrReduce: (player) => action({
       prompt: 'Repair or Reduce',
@@ -320,6 +325,8 @@ export default createGame(SingleSortPlayer, MyGame, game => {
     ).do(({ cardboard, what }) => {
       cardboard.forEach( x => x.putInto(table) );
       what.forEach( x => x.putInto(player.hand) );
+      game.message(`{{player}} {{action}} {{cardboard}} into {{what}}.`, 
+        {player: player, cardboard: cardboard, what: what, action: what[0] instanceof Plastic ? 'reduces' : 'repairs' });
     }),
 
     rethinkOrRepurpose: (player) => action({
@@ -342,11 +349,22 @@ export default createGame(SingleSortPlayer, MyGame, game => {
     ).confirm(
        ({ plastic, what }) => what instanceof Glass ? 'Confirm Repurpose' : 'Confirm Rethink'
     ).do(({ plastic, what }) => {
+
+      // get the dummy dice from the void
+      const before = theVoid.all(Plastic).slice(0, plastic.length);
+      for(let i = 0; i < plastic.length; i++) {
+        before[i].face = plastic[i].face;
+        before[i].color = plastic[i].color;
+      }
+
       plastic.forEach(x => x.roll(game)); 
       if(what instanceof Glass) {
         plastic.forEach(x => x.putInto(table));
         what.putInto(player.hand);
       }
+      game.message(`{{player}} {{action}} {{before}} into {{what}}.`, 
+        {player: player, before: before, what: what instanceof Glass ? what : plastic, 
+          action: what instanceof Glass ? 'repurposes' : 'rethinks' });
     }),
 
     reuseOrReturn: (player) => action({
@@ -369,6 +387,10 @@ export default createGame(SingleSortPlayer, MyGame, game => {
     ).do(({ glass, what }) => {
       glass.forEach(x => x.putInto(table));
       what.putInto(player.hand);
+
+      game.message(`{{player}} {{action}} {{glass}} for {{what}}.`, 
+        {player: player, glass: glass, what: what, 
+          action: what instanceof Glass ? 'returns' : 'reuses' });
     }),
 
     cleanup: (player) => action({
@@ -378,7 +400,7 @@ export default createGame(SingleSortPlayer, MyGame, game => {
       { skipIf: 'never', number: player.hand.all(Component).filter(x => !(x instanceof Plastic) || (x as Plastic).face != 4).length-10 }
     ).do(({ garbage }) => {
       garbage.forEach(x => x.putInto(table));
-    }),
+    }).message(`{{player}} cleans up {{garbage}}`),
 
     skip: (player) => action({
       prompt: 'Skip',
@@ -423,7 +445,11 @@ export default createGame(SingleSortPlayer, MyGame, game => {
             }),
 
             // CLEANUP
-            () => game.players.current()!.hand.all(Cardboard, {clean: false}).forEach(x => x.putInto(trash)),
+            () => {
+              const dirty = game.players.current()!.hand.all(Cardboard, {clean: false});
+              dirty.forEach(x => x.putInto(trash))
+              game.message(`{{player}} trashes {{dirty}}.`, {player: game.players.current()!, dirty: dirty});
+            },
             ifElse({
               if: () => game.players.current()!.hand.all(Component).filter(x => !(x instanceof Plastic) || (x as Plastic).face != 4).length > 10, do: [
                 playerActions({ actions: ['cleanup']}),

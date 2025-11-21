@@ -5,11 +5,15 @@ import {
 import { MyGame } from "../index.js";
 import { Component } from "./component.js";
 
-
 export class Plastic extends Component {
 
   public face: number;
   public textColor: string;
+  public rewindRoll : boolean = false;
+
+  override toString(): string {
+      return this.colorText() + " " + this.face + " plastic";
+  }
 
   public roll(game: MyGame): void {
     this.face = Math.floor(game.random() * 6) + 1

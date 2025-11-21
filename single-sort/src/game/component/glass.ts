@@ -7,6 +7,10 @@ import { Component } from "./component.js";
 
 export class Glass extends Component {
 
+  override toString(): string {
+      return this.colorText() + " glass";
+  }
+
   public static createGreenGlass(box: Space<MyGame>): Glass {
     return box.create(Glass, "greenGlass", {color: "darkgreen"});
   }

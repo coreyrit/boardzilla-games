@@ -13,6 +13,10 @@ export class Cardboard extends Component {
   public clean: boolean;
   public textColor: string;
 
+  override toString(): string {
+      return (this.clean ? "clean" : "dirty") + " " + this.colorText()  + " " + this.face + " cardboard";
+  }
+
   public flip(): void {
     this.faceUp = !this.faceUp;
   }
