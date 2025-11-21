@@ -265,8 +265,6 @@ export default createGame(SingleSortPlayer, MyGame, game => {
       cardboard.flip()
       cardboard.putInto(player.hand)
       player.take.push(cardboard);
-      game.message(game.players.length.toString());
-      game.message(player.take.length.toString());
     }).message(`{{player}} collects a {{cardboard}}.`),
 
     recycle: (player) => action({
@@ -402,9 +400,18 @@ export default createGame(SingleSortPlayer, MyGame, game => {
       garbage.forEach(x => x.putInto(table));
     }).message(`{{player}} cleans up {{garbage}}`),
 
-    skip: (player) => action({
+    skipRecycle: (player) => action({
       prompt: 'Skip',
-    }),
+    }).message(`{{player}} skips recycle.`),
+    skipCardboardActions: (player) => action({
+      prompt: 'Skip',
+    }).message(`{{player}} skips cardboard actions.`),
+    skipPlasticActions: (player) => action({
+      prompt: 'Skip',
+    }).message(`{{player}} skips plastic actions.`),
+    skipGlassActions: (player) => action({
+      prompt: 'Skip',
+    }).message(`{{player}} skips glass actions.`),
 
   });
 
@@ -430,17 +437,17 @@ export default createGame(SingleSortPlayer, MyGame, game => {
               () => game.players.current()!.take = [],
           
             // RECYCLE
-            playerActions({ actions: ['recycle', 'skip']}), 
+            playerActions({ actions: ['recycle', 'skipRecycle']}), 
             ifElse({
               if: () => !game.players.current()!.recycled, do: [
               
                 // SORT
                 // 1. Cardboard Actions
-                playerActions({ actions: ['repairOrReduce', 'skip']}),
+                playerActions({ actions: ['repairOrReduce', 'skipCardboardActions']}),
                 // 2. Plastic Actions
-                playerActions({ actions: ['rethinkOrRepurpose', 'skip']}),
+                playerActions({ actions: ['rethinkOrRepurpose', 'skipPlasticActions']}),
                 // 3. Glass Actions
-                playerActions({ actions: ['reuseOrReturn', 'skip']}),
+                playerActions({ actions: ['reuseOrReturn', 'skipGlassActions']}),
               ]
             }),
 
@@ -448,7 +455,9 @@ export default createGame(SingleSortPlayer, MyGame, game => {
             () => {
               const dirty = game.players.current()!.hand.all(Cardboard, {clean: false});
               dirty.forEach(x => x.putInto(trash))
-              game.message(`{{player}} trashes {{dirty}}.`, {player: game.players.current()!, dirty: dirty});
+              if(dirty.length > 0) {
+                game.message(`{{player}} trashes {{dirty}}.`, {player: game.players.current()!, dirty: dirty});
+              }
             },
             ifElse({
               if: () => game.players.current()!.hand.all(Component).filter(x => !(x instanceof Plastic) || (x as Plastic).face != 4).length > 10, do: [
