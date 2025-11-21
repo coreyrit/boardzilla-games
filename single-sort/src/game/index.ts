@@ -18,6 +18,7 @@ import { Goal } from "./component/goal.js";
 
 export class SingleSortPlayer extends Player<MyGame, SingleSortPlayer> {
   public hand: Hand;
+  public score: Score;
   public recycled: boolean = false;
   public take: Cardboard[] = [];
 }
@@ -27,6 +28,7 @@ export class PlayersSpace extends Space<MyGame> {
 }
 
 export class MyGame extends Game<MyGame, SingleSortPlayer> {
+  public isOver: boolean = false;
 }
 
 export class Table extends Space<MyGame> {
@@ -38,7 +40,95 @@ export class Box extends Space<MyGame> {
 export class Trash extends Space<MyGame> {
 }
 
+export class TheVoid extends Space<MyGame> {
+}
+
 export class Junk extends Piece<MyGame> {
+}
+
+export class Reference extends Space<MyGame> {
+}
+export class TurnReference extends Space<MyGame> {
+}
+export class ScoreReference extends Space<MyGame> {
+}
+
+
+export class Score extends Space<MyGame> {
+
+  calculateScore() : number{
+    let score = 0;
+    if(this.owner != undefined) {
+      const hand = this.owner!.hand
+      
+      // score cardboard
+      for(let v = 1; v <= 7; v++) {
+        score += Math.floor(hand.all(Cardboard, {clean: true, face: v}).length / 2) * v;
+      }
+      
+      // score plastic
+      score += hand.all(Plastic, {face: 1}).length * 1;
+      score += hand.all(Plastic, {face: 2}).length * 2;
+      for(const color of ['darkgreen', 'blue', 'yellow']) {
+        for(const val of [3, 5]) {
+          if(hand.all(Cardboard, {clean: true, color: color}).reduce((sum, cb) => sum + cb.face, 0) >= val) {
+            score += hand.all(Plastic, {face: val, color: color}).length * val;
+          }
+        }
+      }
+      const sixCount = hand.all(Plastic, {face: 6}).length;
+      if(sixCount > 0) {
+        let sixCounts: number[] = []
+        this.game.players.forEach(p => {
+          const count = p.hand.all(Plastic, {face: 6}).length
+          if(!sixCounts.includes(count)) {
+            sixCounts.push(count);
+          }
+        })
+        sixCounts.sort((a, b) => b - a);
+        if(sixCounts.length > 0 && sixCount == sixCounts[0]) {
+          score += (14 - this.game.players.length);
+        } else if (sixCounts.length > 1 && sixCount == sixCounts[1]) {
+          score += (8 - this.game.players.length);
+        }
+      }
+
+      // score glass
+      let glassCounts: number[] = []
+      for(const color of ['darkgreen', 'blue', 'yellow']) {
+        glassCounts.push(hand.all(Glass, {color: color}).length);
+      }
+      glassCounts.sort((a, b) => b - a);
+      if(glassCounts.length > 0) {
+        score += glassCounts[0] * 5;
+      }
+      for(let i = 1; i < glassCounts.length; i++) {
+        score += glassCounts[i] * 2;
+      }
+
+      // score metal
+      score += hand.all(Metal).length * 14
+      if(hand.all(Metal, {color: "#B8860B"}).length > 0) {
+        score += hand.all(Plastic, {face: 1}).length * 3;
+      }
+      if(hand.all(Metal, {color: "#C0C0C0"}).length > 0) {
+        score += hand.all(Plastic, {face: 1}).length * 2;
+      }
+      if(hand.all(Metal, {color: "#8B4513"}).length > 0) {
+        score += hand.all(Plastic, {face: 1}).length * 1;
+      }
+
+
+      // private goals
+      if(this.game.isOver) {
+        const goal = hand.first(Goal)!;
+        for(const val of goal.targetNumbers) {
+          score += $.trash.all(Cardboard, {color: goal.targetColor, face: val}).length * val;
+        }
+      }
+    }
+    return score;
+  }
 }
 
 export default createGame(SingleSortPlayer, MyGame, game => {
@@ -91,11 +181,31 @@ export default createGame(SingleSortPlayer, MyGame, game => {
   const table = game.create(Table, 'table');
   const box = game.create(Box, 'box');
   const trash = game.create(Trash, 'trash');
+  const reference = game.create(Reference, 'reference');
+  const turnRef = reference.create(TurnReference, 'turnRef');
+  const scoreRef = reference.create(ScoreReference, 'scoreRef');
+  const theVoid = game.create(TheVoid, 'theVoid');
 
+  // goals
+  theVoid.create(Goal, 'goal1', {targetColor: 'darkgreen', targetNumbers: [1, 2]});
+  theVoid.create(Goal, 'goal2', {targetColor: 'darkgreen', targetNumbers: [3, 4]});
+  theVoid.create(Goal, 'goal3', {targetColor: 'blue', targetNumbers: [1, 2]});
+  theVoid.create(Goal, 'goal4', {targetColor: 'blue', targetNumbers: [3, 4]});
+  theVoid.create(Goal, 'goal5', {targetColor: 'yellow', targetNumbers: [1, 2]});
+  theVoid.create(Goal, 'goal6', {targetColor: 'yellow', targetNumbers: [3, 4]});
+  theVoid.shuffle();
+
+  // players
   const playersSpace = game.create(PlayersSpace, 'playersSpace')
   for(var i = 0; i < game.players.length; i++) {
-    const playerSpace = playersSpace.create(Hand, 'hand' + i, {player: game.players[i]});
-    game.players[i].hand = playerSpace
+    const hand = playersSpace.create(Hand, 'hand' + i, {player: game.players[i]});
+    const score = hand.create(Score, 'score' + i, {player: game.players[i]});
+    game.players[i].hand = hand
+    game.players[i].score = score
+
+    const goal = theVoid.top(Goal)!;
+    goal.showOnlyTo(game.players[i]);
+    goal.putInto(hand);
   }
 
 
@@ -139,23 +249,6 @@ export default createGame(SingleSortPlayer, MyGame, game => {
 
   box.all(Piece).forEach(c => c.putInto(table));
 
-  // stick something random in the box
-  box.create(Junk, 'junk');
-
-
-
-
-
-
-
-
-
-  
-
-
-
-
-  
   game.defineActions({
 
     collect: (player) => action({
@@ -208,7 +301,7 @@ export default createGame(SingleSortPlayer, MyGame, game => {
       'what', ({cardboard}) => cardboard.length > 1 ? 
         table.all(Plastic, {color: cardboard[0].color, face: cardboard.reduce((sum, cb) => sum + cb.face, 0)}).filter(x => x.face != 6) : 
         table.all(Plastic, {color: cardboard[0].color, face: cardboard[0].face}).filter(x => x.face != 6).map(x => x as Component)
-          .concat(table.all(Cardboard, {color: cardboard[0].color, faceUp: true}).filter(x => x.face < cardboard[0].face)),
+          .concat(table.all(Cardboard, {color: cardboard[0].color, faceUp: true}).filter(x => x.face <= cardboard[0].face)),
       { min: 1, max: ({cardboard}) => cardboard.length > 1 ? 1 : 3, skipIf: 'never', validate: ({cardboard, what}) => {
         return  (
                   what[0] instanceof Cardboard && 
@@ -236,8 +329,8 @@ export default createGame(SingleSortPlayer, MyGame, game => {
       { min: 1, max: game.players.length >= 5 ? 3 : 2, skipIf: 'never', validate: ({plastic}) => {
         return plastic.length == 1 || 
           (plastic.length == 2 && plastic[0].color == plastic[1].color && table.all(Glass, {color: plastic[0].color}).length > 0) ||
-          (plastic.length == 2 && plastic[0].color != plastic[1].color) ||
-          (plastic.length == 3 && plastic[0].color != plastic[1].color && plastic[1].color != plastic[2].color && plastic[0].color != plastic[2].color);
+          (game.players.length >= 3 && plastic.length == 2 && plastic[0].color != plastic[1].color) ||
+          (game.players.length >= 5 && plastic.length == 3 && plastic[0].color != plastic[1].color && plastic[1].color != plastic[2].color && plastic[0].color != plastic[2].color);
       } }
     ).chooseOnBoard(
       'what', ({plastic}) => plastic.length == 2 && plastic[0].color == plastic[1].color ? 
@@ -249,11 +342,9 @@ export default createGame(SingleSortPlayer, MyGame, game => {
     ).confirm(
        ({ plastic, what }) => what instanceof Glass ? 'Confirm Repurpose' : 'Confirm Rethink'
     ).do(({ plastic, what }) => {
-      plastic.forEach
+      plastic.forEach(x => x.roll(game)); 
       if(what instanceof Glass) {
-        plastic.forEach(x => {
-          x.putInto(table);
-        });
+        plastic.forEach(x => x.putInto(table));
         what.putInto(player.hand);
       }
     }),
@@ -310,33 +401,57 @@ export default createGame(SingleSortPlayer, MyGame, game => {
           ), do: ([
             playerActions({ actions: ['collect']}),
           ])}),
-          () => game.players.current()!.take = [],
-          
-          // RECYCLE
-          playerActions({ actions: ['recycle', 'skip']}), 
-          ifElse({
-            if: () => !game.players.current()!.recycled, do: [
-              
-              // SORT
-              // 1. Cardboard Actions
-              playerActions({ actions: ['repairOrReduce', 'skip']}),
-              // 2. Plastic Actions
-              playerActions({ actions: ['rethinkOrRepurpose', 'skip']}),
-              // 3. Glass Actions
-              playerActions({ actions: ['reuseOrReturn', 'skip']}),
-            ]
-          }),
 
-          // CLEANUP
-          () => game.players.current()!.hand.all(Cardboard, {clean: false}).forEach(x => x.putInto(trash)),
+          // make sure a clean cardboard was taken
           ifElse({
-            if: () => game.players.current()!.hand.all(Component).filter(x => !(x instanceof Plastic) || (x as Plastic).face != 4).length > 10, do: [
-              playerActions({ actions: ['cleanup']}),
-            ]
-          }),
-        ]   
+            if: () => game.players.current()!.take.filter(x => x.clean).length > 0, do: [
+              () => game.players.current()!.take = [],
+          
+            // RECYCLE
+            playerActions({ actions: ['recycle', 'skip']}), 
+            ifElse({
+              if: () => !game.players.current()!.recycled, do: [
+              
+                // SORT
+                // 1. Cardboard Actions
+                playerActions({ actions: ['repairOrReduce', 'skip']}),
+                // 2. Plastic Actions
+                playerActions({ actions: ['rethinkOrRepurpose', 'skip']}),
+                // 3. Glass Actions
+                playerActions({ actions: ['reuseOrReturn', 'skip']}),
+              ]
+            }),
+
+            // CLEANUP
+            () => game.players.current()!.hand.all(Cardboard, {clean: false}).forEach(x => x.putInto(trash)),
+            ifElse({
+              if: () => game.players.current()!.hand.all(Component).filter(x => !(x instanceof Plastic) || (x as Plastic).face != 4).length > 10, do: [
+                playerActions({ actions: ['cleanup']}),
+              ]
+            }),
+          ]})
+        ]
       })
-    ])})
+
+    ])}),
+
+    () => game.isOver = true,
+
+    () => {
+      var winners: SingleSortPlayer[] = []
+      var highScore: number = -1;
+
+      game.players.forEach(x => {
+        x.hand.first(Goal)!.showToAll();
+        if(x.score.calculateScore() > highScore) {
+          winners = [x];
+          highScore = x.score.calculateScore();
+        } else if(x.score.calculateScore() == highScore) {
+          winners.push(x);
+        }
+      });
+      game.finish(winners);
+    }
   )
 
 });

@@ -1,19 +1,34 @@
 #play-area {
-    .Cardboard {
+    .Cardboard {        
          &.selectable {
+            z-index: 10;
             > div {      
                 border: 3px solid black;                
             }
         }
         &.selected {
-            z-index: 100;
             > div {      
                 background-color: red;
             }
         }       
     }
-    .Plastic {
+    .Plastic {      
+        z-index: 1 ;  
         &.selectable {
+            z-index: 10;
+            > div {      
+                border: 3px solid black;
+            }
+        }
+        &.selected {            
+            > div {      
+                background-color: red;
+            }
+        } 
+    }
+    .Glass {        
+        &.selectable {
+            z-index: 10;
             > div {      
                 border: 3px solid black;
             }
@@ -24,8 +39,9 @@
             }
         } 
     }
-    .Glass {
+    .Metal {        
         &.selectable {
+            z-index: 10;
             > div {      
                 border: 3px solid black;
             }
@@ -36,21 +52,24 @@
             }
         } 
     }
-    .Metal {
-        &.selectable {
-            > div {      
-                border: 3px solid black;
-            }
-        }
-        &.selected {
-            > div {      
-                background-color: red;
-            }
-        } 
+    .TurnReference {
+        z-index: 1;
+        background-image: url(./assets/ref.jpg);
+        background-repeat: no-repeat;
+        background-position: center 50%;
+        background-size: contain;
+    }
+    .ScoreReference {
+        z-index: 1;
+        background-image: url(./assets/scoring.jpg);
+        background-repeat: no-repeat;
+        background-position: center 50%;
+        background-size: contain;
     }
 }
 
 .player-controls {
+    z-index: 3000;
   font-size: .4em;
   // position: absolute;
   // // top: 50%; 
@@ -72,3 +91,19 @@
       }
     }
 }
+
+  .playerTab {
+    position: absolute;
+    top: 0;
+    left: 40%;
+  }
+  
+  .drawer {
+    z-index: 2000;
+  }
+  .drawer-tab {
+    z-index: 2000;
+  }
+  .drawer-content {
+    z-index: 2100;
+  }

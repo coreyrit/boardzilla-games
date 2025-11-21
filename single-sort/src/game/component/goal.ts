@@ -1,21 +1,10 @@
-import { Cardboard } from "./cardboard.js";
+import {
+  Piece
+} from '@boardzilla/core';
 
-export class Goal {
-  private targets: Cardboard[];
+import { MyGame } from "../index.js";
 
-  constructor(targets: Cardboard[]) {
-    this.targets = targets;
-  }
-
-  public getTargets(): Cardboard[] {
-    return this.targets;
-  }
-
-  public contains(color: string, value: number): boolean {
-    return this.targets.some(
-      (cardboard) =>
-        cardboard.color === color &&
-        cardboard.face === value
-    );
-  }
+export class Goal extends Piece<MyGame>{
+  public targetColor: string;
+  public targetNumbers: number[];
 }
