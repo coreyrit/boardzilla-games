@@ -14,6 +14,7 @@ import { Glass } from "./component/glass.js";
 import { Metal } from "./component/metal.js";
 
 import { Hand } from "./hand.js";
+import { Score } from "./score.js";
 import { Goal } from "./component/goal.js";
 
 export class SingleSortPlayer extends Player<MyGame, SingleSortPlayer> {
@@ -52,84 +53,11 @@ export class TurnReference extends Space<MyGame> {
 }
 export class ScoreReference extends Space<MyGame> {
 }
-
-
-export class Score extends Space<MyGame> {
-
-  calculateScore() : number{
-    let score = 0;
-    if(this.owner != undefined) {
-      const hand = this.owner!.hand
-      
-      // score cardboard
-      for(let v = 1; v <= 7; v++) {
-        score += Math.floor(hand.all(Cardboard, {clean: true, face: v}).length / 2) * v;
-      }
-      
-      // score plastic
-      score += hand.all(Plastic, {face: 1}).length * 1;
-      score += hand.all(Plastic, {face: 2}).length * 2;
-      for(const color of ['darkgreen', 'blue', 'yellow']) {
-        for(const val of [3, 5]) {
-          if(hand.all(Cardboard, {clean: true, color: color}).reduce((sum, cb) => sum + cb.face, 0) >= val) {
-            score += hand.all(Plastic, {face: val, color: color}).length * val;
-          }
-        }
-      }
-      const sixCount = hand.all(Plastic, {face: 6}).length;
-      if(sixCount > 0) {
-        let sixCounts: number[] = []
-        this.game.players.forEach(p => {
-          const count = p.hand.all(Plastic, {face: 6}).length
-          if(!sixCounts.includes(count)) {
-            sixCounts.push(count);
-          }
-        })
-        sixCounts.sort((a, b) => b - a);
-        if(sixCounts.length > 0 && sixCount == sixCounts[0]) {
-          score += (14 - this.game.players.length);
-        } else if (sixCounts.length > 1 && sixCount == sixCounts[1]) {
-          score += (8 - this.game.players.length);
-        }
-      }
-
-      // score glass
-      let glassCounts: number[] = []
-      for(const color of ['darkgreen', 'blue', 'yellow']) {
-        glassCounts.push(hand.all(Glass, {color: color}).length);
-      }
-      glassCounts.sort((a, b) => b - a);
-      if(glassCounts.length > 0) {
-        score += glassCounts[0] * 5;
-      }
-      for(let i = 1; i < glassCounts.length; i++) {
-        score += glassCounts[i] * 2;
-      }
-
-      // score metal
-      score += hand.all(Metal).length * 14
-      if(hand.all(Metal, {color: "#B8860B"}).length > 0) {
-        score += hand.all(Plastic, {face: 1}).length * 3;
-      }
-      if(hand.all(Metal, {color: "#C0C0C0"}).length > 0) {
-        score += hand.all(Plastic, {face: 1}).length * 2;
-      }
-      if(hand.all(Metal, {color: "#8B4513"}).length > 0) {
-        score += hand.all(Plastic, {face: 1}).length * 1;
-      }
-
-
-      // private goals
-      if(this.game.isOver) {
-        const goal = hand.first(Goal)!;
-        for(const val of goal.targetNumbers) {
-          score += $.trash.all(Cardboard, {color: goal.targetColor, face: val}).length * val;
-        }
-      }
-    }
-    return score;
-  }
+export class SoloTurnReference extends Space<MyGame> {
 }
+export class SoloScoreReference extends Space<MyGame> {
+}
+
 
 export default createGame(SingleSortPlayer, MyGame, game => {
 
@@ -182,8 +110,8 @@ export default createGame(SingleSortPlayer, MyGame, game => {
   const box = game.create(Box, 'box');
   const trash = game.create(Trash, 'trash');
   const reference = game.create(Reference, 'reference');
-  const turnRef = reference.create(TurnReference, 'turnRef');
-  const scoreRef = reference.create(ScoreReference, 'scoreRef');
+  const turnRef = game.players.length == 1 ? reference.create(SoloTurnReference, 'turnRef') : reference.create(TurnReference, 'turnRef');
+  const scoreRef = game.players.length == 1 ? reference.create(SoloScoreReference, 'scoreRef') : reference.create(ScoreReference, 'scoreRef');
   const theVoid = game.create(TheVoid, 'theVoid');
 
   // I need some temporary dice in the void
@@ -208,9 +136,11 @@ export default createGame(SingleSortPlayer, MyGame, game => {
     game.players[i].hand = hand
     game.players[i].score = score
 
-    const goal = theVoid.top(Goal)!;
-    goal.showOnlyTo(game.players[i]);
-    goal.putInto(hand);
+    if(game.players.length > 1) {
+      const goal = theVoid.top(Goal)!;
+      goal.showOnlyTo(game.players[i]);
+      goal.putInto(hand);
+    }
   }
 
 
@@ -266,6 +196,15 @@ export default createGame(SingleSortPlayer, MyGame, game => {
       cardboard.putInto(player.hand)
       player.take.push(cardboard);
     }).message(`{{player}} collects a {{cardboard}}.`),
+
+    discardOne: (player) => action({
+      prompt: 'Discard One',
+    }).chooseOnBoard(
+      'cardboard', player.take,
+      { skipIf: 'never' }
+    ).do(({ cardboard }) => {
+      cardboard.putInto(table)
+    }).message(`{{player}} discards {{cardboard}}.`),
 
     recycle: (player) => action({
       prompt: 'Recycle',
@@ -413,19 +352,41 @@ export default createGame(SingleSortPlayer, MyGame, game => {
       prompt: 'Skip',
     }).message(`{{player}} skips glass actions.`),
 
+    end: () => action({
+      prompt: 'Game over'
+    }).chooseOnBoard(
+      'none', []
+    ),
+
   });
 
   game.defineFlow(
     
-    whileLoop({while: () => (table.all(Cardboard, {faceUp: false}).length > 0), do: ([
+    whileLoop({while: () => (
+      (
+        (game.players.length == 1 && table.all(Cardboard, {faceUp: false}).length > 1) ||
+        (game.players.length > 1 && table.all(Cardboard, {faceUp: false}).length > 0)
+      )), do: ([
       eachPlayer({
         name: 'turn', do: [
           // COLLECT
           () => game.players.current()!.recycled = false,
-          whileLoop({while: () => ( table.all(Cardboard, {faceUp: false}).length > 0 && 
+          whileLoop({while: () => (
             (
-              (game.players.length == 1 && game.players.current()!.take.length < 2) || 
-              (game.players.current()!.take.length == 0 || !game.players.current()!.take[game.players.current()!.take.length-1].clean)
+              (
+                // solo always collects exactly 2 cardboards
+                table.all(Cardboard, {faceUp: false}).length > 0 &&
+                game.players.length == 1 && game.players.current()!.take.length < 2
+              ) 
+              || 
+              (
+                // multiplayer collects until a clean cardboard is taken
+                table.all(Cardboard, {faceUp: false}).length > 0 &&
+                game.players.length > 1 && 
+                (
+                  game.players.current()!.take.length == 0 || !game.players.current()!.take[game.players.current()!.take.length-1].clean
+                )
+              )
             )
           ), do: ([
             playerActions({ actions: ['collect']}),
@@ -433,38 +394,59 @@ export default createGame(SingleSortPlayer, MyGame, game => {
 
           // make sure a clean cardboard was taken
           ifElse({
-            if: () => game.players.current()!.take.filter(x => x.clean).length > 0, do: [
-              () => game.players.current()!.take = [],
-          
-            // RECYCLE
-            playerActions({ actions: ['recycle', 'skipRecycle']}), 
-            ifElse({
-              if: () => !game.players.current()!.recycled, do: [
-              
-                // SORT
-                // 1. Cardboard Actions
-                playerActions({ actions: ['repairOrReduce', 'skipCardboardActions']}),
-                // 2. Plastic Actions
-                playerActions({ actions: ['rethinkOrRepurpose', 'skipPlasticActions']}),
-                // 3. Glass Actions
-                playerActions({ actions: ['reuseOrReturn', 'skipGlassActions']}),
-              ]
-            }),
+            if: () => (
+              (
+                // ensure 2 cardboard were taken in solo
+                game.players.length == 1 &&
+                game.players.current()!.take.length == 2
+              )
+              ||
+              (
+                // multiplayer immediately ends if no clean cardboard was taken
+                game.players.length > 1 &&
+                game.players.current()!.take.filter(x => x.clean).length > 0
+              )
+            ), do: [
 
-            // CLEANUP
-            () => {
-              const dirty = game.players.current()!.hand.all(Cardboard, {clean: false});
-              dirty.forEach(x => x.putInto(trash))
-              if(dirty.length > 0) {
-                game.message(`{{player}} trashes {{dirty}}.`, {player: game.players.current()!, dirty: dirty});
-              }
-            },
-            ifElse({
-              if: () => game.players.current()!.hand.all(Component).filter(x => !(x instanceof Plastic) || (x as Plastic).face != 4).length > 10, do: [
-                playerActions({ actions: ['cleanup']}),
-              ]
-            }),
-          ]})
+              // Discard one in solo mode
+              ifElse({
+                if: () => game.players.length == 1, do: [
+                  playerActions({ actions: ['discardOne']}),
+                ]
+              }),
+
+              // clear the take
+              () => game.players.current()!.take = [],              
+
+              // RECYCLE
+              playerActions({ actions: ['recycle', 'skipRecycle']}), 
+              ifElse({
+                if: () => !game.players.current()!.recycled, do: [
+                  // SORT
+                  // 1. Cardboard Actions
+                  playerActions({ actions: ['repairOrReduce', 'skipCardboardActions']}),
+                  // 2. Plastic Actions
+                  playerActions({ actions: ['rethinkOrRepurpose', 'skipPlasticActions']}),
+                  // 3. Glass Actions
+                  playerActions({ actions: ['reuseOrReturn', 'skipGlassActions']}),
+                ]
+              }),
+
+              // CLEANUP
+              () => {
+                const dirty = game.players.current()!.hand.all(Cardboard, {clean: false});
+                dirty.forEach(x => x.putInto(trash))
+                if(dirty.length > 0) {
+                  game.message(`{{player}} trashes {{dirty}}.`, {player: game.players.current()!, dirty: dirty});
+                }
+              },
+              ifElse({
+                if: () => game.players.current()!.hand.all(Component).filter(x => !(x instanceof Plastic) || (x as Plastic).face != 4).length > 10, do: [
+                  playerActions({ actions: ['cleanup']}),
+                ]
+              }),
+            ]
+          })
         ]
       })
 
@@ -472,20 +454,42 @@ export default createGame(SingleSortPlayer, MyGame, game => {
 
     () => game.isOver = true,
 
-    () => {
-      var winners: SingleSortPlayer[] = []
-      var highScore: number = -1;
-
-      game.players.forEach(x => {
-        x.hand.first(Goal)!.showToAll();
-        if(x.score.calculateScore() > highScore) {
-          winners = [x];
-          highScore = x.score.calculateScore();
-        } else if(x.score.calculateScore() == highScore) {
-          winners.push(x);
+    () => {    
+      if(game.players.length > 1) {
+        var winners: SingleSortPlayer[] = []
+        var highScore: number = -1;
+        game.players.forEach(x => {
+          x.hand.first(Goal)!.showToAll();
+          if(x.score.calculateScore() > highScore) {
+            winners = [x];
+            highScore = x.score.calculateScore();
+          } else if(x.score.calculateScore() == highScore) {
+            winners.push(x);
+          }
+        });      
+        game.finish(winners);
+      } else {
+        const score = game.players[0].score.calculateScore();
+        if(score >= 0 && score <= 20) {
+          game.finish(undefined, 'wasteful')
+          game.followUp({name: 'end'});
+        } else if(score >= 21 && score <= 35) {
+          game.finish(undefined, 'ineffective')
+          game.followUp({name: 'end'});
+        } else if(score >= 36 && score <= 50) {
+          game.finish(undefined, 'adequate')
+          game.followUp({name: 'end'});
+        } else if(score >= 51 && score <= 60) {
+          game.finish(undefined, 'goingGreen')
+          game.followUp({name: 'end'});
+        } else if(score >= 61 && score <= 70) {
+          game.finish(undefined, 'sustainable')
+          game.followUp({name: 'end'});
+        } else if(score >= 71) {
+          game.finish(undefined, 'zeroEmissions')
+          game.followUp({name: 'end'});
         }
-      });
-      game.finish(winners);
+      }
     }
   )
 

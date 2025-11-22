@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, Space } from '@boardzilla/core';
-import { default as setup, MyGame, Score, Table, Trash, PlayersSpace, Reference, TheVoid, ScoreReference, TurnReference } from '../game/index.js';
+import { default as setup, MyGame, Table, Trash, PlayersSpace, Reference, TheVoid, ScoreReference, TurnReference, SoloTurnReference, SoloScoreReference } from '../game/index.js';
 
 import './style.scss';
 import { Component } from '../game/component/component.js';
@@ -10,9 +10,66 @@ import { Glass } from '../game/component/glass.js';
 import { Metal } from '../game/component/metal.js';
 import { Goal } from '../game/component/goal.js';
 import { Hand } from '../game/hand.js';
+import { Score } from '../game/score.js';
 
 render(setup, {
   settings: {
+  },
+  announcements: {
+    wasteful: () => {
+      return (
+        <>
+        <h1>
+          Wasteful
+        </h1>
+        </>
+      );
+    },
+    ineffective: () => {
+      return (
+        <>
+        <h1>
+          Ineffective
+        </h1>
+        </>
+      );
+    },
+    adequate: () => {
+      return (
+        <>
+        <h1>
+          Adequate
+        </h1>
+        </>
+      );
+    },
+    goingGreen: () => {
+      return (
+        <>
+        <h1>
+          Going Green
+        </h1>
+        </>
+      );
+    },
+    sustainable: () => {
+      return (
+        <>
+        <h1>
+          Sustainable
+        </h1>
+        </>
+      );
+    },
+    zeroEmissions: () => {
+      return (
+        <>
+        <h1>
+          Zero Emissions!
+        </h1>
+        </>
+      );
+    },
   },
   layout: game => {
     const LEFT_POSITION_OFFSET = 25; // formerly -25
@@ -183,6 +240,12 @@ render(setup, {
     ) });
     game.all(ScoreReference).appearance({ render: x => ( 
       <div className='ScoreReference' />
+    ) });
+    game.all(SoloTurnReference).appearance({ render: x => ( 
+      <div className='SoloTurnReference' />
+    ) });
+    game.all(SoloScoreReference).appearance({ render: x => ( 
+      <div className='SoloScoreReference' />
     ) });
 
     let refTabSpaces: Record<string, Space<MyGame> | string> = {};

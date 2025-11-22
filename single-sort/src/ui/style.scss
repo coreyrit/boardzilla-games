@@ -66,6 +66,20 @@
         background-position: center 50%;
         background-size: contain;
     }
+    .SoloTurnReference {
+        z-index: 1;
+        background-image: url(./assets/soloturn.jpg);
+        background-repeat: no-repeat;
+        background-position: center 50%;
+        background-size: contain;
+    }
+    .SoloScoreReference {
+        z-index: 1;
+        background-image: url(./assets/soloscore.jpg);
+        background-repeat: no-repeat;
+        background-position: center 50%;
+        background-size: contain;
+    }
 }
 
 .player-controls {
