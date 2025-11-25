@@ -1,4 +1,4 @@
-import { UpgradeCard, UpgradeType } from "./index.js";
+import { UpgradeCard, UpgradeType } from "./components.js";
 
 export const upgradeCards: Partial<UpgradeCard>[] = [
 {stage: 1,	name: 'Sapphire Cooler',	type: UpgradeType.cooling,	effect: '⬜ → 🟫 ⭐',	cost: 2},

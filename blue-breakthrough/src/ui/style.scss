@@ -1,4 +1,31 @@
 #play-area {
+    .ScoreSpace {
+        // border-style: solid;
+    };
+    .PlayersSpace {
+        z-index: 15;
+    }
+    .PlayerSpace {
+        // z-index: 20;
+
+        top: 0%; left: 0%; width: 100%; height: 100%;
+
+        transition: 0.6s;
+        background-repeat: no-repeat;
+        background-position: center 50%;
+            
+        border-radius: 0.2em;
+        border-color: black;
+        background-size: contain;
+    }
+    .PlayerBoard {
+        z-index: 1;
+        background-image: url(./assets/playersBoard.jpg);
+        background-repeat: no-repeat;
+        background-position: center 50%;
+        background-size: contain;
+    }
+
     .cooling {
         z-index: 1;
         background-image: url(./assets/cooling.png);
@@ -98,4 +125,35 @@
     .UpgradeSpace {
         // border-style: solid;
     }
+
+      .tabs-tab {
+    // background: var(--player-color);
+    // opacity: 25%;
+    filter: brightness(0.5);
+    &.active {
+      // opacity: 100%;
+      filter: brightness(1.0);
+    }
+    &:hover {
+      opacity: 100%;
+      filter: brightness(1.5);
+    }
+  }
+
+  .playerTab {
+    position: absolute;
+    top: 0;
+    left: 40%;
+  }
+
+  .drawer {
+    z-index: 2000;
+  }
+  .drawer-tab {
+    z-index: 2000;
+    // background-color: var(--player-color);
+  }
+  .drawer-content {
+    z-index: 2100;
+  }
 }

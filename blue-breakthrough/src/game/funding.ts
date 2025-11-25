@@ -1,4 +1,4 @@
-import { FundingCard, FundingType } from "./index.js";
+import { FundingCard, FundingType } from "./components.js";
 
 export const fundingCards: Partial<FundingCard>[] = [
     {name: 'Extra Trap Slot',	type: FundingType.Permanent,	effect: 'Gain +1 storage slot (store 1 additional cube between rounds).'},

@@ -1,6 +1,12 @@
 import React from 'react';
-import { render } from '@boardzilla/core';
-import { CubePlate, FundingCard, FundingSpace, MainBoard, ResourceCube, default as setup, UpgradeCard, UpgradeSpace } from '../game/index.js';
+import { render, Space } from '@boardzilla/core';
+import { MyGame, default as setup, BlueBreakthroughPlayer } from '../game/index.js';
+import { PlayerSpace, PlayerBoard, ResourceCube, CubeBag, Supply, CubeColor, FundingSpace,
+  FundingDeck, FundingCard, UpgradeSpace, UpgradeDeck, UpgradeCard, CubePlate, ScoreCube, 
+  ScoreSpace, ScoreTrack, MainBoard, PlayersSpace, PowerToken, TokenAbility, AvailableTokenSpace,
+  PowerTokenSpace,
+  TokenAction
+ } from '../game/components.js';
 
 import './style.scss';
 
@@ -12,6 +18,53 @@ render(setup, {
         render: () => null
       });
       game.layout('mainBoard', { area: { left: 0, top: 0, width: 100, height: 100 }});
+
+      game.layoutAsDrawer($.playersSpace as Space<MyGame>, 
+      { area: { left: 0, top: 10, width: 100, height: 90 }, openDirection: 'up', tab: 'Players',
+        openIf: actions => actions.some(a => 
+          [
+            'placeToken'
+          ]
+        .includes(a.name)),
+        closeIf: actions => actions.some(a => 
+          [
+            'chooseFunding'
+          ]
+          .includes(a.name),
+          ),
+      });
+
+      var index = 0;
+      let tabSpaces: Record<string, Space<MyGame> | string> = {};
+      let tabDefs: Record<string, React.ReactNode> = {};
+      game.players.forEach(x => {
+        tabSpaces['player' + index] = x.space;
+        const tab = (
+          <div>          
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" color={x.color}>            
+              <rect x="0" y="0" width="100" height="100" fill='currentColor'/>
+            </svg>
+            <div className='playerTab'>
+              {x.name}
+            </div>
+          </div>
+        );
+        tabDefs['player' + index]  = tab;
+        index++;
+      });
+
+    $.playersSpace.layoutAsTabs(tabSpaces,
+      { area: { left: 0, top: 10 , width: 100, height: 100 }, tabDirection: 'up', tabs: tabDefs,
+      setTabTo: actions => {
+        if(game.players.allCurrent().length > 0) {
+          return 'player' + game.players.indexOf(game.players.allCurrent()[0]);
+        } else {
+          return '';
+        }
+      }
+    }
+    );
+
       game.layout('bag', { area: { left: 0, top: 0, width: 0, height: 0 }});
       game.layout('supply', { area: { left: 0, top: 0, width: 0, height: 0 }});
       game.layout('fundingDeck', { area: { left: 0, top: 0, width: 0, height: 0 }});
@@ -47,6 +100,27 @@ render(setup, {
           </svg>
         </div>
       )});
+
+      game.all(PlayersSpace).appearance({ render: x => ( 
+        <div className='PlayersSpace'>
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">      
+          </svg>
+        </div>
+      )});
+      game.all(PlayerSpace).appearance({ render: x => ( 
+        <div className='PlayerSpace'>
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">      
+          </svg>
+        </div>
+      )});
+      game.all(PlayerBoard).appearance({ render: x => ( 
+      <div className='PlayerBoard'>
+        <svg viewBox="0 0 100 80" xmlns="http://www.w3.org/2000/svg">      
+          </svg>
+      </div>
+      )});
+
+
       game.all(CubePlate).appearance({render: x => ( 
         <div className='CubePlate'>
           <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" />
@@ -70,11 +144,12 @@ render(setup, {
         </div>
       )});
 
+
       game.all(FundingCard).appearance({render: x => ( 
         <div className='FundingCard'>
           <svg viewBox="0 0 100% 100%" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
             <rect x="0" y="0" width="100%" height="100%" fill='white' stroke="black" strokeWidth="3" />
-            <foreignObject x="2%" y="3%" width="96%" height="60%" fontSize="40%">
+            <foreignObject x="2%" y="3%" width="96%" height="60%" fontSize="35%">
               <div><center><b>{x.name}</b></center></div>
               <div><center>{x.effect}</center></div>
             </foreignObject>
@@ -110,5 +185,68 @@ render(setup, {
           </svg>
         </div>
       )});
+
+
+      game.all(PowerToken).appearance({render: x => ( 
+        <div className='PowerToken'>
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" color={x.getColor()}>
+            <circle cx="50" cy="50" r="35" fill='currentColor' stroke="black" strokeWidth="4" />
+            <text x="50" y="52" text-anchor="middle" dominant-baseline="middle" fill="black" font-size="40">{x.getSymbol()}</text>
+          </svg>
+        </div>
+      )});
+      game.all(AvailableTokenSpace).appearance({render: x => ( 
+        <div className='AvailableTokenSpace'>
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" />
+        </div>
+      )});
+      game.all(ScoreTrack).appearance({render: x => ( 
+        <div className='ScoreTrack'>
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          </svg>
+        </div>
+      )});
+      game.all(ScoreSpace).appearance({render: x => ( 
+        <div className='ScoreSpace'>
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          </svg>
+        </div>
+      )});
+      game.all(PowerTokenSpace).appearance({render: x => ( 
+        <div className='ScoreSpace'>
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          </svg>
+        </div>
+      )});
+      game.all(ScoreCube).appearance({render: x => ( 
+        <div className='PowerToken'>
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" color={x.getColor()}>
+            <rect x="0" y="0" width="100" height="100" fill='currentColor' stroke="black" strokeWidth="4" />
+          </svg>
+        </div>
+      )});
+
+      game.all(AvailableTokenSpace).layout(PowerToken, {columns: 1, rows: 9, gap: {x:0, y: 0}})
+      game.all(ScoreTrack).layout(ScoreSpace, {columns: 10, rows: 1, gap: {x:1.5, y: 0}})
+      game.players.forEach(x => {
+        x.board.layout(x.board.first(AvailableTokenSpace)!, { 
+          area: { left: 6, top: 11, width: 10, height: 70 },
+        });
+        x.board.layout(x.board.first(ScoreTrack, {tens: true})!, { 
+          area: { left: 37.5, top: 12.5, width: 43.5, height: 5 },
+        });
+        x.board.layout(x.board.first(ScoreTrack, {tens: false})!, { 
+          area: { left: 37.5, top: 17, width: 43.5, height: 5 },
+        });
+        x.board.layout(x.board.first(PowerTokenSpace, {action: TokenAction.Funding})!, { 
+          area: { left: 16, top: 12.5, width: 10, height: 10 },
+        });
+        x.board.layout(x.board.first(PowerTokenSpace, {action: TokenAction.Resources})!, { 
+          area: { left: 16, top: 27.5, width: 10, height: 10 },
+        });
+        x.board.layout(x.board.first(PowerTokenSpace, {action: TokenAction.Upgrade})!, { 
+          area: { left: 16, top: 42.5, width: 10, height: 10 },
+        });
+      });
   }
 });

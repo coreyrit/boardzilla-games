@@ -6,130 +6,48 @@ import {
   Game,
   numberSetting,
 } from '@boardzilla/core';
-import { fundingCards } from './funding.js';
-import { upgradeCards } from './upgrades.js';
+
+import { on } from 'events';
+
+import { PlayerSpace, PlayerBoard, ResourceCube, CubeBag, Supply, CubeColor, FundingSpace,
+  FundingDeck, FundingCard, UpgradeSpace, UpgradeDeck, UpgradeCard, CubePlate, ScoreCube, 
+  ScoreSpace, ScoreTrack, MainBoard, PlayersSpace, PowerToken, TokenAbility, AvailableTokenSpace,
+  PowerTokenSpace,
+  TokenAction
+ } from './components.js';
+import { buildGame } from './build.js';
 
 export class BlueBreakthroughPlayer extends Player<MyGame, BlueBreakthroughPlayer> {
     space: PlayerSpace
     board: PlayerBoard
-}
+    score: number = 0;
 
-class MyGame extends Game<MyGame, BlueBreakthroughPlayer> {
-}
+    public scorePoints(points: number) {
+      this.score += points;
+      const oneCube = this.board.first(ScoreTrack, {tens: false})!.first(ScoreCube)!;
+      const tenCube = this.board.first(ScoreTrack, {tens: true})!.first(ScoreCube)!;
 
-export class MainBoard extends Space<MyGame> {
-}
+      const tens = Math.floor(this.score / 10);
+      const ones = this.score % 10;
 
-export class PlayerSpace extends Space<MyGame> {
-}
-
-export class PlayersSpace extends Space<MyGame> {
-}
-
-export class PlayerBoard extends Space<MyGame> {
-}
-
-export class CubeBag extends Piece<MyGame> {
-}
-
-export class Supply extends Piece<MyGame> {
-}
-
-export class CubePlate extends Space<MyGame> {
-  public index: number;
-}
-
-export class FundingSpace extends Space<MyGame> {
-  public index: number;
-}
-
-export class UpgradeSpace extends Space<MyGame> {
-  public index: number;
-}
-
-export enum CubeColor {
-  Orange = "orange",
-  Brown = "#964b00",
-  Blue = "blue",
-  White = "white",
-  Black = "black",
-  Red = "red",
-  Yellow = "yellow",
-}
-
-export class ResourceCube extends Piece<MyGame> {
-  public color: CubeColor;
-}
-
-export enum FundingType {
-  Permanent = "Permanent",
-  Instant = "Instant",
-  Ongoing = "Ongoing"
-}
-
-export class FundingCard extends Piece<MyGame> {
-  public name: string;
-  public type: FundingType;
-  public effect: string;
-}
-
-export enum UpgradeType {
-  cooling = "cooling",
-  exhaust = "exhaust",
-  heater = "heater",
-  injection = "injection",
-  nozzle = "nozzle",
-  pump = "pump",
-  trap = "trap"
-}
-
-export class UpgradeCard extends Piece<MyGame> {
-  public stage: number;
-  public name: string;
-  public type: UpgradeType;
-  public effect: string;
-  public cost: number;
-
-  public typeName() : string {
-    const inputString = this.type.toString();
-    if (!inputString) {
-      return ""; // Handle empty or null strings
+      oneCube.putInto(this.board.first(ScoreTrack, {tens: false})!.first(ScoreSpace, {value: ones})!);
+      tenCube.putInto(this.board.first(ScoreTrack, {tens: true})!.first(ScoreSpace, {value: tens * 10})!);
     }
-    return inputString.charAt(0).toUpperCase() + inputString.slice(1);
-  }
-
-  public stageName() : string {
-    switch(this.stage) {
-      case 1:
-        return "I";
-      case 2:
-        return "II";
-      case 3:
-        return "III";
+    
+    public getScore() : number {
+      return this.score;
     }
-    return "";
-  }
 }
 
-export class FundingDeck extends Space<MyGame> {
-}
-
-export class UpgradeDeck extends Space<MyGame> {
-}
-
-export default createGame(BlueBreakthroughPlayer, MyGame, game => {
-
-  const { action } = game;
-  const { playerActions, loop, forLoop, eachPlayer } = game.flowCommands;
-
-  function addRoundCubes(game: MyGame, round: number) {
-    for(var i = 0; i < game.players.length; i++) {
+export class MyGame extends Game<MyGame, BlueBreakthroughPlayer> {
+  public addRoundCubes(round: number) {
+    const bag = this.first(CubeBag)!;
+    for(var i = 0; i < this.players.length; i++) {
       switch(round) {
         case 1:
-          game.message("Adding cubes for round " + round + ".")
-          const supply = game.first(Supply)!;
-          const bag = game.first(CubeBag)!;
-          game.first(ResourceCube, {color: CubeColor.Orange})!.putInto(bag);
+          this.message("Adding cubes for round " + round + ".")
+          const supply = this.first(Supply)!;          
+          this.first(ResourceCube, {color: CubeColor.Orange})!.putInto(bag);
           supply.first(ResourceCube, {color: CubeColor.Orange})!.putInto(bag);
           supply.first(ResourceCube, {color: CubeColor.Orange})!.putInto(bag);  
           supply.first(ResourceCube, {color: CubeColor.Brown})!.putInto(bag);
@@ -143,79 +61,132 @@ export default createGame(BlueBreakthroughPlayer, MyGame, game => {
     bag .shuffle();
   }
 
-  function drawCubesToPlates(game: MyGame) {
-      for(var i = 1; i <= game.players.length; i++) {
+  public drawCubesToPlates() {
+      for(var i = 1; i <= this.players.length; i++) {
         for(var j = 0; j < 4; j++) {
-          game.first(CubeBag)!.top(ResourceCube)!.putInto(game.first(CubePlate, {index: i})!);
+          this.first(CubeBag)!.top(ResourceCube)!.putInto(this.first(CubePlate, {index: i})!);
         }
       }
   }
 
-  function fillFunding(game: MyGame) {
+  public fillFunding() {
     // clear previous cards first
-    for(const space of game.all(FundingSpace)) {
+    for(const space of this.all(FundingSpace)) {
       for(const card of space.all(FundingCard)) {
-        card.putInto(game.first(Supply)!);
+        card.putInto(this.first(Supply)!);
       }
     }
-    for(var i = 1; i <= game.players.length; i++) {
-      game.first(FundingDeck)!.top(FundingCard)!.putInto(game.first(FundingSpace, {index: i})!);
+    for(var i = 1; i <= this.players.length; i++) {
+      this.first(FundingDeck)!.top(FundingCard)!.putInto(this.first(FundingSpace, {index: i})!);
     }
   }
 
-  function fillUpgrades(game: MyGame) {
-    for(var i = 1; i <= game.players.length; i++) {
-      for(const space of game.all(UpgradeSpace, {index: i})) {
+  public fillUpgrades(round: number) {
+    for(var i = 1; i <= this.players.length; i++) {
+      for(const space of this.all(UpgradeSpace, {index: i})) {
         if(space.all(UpgradeCard).length == 0) {
-          game.first(UpgradeDeck)!.top(UpgradeCard)!.putInto(space);
+          this.first(UpgradeDeck)!.top(UpgradeCard, {stage: round})!.putInto(space);
         }
       }
     }
   }
 
-  const mainBoard = game.create(MainBoard, "mainBoard");
-  const bag = game.create(CubeBag, "bag");
-  const supply = game.create(Supply, "supply");
-
-  const playersSpace = game.create(PlayersSpace, 'playersSpace')
-  for(var i = 1; i <= game.players.length; i++) {
-    const playerSpace = playersSpace.create(PlayerSpace, 'playerSpace' + i, {player: game.players[i]});
-    const playerBoard = playerSpace.create(PlayerBoard, 'p' + i + "Board")
-    playerBoard.player = game.players[i];
-    
-    game.players[i-1].space = playerSpace
-    game.players[i-1].board = playerBoard
+  public playersRemaining(action: TokenAction): BlueBreakthroughPlayer[] {
+    return this.all(PowerTokenSpace, 
+      {action: action, complete: false}).map(x => x.container(PlayerSpace)!.player!);
   }
 
+  public nextFundingTurnOrder(): BlueBreakthroughPlayer {
+    const playersRemaining: BlueBreakthroughPlayer[] = this.playersRemaining(TokenAction.Funding);
+    let maxToken: PowerToken | null = null;
+    let nextPlayer: BlueBreakthroughPlayer | null = null;
+    let maxPlayerScore: number = -1;
 
-  for(var i = 1; i <= 4; i++) {
-    const plate = mainBoard.create(CubePlate, "cubePlate" + i, {index: i})
-    const funding = mainBoard.create(FundingSpace, "funding" + i, {index: i})
-    const upgradeA = mainBoard.create(UpgradeSpace, "upgrade" + i + "-a", {index: i})
-    const upgradeB = mainBoard.create(UpgradeSpace, "upgrade" + i + "-b", {index: i})
+    playersRemaining.forEach( p=> {
+      const token = p.board.first(PowerTokenSpace, {action: TokenAction.Funding})!.first(PowerToken)!
+      const playerScore = p.getScore();
+
+      if(maxToken == null || [TokenAbility.Publish, TokenAbility.Recall].includes(maxToken.ability)) {
+        maxToken = token; nextPlayer = p; maxPlayerScore = playerScore;
+      } else {
+        // first check token value
+        if(token.value > maxToken.value) {
+          maxToken = token; nextPlayer = p; maxPlayerScore = playerScore;
+        } 
+        // then check abilities if tied
+        else if(token.value == maxToken.value && 
+            token.ability == TokenAbility.A && maxToken.ability == TokenAbility.B) {
+          maxToken = token; nextPlayer = p; maxPlayerScore = playerScore;
+        } 
+        // then check score if still tied
+        else if(token.value == maxToken.value && token.ability == maxToken.ability 
+          && playerScore > maxPlayerScore
+        ) {
+          maxToken = token; nextPlayer = p; maxPlayerScore = playerScore;
+        }         
+        // final tie goes to priority pawn
+        else if(token.value == maxToken.value &&
+          token.ability == maxToken.ability && playerScore == maxPlayerScore) {
+            
+        }
+      }
+    })
+
+    return nextPlayer!;
   }
 
-  const colors: CubeColor[] = [CubeColor.Orange, CubeColor.Brown, CubeColor.Blue, CubeColor.White, 
-    CubeColor.Black, CubeColor.Red, CubeColor.Yellow]
-  for(var i = 1; i <= 30; i++) {
-    for(const color of colors) {
-      supply.create(ResourceCube, color + "Cube" + i, {color: color});
-    }
+  public getPlayerToken(player: BlueBreakthroughPlayer, action: TokenAction) : PowerToken {
+    return player.board.first(PowerTokenSpace, {action: TokenAction.Funding})!.first(PowerToken)!;
   }
+}
 
-  const fundingDeck = game.create(FundingDeck, "fundingDeck");
-  for (const fundingCard of fundingCards) {
-    fundingDeck.create(FundingCard, fundingCard.name!.replace(' ', '_'), fundingCard);
-  }
-  fundingDeck.shuffle();
+export default createGame(BlueBreakthroughPlayer, MyGame, game => {
 
-  const upgradeDeck = game.create(UpgradeDeck, "upgradeDeck");
-  for (const upgradeCard of upgradeCards) {
-    upgradeDeck.create(UpgradeCard, upgradeDeck.name!.replace(' ', '_'), upgradeCard);
-  }
-  upgradeDeck.shuffle();
+  const { action } = game;
+  const { playerActions, loop, forLoop, eachPlayer, whileLoop, ifElse } = game.flowCommands;
 
+  buildGame(game);
+  
   game.defineActions({
+    placeToken: (player) => action({
+      prompt: 'Place Token'
+    }).chooseOnBoard(
+      'token', player.board.first(AvailableTokenSpace)!.all(PowerToken),
+      { skipIf: 'never' }
+    ).chooseOnBoard(
+      'space', player.board.all(PowerTokenSpace).filter(x => x.all(PowerToken).length == 0),
+      { skipIf: 'never' }
+    ).do(({ token, space }) => {
+      token.putInto(space);
+    }).message(`{{player}} placed a token on {{space}}.`),
+
+    chooseFunding: (player) => action({
+      prompt: 'Choose Funding',
+      condition: game.getPlayerToken(player, TokenAction.Funding).mayPeformAction()
+    }).chooseOnBoard(
+      'funding', game.all(FundingSpace).all(FundingCard),
+      { skipIf: 'never' }
+    ).do(({ funding }) => {
+      funding.putInto(player.space);
+      player.space.first(PowerTokenSpace, {action: TokenAction.Funding})!.complete = true;
+      player.scorePoints(game.getPlayerToken(player, TokenAction.Funding).value);
+    }).message(`{{player}} took {{funding}}.`)
+    ,
+
+    publishFunding: (player) => action({
+      prompt: 'Publish',
+      condition: game.getPlayerToken(player, TokenAction.Funding).ability == TokenAbility.Publish
+    }).do(() => {
+      player.space.first(PowerTokenSpace, {action: TokenAction.Funding})!.complete = true;
+    }),
+
+    recallFunding: (player) => action({
+      prompt: 'Recall',
+      condition: game.getPlayerToken(player, TokenAction.Funding).ability == TokenAbility.Recall
+    }).do(() => {
+      player.space.first(PowerTokenSpace, {action: TokenAction.Funding})!.complete = true;
+    }),
+
     end: () => action({
       prompt: 'Game over'
     }).chooseOnBoard(
@@ -227,14 +198,40 @@ export default createGame(BlueBreakthroughPlayer, MyGame, game => {
 
     forLoop({ name: 'round', initial: 1, next: round => round + 1, while: round => round <= 7, do: [
 
-      ({round}) => addRoundCubes(game, round),
+      ({round}) => game.addRoundCubes(round),
+      () => game.drawCubesToPlates(),
+      () => game.fillFunding(),
+      ({round}) => game.fillUpgrades(round),
 
-      () => drawCubesToPlates(game),
-      () => fillFunding(game),
-      () => fillUpgrades(game),
+      eachPlayer({
+        name: 'turn', do: [
+          whileLoop({while: ({turn}) => 
+            turn.board.all(PowerTokenSpace).all(PowerToken).length < 3, do: (
+                [
+                  playerActions({ actions: ['placeToken']}),
+                ]
+          )})          
+        ]
+      }),        
 
-      playerActions({ actions: ['end']}),
+      // reveal tokens
+      () => game.all(PowerTokenSpace).all(PowerToken).forEach( x=> x.showToAll() ),
+
+      // resolve funding
+      whileLoop({while: () => game.playersRemaining(TokenAction.Funding).length > 0, do: ([  
+        eachPlayer({name: 'turn', do: [
+          ifElse({
+            if: ({turn}) => game.nextFundingTurnOrder() == turn, do: [
+              playerActions({ actions: ['chooseFunding', 'publishFunding', 'recallFunding']}),
+            ],
+          }),   
+        ]}),
+      ])}),
+
+      // resolve resources
     
+      playerActions({ actions: ['end']}),
+
     ]})
   );
 });
