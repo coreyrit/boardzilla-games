@@ -23,7 +23,7 @@ render(setup, {
       { area: { left: 0, top: 10, width: 100, height: 90 }, openDirection: 'up', tab: 'Players',
         openIf: actions => actions.some(a => 
           [
-            'placeToken'
+            'doOpen'
           ]
         .includes(a.name)),
         closeIf: actions => actions.some(a => 
@@ -229,23 +229,31 @@ render(setup, {
       game.all(AvailableTokenSpace).layout(PowerToken, {columns: 1, rows: 9, gap: {x:0, y: 0}})
       game.all(ScoreTrack).layout(ScoreSpace, {columns: 10, rows: 1, gap: {x:1.5, y: 0}})
       game.players.forEach(x => {
+        x.space.layout(PlayerBoard, {area: { left: 0, top: 2, width: 90, height: 100 }});
+        x.space.layout(FundingCard, 
+          {
+            area: { left: 90, top: 0, width: 10, height: 100 },
+            columns: 1, rows: 8, gap: {x:0, y:-5},
+          }
+        );
+
         x.board.layout(x.board.first(AvailableTokenSpace)!, { 
-          area: { left: 6, top: 11, width: 10, height: 70 },
+          area: { left: 6, top: 11, width: 10, height: 60 },
         });
         x.board.layout(x.board.first(ScoreTrack, {tens: true})!, { 
-          area: { left: 37.5, top: 12.5, width: 43.5, height: 5 },
+          area: { left: 37.5, top: 11.5, width: 43.5, height: 5 },
         });
         x.board.layout(x.board.first(ScoreTrack, {tens: false})!, { 
-          area: { left: 37.5, top: 17, width: 43.5, height: 5 },
+          area: { left: 37.5, top: 16, width: 43.5, height: 5 },
         });
         x.board.layout(x.board.first(PowerTokenSpace, {action: TokenAction.Funding})!, { 
-          area: { left: 16, top: 12.5, width: 10, height: 10 },
+          area: { left: 16, top: 11.5, width: 10, height: 10 },
         });
         x.board.layout(x.board.first(PowerTokenSpace, {action: TokenAction.Resources})!, { 
-          area: { left: 16, top: 27.5, width: 10, height: 10 },
+          area: { left: 16, top: 25, width: 10, height: 10 },
         });
         x.board.layout(x.board.first(PowerTokenSpace, {action: TokenAction.Upgrade})!, { 
-          area: { left: 16, top: 42.5, width: 10, height: 10 },
+          area: { left: 16, top: 38.5, width: 10, height: 10 },
         });
       });
   }

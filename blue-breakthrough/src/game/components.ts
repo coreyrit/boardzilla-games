@@ -173,7 +173,7 @@ export class PowerToken extends Piece<MyGame> {
 
   public getSymbol() : string {
     let symbol = "";
-    if(this.value >= 0) {
+    if(this.value != undefined &&![TokenAbility.Publish, TokenAbility.Recall].includes(this.ability)) {
       symbol += this.value.toString();
     }
     switch(this.ability) {

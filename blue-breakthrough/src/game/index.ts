@@ -132,11 +132,51 @@ export class MyGame extends Game<MyGame, BlueBreakthroughPlayer> {
       }
     })
 
+    this.game.message("Next Funding turn: " + nextPlayer);
+    return nextPlayer!;
+  }
+
+  public nextResourcesTurnOrder(): BlueBreakthroughPlayer {
+    const playersRemaining: BlueBreakthroughPlayer[] = this.playersRemaining(TokenAction.Resources);
+    let minToken: PowerToken | null = null;
+    let nextPlayer: BlueBreakthroughPlayer | null = null;
+    let maxTokenSum: number = -1;
+
+    playersRemaining.forEach( p=> {
+      const token = p.board.first(PowerTokenSpace, {action: TokenAction.Resources})!.first(PowerToken)!
+      const tokenSum = p.board.all(PowerTokenSpace).reduce((sum, x) => sum + x.first(PowerToken)!.value, 0)
+
+      if(minToken == null || [TokenAbility.Publish, TokenAbility.Recall].includes(minToken.ability)) {
+        minToken = token; nextPlayer = p; maxTokenSum = tokenSum;
+      } else {
+        // first check token value
+        if(token.value < minToken.value) {
+          minToken = token; nextPlayer = p; maxTokenSum = tokenSum;
+        } 
+        // then check abilities if tied
+        else if(token.value == minToken.value && 
+            token.ability == TokenAbility.A && minToken.ability == TokenAbility.B) {
+          minToken = token; nextPlayer = p; maxTokenSum = tokenSum;
+        } 
+        // then check token sum if still tied
+        else if(token.value == minToken.value && token.ability == minToken.ability 
+          && tokenSum > maxTokenSum
+        ) {
+          minToken = token; nextPlayer = p; maxTokenSum = tokenSum;
+        }         
+        // final tie goes to priority pawn
+        else if(token.value == minToken.value &&
+          token.ability == minToken.ability && maxTokenSum == tokenSum) {
+        }
+      }
+    })
+
+    this.game.message("Next Resources turn: " + nextPlayer);
     return nextPlayer!;
   }
 
   public getPlayerToken(player: BlueBreakthroughPlayer, action: TokenAction) : PowerToken {
-    return player.board.first(PowerTokenSpace, {action: TokenAction.Funding})!.first(PowerToken)!;
+    return player.board.first(PowerTokenSpace, {action: action})!.first(PowerToken)!;
   }
 }
 
@@ -170,8 +210,7 @@ export default createGame(BlueBreakthroughPlayer, MyGame, game => {
       funding.putInto(player.space);
       player.space.first(PowerTokenSpace, {action: TokenAction.Funding})!.complete = true;
       player.scorePoints(game.getPlayerToken(player, TokenAction.Funding).value);
-    }).message(`{{player}} took {{funding}}.`)
-    ,
+    }).message(`{{player}} took {{funding}}.`),
 
     publishFunding: (player) => action({
       prompt: 'Publish',
@@ -185,6 +224,36 @@ export default createGame(BlueBreakthroughPlayer, MyGame, game => {
       condition: game.getPlayerToken(player, TokenAction.Funding).ability == TokenAbility.Recall
     }).do(() => {
       player.space.first(PowerTokenSpace, {action: TokenAction.Funding})!.complete = true;
+    }),
+
+    chooseResourcePlate: (player) => action({
+      condition: game.getPlayerToken(player, TokenAction.Resources).mayPeformAction(),
+      prompt: "Choose Resources"
+    }).chooseOnBoard(
+      'plate', game.all(CubePlate).filter(x => x.all(ResourceCube).length > 0),
+      { prompt: 'Choose Plate',skipIf: 'never' }
+    ).chooseOnBoard(
+      'cubes', ({plate}) => plate.all(ResourceCube),
+      { prompt: 'Choose X Cubes', number: game.getPlayerToken(player, TokenAction.Resources).value }
+    ).do(({ plate, cubes }) => {
+      cubes.forEach( c=> c.putInto(player.space) );
+      player.space.first(PowerTokenSpace, {action: TokenAction.Resources})!.complete = true;
+      player.scorePoints(plate.all(ResourceCube).length);
+      plate.all(ResourceCube).forEach( c=> c.putInto(game.first(Supply)!) );
+    }),
+
+    publishResources: (player) => action({
+      prompt: 'Publish',
+      condition: game.getPlayerToken(player, TokenAction.Funding).ability == TokenAbility.Publish
+    }).do(() => {
+      player.space.first(PowerTokenSpace, {action: TokenAction.Resources})!.complete = true;
+    }),
+
+    recallResources: (player) => action({
+      prompt: 'Recall',
+      condition: game.getPlayerToken(player, TokenAction.Funding).ability == TokenAbility.Recall
+    }).do(() => {
+      player.space.first(PowerTokenSpace, {action: TokenAction.Resources})!.complete = true;
     }),
 
     end: () => action({
@@ -229,6 +298,15 @@ export default createGame(BlueBreakthroughPlayer, MyGame, game => {
       ])}),
 
       // resolve resources
+      whileLoop({while: () => game.playersRemaining(TokenAction.Resources).length > 0, do: ([  
+        eachPlayer({name: 'turn', do: [
+          ifElse({
+            if: ({turn}) => game.nextResourcesTurnOrder() == turn, do: [
+              playerActions({ actions: ['chooseResourcePlate', 'publishResources', 'recallResources']}),
+            ],
+          }),   
+        ]}),
+      ])}),
     
       playerActions({ actions: ['end']}),
 

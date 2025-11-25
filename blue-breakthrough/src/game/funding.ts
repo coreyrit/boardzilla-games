@@ -5,14 +5,14 @@ export const fundingCards: Partial<FundingCard>[] = [
     {name: 'Emergency Reset',	type: FundingType.Instant,	effect: 'Immediately recover one token from your cooldown pool.'},
     {name: 'Investor Favor',	type: FundingType.Permanent,	effect: 'Gain +3 ⭐ whenever you buy an upgrade that costs 3 or more.'},
     {name: 'Cube Draw',	type: FundingType.Permanent,	effect: 'When gaining cubes you may take them from 2 piles.  Combine those piles for other players after completion.'},
-    {name: 'Selective Draw', type: FundingType.Permanent,	effect: 'Instant	Place 1 blue cube and 1 white cube in the bag and mix.  Next, draw 4 cubes from the bag and keep up to 2.  Place the rest back into the bag.'},
+    {name: 'Selective Draw', type: FundingType.Instant,	effect: 'Instant	Place 1 blue cube and 1 white cube in the bag and mix.  Next, draw 4 cubes from the bag and keep up to 2.  Place the rest back into the bag.'},
     {name: 'Power Refund',	type: FundingType.Permanent,	effect: 'After testing, keep one cube used for scoring.  You must have room for it in storage.'},
     {name: 'Mini-Storage',	type: FundingType.Permanent,	effect: 'You may store up to 2 blue cubes here between rounds.'},
     {name: 'Priority Window',	type: FundingType.Instant,	effect: 'Add +2 to your power when resolving Funding.'},
     {name: 'Loaned Technician',	type: FundingType.Ongoing,	effect: 'Use one upgrade on your board twice during the testing phase.'},
     {name: 'Shared Upgrade',	type: FundingType.Permanent,	effect: 'Upgrades cost 1 less.'},
     {name: 'Converter Voucher',	type: FundingType.Ongoing,	effect: 'During testing, activate one upgrade without paying its requirement.'},
-    {name: 'Market Peek',	type: FundingType.Permanent,	effect: 'Instead of drawing random cards when you can\'t afford an upgrade, draw 2 upgrades , keep 1, and place the other on the bottom of the deck.'},
+    {name: 'Market Peek',	type: FundingType.Permanent,	effect: 'When drawing random cards for upgrades: draw 2 upgrades, keep 1, and place the other on the bottom of the deck.'},
 //     Power Swap	Instant	Swap all tokens in your cooldown pool with all of the tokens in your available pool.
 //     Storage Insurance	Permanent	Gain 2 ⭐ for each leftover cube you don't store after testing.
 //     R&D Grant	Instant	Draw 2 funding cards, keep 1, and discard the other.
