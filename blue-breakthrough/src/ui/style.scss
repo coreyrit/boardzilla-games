@@ -1,0 +1,101 @@
+#play-area {
+    .cooling {
+        z-index: 1;
+        background-image: url(./assets/cooling.png);
+        background-repeat: no-repeat;
+        background-position: center 50%;
+        background-size: contain;
+    }
+    .exhaust {
+        z-index: 1;
+        background-image: url(./assets/exhaust.png);
+        background-repeat: no-repeat;
+        background-position: center 50%;
+        background-size: contain;
+    }
+    .heater {
+        z-index: 1;
+        background-image: url(./assets/heater.png);
+        background-repeat: no-repeat;
+        background-position: center 50%;
+        background-size: contain;
+    }
+    .injection {
+        z-index: 1;
+        background-image: url(./assets/injection.png);
+        background-repeat: no-repeat;
+        background-position: center 50%;
+        background-size: contain;
+    }
+    .nozzle {
+        z-index: 1;
+        background-image: url(./assets/nozzle.png);
+        background-repeat: no-repeat;
+        background-position: center 50%;
+        background-size: contain;
+    }
+    .pump {
+        z-index: 1;
+        background-image: url(./assets/pump.png);
+        background-repeat: no-repeat;
+        background-position: center 50%;
+        background-size: contain;
+    }
+    .trap {
+        z-index: 1;
+        background-image: url(./assets/trap.png);
+        background-repeat: no-repeat;
+        background-position: center 50%;
+        background-size: contain;
+    }
+    .TrashFunding {
+        z-index: 1;
+        background-image: url(./assets/trash-funding.png);
+        background-repeat: no-repeat;
+        background-position: center 50%;
+        background-size: contain;
+    }
+    .Instant {
+        z-index: 1;
+        background-image: url(./assets/Instant.png);
+        background-repeat: no-repeat;
+        background-position: center 50%;
+        background-size: contain;
+    }
+    .Permanent {
+        z-index: 1;
+        background-image: url(./assets/Permanent.png);
+        background-repeat: no-repeat;
+        background-position: center 50%;
+        background-size: contain;
+    }
+    .Ongoing {
+        z-index: 1;
+        background-image: url(./assets/Ongoing.png);
+        background-repeat: no-repeat;
+        background-position: center 50%;
+        background-size: contain;
+    }
+    .MainBoard {
+        z-index: 1;
+        background-image: url(./assets/bb-board.jpg);
+        background-repeat: no-repeat;
+        background-position: center 50%;
+        background-size: contain;
+    }
+    .CubePlate {
+        // border-style: solid;
+    }
+    .FundingSpace {
+        // border-style: solid;
+        //  display: block;
+        // background-image: url(./assets/bb-board.jpg);
+        // background-size: 100%;
+    }
+    .FundingCard {
+        // display: block;
+    }
+    .UpgradeSpace {
+        // border-style: solid;
+    }
+}
