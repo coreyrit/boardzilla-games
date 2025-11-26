@@ -83,6 +83,7 @@ export enum CubeColor {
   Black = "black",
   Red = "red",
   Yellow = "yellow",
+  Any = "green"
 }
 
 export class ResourceCube extends Piece<MyGame> {
@@ -201,16 +202,62 @@ export class ReactorSpace extends Space<MyGame> {
 export class LEDSpace extends Space<MyGame> {
 }
 
+export class LEDLayer {
+  public index: number;
+  public text: string;
+  public colors: CubeColor[];
+  public optional: boolean;
+  public repeatable: boolean;  
+}
+
+export class LEDRow extends Space<MyGame> {
+  public index: number;
+}
+
 export class LEDCard extends Piece<MyGame> {
   public letter: string;
-
-  public layer1: string;
-  public layer2: string;
-  public layer3: string;
-  public layer4: string;
-  public layer5: string;
-  public layer6: string;
-  public layer7: string;
-
   public special: string;
+  public show: boolean = false;
+  public layers: LEDLayer[];
+
+  public isLayerComplete(layer: LEDLayer): boolean {
+    if(layer.optional) {
+      return true;
+    }
+    for(const c of layer.colors) {
+      if( !this.container(LEDSpace)!.first(LEDRow, {index: layer.index})!.all(ResourceCube).map( x => x.color ).includes(c)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  public rowsNeedingColor(color: CubeColor): LEDRow[] {
+    let rows: LEDRow[] = [];
+    for(var index = 1; index <= 7; index++) {
+      const layer = this.layers[index-1];
+      if(!this.isLayerComplete(layer) && layer.colors.includes(color)) {
+        rows.push(this.container(LEDSpace)!.first(LEDRow, {index: index})!);
+        break;
+      }
+      if(this.isLayerComplete(layer) && layer.colors.includes(color) && layer.repeatable) {
+        rows.push(this.container(LEDSpace)!.first(LEDRow, {index: index})!);
+      }
+    }
+    return rows;
+  }
+
+  public nextColorsNeeded(): CubeColor[] {
+    let colors: CubeColor[] = [];
+    for(var index = 1; index <= 7; index++) {
+      const layer = this.layers[index-1];
+      if(!this.isLayerComplete(layer) || layer.repeatable) {
+        colors.push(...layer.colors);
+      }
+      if(!this.isLayerComplete(layer) && !layer.optional) {
+        break;
+      }
+    }
+    return colors;
+  }
 }

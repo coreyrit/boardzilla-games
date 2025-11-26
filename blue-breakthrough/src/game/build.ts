@@ -7,7 +7,8 @@ import { PlayerSpace, PlayerBoard, ResourceCube, CubeBag, Supply, CubeColor, Fun
   ReactorSpace,
   UpgradeType,
   LEDSpace,
-  LEDCard
+  LEDCard,
+  LEDRow
  } from './components.js';
 import { fundingCards } from './funding.js';
 import { upgradeCards } from './upgrades.js';
@@ -73,24 +74,35 @@ export function buildGame(game: MyGame) {
 
     const led = playerBoard.create(LEDSpace, 'led' + i);
 
-    led.create(LEDCard, 'ledGaAs' + i, {
-      layer1: '🟫 → 2 ⭐ ea.',
-      layer2: '🟧 →2 ⭐ ea.',
-      layer3: '⬛ → 3 ⭐ ea.',
-      layer4: '✳️ →1 ⭐ ea. ',
+    const GaN = led.create(LEDCard, 'ledGaN_A' + i, { 
+      letter: 'A',
+      layers: [
+        {index: 1, text: '⬜ → 1 ⭐ ea.', colors: [CubeColor.White], optional: false, repeatable: true},
+        {index: 2, text: '(⬜ 🟦) → 5 ⭐', colors: [CubeColor.White, CubeColor.Blue], optional: true, repeatable: false},
+        {index: 3, text: '🟦 → 1 ⭐ ea. ', colors: [CubeColor.Blue], optional: false, repeatable: true},
+        {index: 4, text: '🟦 🟥 → 5 ⭐', colors: [CubeColor.Blue, CubeColor.Red], optional: false, repeatable: false},
+        {index: 5, text: '(🟨),(🟨),(🟨) → 5,12,20 ⭐', colors: [CubeColor.Yellow, CubeColor.Yellow, CubeColor.Yellow], optional: true, repeatable: false},
+        {index: 6, text: '🟨 🟥 → 8 ⭐', colors: [CubeColor.Yellow, CubeColor.Red], optional: false, repeatable: false},
+        {index: 7, text: '🟥 → 5 ⭐ ea.', colors: [CubeColor.Red], optional: false, repeatable: true},
+      ], 
+      special: 'If at least one cube per row: 10 ⭐' 
     });
 
-    led.create(LEDCard, 'ledGaN_A' + i, {
-      letter: 'A',
-      layer1: '⬜ → 1 ⭐ ea.',
-      layer2: '(⬜ 🟦) → 5 ⭐',
-      layer3: '🟦 → 1 ⭐ ea. ',
-      layer4: '🟦 🟥 → 5 ⭐',
-      layer5: '(🟨),(🟨),(🟨) → 5,12,20 ⭐',
-      layer6: '🟨 🟥 → 8 ⭐',
-      layer7: '🟥 → 5 ⭐ ea.',
-      special: 'If at least one cube per row: 10 ⭐'
-    });
+       const GaAs = led.create(LEDCard, 'ledGaAs' + i, { 
+      layers: [
+        {index: 1, text: '🟫 → 2 ⭐ ea.', colors: [CubeColor.Brown], optional: false, repeatable: true},
+        {index: 2, text: '🟧 →2 ⭐ ea.', colors: [CubeColor.Orange], optional: false, repeatable: true},
+        {index: 3, text: '⬛ → 3 ⭐ ea.', colors: [CubeColor.Black], optional: false, repeatable: true},
+        {index: 4, text: '✳️ →1 ⭐ ea. ', colors: [CubeColor.Any], optional: false, repeatable: true},
+        {index: 5, text: '', colors: [], optional: false, repeatable: false},
+        {index: 6, text: '', colors: [], optional: false, repeatable: false},
+        {index: 7, text: '', colors: [], optional: false, repeatable: false},
+      ]}
+    );
+
+    for(var j = 1; j <= 7; j++) {
+      led.create(LEDRow, 'row-' + j + '-' + i, {index: j});
+    }
   }
 
   for(var i = 1; i <= 4; i++) {

@@ -353,16 +353,25 @@ export default createGame(BlueBreakthroughPlayer, MyGame, game => {
     ),
 
     flipLED: (player) => action({
-      prompt: 'Flip LED'
+      prompt: 'Flip LED',
+      condition: player.board.first(LEDSpace)!.all(ResourceCube).length == 0
     }).do(() => {
-      player.board.top(LEDCard)!.putInto(player.board.first(LEDSpace)!, {position: 1});
+      const first = player.board.first(LEDCard)!;
+      first.putInto(player.board.first(LEDSpace)!);
     }),
 
-    placeCube: () => action({
-      prompt: 'Game over'
+    placeCube: (player) => action({
+      prompt: 'Place Cube'
     }).chooseOnBoard(
-      'none', []
-    ),
+      'cube', player.space.all(ResourceCube).filter( c=> player.board.first(LEDSpace)!.first(LEDCard)!.nextColorsNeeded().includes(c.color) )
+        .filter(x => x.container(LEDSpace) == null),
+      { skipIf: 'never' }
+    ).chooseOnBoard(
+      'row', ({cube}) => player.board.first(LEDSpace)!.first(LEDCard)!.rowsNeedingColor(cube.color),
+      { skipIf: 'never' }
+    ).do(({cube, row}) => {
+      cube.putInto(row);
+    }),
 
     useUpgrade: () => action({
       prompt: 'Game over'
@@ -434,12 +443,13 @@ export default createGame(BlueBreakthroughPlayer, MyGame, game => {
         ]}),
       ])}),
 
-      // test hpase
+      // test phase
       eachPlayer({
         name: 'turn', do: [
           whileLoop({while: ({turn}) => 
             !turn.doneTesting, do: (
                 [
+                  ({turn}) => game.message("Next colors needed: " + turn.board.first(LEDSpace)!.first(LEDCard)!.nextColorsNeeded()),
                   playerActions({ actions: ['flipLED', 'placeCube', 'useUpgrade', 'finishTesting']}),
                 ]
           )})          

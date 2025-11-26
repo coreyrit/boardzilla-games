@@ -9,7 +9,8 @@ import { PlayerSpace, PlayerBoard, ResourceCube, CubeBag, Supply, CubeColor, Fun
   ReactorSpace,
   UpgradeType,
   LEDSpace,
-  LEDCard
+  LEDCard,
+  LEDRow,
  } from '../game/components.js';
 
 import './style.scss';
@@ -27,7 +28,7 @@ render(setup, {
       { area: { left: 0, top: 10, width: 100, height: 90 }, openDirection: 'up', tab: 'Players',
         openIf: actions => actions.some(a => 
           [
-            'placeToken'
+            'flipLED', 'placeToken',
           ]
         .includes(a.name)),
         closeIf: actions => actions.some(a => 
@@ -245,27 +246,47 @@ render(setup, {
         <div className='LEDCard'>
           <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
             <rect x="0" y="0" width="100" height="75" fill='white' stroke="black" strokeWidth="2" />
-            <text x="2" y="70" fill="black" font-size="8">{x.layer1}</text>
-            <text x="2" y="60" fill="black" font-size="8">{x.layer2}</text>
-            <text x="2" y="50" fill="black" font-size="8">{x.layer3}</text>
-            <text x="2" y="40" fill="black" font-size="8">{x.layer4}</text>
-            <text x="2" y="30" fill="black" font-size="8">{x.layer5}</text>
-            <text x="2" y="20" fill="black" font-size="8">{x.layer6}</text>
-            <text x="2" y="10" fill="black" font-size="8">{x.layer7}</text>
+            <text x="2" y="70" fill="black" font-size="8">{x.layers[0].text}</text>
+            <text x="2" y="60" fill="black" font-size="8">{x.layers[1].text}</text>
+            <text x="2" y="50" fill="black" font-size="8">{x.layers[2].text}</text>
+            <text x="2" y="40" fill="black" font-size="8">{x.layers[3].text}</text>
+            <text x="2" y="30" fill="black" font-size="8">{x.layers[4].text}</text>
+            <text x="2" y="20" fill="black" font-size="8">{x.layers[5].text}</text>
+            <text x="2" y="10" fill="black" font-size="8">{x.layers[6].text}</text>
           </svg>
         </div>
       )});
+//       game.all(LEDLayer).appearance({render: x => ( 
+//         <div className='LEDLayer'>
+//           <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+//             <text x="5" y="10" width="90" fill="black" font-size="5" opacity={x.container(LEDCard)!.show ? 100 : 0}>{x.text}</text>
+// \\
+//           </svg>
+//         </div>
+//       )});
 
       game.all(AvailableTokenSpace).layout(PowerToken, {columns: 1, rows: 9, gap: {x:0, y: 0}})
       game.all(ScoreTrack).layout(ScoreSpace, {columns: 10, rows: 1, gap: {x:1.5, y: 0}})      
-      game.all(LEDSpace).layout(LEDCard, {columns: 1, rows: 1})      
+      game.all(LEDSpace).layout(LEDCard, {columns: 1, rows: 1})
+      game.all(LEDSpace).layout(LEDRow, 
+        {
+          area: { left: 80, top: 0, width: 20, height: 100 },
+          columns: 1, rows: 7,
+          direction: 'btt'
+        }
+      )
+      game.all(LEDRow).layout(ResourceCube, 
+        {
+          columns: 4, rows: 1
+        }
+      );
 
       game.players.forEach(x => {
         x.space.layout(PlayerBoard, {area: { left: 0, top: 2, width: 90, height: 100 }});
         
         x.space.layout(ResourceCube, 
           {
-            area: { left: 0.5, top: 0.5, width: 90, height: 20 },
+            area: { left: 0.5, top: 0.5, width: 90, height: 4.5 },
             columns: 20, rows: 1, gap: {x:0.5, y:0},
           }
         );
