@@ -13,24 +13,24 @@ export const fundingCards: Partial<FundingCard>[] = [
     {name: 'Shared Upgrade',	type: FundingType.Permanent,	effect: 'Upgrades cost 1 less.'},
     {name: 'Converter Voucher',	type: FundingType.Ongoing,	effect: 'During testing, activate one upgrade without paying its requirement.'},
     {name: 'Market Peek',	type: FundingType.Permanent,	effect: 'When drawing random cards for upgrades: draw 2 upgrades, keep 1, and place the other on the bottom of the deck.'},
-//     Power Swap	Instant	Swap all tokens in your cooldown pool with all of the tokens in your available pool.
-//     Storage Insurance	Permanent	Gain 2 ⭐ for each leftover cube you don't store after testing.
-//     R&D Grant	Instant	Draw 2 funding cards, keep 1, and discard the other.
-//     Late-Stage Funding	Instant	In phase III, draw 2 funding cards.
-//     Reagent Voucher	Ongoing	Take either 1 white or 1 blue cube from the pool each round.
-//     Temporary Slot	Permanent	You may place an upgrade of any type here.
-//     Market Surge	Permanent	When gaining cubes, take +1 (max 4) above the power assigned.
-//     Victory Research	Instant	Score 5 ⭐ immediately.
-//     Investor Trust	Permanent	Discarding funding cards gives you any 2 cubes instead of 1.
-//     Experimental Catalyst	Ongoing	Convert one cube of your choice into any color once per round.
-//     Patent License	Permanent	When another player buys an upgrade of a type you own gain +1 ⭐.
-//     Efficiency Audit	Permanent	Your upgrades that require 2 cubes now only require 1 cube (your choice).
-//     Investor Bonus	Instant	Gain +4 ⭐ for each upgrade you purchased this phase.
-//     Backup Generator	Permanent	Your exhaust upgrade can be used an unlimited number of times during Testing.
-//     Precision Tools	Ongoing	When converting cubes with an upgrade you may change one cube in the result to any color.
-//     Reactor Grant	Permanent	When using a Heater upgrade also gain +1 ⭐
-//     Maintenance Delay	Instant	Ignore an Employer Letter’s negative effect.
-//     Research Collaboration	Ongoing	During the Test phase copy the effect of one other player’s Trap upgrade.
-//     Overclocked Reactor	Ongoing	Use one of the upgrades remaining in the market during testing.
-//     Public Demonstration	Ongoing	Chose an upgrade to turn without using it and gain ⭐ equal to its cost.
+    {name: 'Power Swap',	type: FundingType.Instant,	effect: 'Swap all tokens in your cooldown pool with all of the tokens in your available pool.'},
+    {name: 'Storage Insurance',	type: FundingType.Permanent,	effect: 'Gain 2 ⭐ for each leftover cube you don\'t store after testing.'},
+    {name: 'R&D Grant',	type: FundingType.Instant,	effect: 'Draw 2 funding cards, keep 1, and discard the other.'},
+    {name: 'Late-Stage Funding',	type: FundingType.Instant,	effect: 'In phase III, draw 2 funding cards.'},
+    {name: 'Reagent Voucher',	type: FundingType.Ongoing,	effect: 'Take either 1 white or 1 blue cube from the pool each round.'},
+    {name: 'Temporary Slot',	type: FundingType.Permanent,	effect: 'You may place an upgrade of any type here.'},
+    {name: 'Market Surge',	type: FundingType.Permanent,	effect: 'When gaining cubes, take +1 (max 4) above the power assigned.'},
+    {name: 'Victory Research',	type: FundingType.Instant,	effect: 'Score 5 ⭐ immediately.'},
+    {name: 'Investor Trust',	type: FundingType.Permanent,	effect: 'Discarding funding cards gives you any 2 cubes instead of 1.'},
+    {name: 'Experimental Catalyst',	type: FundingType.Ongoing,	effect: 'Convert one cube of your choice into any color once per round.'},
+    {name: 'Patent License',	type: FundingType.Permanent,	effect: 'When another player buys an upgrade of a type you own gain +1 ⭐.'},
+    {name: 'Efficiency Audit',	type: FundingType.Permanent,	effect: 'Your upgrades that require 2 cubes now only require 1 cube (your choice).'},
+    {name: 'Investor Bonus',	type: FundingType.Instant,	effect: 'Gain +4 ⭐ for each upgrade you purchased this phase.'},
+    {name: 'Backup Generator',	type: FundingType.Permanent,	effect: 'Your exhaust upgrade can be used an unlimited number of times during Testing.'},
+    {name: 'Precision Tools',	type: FundingType.Ongoing,	effect: 'When converting cubes with an upgrade you may change one cube in the result to any color.'},
+    {name: 'Reactor Grant',	type: FundingType.Permanent,	effect: 'When using a Heater upgrade also gain +1 ⭐'},
+    {name: 'Maintenance Delay',	type: FundingType.Instant,	effect: 'Ignore an Employer Letter’s negative effect.'},
+    {name: 'Research Collaboration',	type: FundingType.Ongoing,	effect: 'During the Test phase copy the effect of one other player’s Trap upgrade.'},
+    {name: 'Overclocked Reactor',	type: FundingType.Ongoing,	effect: 'Use one of the upgrades remaining in the market during testing.'},
+    {name: 'Public Demonstration',	type: FundingType.Ongoing,	effect: 'Chose an upgrade to turn without using it and gain ⭐ equal to its cost.'},
 ]

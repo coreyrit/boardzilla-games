@@ -57,6 +57,9 @@ export class ScoreCube extends Piece<MyGame> {
 export class PlayerBoard extends Space<MyGame> {
 }
 
+export class ResourceSpace extends Space<MyGame> {
+}
+
 export class CubeBag extends Piece<MyGame> {
 }
 
@@ -118,6 +121,88 @@ export class UpgradeCard extends Piece<MyGame> {
   public type: UpgradeType;
   public effect: string;
   public cost: number;
+
+  public input: CubeColor[];
+  public output: CubeColor[];
+  public points: number = 0;
+
+  public colorFromSymbol(symbol: string) : CubeColor {
+    switch(symbol) {
+      case '⬜':
+        return CubeColor.White;
+      case '🟫':
+        return CubeColor.Brown;
+      case '🟦':
+        return CubeColor.Blue;
+      case '🟧':
+        return CubeColor.Orange;
+      case '⬛':
+        return CubeColor.Black;
+      case '🟥':
+        return CubeColor.Red;
+      case '🟨':
+        return CubeColor.Yellow;
+      default:
+        return CubeColor.Any;
+    }
+  }
+
+  public initialize() {    
+    this.input = [];
+    this.output = [];
+    this.points = (this.effect.match(/⭐/g)||[]).length;
+
+    this.game.message(this.effect + ": " + this.effect.length);
+    const parts = this.effect.replace("Gain", "").replace(" ", "").replace("⭐", "").split('→');
+    
+    if(parts.length == 1) {
+      // this.game.message(parts[0]);
+      let temp = parts[0];
+      // while(temp.length > 0) {
+        for(const symbol of ['⬜','🟫','🟦','🟧','⬛','🟥','🟨','✳️']) {
+          if(temp.includes(symbol)) {
+            this.output.push( this.colorFromSymbol(symbol) );
+          }
+        }
+      // }
+    }
+    
+    if(parts.length > 1) {
+      let temp = parts[0];
+      // while(temp.length > 0) {
+        for(const symbol of ['⬜','🟫','🟦','🟧','⬛','🟥','🟨','✳️']) {
+          if(temp.includes(symbol)) {
+            this.input.push( this.colorFromSymbol(symbol) );
+          }
+        }
+      // }
+      temp = parts[1];
+      // while(temp.length > 0) {
+        for(const symbol of ['⬜','🟫','🟦','🟧','⬛','🟥','🟨','✳️']) {
+          if(temp.includes(symbol)) {
+            this.output.push( this.colorFromSymbol(symbol) );
+          }
+          if(temp.replace(symbol, "").includes(symbol)) {
+            this.output.push( this.colorFromSymbol(symbol) );
+          }
+        }
+      // }
+    }
+  }
+
+  public mayUse() : boolean {
+    if(this.rotation != 0) {
+      return false;
+    }
+    if(this.input != undefined) {
+      for(const color of this.input) {
+        if(!this.container(PlayerSpace)!.first(ResourceSpace)!.all(ResourceCube).map( x => x.color ).includes(color)) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
 
   public typeName() : string {
     const inputString = this.type.toString();

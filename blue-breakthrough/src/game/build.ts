@@ -8,7 +8,8 @@ import { PlayerSpace, PlayerBoard, ResourceCube, CubeBag, Supply, CubeColor, Fun
   UpgradeType,
   LEDSpace,
   LEDCard,
-  LEDRow
+  LEDRow,
+  ResourceSpace
  } from './components.js';
 import { fundingCards } from './funding.js';
 import { upgradeCards } from './upgrades.js';
@@ -72,6 +73,8 @@ export function buildGame(game: MyGame) {
     playerBoard.create(ReactorSpace, 'heater' + i, {type: UpgradeType.heater});
     playerBoard.create(ReactorSpace, 'trap' + i, {type: UpgradeType.trap});
 
+    playerSpace.create(ResourceSpace, 'resourceSpace' + i);
+
     const led = playerBoard.create(LEDSpace, 'led' + i);
 
     const GaN = led.create(LEDCard, 'ledGaN_A' + i, { 
@@ -128,7 +131,8 @@ export function buildGame(game: MyGame) {
 
   const upgradeDeck = game.create(UpgradeDeck, "upgradeDeck");
   for (const upgradeCard of upgradeCards) {
-    upgradeDeck.create(UpgradeCard, upgradeDeck.name!.replace(' ', '_'), upgradeCard);
+    const card = upgradeDeck.create(UpgradeCard, upgradeDeck.name!.replace(' ', '_'), upgradeCard);
+    card.initialize();
   }
   upgradeDeck.shuffle();
 }

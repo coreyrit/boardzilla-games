@@ -11,6 +11,7 @@ import { PlayerSpace, PlayerBoard, ResourceCube, CubeBag, Supply, CubeColor, Fun
   LEDSpace,
   LEDCard,
   LEDRow,
+  ResourceSpace,
  } from '../game/components.js';
 
 import './style.scss';
@@ -241,6 +242,12 @@ render(setup, {
           </svg>
         </div>
       )});
+      game.all(ResourceSpace).appearance({render: x => ( 
+        <div className='ResourceSpace'>
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          </svg>
+        </div>
+      )});
 
       game.all(LEDCard).appearance({render: x => ( 
         <div className='LEDCard'>
@@ -265,6 +272,13 @@ render(setup, {
 //         </div>
 //       )});
 
+      game.all(ResourceSpace).layout(ResourceCube, 
+          {
+            area: { left: 0.5, top: 0.5, width: 90, height: 4.5 },
+            columns: 20, rows: 1, gap: {x:0.5, y:0},
+          }
+        );
+      
       game.all(AvailableTokenSpace).layout(PowerToken, {columns: 1, rows: 9, gap: {x:0, y: 0}})
       game.all(ScoreTrack).layout(ScoreSpace, {columns: 10, rows: 1, gap: {x:1.5, y: 0}})      
       game.all(LEDSpace).layout(LEDCard, {columns: 1, rows: 1})
@@ -284,12 +298,12 @@ render(setup, {
       game.players.forEach(x => {
         x.space.layout(PlayerBoard, {area: { left: 0, top: 2, width: 90, height: 100 }});
         
-        x.space.layout(ResourceCube, 
-          {
-            area: { left: 0.5, top: 0.5, width: 90, height: 4.5 },
-            columns: 20, rows: 1, gap: {x:0.5, y:0},
-          }
-        );
+        // x.space.layout(ResourceCube, 
+        //   {
+        //     area: { left: 0.5, top: 0.5, width: 90, height: 4.5 },
+        //     columns: 20, rows: 1, gap: {x:0.5, y:0},
+        //   }
+        // );
         x.space.layout(FundingCard, 
           {
             area: { left: 90, top: 0, width: 10, height: 100 },

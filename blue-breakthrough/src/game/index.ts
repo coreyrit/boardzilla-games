@@ -16,7 +16,9 @@ import { PlayerSpace, PlayerBoard, ResourceCube, CubeBag, Supply, CubeColor, Fun
   TokenAction,
   ReactorSpace,
   LEDCard,
-  LEDSpace
+  LEDSpace,
+  ResourceSpace,
+  UpgradeType
  } from './components.js';
 import { buildGame } from './build.js';
 
@@ -43,19 +45,51 @@ export class BlueBreakthroughPlayer extends Player<MyGame, BlueBreakthroughPlaye
     }
 
     public placeUpgrade(upgrade: UpgradeCard) : void {
-      upgrade.putInto(this.board.first(ReactorSpace, {type: upgrade.type})!);
+      let space: ReactorSpace | null = null;
+      if(upgrade.type == UpgradeType.pump) {
+        const spaces = this.board.all(ReactorSpace, {type: UpgradeType.pump});
+        if(spaces[0].all(UpgradeCard).length == 0) {
+          space = spaces[0];
+        } else {
+          space = spaces[1];
+        }
+      } else {
+        space = this.board.first(ReactorSpace, {type: upgrade.type})!
+      }
+
+      if(space!.all(UpgradeCard).length > 0) {
+        this.game.followUp({name: 'discardUpgrade', args: {upgrade: upgrade}});
+      } else {
+        upgrade.putInto(space!);
+      }
     }
 }
 
 export class MyGame extends Game<MyGame, BlueBreakthroughPlayer> {
+  public getStage(round: number) : number {
+    switch(round) {
+      case 1:
+        return 1;
+      case 2:
+      case 3:
+      case 4:
+      case 5:
+        return 2;
+      case 6:
+      case 7:
+        return 3;
+    }
+    return 0;
+  }
+
   public addRoundCubes(round: number) {
     const bag = this.first(CubeBag)!;
+    const supply = this.first(Supply)!
+
     for(var i = 0; i < this.players.length; i++) {
       switch(round) {
-        case 1:
-          this.message("Adding cubes for round " + round + ".")
-          const supply = this.first(Supply)!;          
-          this.first(ResourceCube, {color: CubeColor.Orange})!.putInto(bag);
+        case 1:         
+          supply.first(ResourceCube, {color: CubeColor.Orange})!.putInto(bag);
           supply.first(ResourceCube, {color: CubeColor.Orange})!.putInto(bag);
           supply.first(ResourceCube, {color: CubeColor.Orange})!.putInto(bag);  
           supply.first(ResourceCube, {color: CubeColor.Brown})!.putInto(bag);
@@ -64,15 +98,29 @@ export class MyGame extends Game<MyGame, BlueBreakthroughPlayer> {
           supply.first(ResourceCube, {color: CubeColor.Blue})!.putInto(bag);
           supply.first(ResourceCube, {color: CubeColor.White})!.putInto(bag);        
           break;
+        case 2:          
+          supply.first(ResourceCube, {color: CubeColor.Orange})!.putInto(bag);
+          supply.first(ResourceCube, {color: CubeColor.Brown})!.putInto(bag);
+          supply.first(ResourceCube, {color: CubeColor.Blue})!.putInto(bag);
+          supply.first(ResourceCube, {color: CubeColor.White})!.putInto(bag);
+          supply.first(ResourceCube, {color: CubeColor.Black})!.putInto(bag);
+          supply.first(ResourceCube, {color: CubeColor.Black})!.putInto(bag);
+          break;
       }
     }
     bag .shuffle();
+    this.game.message("Bag size: " + bag.all(ResourceCube).length);
   }
 
   public drawCubesToPlates() {
       for(var i = 1; i <= this.players.length; i++) {
         for(var j = 0; j < 4; j++) {
-          this.first(CubeBag)!.top(ResourceCube)!.putInto(this.first(CubePlate, {index: i})!);
+          const bag = this.first(CubeBag)!;
+          const plate = this.first(CubePlate, {index: i})!;
+          if(bag.all(ResourceCube).length > 0) {
+            const cube = bag.top(ResourceCube)!;
+            cube.putInto(plate);
+          }
         }
       }
   }
@@ -90,10 +138,16 @@ export class MyGame extends Game<MyGame, BlueBreakthroughPlayer> {
   }
 
   public fillUpgrades(round: number) {
+    // clear previous cards first
+    for(const space of this.all(UpgradeSpace)) {
+      for(const card of space.all(UpgradeCard, {stage: this.getStage(round)-1})) {
+        card.putInto(this.first(Supply)!);
+      }
+    }
     for(var i = 1; i <= this.players.length; i++) {
       for(const space of this.all(UpgradeSpace, {index: i})) {
         if(space.all(UpgradeCard).length == 0) {
-          this.first(UpgradeDeck)!.top(UpgradeCard, {stage: round})!.putInto(space);
+          this.first(UpgradeDeck)!.top(UpgradeCard, {stage: this.getStage(round)})!.putInto(space);
         }
       }
     }
@@ -288,7 +342,7 @@ export default createGame(BlueBreakthroughPlayer, MyGame, game => {
       { prompt: "Choose " + game.getPlayerToken(player, TokenAction.Resources).value + " Cube(s)", 
         number: game.getPlayerToken(player, TokenAction.Resources).value }
     ).do(({ plate, cubes }) => {
-      cubes.forEach( c=> c.putInto(player.space) );
+      cubes.forEach( c=> c.putInto(player.space.first(ResourceSpace)!) );
       player.space.first(PowerTokenSpace, {action: TokenAction.Resources})!.complete = true;
       player.scorePoints(plate.all(ResourceCube).length);
       plate.all(ResourceCube).forEach( c=> c.putInto(game.first(Supply)!) );
@@ -318,9 +372,25 @@ export default createGame(BlueBreakthroughPlayer, MyGame, game => {
         return upgradeSum <= game.getPlayerToken(player, TokenAction.Upgrade).value;
       } }
     ).do(({ upgrades }) => {
-      upgrades.forEach( c=> player.placeUpgrade(c) );
+      upgrades.forEach( c=> player.placeUpgrade(c) );      
       player.scorePoints(game.getEra() * upgrades.length);
       player.space.first(PowerTokenSpace, {action: TokenAction.Upgrade})!.complete = true;
+    }),  
+
+    discardUpgrade: (player) => action<{upgrade: UpgradeCard}>({
+      prompt: "Replace Upgrade?"
+    }).chooseFrom(
+      "choice", ['Yes', 'No'], 
+      { skipIf: 'never' }
+    ).do(({ upgrade, choice }) => {
+      // game.message('upgrade = '  + upgrade + ', choice = ' + choice);
+
+      if(choice == 'Yes') {
+        player.board.first(ReactorSpace, {type: upgrade.type})!.first(UpgradeCard)!.putInto(game.first(Supply)!);
+        upgrade.putInto(player.board.first(ReactorSpace, {type: upgrade.type})!);
+      } else {
+        upgrade.putInto(game.first(Supply)!);
+      }
     }),  
     
     drawUpgrade: (player) => action({
@@ -363,8 +433,7 @@ export default createGame(BlueBreakthroughPlayer, MyGame, game => {
     placeCube: (player) => action({
       prompt: 'Place Cube'
     }).chooseOnBoard(
-      'cube', player.space.all(ResourceCube).filter( c=> player.board.first(LEDSpace)!.first(LEDCard)!.nextColorsNeeded().includes(c.color) )
-        .filter(x => x.container(LEDSpace) == null),
+      'cube', player.space.first(ResourceSpace)!.all(ResourceCube).filter(c=> player.board.first(LEDSpace)!.first(LEDCard)!.nextColorsNeeded().includes(c.color)),
       { skipIf: 'never' }
     ).chooseOnBoard(
       'row', ({cube}) => player.board.first(LEDSpace)!.first(LEDCard)!.rowsNeedingColor(cube.color),
@@ -373,11 +442,21 @@ export default createGame(BlueBreakthroughPlayer, MyGame, game => {
       cube.putInto(row);
     }),
 
-    useUpgrade: () => action({
+    useUpgrade: (player) => action({
       prompt: 'Game over'
     }).chooseOnBoard(
-      'none', []
-    ),
+      'upgrade', player.board.all(UpgradeCard).filter(x => x.mayUse()),
+    ).do(({upgrade}) => {
+      const supply = game.first(Supply)!;
+      const resources = player.space.first(ResourceSpace)!
+      for(const color of upgrade.input) {
+        resources.first(ResourceCube, {color: color})!.putInto(supply);
+      }
+      for(const color of upgrade.output) {
+        supply.first(ResourceCube, {color: color})!.putInto(resources);
+      }
+      upgrade.rotation = 90;
+    }),
 
     finishTesting: (player) => action({
       prompt: 'Finish Testing'
@@ -452,11 +531,25 @@ export default createGame(BlueBreakthroughPlayer, MyGame, game => {
                   ({turn}) => game.message("Next colors needed: " + turn.board.first(LEDSpace)!.first(LEDCard)!.nextColorsNeeded()),
                   playerActions({ actions: ['flipLED', 'placeCube', 'useUpgrade', 'finishTesting']}),
                 ]
-          )})          
+          )}),
+          
+          // score points for testing
+
+          // store leftover cubes
+
+          // activate player publish and recall abilities
         ]
-      }),  
+      }),           
     
-      playerActions({ actions: ['end']}),
+      // prepare for next round
+      () => game.players.forEach( p=> {
+        p.board.all(PowerTokenSpace).all(PowerToken).forEach( t=> t.putInto(game.first(Supply)!) );
+        p.board.all(PowerTokenSpace).forEach( s=> s.complete = false );
+        p.doneTesting = false;
+        p.board.all(UpgradeCard).forEach( u => u.rotation = 0 );
+        p.board.all(ResourceCube).forEach( c => c.putInto(game.first(Supply)!) );
+        p.space.all(ResourceCube).forEach( c => c.putInto(game.first(Supply)!) );
+      }),
 
     ]})
   );
