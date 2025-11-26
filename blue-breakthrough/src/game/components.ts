@@ -193,3 +193,24 @@ export class PowerToken extends Piece<MyGame> {
     return symbol;
   }
 }
+
+export class ReactorSpace extends Space<MyGame> {
+  type: UpgradeType;
+}
+
+export class LEDSpace extends Space<MyGame> {
+}
+
+export class LEDCard extends Piece<MyGame> {
+  public letter: string;
+
+  public layer1: string;
+  public layer2: string;
+  public layer3: string;
+  public layer4: string;
+  public layer5: string;
+  public layer6: string;
+  public layer7: string;
+
+  public special: string;
+}

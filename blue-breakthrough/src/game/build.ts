@@ -3,7 +3,11 @@ import { PlayerSpace, PlayerBoard, ResourceCube, CubeBag, Supply, CubeColor, Fun
   FundingDeck, FundingCard, UpgradeSpace, UpgradeDeck, UpgradeCard, CubePlate, ScoreCube, 
   ScoreSpace, ScoreTrack, MainBoard, PlayersSpace, PowerToken, TokenAbility, AvailableTokenSpace,
   PowerTokenSpace,
-  TokenAction
+  TokenAction,
+  ReactorSpace,
+  UpgradeType,
+  LEDSpace,
+  LEDCard
  } from './components.js';
 import { fundingCards } from './funding.js';
 import { upgradeCards } from './upgrades.js';
@@ -58,9 +62,36 @@ export function buildGame(game: MyGame) {
     playerBoard.create(PowerTokenSpace, 'powerTokenSpaceResources' + i, {action: TokenAction.Resources});
     playerBoard.create(PowerTokenSpace, 'powerTokenSpaceUpgrade' + i, {action: TokenAction.Upgrade});
 
-    console.log(player.color);
-  }
+    playerBoard.create(ReactorSpace, 'injection' + i, {type: UpgradeType.injection});
+    playerBoard.create(ReactorSpace, 'nozzle' + i, {type: UpgradeType.nozzle});
+    playerBoard.create(ReactorSpace, 'cooling' + i, {type: UpgradeType.cooling});
+    playerBoard.create(ReactorSpace, 'leftPump' + i, {type: UpgradeType.pump});
+    playerBoard.create(ReactorSpace, 'rightPump' + i, {type: UpgradeType.pump});
+    playerBoard.create(ReactorSpace, 'exhaust' + i, {type: UpgradeType.exhaust});
+    playerBoard.create(ReactorSpace, 'heater' + i, {type: UpgradeType.heater});
+    playerBoard.create(ReactorSpace, 'trap' + i, {type: UpgradeType.trap});
 
+    const led = playerBoard.create(LEDSpace, 'led' + i);
+
+    led.create(LEDCard, 'ledGaAs' + i, {
+      layer1: '🟫 → 2 ⭐ ea.',
+      layer2: '🟧 →2 ⭐ ea.',
+      layer3: '⬛ → 3 ⭐ ea.',
+      layer4: '✳️ →1 ⭐ ea. ',
+    });
+
+    led.create(LEDCard, 'ledGaN_A' + i, {
+      letter: 'A',
+      layer1: '⬜ → 1 ⭐ ea.',
+      layer2: '(⬜ 🟦) → 5 ⭐',
+      layer3: '🟦 → 1 ⭐ ea. ',
+      layer4: '🟦 🟥 → 5 ⭐',
+      layer5: '(🟨),(🟨),(🟨) → 5,12,20 ⭐',
+      layer6: '🟨 🟥 → 8 ⭐',
+      layer7: '🟥 → 5 ⭐ ea.',
+      special: 'If at least one cube per row: 10 ⭐'
+    });
+  }
 
   for(var i = 1; i <= 4; i++) {
     const plate = mainBoard.create(CubePlate, "cubePlate" + i, {index: i})
@@ -88,5 +119,4 @@ export function buildGame(game: MyGame) {
     upgradeDeck.create(UpgradeCard, upgradeDeck.name!.replace(' ', '_'), upgradeCard);
   }
   upgradeDeck.shuffle();
-
 }
