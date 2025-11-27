@@ -3,7 +3,7 @@ import {
   Piece,
 } from '@boardzilla/core';
 
-import { MyGame } from './index.js';
+import { BlueBreakthroughPlayer, MyGame } from './index.js';
 
 export class MainBoard extends Space<MyGame> {
 }
@@ -12,6 +12,13 @@ export enum TokenAction {
   Funding = "Funding",
   Resources = "Resources",
   Upgrade = "Upgrade"
+}
+
+export class RoundSpace extends Space<MyGame> {
+  public round: number;
+}
+
+export class RoundTracker extends Piece<MyGame> {
 }
 
 export class PowerTokenSpace extends Space<MyGame> {
@@ -23,6 +30,10 @@ export class PowerTokenSpace extends Space<MyGame> {
   }  
 }
 
+export class StorageSpace extends Space<MyGame> {
+  public stage: number;
+}
+
 export class PlayerSpace extends Space<MyGame> {
 }
 
@@ -30,6 +41,9 @@ export class PlayersSpace extends Space<MyGame> {
 }
 
 export class AvailableTokenSpace extends Space<MyGame> {
+}
+
+export class UnavailableTokenSpace extends Space<MyGame> {
 }
 
 export class ScoreTrack extends Space<MyGame> {
@@ -126,27 +140,6 @@ export class UpgradeCard extends Piece<MyGame> {
   public output: CubeColor[];
   public points: number = 0;
 
-  public colorFromSymbol(symbol: string) : CubeColor {
-    switch(symbol) {
-      case '⬜':
-        return CubeColor.White;
-      case '🟫':
-        return CubeColor.Brown;
-      case '🟦':
-        return CubeColor.Blue;
-      case '🟧':
-        return CubeColor.Orange;
-      case '⬛':
-        return CubeColor.Black;
-      case '🟥':
-        return CubeColor.Red;
-      case '🟨':
-        return CubeColor.Yellow;
-      default:
-        return CubeColor.Any;
-    }
-  }
-
   public initialize() {    
     this.input = [];
     this.output = [];
@@ -161,7 +154,7 @@ export class UpgradeCard extends Piece<MyGame> {
       // while(temp.length > 0) {
         for(const symbol of ['⬜','🟫','🟦','🟧','⬛','🟥','🟨','✳️']) {
           if(temp.includes(symbol)) {
-            this.output.push( this.colorFromSymbol(symbol) );
+            this.output.push( this.game.colorFromSymbol(symbol) );
           }
         }
       // }
@@ -172,7 +165,7 @@ export class UpgradeCard extends Piece<MyGame> {
       // while(temp.length > 0) {
         for(const symbol of ['⬜','🟫','🟦','🟧','⬛','🟥','🟨','✳️']) {
           if(temp.includes(symbol)) {
-            this.input.push( this.colorFromSymbol(symbol) );
+            this.input.push( this.game.colorFromSymbol(symbol) );
           }
         }
       // }
@@ -180,10 +173,10 @@ export class UpgradeCard extends Piece<MyGame> {
       // while(temp.length > 0) {
         for(const symbol of ['⬜','🟫','🟦','🟧','⬛','🟥','🟨','✳️']) {
           if(temp.includes(symbol)) {
-            this.output.push( this.colorFromSymbol(symbol) );
+            this.output.push( this.game.colorFromSymbol(symbol) );
           }
           if(temp.replace(symbol, "").includes(symbol)) {
-            this.output.push( this.colorFromSymbol(symbol) );
+            this.output.push( this.game.colorFromSymbol(symbol) );
           }
         }
       // }
@@ -194,9 +187,10 @@ export class UpgradeCard extends Piece<MyGame> {
     if(this.rotation != 0) {
       return false;
     }
+    const playerCubes = this.container(PlayerSpace)!.first(ResourceSpace)!.all(ResourceCube);
     if(this.input != undefined) {
       for(const color of this.input) {
-        if(!this.container(PlayerSpace)!.first(ResourceSpace)!.all(ResourceCube).map( x => x.color ).includes(color)) {
+        if((color != CubeColor.Any && !playerCubes.map( x => x.color ).includes(color)) || playerCubes.length == 0) {
           return false;
         }
       }
@@ -285,6 +279,26 @@ export class ReactorSpace extends Space<MyGame> {
 }
 
 export class LEDSpace extends Space<MyGame> {
+  scoreTesting(player: BlueBreakthroughPlayer) : void {
+    const led = this.first(LEDCard)!;
+    for(const layer of led.layers) {
+
+      let cubeColors = this.first(LEDRow, {index: layer.index})!.all(ResourceCube).map(x => x.color);
+      this.game.message(cubeColors.join(","));
+
+      while(led.isComplete(layer, cubeColors)) {
+        this.game.message("complete = " + led.isComplete(layer, cubeColors));
+
+        player.scorePoints(layer.points);
+        for(const color of layer.colors) {
+          const index = cubeColors.indexOf(color);
+          cubeColors.splice(index, 1);
+          this.game.message(cubeColors.join(","));
+        }
+      }
+
+    }
+  }
 }
 
 export class LEDLayer {
@@ -293,6 +307,7 @@ export class LEDLayer {
   public colors: CubeColor[];
   public optional: boolean;
   public repeatable: boolean;  
+  public points: number;
 }
 
 export class LEDRow extends Space<MyGame> {
@@ -305,12 +320,19 @@ export class LEDCard extends Piece<MyGame> {
   public show: boolean = false;
   public layers: LEDLayer[];
 
-  public isLayerComplete(layer: LEDLayer): boolean {
-    if(layer.optional) {
+  public isLayerComplete(layer: LEDLayer, includeOptional: boolean = true): boolean {
+    if(includeOptional && layer.optional) {
       return true;
     }
+    return this.isComplete(layer, this.container(LEDSpace)!.first(LEDRow, {index: layer.index})!.all(ResourceCube).map( x => x.color ));
+  }
+
+  public isComplete(layer: LEDLayer, cubes: CubeColor[]): boolean {
+    if(layer.colors.length == 0) {
+      return false;
+    }
     for(const c of layer.colors) {
-      if( !this.container(LEDSpace)!.first(LEDRow, {index: layer.index})!.all(ResourceCube).map( x => x.color ).includes(c)) {
+      if(!cubes.includes(c)) {        
         return false;
       }
     }
@@ -321,11 +343,14 @@ export class LEDCard extends Piece<MyGame> {
     let rows: LEDRow[] = [];
     for(var index = 1; index <= 7; index++) {
       const layer = this.layers[index-1];
-      if(!this.isLayerComplete(layer) && layer.colors.includes(color)) {
+      
+      if(!this.isLayerComplete(layer, false) && (layer.colors.includes(color) || layer.colors.includes(CubeColor.Any))) {
         rows.push(this.container(LEDSpace)!.first(LEDRow, {index: index})!);
-        break;
+        if(!layer.optional) {
+          break;
+        } 
       }
-      if(this.isLayerComplete(layer) && layer.colors.includes(color) && layer.repeatable) {
+      if(this.isLayerComplete(layer, true) && (layer.colors.includes(color) || layer.colors.includes(CubeColor.Any)) && layer.repeatable) {
         rows.push(this.container(LEDSpace)!.first(LEDRow, {index: index})!);
       }
     }
@@ -337,7 +362,19 @@ export class LEDCard extends Piece<MyGame> {
     for(var index = 1; index <= 7; index++) {
       const layer = this.layers[index-1];
       if(!this.isLayerComplete(layer) || layer.repeatable) {
-        colors.push(...layer.colors);
+        for(const color of layer.colors) {
+          if(color == CubeColor.Any) {
+            colors.push(CubeColor.Black);
+            colors.push(CubeColor.Blue);
+            colors.push(CubeColor.White);
+            colors.push(CubeColor.Brown);
+            colors.push(CubeColor.Yellow);
+            colors.push(CubeColor.Red);
+            colors.push(CubeColor.Orange);
+          } else {
+            colors.push(color);
+          }
+        }        
       }
       if(!this.isLayerComplete(layer) && !layer.optional) {
         break;

@@ -12,6 +12,10 @@ import { PlayerSpace, PlayerBoard, ResourceCube, CubeBag, Supply, CubeColor, Fun
   LEDCard,
   LEDRow,
   ResourceSpace,
+  UnavailableTokenSpace,
+  StorageSpace,
+  RoundSpace,
+  RoundTracker,
  } from '../game/components.js';
 
 import './style.scss';
@@ -205,6 +209,11 @@ render(setup, {
           <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" />
         </div>
       )});
+      game.all(UnavailableTokenSpace).appearance({render: x => ( 
+        <div className='UnavailableTokenSpace'>
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" />
+        </div>
+      )});
       game.all(ScoreTrack).appearance({render: x => ( 
         <div className='ScoreTrack'>
           <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
@@ -218,6 +227,12 @@ render(setup, {
         </div>
       )});
       game.all(PowerTokenSpace).appearance({render: x => ( 
+        <div className='ScoreSpace'>
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          </svg>
+        </div>
+      )});
+      game.all(StorageSpace).appearance({render: x => ( 
         <div className='ScoreSpace'>
           <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
           </svg>
@@ -245,6 +260,19 @@ render(setup, {
       game.all(ResourceSpace).appearance({render: x => ( 
         <div className='ResourceSpace'>
           <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          </svg>
+        </div>
+      )});
+      game.all(RoundSpace).appearance({render: x => ( 
+        <div className='RoundSpace'>
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          </svg>
+        </div>
+      )});
+      game.all(RoundTracker).appearance({render: x => ( 
+        <div className='RoundTracker'>
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="25" r="20" fill='lightblue' stroke="darkblue" strokeWidth="5" />
           </svg>
         </div>
       )});
@@ -278,8 +306,17 @@ render(setup, {
             columns: 20, rows: 1, gap: {x:0.5, y:0},
           }
         );
+
+      game.all(MainBoard).layout(RoundSpace, 
+          {
+            area: { left: 3, top: 22, width: 65, height: 4.5 },
+            columns: 7, rows: 1, gap: {x:0, y:0},
+          }
+        );
       
       game.all(AvailableTokenSpace).layout(PowerToken, {columns: 1, rows: 9, gap: {x:0, y: 0}})
+      game.all(UnavailableTokenSpace).layout(PowerToken, {columns: 1, rows: 9, gap: {x:0, y: 0}})
+
       game.all(ScoreTrack).layout(ScoreSpace, {columns: 10, rows: 1, gap: {x:1.5, y: 0}})      
       game.all(LEDSpace).layout(LEDCard, {columns: 1, rows: 1})
       game.all(LEDSpace).layout(LEDRow, 
@@ -314,6 +351,11 @@ render(setup, {
         x.board.layout(x.board.first(AvailableTokenSpace)!, { 
           area: { left: 6, top: 11, width: 10, height: 60 },
         });
+
+        x.board.layout(x.board.first(UnavailableTokenSpace)!, { 
+          area: { left: 85, top: 11, width: 10, height: 60 },
+        });
+
         x.board.layout(x.board.first(ScoreTrack, {tens: true})!, { 
           area: { left: 37.5, top: 11.5, width: 43.5, height: 5 },
         });
@@ -329,6 +371,16 @@ render(setup, {
         x.board.layout(x.board.first(PowerTokenSpace, {action: TokenAction.Upgrade})!, { 
           area: { left: 16, top: 38.5, width: 10, height: 10 },
         });
+
+        x.board.layout(x.board.first(StorageSpace, {stage: 1})!, { 
+          area: { left: 19, top: 55, width: 4, height: 4 },
+        });
+        x.board.layout(x.board.first(StorageSpace, {stage: 2})!, { 
+          area: { left: 19, top: 61.5, width: 4, height: 4 },
+        });
+        x.board.layout(x.board.first(StorageSpace, {stage: 3})!, { 
+          area: { left: 19, top: 68, width: 4, height: 4 },
+        });        
 
         x.board.all(UpgradeCard).appearance({
           aspectRatio: 3 / 4

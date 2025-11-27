@@ -1,4 +1,31 @@
 #play-area {
+    .FundingCard {
+        &.selectable {
+            z-index: 10;
+            > div {      
+                border: 3px solid magenta;                
+            }
+        }
+        &.selected {
+            z-index: 20;
+            > div {      
+                border: 3px solid cyan;  
+            }
+        }  
+        &:hover {
+            position: absolute;
+            z-index: 50;
+            transform: scale(1.1);
+          }
+    }
+    .CubePlate {
+        &.selectable {
+            z-index: 10;
+            > div {      
+                border: 3px solid magenta;                
+            }
+        }
+    }
     .ResourceCube {
          &.selectable {
             z-index: 10;
@@ -142,19 +169,13 @@
         background-repeat: no-repeat;
         background-position: center 50%;
         background-size: contain;
-    }
-    .CubePlate {
-        // border-style: solid;
-    }
+    }    
     .FundingSpace {
         // border-style: solid;
         //  display: block;
         // background-image: url(./assets/bb-board.jpg);
         // background-size: 100%;
-    }
-    .FundingCard {
-        // display: block;
-    }
+    }    
     .UpgradeSpace {
         // border-style: solid;
     }

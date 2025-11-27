@@ -9,7 +9,11 @@ import { PlayerSpace, PlayerBoard, ResourceCube, CubeBag, Supply, CubeColor, Fun
   LEDSpace,
   LEDCard,
   LEDRow,
-  ResourceSpace
+  ResourceSpace,
+  UnavailableTokenSpace,
+  StorageSpace,
+  RoundSpace,
+  RoundTracker
  } from './components.js';
 import { fundingCards } from './funding.js';
 import { upgradeCards } from './upgrades.js';
@@ -18,6 +22,16 @@ export function buildGame(game: MyGame) {
   const mainBoard = game.create(MainBoard, "mainBoard");
   const bag = game.create(CubeBag, "bag");
   const supply = game.create(Supply, "supply");
+
+  const r1 = mainBoard.create(RoundSpace, 'round1', {round: 1});
+  r1.create(RoundTracker, 'roundTracker')
+
+  mainBoard.create(RoundSpace, 'round2', {round: 2});
+  mainBoard.create(RoundSpace, 'round3', {round: 3});
+  mainBoard.create(RoundSpace, 'round4', {round: 4});
+  mainBoard.create(RoundSpace, 'round5', {round: 5});
+  mainBoard.create(RoundSpace, 'round6', {round: 6});
+  mainBoard.create(RoundSpace, 'round7', {round: 7});
 
   // set up players
   const playersSpace = game.create(PlayersSpace, 'playersSpace')
@@ -33,6 +47,8 @@ export function buildGame(game: MyGame) {
     player.board = playerBoard
 
     const availableTokens = playerBoard.create(AvailableTokenSpace, 'availableTokens' + i);
+    const unavailableTokens = playerBoard.create(UnavailableTokenSpace, 'unavailableTokens' + i);
+
     availableTokens.create(PowerToken, 'token0-' + i, {value: 0, ability: TokenAbility.None});
     availableTokens.create(PowerToken, 'token1-' + i, {value: 1, ability: TokenAbility.None});
     availableTokens.create(PowerToken, 'token2a-' + i, {value: 2, ability: TokenAbility.A});
@@ -64,6 +80,10 @@ export function buildGame(game: MyGame) {
     playerBoard.create(PowerTokenSpace, 'powerTokenSpaceResources' + i, {action: TokenAction.Resources});
     playerBoard.create(PowerTokenSpace, 'powerTokenSpaceUpgrade' + i, {action: TokenAction.Upgrade});
 
+    playerBoard.create(StorageSpace, 'storage1-' + i, {stage: 1});
+    playerBoard.create(StorageSpace, 'storage2-' + i, {stage: 2});
+    playerBoard.create(StorageSpace, 'storage3-' + i, {stage: 3});
+
     playerBoard.create(ReactorSpace, 'injection' + i, {type: UpgradeType.injection});
     playerBoard.create(ReactorSpace, 'nozzle' + i, {type: UpgradeType.nozzle});
     playerBoard.create(ReactorSpace, 'cooling' + i, {type: UpgradeType.cooling});
@@ -80,26 +100,28 @@ export function buildGame(game: MyGame) {
     const GaN = led.create(LEDCard, 'ledGaN_A' + i, { 
       letter: 'A',
       layers: [
-        {index: 1, text: '⬜ → 1 ⭐ ea.', colors: [CubeColor.White], optional: false, repeatable: true},
-        {index: 2, text: '(⬜ 🟦) → 5 ⭐', colors: [CubeColor.White, CubeColor.Blue], optional: true, repeatable: false},
-        {index: 3, text: '🟦 → 1 ⭐ ea. ', colors: [CubeColor.Blue], optional: false, repeatable: true},
-        {index: 4, text: '🟦 🟥 → 5 ⭐', colors: [CubeColor.Blue, CubeColor.Red], optional: false, repeatable: false},
-        {index: 5, text: '(🟨),(🟨),(🟨) → 5,12,20 ⭐', colors: [CubeColor.Yellow, CubeColor.Yellow, CubeColor.Yellow], optional: true, repeatable: false},
-        {index: 6, text: '🟨 🟥 → 8 ⭐', colors: [CubeColor.Yellow, CubeColor.Red], optional: false, repeatable: false},
-        {index: 7, text: '🟥 → 5 ⭐ ea.', colors: [CubeColor.Red], optional: false, repeatable: true},
+        {index: 1, text: '⬜ → 1 ⭐ ea.', colors: [CubeColor.White], optional: false, repeatable: true, points: 1},
+        {index: 2, text: '(⬜ 🟦) → 5 ⭐', colors: [CubeColor.White, CubeColor.Blue], optional: true, repeatable: false, points: 5},
+        {index: 3, text: '🟦 → 1 ⭐ ea. ', colors: [CubeColor.Blue], optional: false, repeatable: true, points: 1},
+        {index: 4, text: '🟦 🟥 → 5 ⭐', colors: [CubeColor.Blue, CubeColor.Red], optional: false, repeatable: false, points: 5},
+        {index: 5, text: '(🟨),(🟨),(🟨) → 5,12,20 ⭐', colors: [CubeColor.Yellow, CubeColor.Yellow, CubeColor.Yellow], optional: true, repeatable: false, 
+          points: 5 //, 12, 20 -- this is a special case I have to figure out still
+        },
+        {index: 6, text: '🟨 🟥 → 8 ⭐', colors: [CubeColor.Yellow, CubeColor.Red], optional: false, repeatable: false, points: 8},
+        {index: 7, text: '🟥 → 5 ⭐ ea.', colors: [CubeColor.Red], optional: false, repeatable: true, points: 5},
       ], 
       special: 'If at least one cube per row: 10 ⭐' 
     });
 
        const GaAs = led.create(LEDCard, 'ledGaAs' + i, { 
       layers: [
-        {index: 1, text: '🟫 → 2 ⭐ ea.', colors: [CubeColor.Brown], optional: false, repeatable: true},
-        {index: 2, text: '🟧 →2 ⭐ ea.', colors: [CubeColor.Orange], optional: false, repeatable: true},
-        {index: 3, text: '⬛ → 3 ⭐ ea.', colors: [CubeColor.Black], optional: false, repeatable: true},
-        {index: 4, text: '✳️ →1 ⭐ ea. ', colors: [CubeColor.Any], optional: false, repeatable: true},
-        {index: 5, text: '', colors: [], optional: false, repeatable: false},
-        {index: 6, text: '', colors: [], optional: false, repeatable: false},
-        {index: 7, text: '', colors: [], optional: false, repeatable: false},
+        {index: 1, text: '🟫 → 2 ⭐ ea.', colors: [CubeColor.Brown], optional: false, repeatable: true, points: 2},
+        {index: 2, text: '🟧 →2 ⭐ ea.', colors: [CubeColor.Orange], optional: false, repeatable: true, points: 2},
+        {index: 3, text: '⬛ → 3 ⭐ ea.', colors: [CubeColor.Black], optional: false, repeatable: true, points: 3},
+        {index: 4, text: '✳️ →1 ⭐ ea. ', colors: [CubeColor.Any], optional: false, repeatable: true, points: 1},
+        {index: 5, text: '', colors: [], optional: false, repeatable: false, points: 0},
+        {index: 6, text: '', colors: [], optional: false, repeatable: false, points: 0},
+        {index: 7, text: '', colors: [], optional: false, repeatable: false, points: 0},
       ]}
     );
 
