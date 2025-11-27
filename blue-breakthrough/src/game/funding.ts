@@ -5,7 +5,7 @@ export const fundingCards: Partial<FundingCard>[] = [
     {name: 'Emergency Reset',	type: FundingType.Instant,	effect: 'Immediately recover one token from your cooldown pool.'},
     {name: 'Investor Favor',	type: FundingType.Permanent,	effect: 'Gain +3 ⭐ whenever you buy an upgrade that costs 3 or more.'},
     {name: 'Cube Draw',	type: FundingType.Permanent,	effect: 'When gaining cubes you may take them from 2 piles.  Combine those piles for other players after completion.'},
-    {name: 'Selective Draw', type: FundingType.Instant,	effect: 'Instant	Place 1 blue cube and 1 white cube in the bag and mix.  Next, draw 4 cubes from the bag and keep up to 2.  Place the rest back into the bag.'},
+    {name: 'Selective Draw', type: FundingType.Instant,	effect: 'Instant	Place 2 blue cubes and 2 white cubes in the bag and mix.  Next, draw 4 cubes.'},
     {name: 'Power Refund',	type: FundingType.Permanent,	effect: 'After testing, keep one cube used for scoring.  You must have room for it in storage.'},
     {name: 'Mini-Storage',	type: FundingType.Permanent,	effect: 'You may store up to 2 blue cubes here between rounds.'},
     {name: 'Priority Window',	type: FundingType.Instant,	effect: 'Add +2 to your power when resolving Funding.'},

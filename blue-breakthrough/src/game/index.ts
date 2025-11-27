@@ -24,15 +24,23 @@ import { PlayerSpace, PlayerBoard, ResourceCube, CubeBag, Supply, CubeColor, Fun
   RoundSpace,
   RoundTracker,
   PublishToken,
-  PriorityPawn
+  PriorityPawn,
+  FundingType
  } from './components.js';
 import { buildGame } from './build.js';
+import { Actions } from './actions.js';
+import { FundingPowers } from './powers.js';
 
 export class BlueBreakthroughPlayer extends Player<MyGame, BlueBreakthroughPlayer> {
     space: PlayerSpace
     board: PlayerBoard
     score: number = 0;
     doneTesting: boolean = false;
+
+    public hasFunding(name: string) : boolean {
+      return this.space.all(FundingCard, {name: name}).length > 0 && 
+        this.space.first(FundingCard, {name: name})!.rotation == 0;
+    }
 
     public scorePoints(points: number) {
       this.game.message(this + " score " + points + " points.");
@@ -105,9 +113,30 @@ export class MyGame extends Game<MyGame, BlueBreakthroughPlayer> {
   public getPriorityDistance(player: BlueBreakthroughPlayer): number {
     const playerIndex = this.players.indexOf(player) + 1;
     if(playerIndex < this.priority) {
-      return (playerIndex + this.players.length) - playerIndex;
+      return (playerIndex + this.players.length) - this.priority;
     } else {
-      return this.priority - playerIndex;
+      return playerIndex - this.priority;
+    }
+  }
+
+  public symbolFromColor(color: CubeColor) : string {
+    switch(color) {
+      case CubeColor.White:
+        return '⬜'
+      case CubeColor.Brown:
+        return '🟫'
+      case CubeColor.Blue:
+        return '🟦'
+      case CubeColor.Orange:
+        return '🟧'
+      case CubeColor.Black:
+        return '⬛'
+      case CubeColor.Red:
+        return '🟥'
+      case CubeColor.Yellow:
+        return '🟨'
+      default:
+        return '✳️'
     }
   }
 
@@ -287,28 +316,28 @@ export class MyGame extends Game<MyGame, BlueBreakthroughPlayer> {
 
       if(bestToken == null || [TokenAbility.Publish, TokenAbility.Recall].includes(bestToken.ability)) {
         bestToken = token; nextPlayer = p; bestScore = playerScore; bestSum = tokenSum; bestPriority = distance;
-        // this.game.message("Initializing turn: " + nextPlayer);
+        this.game.message("Initializing turn: " + nextPlayer);
       } else {
         // first check token value
         if(action == TokenAction.Funding ? token.value > bestToken.value : token.value < bestToken.value) {
           bestToken = token; nextPlayer = p; bestScore = playerScore; bestSum = tokenSum; bestPriority = distance;
-          // this.game.message("Highest value: " + nextPlayer);
+          this.game.message("Highest value: " + nextPlayer);
         } 
         // then check abilities if tied
         else if(token.value == bestToken.value && 
             token.ability == TokenAbility.A && bestToken.ability == TokenAbility.B) {
           bestToken = token; nextPlayer = p; bestScore = playerScore; bestSum = tokenSum; bestPriority = distance;
-          // this.game.message("A vs B: " + nextPlayer);
+          this.game.message("A vs B: " + nextPlayer);
         } 
         // then second tie-breakerif still tied
         else if(token.value == bestToken.value && token.ability == bestToken.ability && secondTieBreaker) {
           bestToken = token; nextPlayer = p; bestScore = playerScore; bestSum = tokenSum; bestPriority = distance;
-          // this.game.message("2nd tie-breaker: " + nextPlayer);
+          this.game.message("2nd tie-breaker: " + nextPlayer);
         }         
         // final tie goes to priority pawn
         else if(token.value == bestToken.value && token.ability == bestToken.ability && !secondTieBreaker && distance < bestPriority) {
           bestToken = token; nextPlayer = p; bestScore = playerScore; bestSum = tokenSum; bestPriority = distance;
-          // this.game.message("Priority: " + nextPlayer);
+          this.game.message("Priority: " + nextPlayer);
         }
       }
     })
@@ -333,259 +362,10 @@ export default createGame(BlueBreakthroughPlayer, MyGame, game => {
 
   buildGame(game);
   
-  game.defineActions({
-    placeToken: (player) => action({
-      prompt: 'Place Token'
-    }).chooseOnBoard(
-      'token', player.board.first(AvailableTokenSpace)!.all(PowerToken),
-      { skipIf: 'never' }
-    ).chooseOnBoard(
-      'space', player.board.all(PowerTokenSpace).filter(x => x.all(PowerToken).length == 0),
-      { skipIf: 'never' }
-    ).do(({ token, space }) => {
-      token.putInto(space);
-    }).message(`{{player}} placed a token on {{space}}.`),
-
-    chooseFunding: (player) => action({
-      prompt: 'Choose Funding',
-      condition: game.getPlayerToken(player, TokenAction.Funding).mayPeformAction()
-    }).chooseOnBoard(
-      'funding', game.all(FundingSpace).all(FundingCard),
-      { skipIf: 'never' }
-    ).do(({ funding }) => {
-      funding.putInto(player.space);
-      player.space.first(PowerTokenSpace, {action: TokenAction.Funding})!.complete = true;
-      player.scorePoints(game.getPlayerToken(player, TokenAction.Funding).value);
-    }).message(`{{player}} took {{funding}}.`),
-
-    publishFunding: (player) => action({
-      prompt: 'Publish',
-      condition: game.getPlayerToken(player, TokenAction.Funding).ability == TokenAbility.Publish
-    }).do(() => {
-      player.space.first(PowerTokenSpace, {action: TokenAction.Funding})!.complete = true;
-    }),
-
-    recallFunding: (player) => action({
-      prompt: 'Recall',
-      condition: game.getPlayerToken(player, TokenAction.Funding).ability == TokenAbility.Recall
-    }).do(() => {
-      player.space.first(PowerTokenSpace, {action: TokenAction.Funding})!.complete = true;
-    }),
-
-    useFunding: (player) => action<{upgrade: UpgradeCard}>({
-      prompt: "Use Funding"
-    }).chooseOnBoard(
-      'funding', player.space.all(FundingCard),
-      { skipIf: 'never' }
-    ).chooseFrom(
-      "choice", ['Yes', 'No'], 
-      { prompt: "Discard?", skipIf: 'never' }
-    ).do(({ funding, choice }) => {
-      if(choice == "Yes") {
-        game.followUp({name: 'chooseAnyResoure', args: {funding: funding}});
-      }
-    }), 
-
-    storeCubes: (player) => action({
-      prompt: "Store Cubes"
-    }).chooseOnBoard(
-      'cubes', player.space.first(ResourceSpace)!.all(ResourceCube),
-      { min: 0, max: game.getStage(game.round), skipIf: 'never' }
-    ).do(({ cubes }) => {
-      for(var i = 0; i < cubes.length; i++) {
-        cubes[i].putInto(player.space.first(StorageSpace, {stage: (i+1)})!);
-      }
-    }),
-    
-    recallToken: (player) => action({
-      prompt: "Recall Token"
-    }).chooseOnBoard(
-      'token', player.board.all(PowerTokenSpace).all(PowerToken)
-        .concat(player.board.first(UnavailableTokenSpace)!.all(PowerToken))
-        .filter(x => x.ability != TokenAbility.Recall),
-      { skipIf: 'never' }
-    ).do(({ token }) => {
-      player.scorePoints(player.space.first(UnavailableTokenSpace)!.all(PowerToken).length);
-      token.showOnlyTo(player);
-      token.putInto(player.space.first(AvailableTokenSpace)!);
-    }),
-
-    chooseAnyResoure: (player) => action<{funding: FundingCard}>({
-    }).chooseFrom(
-      "choice", ['⬜','🟫','🟦','🟧','⬛','🟥','🟨'],
-      { skipIf: 'never'}
-    ).do(({funding, choice}) => {
-      game.first(Supply)!.first(ResourceCube, {color: game.colorFromSymbol(choice)})!
-        .putInto(player.space.first(ResourceSpace)!);
-      if(funding != undefined) {
-        funding.putInto(game.first(Supply)!);
-      }
-    }),
-
-    chooseResources: (player) => action({
-      condition: game.getPlayerToken(player, TokenAction.Resources).mayPeformAction(),
-      prompt: "Gain Resources (" + game.getPlayerToken(player, TokenAction.Resources).value + ")"
-    }).chooseOnBoard(
-      'plate', game.all(CubePlate).filter(x => x.all(ResourceCube).length > 0),
-      { skipIf: 'never' }
-    ).chooseOnBoard(
-      'cubes', ({plate}) => plate.all(ResourceCube),
-      { number: game.getPlayerToken(player, TokenAction.Resources).value }
-    ).do(({ plate, cubes }) => {
-      cubes.forEach( c=> c.putInto(player.space.first(ResourceSpace)!) );
-      player.space.first(PowerTokenSpace, {action: TokenAction.Resources})!.complete = true;
-      player.scorePoints(plate.all(ResourceCube).length);
-      plate.all(ResourceCube).forEach( c=> c.putInto(game.first(Supply)!) );
-    }),
-
-    publishResources: (player) => action({
-      prompt: 'Publish',
-      condition: game.getPlayerToken(player, TokenAction.Resources).ability == TokenAbility.Publish
-    }).do(() => {
-      player.space.first(PowerTokenSpace, {action: TokenAction.Resources})!.complete = true;
-    }),
-
-    recallResources: (player) => action({
-      prompt: 'Recall',
-      condition: game.getPlayerToken(player, TokenAction.Resources).ability == TokenAbility.Recall
-    }).do(() => {
-      player.space.first(PowerTokenSpace, {action: TokenAction.Resources})!.complete = true;
-    }),
-
-    chooseUpgrades: (player) => action({
-      condition: game.getPlayerToken(player, TokenAction.Upgrade).mayPeformAction(),
-      prompt: "Choose Upgrades (" + game.getPlayerToken(player, TokenAction.Upgrade).value + ")"
-    }).chooseOnBoard(
-      'upgrades', game.all(UpgradeSpace).all(UpgradeCard).filter(x => x.cost <= game.getPlayerToken(player, TokenAction.Upgrade).value),
-      { min: 1, max: 2, skipIf: 'never', validate: ({upgrades}) => {
-        const upgradeSum = upgrades.reduce((sum, x) => sum + x.cost, 0)
-        return upgradeSum <= game.getPlayerToken(player, TokenAction.Upgrade).value;
-      } }
-    ).do(({ upgrades }) => {
-      upgrades.forEach( c=> player.placeUpgrade(c) );      
-      player.scorePoints(game.getEra() * upgrades.length);
-      player.space.first(PowerTokenSpace, {action: TokenAction.Upgrade})!.complete = true;
-    }),  
-
-    discardUpgrade: (player) => action<{upgrade: UpgradeCard}>({
-      prompt: "Replace Upgrade?"
-    }).chooseFrom(
-      "choice", ['Yes', 'No'], 
-      { skipIf: 'never' }
-    ).do(({ upgrade, choice }) => {
-      // game.message('upgrade = '  + upgrade + ', choice = ' + choice);
-
-      if(choice == 'Yes') {
-        player.board.first(ReactorSpace, {type: upgrade.type})!.first(UpgradeCard)!.putInto(game.first(Supply)!);
-        upgrade.putInto(player.board.first(ReactorSpace, {type: upgrade.type})!);
-      } else {
-        upgrade.putInto(game.first(Supply)!);
-      }
-    }),  
-    
-    drawUpgrade: (player) => action({
-      prompt: 'Draw Upgrade',
-      condition: game.getPlayerToken(player, TokenAction.Upgrade).mayPeformAction(),
-    }).do(() => {
-      // this automatically happens .....
-      const upgrade = game.first(UpgradeDeck)!.first(UpgradeCard, {stage: game.getStage(game.round)})!;
-      player.placeUpgrade(upgrade);
-      player.scorePoints(game.getEra());
-      player.space.first(PowerTokenSpace, {action: TokenAction.Upgrade})!.complete = true;
-      game.message(`{player} drew {upgrade`)
-    }),
-
-    publishUpgrades: (player) => action({
-      prompt: 'Publish',
-      condition: game.getPlayerToken(player, TokenAction.Upgrade).ability == TokenAbility.Publish
-    }).do(() => {
-      player.space.first(PowerTokenSpace, {action: TokenAction.Upgrade})!.complete = true;
-    }),
-
-    recallUpgrades: (player) => action({
-      prompt: 'Recall',
-      condition: game.getPlayerToken(player, TokenAction.Upgrade).ability == TokenAbility.Recall
-    }).do(() => {
-      player.space.first(PowerTokenSpace, {action: TokenAction.Upgrade})!.complete = true;
-    }),
-
-    end: () => action({
-      prompt: 'Game over'
-    }).chooseOnBoard(
-      'none', []
-    ),
-
-    flipLED: (player) => action({
-      prompt: 'Flip LED',
-      condition: player.board.first(LEDSpace)!.all(ResourceCube).length == 0
-    }).do(() => {
-      const first = player.board.first(LEDCard)!;
-      first.putInto(player.board.first(LEDSpace)!);
-    }),
-
-    placeCube: (player) => action({
-      prompt: 'Place Cube'
-    }).chooseOnBoard(
-      'cube', player.space.first(ResourceSpace)!.all(ResourceCube)
-        .filter(c=> player.board.first(LEDSpace)!.first(LEDCard)!.nextColorsNeeded().includes(c.color))
-        ,
-      { skipIf: 'never' }
-    ).chooseOnBoard(
-      'row', ({cube}) => player.board.first(LEDSpace)!.first(LEDCard)!.rowsNeedingColor(cube.color),
-      { skipIf: 'never' }
-    ).do(({cube, row}) => {
-      cube.putInto(row);
-    }),
-
-    chooseCostCube: (player) => action<{upgrade: UpgradeCard}>({
-      prompt: 'Choose Cube'
-    }).chooseOnBoard(
-      'cube', player.space.first(ResourceSpace)!.all(ResourceCube),
-      { skipIf: 'never' }
-    ).do(({upgrade, cube}) => {
-      const supply = game.first(Supply)!;
-      const resources = player.space.first(ResourceSpace)!
-      cube.putInto(supply);
-      for(const color of upgrade.output) {
-          supply.first(ResourceCube, {color: color})!.putInto(resources);
-        }
-    }),
-
-    useUpgrade: (player) => action({
-      prompt: 'Use Upgrade'
-    }).chooseOnBoard(
-      'upgrade', player.board.all(UpgradeCard).filter(x => x.mayUse()),
-    ).do(({upgrade}) => {
-      player.scorePoints(upgrade.points);
-      const supply = game.first(Supply)!;
-      const resources = player.space.first(ResourceSpace)!
-
-      for(const color of upgrade.input) {
-        if(color != CubeColor.Any) {
-          resources.first(ResourceCube, {color: color})!.putInto(supply);
-        }
-      }
-      if(upgrade.input.includes(CubeColor.Any)) {
-        game.followUp({name: 'chooseCostCube', args: {upgrade: upgrade}});
-      } else {
-        for(const color of upgrade.output) {
-          if(color != CubeColor.Any) {
-            supply.first(ResourceCube, {color: color})!.putInto(resources);
-          }
-        }
-        if(upgrade.output.includes(CubeColor.Any)) {
-          game.followUp({name: 'chooseAnyResoure'});
-        }
-      }
-      upgrade.rotation = 90;
-    }),
-
-    finishTesting: (player) => action({
-      prompt: 'Finish Testing'
-    }).do(() => {
-      player.doneTesting = true;
-    }),
-  });
+  const powers = new FundingPowers(game);
+  const actions = new Actions(game, powers);  
+  const allActions = Object.assign({}, actions.getActions(), powers.getActions());
+  game.defineActions(allActions);
 
   game.defineFlow(
 
@@ -655,7 +435,7 @@ export default createGame(BlueBreakthroughPlayer, MyGame, game => {
           whileLoop({while: ({turn}) => 
             !turn.doneTesting, do: (
                 [
-                  playerActions({ actions: ['flipLED', 'placeCube', 'useUpgrade', 'useFunding', 'finishTesting']}),
+                  playerActions({ actions: ['flipLED', 'placeCube', 'useUpgrade', 'discardFunding', 'useFunding', 'finishTesting']}),
                   // ({turn}) => game.message("After: Next colors needed: " + turn.board.first(LEDSpace)!.first(LEDCard)!.nextColorsNeeded()),
                 ]
           )}),

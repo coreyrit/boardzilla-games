@@ -93,10 +93,10 @@ render(setup, {
       $.mainBoard.layout('cubePlate3', { area: { left: 39, top: 74.5, width: 10, height: 10 }});
       $.mainBoard.layout('cubePlate4', { area: { left: 55.5, top: 74.5, width: 10, height: 10 }});
 
-      $.cubePlate1.layout(ResourceCube, {columns: 2, rows: 2, gap: {x:2, y: 2}, scaling: 'fill'})
-      $.cubePlate2.layout(ResourceCube, {columns: 2, rows: 2, gap: {x:2, y: 2}, scaling: 'fill'})
-      $.cubePlate3.layout(ResourceCube, {columns: 2, rows: 2, gap: {x:2, y: 2}, scaling: 'fill'})
-      $.cubePlate4.layout(ResourceCube, {columns: 2, rows: 2, gap: {x:2, y: 2}, scaling: 'fill'})
+      $.cubePlate1.layout(ResourceCube, {gap: {x:2, y: 2}, scaling: 'fill'})
+      $.cubePlate2.layout(ResourceCube, {gap: {x:2, y: 2}, scaling: 'fill'})
+      $.cubePlate3.layout(ResourceCube, {gap: {x:2, y: 2}, scaling: 'fill'})
+      $.cubePlate4.layout(ResourceCube, {gap: {x:2, y: 2}, scaling: 'fill'})
 
       $.mainBoard.layout('funding1', { area: { left: 3, top: 43, width: 16, height: 22.4 }});
       $.mainBoard.layout('funding2', { area: { left: 19.5, top: 43, width: 16, height: 22.4 }});
@@ -267,7 +267,7 @@ render(setup, {
       )});
       game.all(LEDSpace).appearance({render: x => ( 
         <div className='PowerToken'>
-          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <svg viewBox="0 0 100 72" xmlns="http://www.w3.org/2000/svg">
           </svg>
         </div>
       )});

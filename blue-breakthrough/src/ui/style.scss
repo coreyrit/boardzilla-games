@@ -1,4 +1,18 @@
 #play-area {
+    .LEDSpace {
+        &.selectable {
+            z-index: 10;
+            > div {      
+                border: 3px solid magenta;                
+            }
+        }
+        &.selected {
+            z-index: 20;
+            > div {      
+                border: 3px solid cyan;  
+            }
+        }  
+    }
     .LEDRow {
         &.selectable {
             z-index: 10;
@@ -14,6 +28,8 @@
         }  
     }
     .FundingCard {
+        z-index: 10;
+        
         &.selectable {
             z-index: 10;
             > div {      
@@ -39,6 +55,12 @@
                 border: 3px solid magenta;                
             }
         }
+        &.selected {
+            z-index: 20;
+            > div {      
+                border: 3px solid yellow;  
+            }
+        }  
     }
     .ResourceCube {
          &.selectable {
@@ -103,7 +125,7 @@
     }
 
     .PublishToken {
-        z-index: 20;
+        z-index: 10;
     }
 
     .PriorityPawn {
