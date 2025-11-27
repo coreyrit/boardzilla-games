@@ -106,11 +106,18 @@
         z-index: 20;
     }
 
+    .PriorityPawn {
+        z-index: 20;
+    }
+
     .ScoreSpace {
         // border-style: solid;
     };
     .PlayersSpace {
         z-index: 15;
+    }
+    .ReferenceSpace {
+        z-index: 100;
     }
     .LEDRow {
         z-index: 15;
@@ -230,7 +237,7 @@
         // border-style: solid;
     }
 
-      .tabs-tab {
+    .tabs-tab {
     // background: var(--player-color);
     // opacity: 25%;
     filter: brightness(0.5);
@@ -254,7 +261,7 @@
     z-index: 2000;
   }
   .drawer-tab {
-    z-index: 2000;
+    z-index: 2200;
     // background-color: var(--player-color);
   }
   .drawer-content {

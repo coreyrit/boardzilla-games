@@ -18,7 +18,13 @@ export class RoundSpace extends Space<MyGame> {
   public round: number;
 }
 
+export class ReferenceSpace extends Space<MyGame> {
+}
+
 export class RoundTracker extends Piece<MyGame> {
+}
+
+export class PriorityPawn extends Piece<MyGame> {
 }
 
 export class PowerTokenSpace extends Space<MyGame> {

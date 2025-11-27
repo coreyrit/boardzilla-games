@@ -17,6 +17,8 @@ import { PlayerSpace, PlayerBoard, ResourceCube, CubeBag, Supply, CubeColor, Fun
   RoundSpace,
   RoundTracker,
   PublishToken,
+  ReferenceSpace,
+  PriorityPawn,
  } from '../game/components.js';
 
 import './style.scss';
@@ -44,6 +46,11 @@ render(setup, {
           .includes(a.name),
           ),
       });
+
+      game.layoutAsDrawer($.reference as Space<MyGame>, 
+      { area: { left: 0, top: 0, width: 75, height: 28 }, openDirection: 'down', tab: 'Reference',
+      });
+      $.reference.layout(LEDCard, {columns: 2, rows: 1, gap: {x:2, y: 0}, scaling: 'fill'})
 
       var index = 0;
       let tabSpaces: Record<string, Space<MyGame> | string> = {};
@@ -126,6 +133,12 @@ render(setup, {
       )});
       game.all(PlayerBoard).appearance({ render: x => ( 
       <div className='PlayerBoard'>
+        <svg viewBox="0 0 100 80" xmlns="http://www.w3.org/2000/svg">      
+          </svg>
+      </div>
+      )});
+      game.all(ReferenceSpace).appearance({ render: x => ( 
+      <div className='ReferenceSpace'>
         <svg viewBox="0 0 100 80" xmlns="http://www.w3.org/2000/svg">      
           </svg>
       </div>
@@ -284,6 +297,14 @@ render(setup, {
         </div>
       )});
 
+      game.all(PriorityPawn).appearance({render: x => ( 
+        <div className='PriorityPawn'>
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="0,50 50,0 100,50 50 100" fill="blue" />
+          </svg>
+        </div>
+      )});
+
       game.all(PublishToken).appearance({render: x => ( 
         <div className='RoundTracker'>
           <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
@@ -360,6 +381,8 @@ render(setup, {
 
       game.players.forEach(x => {
         x.space.layout(PlayerBoard, {area: { left: 0, top: 2, width: 90, height: 100 }});
+
+        x.space.layout(PriorityPawn, {area: { left: 0.5, top: 10, width: 4, height: 4 }});
         
         // x.space.layout(ResourceCube, 
         //   {

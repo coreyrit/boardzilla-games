@@ -14,15 +14,55 @@ import { PlayerSpace, PlayerBoard, ResourceCube, CubeBag, Supply, CubeColor, Fun
   StorageSpace,
   RoundSpace,
   RoundTracker,
-  PublishToken
+  PublishToken,
+  ReferenceSpace,
+  PriorityPawn
  } from './components.js';
 import { fundingCards } from './funding.js';
 import { upgradeCards } from './upgrades.js';
+import { Space } from '@boardzilla/core';
+
+function createGaAs(space: Space<MyGame>, name: string) : LEDCard {
+  const GaAs = space.create(LEDCard, name, { 
+    layers: [
+        {index: 1, text: '🟫 → 2 ⭐ ea.', colors: [CubeColor.Brown], optional: false, repeatable: true, points: 2},
+        {index: 2, text: '🟧 →2 ⭐ ea.', colors: [CubeColor.Orange], optional: false, repeatable: true, points: 2},
+        {index: 3, text: '⬛ → 3 ⭐ ea.', colors: [CubeColor.Black], optional: false, repeatable: true, points: 3},
+        {index: 4, text: '✳️ →1 ⭐ ea. ', colors: [CubeColor.Any], optional: false, repeatable: true, points: 1},
+        {index: 5, text: '', colors: [], optional: false, repeatable: false, points: 0},
+        {index: 6, text: '', colors: [], optional: false, repeatable: false, points: 0},
+        {index: 7, text: '', colors: [], optional: false, repeatable: false, points: 0},
+      ]}
+    );
+  return GaAs
+}
+
+function createGaN(space: Space<MyGame>, name: string) : LEDCard {
+  const GaN = space.create(LEDCard, name, { 
+    letter: 'A',
+    layers: [
+      {index: 1, text: '⬜ → 1 ⭐ ea.', colors: [CubeColor.White], optional: false, repeatable: true, points: 1},
+      {index: 2, text: '(⬜ 🟦) → 5 ⭐', colors: [CubeColor.White, CubeColor.Blue], optional: true, repeatable: false, points: 5},
+      {index: 3, text: '🟦 → 1 ⭐ ea. ', colors: [CubeColor.Blue], optional: false, repeatable: true, points: 1},
+      {index: 4, text: '🟦 🟥 → 5 ⭐', colors: [CubeColor.Blue, CubeColor.Red], optional: false, repeatable: false, points: 5},
+      // special rules in place for this
+      {index: 5, text: '(🟨),(🟨),(🟨) → 5,12,20 ⭐', colors: [CubeColor.Yellow], optional: true, repeatable: true, points: 5},
+      {index: 6, text: '🟨 🟥 → 8 ⭐', colors: [CubeColor.Yellow, CubeColor.Red], optional: false, repeatable: false, points: 8},
+      {index: 7, text: '🟥 → 5 ⭐ ea.', colors: [CubeColor.Red], optional: false, repeatable: true, points: 5},
+    ], 
+    special: 'If at least one cube per row: 10 ⭐' 
+  });
+  return GaN;
+}
 
 export function buildGame(game: MyGame) {
   const mainBoard = game.create(MainBoard, "mainBoard");
   const bag = game.create(CubeBag, "bag");
   const supply = game.create(Supply, "supply");
+
+  const reference = game.create(ReferenceSpace, "reference");
+  createGaN(reference, 'refaN_A');
+  createGaAs(reference, 'refGaAs');
 
   const r1 = mainBoard.create(RoundSpace, 'round1', {round: 1});
   r1.create(RoundTracker, 'roundTracker')
@@ -36,8 +76,12 @@ export function buildGame(game: MyGame) {
 
   // set up players
   const playersSpace = game.create(PlayersSpace, 'playersSpace')
-  for(var i = 1; i <= game.players.length; i++) {
+  for(var i = 1; i <= game.players.length; i++) {    
     const playerSpace = playersSpace.create(PlayerSpace, 'playerSpace' + i, {player: game.players[i]});
+    if(i == 1) {
+      playerSpace.create(PriorityPawn, "priorityPawn") 
+    }
+
     const playerBoard = playerSpace.create(PlayerBoard, 'p' + i + "Board")
     playerBoard.player = game.players[i];
     
@@ -104,35 +148,8 @@ export function buildGame(game: MyGame) {
 
     const led = playerBoard.create(LEDSpace, 'led' + i);
 
-    const GaN = led.create(LEDCard, 'ledGaN_A' + i, { 
-      letter: 'A',
-      layers: [
-        {index: 1, text: '⬜ → 1 ⭐ ea.', colors: [CubeColor.White], optional: false, repeatable: true, points: 1},
-        {index: 2, text: '(⬜ 🟦) → 5 ⭐', colors: [CubeColor.White, CubeColor.Blue], optional: true, repeatable: false, points: 5},
-        {index: 3, text: '🟦 → 1 ⭐ ea. ', colors: [CubeColor.Blue], optional: false, repeatable: true, points: 1},
-        {index: 4, text: '🟦 🟥 → 5 ⭐', colors: [CubeColor.Blue, CubeColor.Red], optional: false, repeatable: false, points: 5},
-        {index: 5, text: '(🟨),(🟨),(🟨) → 5,12,20 ⭐', colors: [CubeColor.Yellow, CubeColor.Yellow, CubeColor.Yellow], optional: true, 
-          repeatable: true, 
-          points: 5 //, 12, 20 -- this is a special case I have to figure out still
-        },
-        {index: 6, text: '🟨 🟥 → 8 ⭐', colors: [CubeColor.Yellow, CubeColor.Red], optional: false, repeatable: false, points: 8},
-        {index: 7, text: '🟥 → 5 ⭐ ea.', colors: [CubeColor.Red], optional: false, repeatable: true, points: 5},
-      ], 
-      special: 'If at least one cube per row: 10 ⭐' 
-    });
-
-    const GaAs = led.create(LEDCard, 'ledGaAs' + i, { 
-      layers: [
-        {index: 1, text: '🟫 → 2 ⭐ ea.', colors: [CubeColor.Brown], optional: false, repeatable: true, points: 2},
-        {index: 2, text: '🟧 →2 ⭐ ea.', colors: [CubeColor.Orange], optional: false, repeatable: true, points: 2},
-        {index: 3, text: '⬛ → 3 ⭐ ea.', colors: [CubeColor.Black], optional: false, repeatable: true, points: 3},
-        {index: 4, text: '✳️ →1 ⭐ ea. ', colors: [CubeColor.Any], optional: false, repeatable: true, points: 1},
-        {index: 5, text: '', colors: [], optional: false, repeatable: false, points: 0},
-        {index: 6, text: '', colors: [], optional: false, repeatable: false, points: 0},
-        {index: 7, text: '', colors: [], optional: false, repeatable: false, points: 0},
-      ]}
-    );
-
+    const GaN = createGaN(led, 'ledGaN_A' + i);
+    const GaAs = createGaAs(led, 'ledGaAs' + i);
     for(var j = 1; j <= 7; j++) {
       led.create(LEDRow, 'row-' + j + '-' + i, {index: j});
     }
