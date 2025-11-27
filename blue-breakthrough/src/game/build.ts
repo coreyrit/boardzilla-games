@@ -111,7 +111,8 @@ export function buildGame(game: MyGame) {
         {index: 2, text: '(⬜ 🟦) → 5 ⭐', colors: [CubeColor.White, CubeColor.Blue], optional: true, repeatable: false, points: 5},
         {index: 3, text: '🟦 → 1 ⭐ ea. ', colors: [CubeColor.Blue], optional: false, repeatable: true, points: 1},
         {index: 4, text: '🟦 🟥 → 5 ⭐', colors: [CubeColor.Blue, CubeColor.Red], optional: false, repeatable: false, points: 5},
-        {index: 5, text: '(🟨),(🟨),(🟨) → 5,12,20 ⭐', colors: [CubeColor.Yellow, CubeColor.Yellow, CubeColor.Yellow], optional: true, repeatable: false, 
+        {index: 5, text: '(🟨),(🟨),(🟨) → 5,12,20 ⭐', colors: [CubeColor.Yellow, CubeColor.Yellow, CubeColor.Yellow], optional: true, 
+          repeatable: true, 
           points: 5 //, 12, 20 -- this is a special case I have to figure out still
         },
         {index: 6, text: '🟨 🟥 → 8 ⭐', colors: [CubeColor.Yellow, CubeColor.Red], optional: false, repeatable: false, points: 8},

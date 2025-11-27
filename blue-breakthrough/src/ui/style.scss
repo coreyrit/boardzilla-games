@@ -70,6 +70,22 @@
             }
         }  
     }
+    .PowerTokenSpace {
+         &.selectable {
+            z-index: 10;
+            > div {      
+                border: 3px solid magenta;
+                border-radius: 50%;                
+            }
+        }
+        &.selected {
+            z-index: 20;
+            > div {      
+                border: 3px solid cyan;  
+                border-radius: 50%;
+            }
+        }  
+    }
 
     .UpgradeCard {
          &.selectable {

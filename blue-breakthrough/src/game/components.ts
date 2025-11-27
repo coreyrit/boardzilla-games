@@ -145,7 +145,7 @@ export class UpgradeCard extends Piece<MyGame> {
     this.output = [];
     this.points = (this.effect.match(/⭐/g)||[]).length;
 
-    this.game.message(this.effect + ": " + this.effect.length);
+    // this.game.message(this.effect + ": " + this.effect.length);
     const parts = this.effect.replace("Gain", "").replace(" ", "").replace("⭐", "").split('→');
     
     if(parts.length == 1) {
@@ -283,17 +283,18 @@ export class LEDSpace extends Space<MyGame> {
     const led = this.first(LEDCard)!;
     for(const layer of led.layers) {
 
-      let cubeColors = this.first(LEDRow, {index: layer.index})!.all(ResourceCube).map(x => x.color);
-      this.game.message(cubeColors.join(","));
+      const row = this.first(LEDRow, {index: layer.index})!;
+      let cubeColors = row.all(ResourceCube).map(x => x.color);
+      // this.game.message(cubeColors.join(","));
 
       while(led.isComplete(layer, cubeColors)) {
-        this.game.message("complete = " + led.isComplete(layer, cubeColors));
+        // this.game.message("complete = " + led.isComplete(layer, cubeColors));
 
-        player.scorePoints(layer.points);
+        player.scorePoints(led.getScoring(layer, row));
         for(const color of layer.colors) {
           const index = cubeColors.indexOf(color);
           cubeColors.splice(index, 1);
-          this.game.message(cubeColors.join(","));
+          // this.game.message(cubeColors.join(","));
         }
       }
 
@@ -306,7 +307,7 @@ export class LEDLayer {
   public text: string;
   public colors: CubeColor[];
   public optional: boolean;
-  public repeatable: boolean;  
+  public repeatable: boolean;
   public points: number;
 }
 
@@ -320,15 +321,42 @@ export class LEDCard extends Piece<MyGame> {
   public show: boolean = false;
   public layers: LEDLayer[];
 
+  public getScoring(layer: LEDLayer, row: LEDRow) {
+    if(this.letter == "A" && layer.index == 5) {
+      switch(row.all(ResourceCube, {color: CubeColor.Yellow}).length) {
+        case 1:
+          return 5;
+        case 2:
+          return 12
+        case 3:
+          return 20;
+        default:
+          return 0;
+      }
+    } else {
+      return layer.points;
+    }
+  }
+
+  public canRepeat(layer: LEDLayer, row: LEDRow) {
+    if(this.letter == "A" && layer.index == 5) {
+      return row.all(ResourceCube, {color: CubeColor.Yellow}).length < 3;
+    } else {
+      return layer.repeatable;
+    }
+  }
+
   public isLayerComplete(layer: LEDLayer, includeOptional: boolean = true): boolean {
     if(includeOptional && layer.optional) {
       return true;
     }
-    return this.isComplete(layer, this.container(LEDSpace)!.first(LEDRow, {index: layer.index})!.all(ResourceCube).map( x => x.color ));
+    const row = this.container(LEDSpace)!.first(LEDRow, {index: layer.index})!;
+    const cubes = row.all(ResourceCube).map( x => x.color );
+    return this.isComplete(layer, cubes);
   }
 
   public isComplete(layer: LEDLayer, cubes: CubeColor[]): boolean {
-    if(layer.colors.length == 0) {
+    if(layer.colors.length == 0 || cubes.length == 0) {
       return false;
     }
     for(const c of layer.colors) {
@@ -341,19 +369,48 @@ export class LEDCard extends Piece<MyGame> {
 
   public rowsNeedingColor(color: CubeColor): LEDRow[] {
     let rows: LEDRow[] = [];
-    for(var index = 1; index <= 7; index++) {
+    let doBreak: boolean = false;
+    for(var index = 1; index <= 7 && !doBreak; index++) {
+      // this.game.message('index ' + index);
       const layer = this.layers[index-1];
+      const row = this.container(LEDSpace)!.first(LEDRow, {index: index})!;
       
-      if(!this.isLayerComplete(layer, false) && (layer.colors.includes(color) || layer.colors.includes(CubeColor.Any))) {
-        rows.push(this.container(LEDSpace)!.first(LEDRow, {index: index})!);
-        if(!layer.optional) {
-          break;
-        } 
-      }
-      if(this.isLayerComplete(layer, true) && (layer.colors.includes(color) || layer.colors.includes(CubeColor.Any)) && layer.repeatable) {
-        rows.push(this.container(LEDSpace)!.first(LEDRow, {index: index})!);
+      const complete = this.isLayerComplete(layer, false);
+      const needsColor = layer.colors.includes(color);
+      const needsAny = layer.colors.includes(CubeColor.Any);
+      const isOptional = layer.optional;
+
+      // this.game.message("index:" + index + ",complete:" + complete + ",needsColor:" + 
+        // needsColor + ",needsAny:" + needsAny + ",isOptional:" + isOptional);
+
+      // first check if the row needs the color in question
+      if(needsColor || needsAny) {
+        // make sure it isn't already completed
+        if(!complete) {
+          // does it already have the required amount?
+          if(this.canRepeat(layer, row) || (layer.colors.filter(x => x == color).length != row.all(ResourceCube, {color: color}).length)) {
+            rows.push(row);
+          }          
+          
+          // if the row isn't optional, then stop looking
+          if(!layer.optional) {
+            doBreak = true;
+            // this.game.message("breaking early: " + index)
+          }   
+        } else {
+          // it was completed, so check if it can be repeated
+          if(this.canRepeat(layer, row)) {
+            rows.push(row);
+          }
+        }
+      } else {
+        // was it optional?
+        if(!complete && !isOptional) {
+          doBreak = true;
+        }
       }
     }
+    // this.game.message("rows = " + rows.join(","));
     return rows;
   }
 
@@ -361,7 +418,8 @@ export class LEDCard extends Piece<MyGame> {
     let colors: CubeColor[] = [];
     for(var index = 1; index <= 7; index++) {
       const layer = this.layers[index-1];
-      if(!this.isLayerComplete(layer) || layer.repeatable) {
+      const row = this.container(LEDSpace)!.first(LEDRow, {index: index})!;
+      if(!this.isLayerComplete(layer) || this.canRepeat(layer, row)) {
         for(const color of layer.colors) {
           if(color == CubeColor.Any) {
             colors.push(CubeColor.Black);
