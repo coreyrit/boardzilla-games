@@ -383,3 +383,7 @@ export class LEDCard extends Piece<MyGame> {
     return colors;
   }
 }
+
+export class PublishToken extends Piece<MyGame> {
+  public flipped = false;
+}

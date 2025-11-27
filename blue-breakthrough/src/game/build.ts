@@ -13,7 +13,8 @@ import { PlayerSpace, PlayerBoard, ResourceCube, CubeBag, Supply, CubeColor, Fun
   UnavailableTokenSpace,
   StorageSpace,
   RoundSpace,
-  RoundTracker
+  RoundTracker,
+  PublishToken
  } from './components.js';
 import { fundingCards } from './funding.js';
 import { upgradeCards } from './upgrades.js';
@@ -45,6 +46,12 @@ export function buildGame(game: MyGame) {
     player.space = playerSpace
     player.space.player = player
     player.board = playerBoard
+
+    playerSpace.create(PublishToken, 'publish1-' + i);
+    playerSpace.create(PublishToken, 'publish2-' + i);
+    playerSpace.create(PublishToken, 'publish3-' + i);
+    playerSpace.create(PublishToken, 'publish4-' + i);
+    playerSpace.create(PublishToken, 'publish5-' + i);
 
     const availableTokens = playerBoard.create(AvailableTokenSpace, 'availableTokens' + i);
     const unavailableTokens = playerBoard.create(UnavailableTokenSpace, 'unavailableTokens' + i);
@@ -113,7 +120,7 @@ export function buildGame(game: MyGame) {
       special: 'If at least one cube per row: 10 ⭐' 
     });
 
-       const GaAs = led.create(LEDCard, 'ledGaAs' + i, { 
+    const GaAs = led.create(LEDCard, 'ledGaAs' + i, { 
       layers: [
         {index: 1, text: '🟫 → 2 ⭐ ea.', colors: [CubeColor.Brown], optional: false, repeatable: true, points: 2},
         {index: 2, text: '🟧 →2 ⭐ ea.', colors: [CubeColor.Orange], optional: false, repeatable: true, points: 2},

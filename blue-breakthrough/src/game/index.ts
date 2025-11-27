@@ -22,7 +22,8 @@ import { PlayerSpace, PlayerBoard, ResourceCube, CubeBag, Supply, CubeColor, Fun
   UnavailableTokenSpace,
   StorageSpace,
   RoundSpace,
-  RoundTracker
+  RoundTracker,
+  PublishToken
  } from './components.js';
 import { buildGame } from './build.js';
 
@@ -48,6 +49,27 @@ export class BlueBreakthroughPlayer extends Player<MyGame, BlueBreakthroughPlaye
 
       oneCube.putInto(this.board.first(ScoreTrack, {tens: false})!.first(ScoreSpace, {value: ones})!);
       tenCube.putInto(this.board.first(ScoreTrack, {tens: true})!.first(ScoreSpace, {value: tens * 10})!);
+    }
+
+    public publishPaper() : void {
+      this.space.first(PublishToken, {flipped: false})!.flipped = true;
+      switch(this.space.all(PublishToken, {flipped: true}).length) {
+        case 1:
+          this.scorePoints(1);
+          break;
+        case 2:
+          this.scorePoints(3);
+          break;
+        case 3:
+          this.scorePoints(6);
+          break;
+        case 4:
+          this.scorePoints(10);
+          break;
+        case 5:
+          this.scorePoints(15);
+          break;
+      }
     }
     
     public getScore() : number {
@@ -419,7 +441,20 @@ export default createGame(BlueBreakthroughPlayer, MyGame, game => {
       for(var i = 0; i < cubes.length; i++) {
         cubes[i].putInto(player.space.first(StorageSpace, {stage: (i+1)})!);
       }
-    }), 
+    }),
+    
+    recallToken: (player) => action({
+      prompt: "Recall Token"
+    }).chooseOnBoard(
+      'token', player.board.all(PowerTokenSpace).all(PowerToken)
+        .concat(player.board.first(UnavailableTokenSpace)!.all(PowerToken))
+        .filter(x => x.ability != TokenAbility.Recall),
+      { skipIf: 'never' }
+    ).do(({ token }) => {
+      player.scorePoints(player.space.first(UnavailableTokenSpace)!.all(PowerToken).length);
+      token.showOnlyTo(player);
+      token.putInto(player.space.first(AvailableTokenSpace)!);
+    }),
 
     chooseAnyResoure: (player) => action<{funding: FundingCard}>({
     }).chooseFrom(
@@ -499,9 +534,11 @@ export default createGame(BlueBreakthroughPlayer, MyGame, game => {
       condition: game.getPlayerToken(player, TokenAction.Upgrade).mayPeformAction(),
     }).do(() => {
       // this automatically happens .....
-      player.placeUpgrade(game.first(UpgradeDeck)!.first(UpgradeCard, {stage: 1})!);
+      const upgrade = game.first(UpgradeDeck)!.first(UpgradeCard, {stage: game.getStage(game.round)})!;
+      player.placeUpgrade(upgrade);
       player.scorePoints(game.getEra());
       player.space.first(PowerTokenSpace, {action: TokenAction.Upgrade})!.complete = true;
+      game.message(`{player} drew {upgrade`)
     }),
 
     publishUpgrades: (player) => action({
@@ -678,7 +715,19 @@ export default createGame(BlueBreakthroughPlayer, MyGame, game => {
             ],
           }), 
 
-          // activate player publish and recall abilities
+          // activate player publish ability
+          ifElse({
+            if: ({turn}) => turn.board.all(PowerTokenSpace).all(PowerToken, {ability: TokenAbility.Publish}).length > 0, do: [
+              ({turn}) => turn.publishPaper(),
+            ],
+          }),
+
+          // activate player recall ability
+          ifElse({
+            if: ({turn}) => turn.board.all(PowerTokenSpace).all(PowerToken, {ability: TokenAbility.Recall}).length > 0, do: [
+              playerActions({ actions: ['recallToken']}),
+            ],
+          }),
         ]
       }),           
     
@@ -687,7 +736,10 @@ export default createGame(BlueBreakthroughPlayer, MyGame, game => {
         const cooldown = p.board.first(UnavailableTokenSpace)!;
         p.board.all(PowerTokenSpace).all(PowerToken).forEach( t=> t.putInto(cooldown) );
         if(cooldown.all(PowerToken).length >= 7) {
-          cooldown.all(PowerToken).forEach(x => x.putInto(p.board.first(AvailableTokenSpace)!));
+          cooldown.all(PowerToken).forEach(x => {
+            x.showOnlyTo(p);
+            x.putInto(p.board.first(AvailableTokenSpace)!)
+          });
         }
         p.board.all(PowerTokenSpace).forEach( s=> s.complete = false );
         p.doneTesting = false;

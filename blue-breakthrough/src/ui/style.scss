@@ -1,4 +1,18 @@
 #play-area {
+    .LEDRow {
+        &.selectable {
+            z-index: 10;
+            > div {      
+                border: 3px solid magenta;                
+            }
+        }
+        &.selected {
+            z-index: 20;
+            > div {      
+                border: 3px solid cyan;  
+            }
+        }  
+    }
     .FundingCard {
         &.selectable {
             z-index: 10;
@@ -40,6 +54,22 @@
             }
         }  
     }
+    .PowerToken {
+         &.selectable {
+            z-index: 10;
+            > div {      
+                border: 3px solid magenta;
+                border-radius: 50%;                
+            }
+        }
+        &.selected {
+            z-index: 20;
+            > div {      
+                border: 3px solid cyan;  
+                border-radius: 50%;
+            }
+        }  
+    }
 
     .UpgradeCard {
          &.selectable {
@@ -54,6 +84,10 @@
                 border: 3px solid cyan;  
             }
         }  
+    }
+
+    .PublishToken {
+        z-index: 20;
     }
 
     .ScoreSpace {

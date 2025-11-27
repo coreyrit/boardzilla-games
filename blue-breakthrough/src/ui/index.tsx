@@ -16,6 +16,7 @@ import { PlayerSpace, PlayerBoard, ResourceCube, CubeBag, Supply, CubeColor, Fun
   StorageSpace,
   RoundSpace,
   RoundTracker,
+  PublishToken,
  } from '../game/components.js';
 
 import './style.scss';
@@ -33,7 +34,7 @@ render(setup, {
       { area: { left: 0, top: 10, width: 100, height: 90 }, openDirection: 'up', tab: 'Players',
         openIf: actions => actions.some(a => 
           [
-            'flipLED', 'placeToken',
+            'flipLED', 'placeToken', 'recallToken'
           ]
         .includes(a.name)),
         closeIf: actions => actions.some(a => 
@@ -269,6 +270,12 @@ render(setup, {
           </svg>
         </div>
       )});
+      game.all(LEDRow).appearance({render: x => ( 
+        <div className='LEDRow'>
+          <svg viewBox="0 0 100 50" xmlns="http://www.w3.org/2000/svg">
+          </svg>
+        </div>
+      )});
       game.all(RoundTracker).appearance({render: x => ( 
         <div className='RoundTracker'>
           <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
@@ -276,6 +283,16 @@ render(setup, {
           </svg>
         </div>
       )});
+
+      game.all(PublishToken).appearance({render: x => ( 
+        <div className='RoundTracker'>
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <rect x="0" y="0" width="100" height="100" fill='white' stroke="black" strokeWidth="4" />
+            <text x="50" y="54" text-anchor="middle" dominant-baseline="middle" fill="black" font-size="60" opacity={x.flipped ? "100" : "0"}>✎</text>
+          </svg>
+        </div>
+      )});
+
 
       game.all(LEDCard).appearance({render: x => ( 
         <div className='LEDCard'>
@@ -307,15 +324,19 @@ render(setup, {
           }
         );
 
+      game.all(PlayerSpace).layout(PublishToken, 
+          {
+            area: { left: 85, top: 25, width: 5, height: 40 },
+            columns: 1, rows: 5, gap: {x:0, y:3},
+          }
+        );
+
       game.all(MainBoard).layout(RoundSpace, 
           {
             area: { left: 3, top: 22, width: 65, height: 4.5 },
             columns: 7, rows: 1, gap: {x:0, y:0},
           }
-        );
-      
-      game.all(AvailableTokenSpace).layout(PowerToken, {columns: 1, rows: 9, gap: {x:0, y: 0}})
-      game.all(UnavailableTokenSpace).layout(PowerToken, {columns: 1, rows: 9, gap: {x:0, y: 0}})
+        );          
 
       game.all(ScoreTrack).layout(ScoreSpace, {columns: 10, rows: 1, gap: {x:1.5, y: 0}})      
       game.all(LEDSpace).layout(LEDCard, {columns: 1, rows: 1})
@@ -323,6 +344,7 @@ render(setup, {
         {
           area: { left: 80, top: 0, width: 20, height: 100 },
           columns: 1, rows: 7,
+          gap: {x:0, y: 0},
           direction: 'btt'
         }
       )
@@ -331,6 +353,10 @@ render(setup, {
           columns: 4, rows: 1
         }
       );
+
+
+      game.all(AvailableTokenSpace).layout(PowerToken, {columns: 1, rows: 9, gap: {x:0, y: -2}})
+      game.all(UnavailableTokenSpace).layout(PowerToken, {columns: 1, rows: 9, gap: {x:0, y: -2}})
 
       game.players.forEach(x => {
         x.space.layout(PlayerBoard, {area: { left: 0, top: 2, width: 90, height: 100 }});
@@ -346,14 +372,14 @@ render(setup, {
             area: { left: 90, top: 0, width: 10, height: 100 },
             columns: 1, rows: 8, gap: {x:0, y:-5},
           }
-        );
+        );        
 
         x.board.layout(x.board.first(AvailableTokenSpace)!, { 
-          area: { left: 6, top: 11, width: 10, height: 60 },
+          area: { left: 6, top: 8, width: 10, height: 70 },
         });
 
         x.board.layout(x.board.first(UnavailableTokenSpace)!, { 
-          area: { left: 85, top: 11, width: 10, height: 60 },
+          area: { left: 85, top: 8, width: 10, height: 70 },
         });
 
         x.board.layout(x.board.first(ScoreTrack, {tens: true})!, { 
