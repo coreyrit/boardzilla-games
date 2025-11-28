@@ -505,11 +505,6 @@ export default createGame(BlueBreakthroughPlayer, MyGame, game => {
       eachPlayer({
         name: 'turn', do: [
 
-          ({turn}) => turn.doneActions = false,
-          whileLoop({while: ({turn}) => !turn.doneActions, do: ([
-            playerActions({ actions: powers.actionsBeforeTesting() }),
-          ])}),
-
           whileLoop({while: ({turn}) => 
             !turn.doneTesting, do: (
                 [

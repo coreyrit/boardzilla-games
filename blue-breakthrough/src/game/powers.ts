@@ -42,10 +42,6 @@ export class FundingPowers {
         return ["usePriorityWindow", "useEmergencyReset", "skip"]
     }
 
-    public actionsBeforeTesting() : string[] {
-        return ["useReagentVoucher", "skip"]
-    }
-
     public actionsAfterTesting() : string[] {
         return ["useMiniStorage", "usePowerRefund", "skip"]
     }
@@ -70,8 +66,14 @@ export class FundingPowers {
         }
     }
 
-    public useInstant(player: BlueBreakthroughPlayer, funding: FundingCard) : boolean {
+    public useAbility(player: BlueBreakthroughPlayer, funding: FundingCard) : boolean {
         switch(funding.name) {
+          case FundingName.ReagentVoucher:
+            this.game.followUp({name: 'useReagentVoucher'});
+            return true;
+          case FundingName.ExperimentalCatalyst:
+            this.game.followUp({name: 'useExperimentalCatalyst'});
+            return true; 
           case FundingName.SelectiveDraw:
             const bag = this.game.first(CubeBag)!;
             const supply = this.game.first(Supply)!;
@@ -122,6 +124,10 @@ export class FundingPowers {
         if(player.hasFunding(FundingName.StorageInsurance)) {
             player.scorePoints(cubes.length * 2);
         }
+    }
+
+    public bonusResourceDiscount(player: BlueBreakthroughPlayer, upgrade: UpgradeCard) : number {
+        return (upgrade.input.length == 2 && player.hasFunding(FundingName.EfficiencyAudit)) ? 1 : 0;
     }
 
     public bonusUpgradeDraw(player: BlueBreakthroughPlayer) : number {
@@ -205,12 +211,16 @@ export class FundingPowers {
 
             useMiniStorage: (player) => action({
                 prompt: FundingName.MiniStorage,
-                condition: player.space.all(FundingCard, {name: FundingName.MiniStorage}).all(ResourceCube).length < 2,
+                condition: player.hasFunding(FundingName.MiniStorage) &&
+                    player.space.all(FundingCard, {name: FundingName.MiniStorage}).all(ResourceCube).length < 2,
             }).chooseOnBoard(
                 'cubes', player.space.first(ResourceSpace)!.all(ResourceCube).filter(x => [CubeColor.Blue, CubeColor.White].includes(x.color)),
-                { number: 2, skipIf: 'never' }
+                { min: 0, max: 2, skipIf: 'never' }
             ).do(({ cubes }) => {
-                cubes.forEach(x => x.putInto(player.space.first(FundingCard, {name: FundingName.MiniStorage})!));
+                const card = player.space.first(FundingCard, {name: FundingName.MiniStorage});
+                if(card != undefined) {
+                    cubes.forEach(x => x.putInto(card!));
+                }
             }),
 
             useTemporarySlot: (player) => action<{upgrade: UpgradeCard}>({
@@ -248,7 +258,7 @@ export class FundingPowers {
 
             useReagentVoucher: (player) => action({
                 prompt: FundingName.ReagentVoucher,
-                condition: player.hasFunding(FundingName.ReagentVoucher)
+                // condition: player.hasFunding(FundingName.ReagentVoucher)
             }).chooseFrom(
                 "choice", ['🟦', '⬜'],
                 { skipIf: 'never'}
@@ -256,7 +266,19 @@ export class FundingPowers {
                 const supply = game.first(Supply)!;
                 const color = game.colorFromSymbol(choice);
                 supply.first(ResourceCube, {color: color})!.putInto(player.space.first(ResourceSpace)!);
-                player.space.first(FundingCard, FundingName.ReagentVoucher)!.rotation = 90;
+                // player.space.first(FundingCard, FundingName.ReagentVoucher)!.rotation = 90;
+            }),
+
+            useExperimentalCatalyst: (player) => action({
+                prompt: FundingName.ExperimentalCatalyst,
+                // condition: player.hasFunding(FundingName.ExperimentalCatalyst)
+            }).chooseOnBoard(
+                'cube', player.space.first(ResourceSpace)!.all(ResourceCube),
+                { skipIf: 'never' }
+            ).do(({cube}) => {
+                const supply = game.first(Supply)!;
+                cube.putInto(supply);
+                game.followUp({name: 'chooseAnyResource'});
             }),
 
             useEmergencyReset: (player) => action({
@@ -293,10 +315,21 @@ export class FundingPowers {
                     player.space.first(FundingCard, {name: FundingName.ConverterVoucher})!.rotation = 90;
                     player.useUpgrade(upgrade, false);
                 } else {
-                    if(upgrade.mayUse()) {
+                    if(upgrade.mayUse(player)) {
                         player.useUpgrade(upgrade);
                     }
                 }
+            }),
+
+            useEfficiencyAudit: (player) => action<{upgrade: UpgradeCard}>({
+                prompt: FundingName.EfficiencyAudit,
+                condition: player.hasFunding(FundingName.EfficiencyAudit)
+            }).chooseOnBoard(
+                'cube', ({upgrade}) => player.space.first(ResourceSpace)!.all(ResourceCube).filter(x => upgrade.input.includes(x.color)),
+                { skipIf: 'never' }
+            ).do(({cube, upgrade})  => {
+                cube.putInto(this.game.first(Supply)!);
+                player.useUpgrade(upgrade, false);
             }),
 
             useInvestorBonus: (player) => action({

@@ -4,6 +4,7 @@ import {
 } from '@boardzilla/core';
 
 import { BlueBreakthroughPlayer, MyGame } from './index.js';
+import { FundingPowers } from './powers.js';
 
 export class MainBoard extends Space<MyGame> {
 }
@@ -189,19 +190,23 @@ export class UpgradeCard extends Piece<MyGame> {
     }
   }
 
-  public mayUse() : boolean {
+  public mayUse(player: BlueBreakthroughPlayer) : boolean {
     if(this.rotation != 0) {
       return false;
-    }
+    } else if(this.input == undefined) {
+      return true;
+    }    
+    let requirementsMet: number = 0;
     const playerCubes = this.container(PlayerSpace)!.first(ResourceSpace)!.all(ResourceCube);
-    if(this.input != undefined) {
-      for(const color of this.input) {
-        if((color != CubeColor.Any && !playerCubes.map( x => x.color ).includes(color)) || playerCubes.length == 0) {
-          return false;
-        }
+    for(const color of this.input) {
+      if((color != CubeColor.Any && !playerCubes.map( x => x.color ).includes(color)) || playerCubes.length == 0) {
+        
+      } else {
+        requirementsMet++;
       }
     }
-    return true;
+    const powers = new FundingPowers(this.game);
+    return requirementsMet >= (this.input.length - powers.bonusResourceDiscount(player, this));
   }
 
   public typeName() : string {

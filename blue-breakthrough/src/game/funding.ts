@@ -24,11 +24,15 @@ export enum FundingName {
     LateStageFunding = "Late-Stage Funding",
     ReagentVoucher = "Reagent Voucher",
     TemporarySlot = "Temporary Slot",
+    ExperimentalCatalyst = "Experimental Catalyst",
+    EfficiencyAudit = "Efficiency Audit"
 }
 
 export const fundingCards: Partial<FundingCard>[] = [
-    {name: FundingName.TemporarySlot,	type: FundingType.Permanent,	effect: 'You may place an upgrade of any type here.'},
+    {name: FundingName.EfficiencyAudit,	type: FundingType.Permanent,	effect: 'Your upgrades that require 2 cubes now only require 1 cube (your choice).'},    
+    {name: FundingName.ExperimentalCatalyst,	type: FundingType.Ongoing,	effect: 'Convert one cube of your choice into any color once per round.'},
     {name: FundingName.ReagentVoucher,	type: FundingType.Ongoing,	effect: 'Take either 1 white or 1 blue cube from the pool each round.'},
+    {name: FundingName.TemporarySlot,	type: FundingType.Permanent,	effect: 'You may place an upgrade of any type here.'},    
     {name: FundingName.LateStageFunding,	type: FundingType.Instant,	effect: 'In phase III, draw 2 funding cards.'},
     {name: FundingName.RnDGrant,	type: FundingType.Instant,	effect: 'Draw 2 funding cards, keep 1, and discard the other.'},
     {name: FundingName.StorageInsurance,	type: FundingType.Permanent,	effect: 'Gain 2 ⭐ for each leftover cube you don\'t store after testing.'},
@@ -48,10 +52,8 @@ export const fundingCards: Partial<FundingCard>[] = [
     {name: FundingName.PowerSwap,	type: FundingType.Instant,	effect: 'Move all tokens in your cooldown pool to your available pool.'},                
     {name: FundingName.MarketSurge,	type: FundingType.Permanent,	effect: 'When gaining cubes, take +1 (max 4) above the power assigned.'},
     {name: FundingName.VictoryResearch,	type: FundingType.Instant,	effect: 'Score 5 ⭐ immediately.'},
-    {name: FundingName.InvestorTrust,	type: FundingType.Ongoing,	effect: 'Once per round, discard another funding card to gain any 2 cubes instead of 1.'},
-    {name: 'Experimental Catalyst',	type: FundingType.Ongoing,	effect: 'Convert one cube of your choice into any color once per round.'},
-    {name: 'Patent License',	type: FundingType.Permanent,	effect: 'When another player buys an upgrade of a type you own gain +1 ⭐.'},
-    {name: 'Efficiency Audit',	type: FundingType.Permanent,	effect: 'Your upgrades that require 2 cubes now only require 1 cube (your choice).'},    
+    {name: FundingName.InvestorTrust,	type: FundingType.Ongoing,	effect: 'Once per round, discard another funding card to gain any 2 cubes instead of 1.'},    
+    {name: 'Patent License',	type: FundingType.Permanent,	effect: 'When another player buys an upgrade of a type you own gain +1 ⭐.'},    
     {name: 'Backup Generator',	type: FundingType.Permanent,	effect: 'Your exhaust upgrade can be used an unlimited number of times during Testing.'},
     {name: FundingName.PreciseTools,	type: FundingType.Ongoing,	effect: 'When converting cubes with an upgrade you may change one cube in the result to any color.'},
     {name: 'Reactor Grant',	type: FundingType.Permanent,	effect: 'When using a Heater upgrade also gain +1 ⭐'},

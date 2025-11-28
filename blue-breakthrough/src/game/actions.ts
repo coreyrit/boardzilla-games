@@ -88,7 +88,7 @@ export class Actions {
     discardFunding: (player) => action<{upgrade: UpgradeCard}>({
       prompt: "Discard Funding",
     }).chooseOnBoard(
-      'funding', player.space.all(FundingCard).filter(x => x.type != FundingType.Instant || x.rotation == 90),
+      'funding', player.space.all(FundingCard).filter(x => x.type == FundingType.Permanent || x.rotation == 90),
       { skipIf: 'never' }
     ).confirm(
        'Discard'
@@ -99,16 +99,16 @@ export class Actions {
     useFunding: (player) => action<{upgrade: UpgradeCard}>({
       prompt: "Use Funding"
     }).chooseOnBoard(
-      'funding', player.space.all(FundingCard).filter(x => x.type == FundingType.Instant && x.rotation == 0),
+      'funding', player.space.all(FundingCard).filter(x => x.type != FundingType.Permanent && x.rotation == 0),
       { skipIf: 'never' }
     ).chooseFrom(
-      "choice", ['Instant', 'Discard'], 
+      "choice", ['Ability', 'Discard'], 
       { skipIf: 'never' }
     ).do(({ funding, choice }) => {
       if(choice == "Discard") {
         game.followUp({name: 'chooseAnyResource', args: {funding: funding}});
       } else {
-        if(this.powers.useInstant(player, funding)) {
+        if(this.powers.useAbility(player, funding)) {
             funding.rotation = 90;
         }
       }
@@ -382,10 +382,13 @@ export class Actions {
     useUpgrade: (player) => action({
       prompt: 'Use Upgrade'
     }).chooseOnBoard(
-      'upgrade', player.space.all(UpgradeCard).filter(x => x.mayUse() || this.powers.bonusUpgradeUse(player)),
+      'upgrade', player.space.all(UpgradeCard).filter(x => x.mayUse(player) || this.powers.bonusUpgradeUse(player)),
     ).do(({upgrade}) => {        
       if(upgrade.input.length > 0 && this.powers.bonusUpgradeUse(player)) {
         game.followUp({name: 'useConverterVoucher', args: {upgrade: upgrade}});
+      } 
+      else if(this.powers.bonusResourceDiscount(player, upgrade) > 0) {
+        game.followUp({name: 'useEfficiencyAudit', args: {upgrade: upgrade}});
       } else {
         player.useUpgrade(upgrade);
       }
