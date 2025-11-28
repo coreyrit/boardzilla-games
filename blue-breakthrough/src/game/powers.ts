@@ -42,7 +42,7 @@ export class FundingPowers {
     }
 
     public actionsAfterTesting() : string[] {
-        return ["usePowerRefund", "skip"]
+        return ["useMiniStorage", "usePowerRefund", "skip"]
     }
 
     public actionsAfterUpgrades() : string[] {
@@ -53,13 +53,15 @@ export class FundingPowers {
         if(player.hasFunding(FundingName.InvestorTrust)) {
             // get an extra resource
             this.game.followUp({name: 'chooseAnyResource'});
-            player.space.first(FundingCard, "Investor Trust")!.rotation = 90;
+            player.space.first(FundingCard, FundingName.InvestorTrust)!.rotation = 90;
         }
     }
 
     public usingUpgrade(player: BlueBreakthroughPlayer, upgrade: UpgradeCard) {
         if(player.hasFunding(FundingName.PreciseTools)) {
           this.game.followUp({name: 'usePrecisionTools', args: {upgrade: upgrade}});
+        } else if(player.hasFunding(FundingName.LoanedTechnician)) {
+            this.game.followUp({name: 'useLoanedTechnicial', args: {upgrade: upgrade}});
         }
     }
 
@@ -114,6 +116,14 @@ export class FundingPowers {
         return player.hasFunding(FundingName.SharedUpgrade) ? 1 : 0;
     }
 
+    public bonusUpgradePoints(upgrade: UpgradeCard, player: BlueBreakthroughPlayer) : number {
+        return player.hasFunding(FundingName.InvestorFavor) && upgrade.cost >= 3 ? 3 : 0;
+    }
+
+    public bonusUpgradeUse(player: BlueBreakthroughPlayer) : boolean {
+        return player.hasFunding(FundingName.ConverterVoucher);
+    }
+
     public bonusDiscardResource(player: BlueBreakthroughPlayer) : number {
         return 0;
     }
@@ -130,10 +140,10 @@ export class FundingPowers {
 
             skip: (player) => action({
                 prompt: 'Skip',
-            }),
+            }).do(() => player.doneActions = true),
 
             usePrecisionTools: (player) => action<{upgrade: UpgradeCard}>({
-                prompt: "Precison Tooling"
+                prompt: FundingName.PreciseTools
             }).chooseFrom(
                 "choice", ({upgrade}) => upgrade.output.map(x => game.symbolFromColor(x)).concat("Skip").filter(x => x != "✳️"),
                 { skipIf: 'never'}
@@ -145,12 +155,38 @@ export class FundingPowers {
 
                     // remove the original color
                     player.space.first(ResourceSpace)!.first(ResourceCube, {color: color})!.putInto(supply);
-                    player.space.first(FundingCard, "Precision Tools")!.rotation = 90;
+                    player.space.first(FundingCard, FundingName.PreciseTools)!.rotation = 90;
+
+                    if(player.hasFunding(FundingName.LoanedTechnician)) {
+                        this.game.followUp({name: 'useLoanedTechnicial', args: {upgrade: upgrade}});
+                    }
                 }
             }),
 
+            useLoanedTechnicial: (player) => action<{upgrade: UpgradeCard}>({
+                prompt: FundingName.LoanedTechnician
+            }).chooseFrom(
+                "choice", ({upgrade}) => ["Yes", "No"],
+                { skipIf: 'never'}
+            ).do(({upgrade, choice}) => {
+                if(choice == "Yes") {
+                    player.space.first(FundingCard, {name: FundingName.LoanedTechnician})!.rotation = 90;  
+                    upgrade.rotation = 0; 
+                }
+            }),
+
+            useMiniStorage: (player) => action({
+                prompt: FundingName.MiniStorage,
+                condition: player.space.all(FundingCard, {name: FundingName.MiniStorage}).all(ResourceCube).length < 2,
+            }).chooseOnBoard(
+                'cubes', player.space.first(ResourceSpace)!.all(ResourceCube).filter(x => [CubeColor.Blue, CubeColor.White].includes(x.color)),
+                { number: 2, skipIf: 'never' }
+            ).do(({ cubes }) => {
+                cubes.forEach(x => x.putInto(player.space.first(FundingCard, {name: FundingName.MiniStorage})!));
+            }),
+
             usePowerRefund: (player) => action({
-                prompt: "Power Refund",
+                prompt: FundingName.PowerRefund,
                 condition: player.hasFunding(FundingName.PowerRefund)
             }).chooseFrom(
                 "choice", player.board.first(LEDSpace)!.all(ResourceCube).map(x => game.symbolFromColor(x.color)),
@@ -162,15 +198,15 @@ export class FundingPowers {
             }),
 
             usePriorityWindow: (player) => action({
-                prompt: "Priority Window",
+                prompt: FundingName.PriorityWindow,
                 condition: player.hasFunding(FundingName.PriorityWindow)
             }).do(() => {
                 player.fundingBoost = 2;
-                player.space.first(FundingCard, "Priority Window")!.rotation = 90;          
+                player.space.first(FundingCard, FundingName.PriorityWindow)!.rotation = 90;          
             }),
 
             useConverterVoucher: (player) => action<{upgrade: UpgradeCard}>({
-                prompt: "Converter Voucher?",
+                prompt: FundingName.ConverterVoucher,
                 condition: player.hasFunding(FundingName.ConverterVoucher)
             }).chooseFrom(
                 "choice", ['Yes', 'No'], 
@@ -187,7 +223,7 @@ export class FundingPowers {
             }),
 
             useInvestorBonus: (player) => action({
-                prompt: "Investor Bonus",
+                prompt: FundingName.InvestorBonus,
                 condition: player.hasFunding(FundingName.InvestorBonus)
             }).do(() => {
                 player.scorePoints(player.purchasedUpgrades * 4);

@@ -37,6 +37,7 @@ export class BlueBreakthroughPlayer extends Player<MyGame, BlueBreakthroughPlaye
     board: PlayerBoard
     score: number = 0;
     doneTesting: boolean = false;
+    doneActions: boolean = false;
     fundingBoost: number = 0;
     purchasedUpgrades: number = 0;
 
@@ -395,7 +396,7 @@ export class MyGame extends Game<MyGame, BlueBreakthroughPlayer> {
   }
 
   public getEra() : number {
-    return 1;
+    return this.getStage(this.round);
   }
 
   public getStorageCubes(player: BlueBreakthroughPlayer) : ResourceCube[] {
@@ -478,9 +479,9 @@ export default createGame(BlueBreakthroughPlayer, MyGame, game => {
           ifElse({
             if: ({turn}) => game.nextTurnOrder(TokenAction.Upgrade) == turn, do: [
               playerActions({ actions: ['chooseUpgrades', 'publishUpgrades', 'recallUpgrades', 'drawUpgrade']}),
+              playerActions({ actions: powers.actionsAfterUpgrades() }),
             ],
-          }),           
-          playerActions({ actions: powers.actionsAfterUpgrades() }),
+          }),                     
         ]}),
       ])}),
 
@@ -495,7 +496,10 @@ export default createGame(BlueBreakthroughPlayer, MyGame, game => {
                 ]
           )}),
 
-          playerActions({ actions: powers.actionsAfterTesting() }),
+          ({turn}) => turn.doneActions = false,
+          whileLoop({while: ({turn}) => !turn.doneActions, do: ([
+            playerActions({ actions: powers.actionsAfterTesting() }),
+          ])}),
           
           // score points for testing
           ({turn}) => turn.space.first(LEDSpace)!.scoreTesting(turn),

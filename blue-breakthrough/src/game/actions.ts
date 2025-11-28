@@ -114,7 +114,7 @@ export class Actions {
     }),
 
     storeCubes: (player) => action({
-      prompt: "Store Cubes"
+      prompt: "Store Cubes (" + (game.getStage(game.round) + this.powers.bonusStorage(player)) + ")"
     }).chooseOnBoard(
       'cubes', player.space.first(ResourceSpace)!.all(ResourceCube),
       { min: 0, max: game.getStage(game.round) + this.powers.bonusStorage(player), skipIf: 'never' }
@@ -223,7 +223,8 @@ export class Actions {
     ).do(({ upgrades }) => {
       player.purchasedUpgrades = upgrades.length;
       upgrades.forEach( c=> player.placeUpgrade(c) );
-      player.scorePoints(game.getEra() * upgrades.length);
+      player.scorePoints((game.getEra() * upgrades.length) + 
+        upgrades.reduce((sum, current) => sum + this.powers.bonusUpgradePoints(current, player), 0));
       player.space.first(PowerTokenSpace, {action: TokenAction.Upgrade})!.complete = true;
     }),  
 
@@ -248,7 +249,7 @@ export class Actions {
       // this automatically happens .....
       const upgrade = game.first(UpgradeDeck)!.first(UpgradeCard, {stage: game.getStage(game.round)})!;
       player.placeUpgrade(upgrade);
-      player.scorePoints(game.getEra());
+      player.scorePoints(game.getEra() + this.powers.bonusUpgradePoints(upgrade, player));      
       player.space.first(PowerTokenSpace, {action: TokenAction.Upgrade})!.complete = true;
       game.message(player.name + " drew " + upgrade);
     }),
@@ -315,9 +316,9 @@ export class Actions {
     useUpgrade: (player) => action({
       prompt: 'Use Upgrade'
     }).chooseOnBoard(
-      'upgrade', player.board.all(UpgradeCard).filter(x => x.mayUse() || player.hasFunding(FundingName.ConverterVoucher)),
+      'upgrade', player.board.all(UpgradeCard).filter(x => x.mayUse() || this.powers.bonusUpgradeUse(player)),
     ).do(({upgrade}) => {        
-      if(upgrade.input.length > 0 && player.hasFunding(FundingName.ConverterVoucher)) {
+      if(upgrade.input.length > 0 && this.powers.bonusUpgradeUse(player)) {
         game.followUp({name: 'useConverterVoucher', args: {upgrade: upgrade}});
       } else {
         player.useUpgrade(upgrade);
