@@ -97,6 +97,12 @@ render(setup, {
             columns: 2, rows: 1, gap: {x:0.5, y:0},
           }
         );
+      game.all(DrawUpgradeSpace).layout(FundingCard, 
+          {
+            area: { left: 25, top: 30, width: 50, height: 35 },
+            columns: 2, rows: 1, gap: {x:0.5, y:0},
+          }
+        );
 
       $.mainBoard.layout('cubePlate1', { area: { left: 5.5, top: 74.5, width: 10, height: 10 }});
       $.mainBoard.layout('cubePlate2', { area: { left: 22.5, top: 74.5, width: 10, height: 10 }});

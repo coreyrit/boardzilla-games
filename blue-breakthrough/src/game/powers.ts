@@ -24,7 +24,8 @@ import { PlayerSpace, PlayerBoard, ResourceCube, CubeBag, Supply, CubeColor, Fun
   RoundTracker,
   PublishToken,
   PriorityPawn,
-  FundingType
+  FundingType,
+  DrawUpgradeSpace
  } from './components.js';
 import { FundingName } from "./funding.js";
 export type SingleArgument = string | number | boolean | GameElement | Player;
@@ -90,6 +91,19 @@ export class FundingPowers {
                 x.putInto(player.space.first(AvailableTokenSpace)!)
             });
             return true;
+          case FundingName.RnDGrant:
+            this.game.first(FundingDeck)!.top(FundingCard)!.putInto(this.game.first(DrawUpgradeSpace)!);
+            this.game.first(FundingDeck)!.top(FundingCard)!.putInto(this.game.first(DrawUpgradeSpace)!);
+            this.game.followUp({name: 'chooseFundingFromDraw'});
+            return true;
+          case FundingName.LateStageFunding:
+            if(this.game.getEra() == 3) {
+                this.game.first(FundingDeck)!.top(FundingCard)!.putInto(player.space);
+                this.game.first(FundingDeck)!.top(FundingCard)!.putInto(player.space);
+                return true;
+            } else {
+                return false;
+            }
         }
         return false;
     }
@@ -97,6 +111,12 @@ export class FundingPowers {
     public handleExtraCube(player: BlueBreakthroughPlayer, cube: ResourceCube) {
         if(player.hasFunding(FundingName.ExtraTrapSlot)) {
             cube.putInto(this.game.first(FundingCard, FundingName.ExtraTrapSlot)!);
+        }
+    }
+
+    public handleLeftoverCubes(player: BlueBreakthroughPlayer, cubes: ResourceCube[]) {
+        if(player.hasFunding(FundingName.StorageInsurance)) {
+            player.scorePoints(cubes.length * 2);
         }
     }
 

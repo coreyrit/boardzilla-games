@@ -127,6 +127,7 @@ export class Actions {
             this.powers.handleExtraCube(player, cubes[i]);
         }
       }
+      this.powers.handleLeftoverCubes(player, player.space.first(ResourceSpace)!.all(ResourceCube));
     }),
     
     recallToken: (player) => action({
@@ -170,13 +171,17 @@ export class Actions {
       
       // special case for Cube Draw
       let uniquePlates: CubePlate[] = [] 
-      if(plates.length > 0) {               
-        cubes.forEach(x => {
-          const pl = x.container(CubePlate)!;
-          if(!uniquePlates.includes(pl)) {
-            uniquePlates.push(pl);
-          }
-        });
+      if(cubes.length == 0) {
+        uniquePlates.push(plates[0]);
+      } else {
+        if(plates.length > 0) {               
+          cubes.forEach(x => {
+            const pl = x.container(CubePlate)!;
+            if(!uniquePlates.includes(pl)) {
+              uniquePlates.push(pl);
+            }
+          });
+        }
       }
       
       // give cubes to player
@@ -302,6 +307,17 @@ export class Actions {
 
       this.game.first(DrawUpgradeSpace)!.all(UpgradeCard).forEach(x => x.putInto(this.game.first(Supply)!));
       game.message(player.name + " drew " + upgrade);
+    }),
+
+    chooseFundingFromDraw: (player) => action({
+      prompt: 'Choose Funding',
+    }).chooseOnBoard(
+      'funding', game.first(DrawUpgradeSpace)!.all(FundingCard),
+      { skipIf: 'never' }
+    ).do(({funding}) => {
+      funding.putInto(player.space);
+      this.game.first(DrawUpgradeSpace)!.all(FundingCard).forEach(x => x.putInto(this.game.first(Supply)!));
+
     }),
 
     publishUpgrades: (player) => action({

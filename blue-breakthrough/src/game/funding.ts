@@ -18,10 +18,16 @@ export enum FundingName {
     InvestorFavor = "Investor Favor",
     MiniStorage = "Mini-Storage",
     LoanedTechnician = "Loaned Technician",
-    MarketPeek = "Market Peek"
+    MarketPeek = "Market Peek",
+    StorageInsurance = "Storage Insurance",
+    RnDGrant = "R&D Grant",
+    LateStageFunding = "Late-Stage Funding",
 }
 
 export const fundingCards: Partial<FundingCard>[] = [
+    {name: FundingName.LateStageFunding,	type: FundingType.Instant,	effect: 'In phase III, draw 2 funding cards.'},
+    {name: FundingName.RnDGrant,	type: FundingType.Instant,	effect: 'Draw 2 funding cards, keep 1, and discard the other.'},
+    {name: FundingName.StorageInsurance,	type: FundingType.Permanent,	effect: 'Gain 2 ⭐ for each leftover cube you don\'t store after testing.'},
     {name: FundingName.MarketPeek,	type: FundingType.Permanent,	effect: 'When drawing random cards for upgrades: draw 2 upgrades, keep 1, and place the other on the bottom of the deck.'},
     {name: FundingName.EmergencyReset,	type: FundingType.Instant,	effect: 'After all of the power tokens are revealed, you may swap any number with your available tokens.'},
     {name: FundingName.LoanedTechnician,	type: FundingType.Ongoing,	effect: 'Use one upgrade on your board twice during the testing phase.'},
@@ -35,10 +41,7 @@ export const fundingCards: Partial<FundingCard>[] = [
     {name: FundingName.PriorityWindow,	type: FundingType.Instant,	effect: 'Add +2 to your power when resolving Funding.'},    
     {name: FundingName.SharedUpgrade,	type: FundingType.Permanent,	effect: 'Upgrades cost 1 less.'},
     {name: FundingName.ConverterVoucher,	type: FundingType.Ongoing,	effect: 'During testing, activate one upgrade without paying its requirement.'},    
-    {name: FundingName.PowerSwap,	type: FundingType.Instant,	effect: 'Move all tokens in your cooldown pool to your available pool.'},
-    {name: 'Storage Insurance',	type: FundingType.Permanent,	effect: 'Gain 2 ⭐ for each leftover cube you don\'t store after testing.'},
-    {name: 'R&D Grant',	type: FundingType.Instant,	effect: 'Draw 2 funding cards, keep 1, and discard the other.'},
-    {name: 'Late-Stage Funding',	type: FundingType.Instant,	effect: 'In phase III, draw 2 funding cards.'},
+    {name: FundingName.PowerSwap,	type: FundingType.Instant,	effect: 'Move all tokens in your cooldown pool to your available pool.'},        
     {name: 'Reagent Voucher',	type: FundingType.Ongoing,	effect: 'Take either 1 white or 1 blue cube from the pool each round.'},
     {name: 'Temporary Slot',	type: FundingType.Permanent,	effect: 'You may place an upgrade of any type here.'},
     {name: FundingName.MarketSurge,	type: FundingType.Permanent,	effect: 'When gaining cubes, take +1 (max 4) above the power assigned.'},
