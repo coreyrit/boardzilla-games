@@ -30,16 +30,58 @@ import { PlayerSpace, PlayerBoard, ResourceCube, CubeBag, Supply, CubeColor, Fun
 import { buildGame } from './build.js';
 import { Actions } from './actions.js';
 import { FundingPowers } from './powers.js';
+import { FundingName } from './funding.js';
 
 export class BlueBreakthroughPlayer extends Player<MyGame, BlueBreakthroughPlayer> {
     space: PlayerSpace
     board: PlayerBoard
     score: number = 0;
     doneTesting: boolean = false;
+    fundingBoost: number = 0;
+    purchasedUpgrades: number = 0;
 
-    public hasFunding(name: string) : boolean {
+    public hasFunding(name: FundingName) : boolean {
       return this.space.all(FundingCard, {name: name}).length > 0 && 
         this.space.first(FundingCard, {name: name})!.rotation == 0;
+    }
+
+    public spendUpgradeCost(upgrade: UpgradeCard) {
+      const supply = this.game.first(Supply)!;
+      const resources = this.space.first(ResourceSpace)!
+
+      for(const color of upgrade.input) {
+        if(color != CubeColor.Any) {
+          resources.first(ResourceCube, {color: color})!.putInto(supply);
+        }
+      }
+      if(upgrade.input.includes(CubeColor.Any)) {
+        this.game.followUp({name: 'chooseCostCube', args: {upgrade: upgrade}});
+      }
+    }
+
+    public gainUpgradeBenefit(upgrade: UpgradeCard) {
+      const supply = this.game.first(Supply)!;
+      const resources = this.space.first(ResourceSpace)!
+
+        for(const color of upgrade.output) {
+          if(color != CubeColor.Any) {
+            supply.first(ResourceCube, {color: color})!.putInto(resources);
+          }
+        }
+        if(upgrade.output.includes(CubeColor.Any)) {
+          this.game.followUp({name: 'chooseAnyResource'});
+        }
+    }
+
+    public useUpgrade(upgrade: UpgradeCard, spendCost: boolean = true) {
+      const powers = new FundingPowers(this.game);
+      this.scorePoints(upgrade.points);
+      if(spendCost) {
+        this.spendUpgradeCost(upgrade);
+      }
+      powers.usingUpgrade(this, upgrade);
+      this.gainUpgradeBenefit(upgrade);
+      upgrade.rotation = 90;
     }
 
     public scorePoints(points: number) {
@@ -289,7 +331,8 @@ export class MyGame extends Game<MyGame, BlueBreakthroughPlayer> {
     const playersRemaining: BlueBreakthroughPlayer[] = this.playersRemaining(action);
 
     let nextPlayer: BlueBreakthroughPlayer | null = null;
-    let bestToken: PowerToken | null = null;    
+    let bestToken: PowerToken | null = null;
+    let bestValue: number = -1;
     let bestScore: number = -1;
     let bestSum: number = -1;
     let bestPriority: number = -1;
@@ -297,6 +340,7 @@ export class MyGame extends Game<MyGame, BlueBreakthroughPlayer> {
     playersRemaining.forEach( p=> {
       const token = p.board.first(PowerTokenSpace, {action: action})!.first(PowerToken)!
       
+      const tokenValue = token.value + (action == TokenAction.Funding ? p.fundingBoost : 0);
       const playerScore = p.getScore();
       const distance = this.getPriorityDistance(p);
       const tokenSum = p.board.all(PowerTokenSpace).reduce((sum, x) => sum + x.first(PowerToken)!.value, 0);
@@ -315,28 +359,28 @@ export class MyGame extends Game<MyGame, BlueBreakthroughPlayer> {
       }
 
       if(bestToken == null || [TokenAbility.Publish, TokenAbility.Recall].includes(bestToken.ability)) {
-        bestToken = token; nextPlayer = p; bestScore = playerScore; bestSum = tokenSum; bestPriority = distance;
+        bestToken = token; bestValue = tokenValue; nextPlayer = p; bestScore = playerScore; bestSum = tokenSum; bestPriority = distance;
         this.game.message("Initializing turn: " + nextPlayer);
       } else {
         // first check token value
-        if(action == TokenAction.Funding ? token.value > bestToken.value : token.value < bestToken.value) {
-          bestToken = token; nextPlayer = p; bestScore = playerScore; bestSum = tokenSum; bestPriority = distance;
+        if(action == TokenAction.Funding ? tokenValue > bestValue : tokenValue < bestValue) {
+          bestToken = token; bestValue = tokenValue; nextPlayer = p; bestScore = playerScore; bestSum = tokenSum; bestPriority = distance;
           this.game.message("Highest value: " + nextPlayer);
         } 
         // then check abilities if tied
-        else if(token.value == bestToken.value && 
+        else if(tokenValue == bestValue && 
             token.ability == TokenAbility.A && bestToken.ability == TokenAbility.B) {
-          bestToken = token; nextPlayer = p; bestScore = playerScore; bestSum = tokenSum; bestPriority = distance;
+          bestToken = token; bestValue = tokenValue; nextPlayer = p; bestScore = playerScore; bestSum = tokenSum; bestPriority = distance;
           this.game.message("A vs B: " + nextPlayer);
         } 
         // then second tie-breakerif still tied
-        else if(token.value == bestToken.value && token.ability == bestToken.ability && secondTieBreaker) {
-          bestToken = token; nextPlayer = p; bestScore = playerScore; bestSum = tokenSum; bestPriority = distance;
+        else if(tokenValue == bestValue && token.ability == bestToken.ability && secondTieBreaker) {
+          bestToken = token; bestValue = tokenValue; nextPlayer = p; bestScore = playerScore; bestSum = tokenSum; bestPriority = distance;
           this.game.message("2nd tie-breaker: " + nextPlayer);
         }         
         // final tie goes to priority pawn
-        else if(token.value == bestToken.value && token.ability == bestToken.ability && !secondTieBreaker && distance < bestPriority) {
-          bestToken = token; nextPlayer = p; bestScore = playerScore; bestSum = tokenSum; bestPriority = distance;
+        else if(tokenValue == bestValue && token.ability == bestToken.ability && !secondTieBreaker && distance < bestPriority) {
+          bestToken = token; bestValue = tokenValue; nextPlayer = p; bestScore = playerScore; bestSum = tokenSum; bestPriority = distance;
           this.game.message("Priority: " + nextPlayer);
         }
       }
@@ -352,6 +396,11 @@ export class MyGame extends Game<MyGame, BlueBreakthroughPlayer> {
 
   public getEra() : number {
     return 1;
+  }
+
+  public getStorageCubes(player: BlueBreakthroughPlayer) : ResourceCube[] {
+    const powers = new FundingPowers(this);
+    return player.board.all(StorageSpace).all(ResourceCube).concat(powers.getExtraStorageCubes(player));
   }
 }
 
@@ -374,7 +423,7 @@ export default createGame(BlueBreakthroughPlayer, MyGame, game => {
       // start round
       () => game.first(PriorityPawn)!.putInto(game.players[game.priority-1].space),
       ({round}) => game.first(RoundTracker)!.putInto(game.first(RoundSpace, {round: round})!),
-      () => game.players.forEach(x => x.board.all(StorageSpace).all(ResourceCube).forEach(c => c.putInto(x.space.first(ResourceSpace)!))),
+      () => game.players.forEach(x => game.getStorageCubes(x).forEach(c => c.putInto(x.space.first(ResourceSpace)!))),
       ({round}) => game.round = round,
       ({round}) => game.addRoundCubes(round),
       () => game.drawCubesToPlates(),
@@ -395,6 +444,11 @@ export default createGame(BlueBreakthroughPlayer, MyGame, game => {
 
       // reveal tokens
       () => game.all(PowerTokenSpace).all(PowerToken).forEach( x=> x.showToAll() ),
+
+      // before funding
+      eachPlayer({name: 'turn', do: [
+        playerActions({ actions: powers.actionsBeforeFunding() }),
+      ]}),
 
       // resolve funding
       whileLoop({while: () => game.playersRemaining(TokenAction.Funding).length > 0, do: ([  
@@ -425,7 +479,8 @@ export default createGame(BlueBreakthroughPlayer, MyGame, game => {
             if: ({turn}) => game.nextTurnOrder(TokenAction.Upgrade) == turn, do: [
               playerActions({ actions: ['chooseUpgrades', 'publishUpgrades', 'recallUpgrades', 'drawUpgrade']}),
             ],
-          }),   
+          }),           
+          playerActions({ actions: powers.actionsAfterUpgrades() }),
         ]}),
       ])}),
 
@@ -439,6 +494,8 @@ export default createGame(BlueBreakthroughPlayer, MyGame, game => {
                   // ({turn}) => game.message("After: Next colors needed: " + turn.board.first(LEDSpace)!.first(LEDCard)!.nextColorsNeeded()),
                 ]
           )}),
+
+          playerActions({ actions: powers.actionsAfterTesting() }),
           
           // score points for testing
           ({turn}) => turn.space.first(LEDSpace)!.scoreTesting(turn),
@@ -478,9 +535,13 @@ export default createGame(BlueBreakthroughPlayer, MyGame, game => {
         }
         p.board.all(PowerTokenSpace).forEach( s=> s.complete = false );
         p.doneTesting = false;
+        p.fundingBoost = 0;
+        p.purchasedUpgrades = 0;
         p.board.all(UpgradeCard).forEach( u => u.rotation = 0 );
         p.board.first(LEDSpace)!.all(ResourceCube).forEach( c => c.putInto(game.first(Supply)!) );
         p.space.first(ResourceSpace)!.all(ResourceCube).forEach( c => c.putInto(game.first(Supply)!) );
+
+        p.space.all(FundingCard, {type:FundingType.Ongoing}).forEach(x => x.rotation = 0);
       }),
       () => {
         game.priority++;

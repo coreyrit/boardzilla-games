@@ -22,6 +22,7 @@ import { PlayerSpace, PlayerBoard, ResourceCube, CubeBag, Supply, CubeColor, Fun
  } from '../game/components.js';
 
 import './style.scss';
+import { FundingPowers } from '../game/powers.js';
 
 render(setup, {
   settings: {
@@ -188,13 +189,25 @@ render(setup, {
           </svg>
         </div>
       )});
+      game.all(FundingCard).layout(ResourceCube, 
+          {
+            area: { left: 5, top: 20, width: 90, height: 60 },
+            columns: 2, rows: 2, gap: {x:0.5, y:0},
+          }
+        );
 
+      const powers = new FundingPowers(game);
       game.all(UpgradeCard).appearance({render: x => ( 
         <div className='UpgradeCard'>
           <svg viewBox="0 0 100% 100%" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
             <rect x="0" y="0" width="100%" height="100%" fill='white' stroke="black" strokeWidth="3" />
             <circle cx="17%" cy="12%" r="10%" fill='yellow' stroke="black" strokeWidth="1" />
-            <text x="17%" y="12%" text-anchor="middle" dominant-baseline="middle" fill="black" font-size="60%">{x.cost}</text>
+
+            <text x="17%" y="12%" text-anchor="middle" dominant-baseline="middle" 
+              fill={game.players.current() != null && powers.bonusUpgradeDiscout(game.players.current()!) > 0 ? "red" : "black"} font-size="60%">
+              {x.cost - (game.players.current() != null ? powers.bonusUpgradeDiscout(game.players.current()!): 0)}
+            </text>
+
             <foreignObject x="28%" y="3%" width="70%" height="20%" fontSize="40%">
               <div><center><b>{x.name}</b></center></div>
             </foreignObject>

@@ -27,6 +27,7 @@ import { PlayerSpace, PlayerBoard, ResourceCube, CubeBag, Supply, CubeColor, Fun
   FundingType
  } from './components.js';
 import { FundingPowers } from "./powers.js";
+import { FundingName } from "./funding.js";
 export type SingleArgument = string | number | boolean | GameElement | Player;
 export type Argument = SingleArgument | SingleArgument[];
 
@@ -106,19 +107,24 @@ export class Actions {
       if(choice == "Discard") {
         game.followUp({name: 'chooseAnyResource', args: {funding: funding}});
       } else {
-        this.powers.useInstant(player, funding);
-        funding.rotation = 90;
+        if(this.powers.useInstant(player, funding)) {
+            funding.rotation = 90;
+        }
       }
-    }), 
+    }),
 
     storeCubes: (player) => action({
       prompt: "Store Cubes"
     }).chooseOnBoard(
       'cubes', player.space.first(ResourceSpace)!.all(ResourceCube),
-      { min: 0, max: game.getStage(game.round), skipIf: 'never' }
+      { min: 0, max: game.getStage(game.round) + this.powers.bonusStorage(player), skipIf: 'never' }
     ).do(({ cubes }) => {
       for(var i = 0; i < cubes.length; i++) {
-        cubes[i].putInto(player.space.first(StorageSpace, {stage: (i+1)})!);
+        if((i+1) <= game.getStage(game.round)) {
+            cubes[i].putInto(player.space.first(StorageSpace, {stage: (i+1)})!);
+        } else {
+            this.powers.handleExtraCube(player, cubes[i]);
+        }
       }
     }),
     
@@ -139,12 +145,13 @@ export class Actions {
       prompt: "Gain Any"
     }).chooseFrom(
       "choice", ['⬜','🟫','🟦','🟧','⬛','🟥','🟨'],
-      { skipIf: 'never'}
+      { skipIf: 'never' }
     ).do(({funding, choice}) => {
       game.first(Supply)!.first(ResourceCube, {color: game.colorFromSymbol(choice)})!
         .putInto(player.space.first(ResourceSpace)!);
       if(funding != undefined) {
         funding.putInto(game.first(Supply)!);
+        this.powers.afterDiscardingFunding(player);
       }
     }),
 
@@ -208,13 +215,14 @@ export class Actions {
       condition: game.getPlayerToken(player, TokenAction.Upgrade).mayPeformAction(),
       prompt: "Choose Upgrades (" + game.getPlayerToken(player, TokenAction.Upgrade).value + ")"
     }).chooseOnBoard(
-      'upgrades', game.all(UpgradeSpace).all(UpgradeCard).filter(x => x.cost <= game.getPlayerToken(player, TokenAction.Upgrade).value),
+      'upgrades', game.all(UpgradeSpace).all(UpgradeCard).filter(x => x.cost-this.powers.bonusUpgradeDiscout(player) <= game.getPlayerToken(player, TokenAction.Upgrade).value),
       { min: 1, max: 2, skipIf: 'never', validate: ({upgrades}) => {
-        const upgradeSum = upgrades.reduce((sum, x) => sum + x.cost, 0)
+        const upgradeSum = upgrades.reduce((sum, x) => sum + x.cost-this.powers.bonusUpgradeDiscout(player), 0)
         return upgradeSum <= game.getPlayerToken(player, TokenAction.Upgrade).value;
       } }
     ).do(({ upgrades }) => {
-      upgrades.forEach( c=> player.placeUpgrade(c) );      
+      player.purchasedUpgrades = upgrades.length;
+      upgrades.forEach( c=> player.placeUpgrade(c) );
       player.scorePoints(game.getEra() * upgrades.length);
       player.space.first(PowerTokenSpace, {action: TokenAction.Upgrade})!.complete = true;
     }),  
@@ -225,8 +233,6 @@ export class Actions {
       "choice", ['Yes', 'No'], 
       { skipIf: 'never' }
     ).do(({ upgrade, choice }) => {
-      // game.message('upgrade = '  + upgrade + ', choice = ' + choice);
-
       if(choice == 'Yes') {
         player.board.first(ReactorSpace, {type: upgrade.type})!.first(UpgradeCard)!.putInto(game.first(Supply)!);
         upgrade.putInto(player.board.first(ReactorSpace, {type: upgrade.type})!);
@@ -244,7 +250,7 @@ export class Actions {
       player.placeUpgrade(upgrade);
       player.scorePoints(game.getEra());
       player.space.first(PowerTokenSpace, {action: TokenAction.Upgrade})!.complete = true;
-      game.message(`{player} drew {upgrade`)
+      game.message(player.name + " drew " + upgrade);
     }),
 
     publishUpgrades: (player) => action({
@@ -309,40 +315,19 @@ export class Actions {
     useUpgrade: (player) => action({
       prompt: 'Use Upgrade'
     }).chooseOnBoard(
-      'upgrade', player.board.all(UpgradeCard).filter(x => x.mayUse()),
-    ).do(({upgrade}) => {
-      player.scorePoints(upgrade.points);
-      const supply = game.first(Supply)!;
-      const resources = player.space.first(ResourceSpace)!
-
-      for(const color of upgrade.input) {
-        if(color != CubeColor.Any) {
-          resources.first(ResourceCube, {color: color})!.putInto(supply);
-        }
-      }
-      if(upgrade.input.includes(CubeColor.Any)) {
-        game.followUp({name: 'chooseCostCube', args: {upgrade: upgrade}});
+      'upgrade', player.board.all(UpgradeCard).filter(x => x.mayUse() || player.hasFunding(FundingName.ConverterVoucher)),
+    ).do(({upgrade}) => {        
+      if(upgrade.input.length > 0 && player.hasFunding(FundingName.ConverterVoucher)) {
+        game.followUp({name: 'useConverterVoucher', args: {upgrade: upgrade}});
       } else {
-        
-        this.powers.usingUpgrade(player, upgrade);
-
-        for(const color of upgrade.output) {
-          if(color != CubeColor.Any) {
-            supply.first(ResourceCube, {color: color})!.putInto(resources);
-          }
-        }
-        if(upgrade.output.includes(CubeColor.Any)) {
-          game.followUp({name: 'chooseAnyResource'});
-        }
+        player.useUpgrade(upgrade);
       }
-      upgrade.rotation = 90;
     }),
 
     finishTesting: (player) => action({
       prompt: 'Finish Testing'
     }).do(() => {
       player.doneTesting = true;
-      this.powers.finishTesting(player);
     }),
         }
     }
