@@ -24,7 +24,8 @@ import { PlayerSpace, PlayerBoard, ResourceCube, CubeBag, Supply, CubeColor, Fun
   RoundTracker,
   PublishToken,
   PriorityPawn,
-  FundingType
+  FundingType,
+  DrawUpgradeSpace
  } from './components.js';
 import { FundingPowers } from "./powers.js";
 import { FundingName } from "./funding.js";
@@ -241,16 +242,65 @@ export class Actions {
         upgrade.putInto(game.first(Supply)!);
       }
     }),  
+
+    discardPump: (player) => action<{upgrade: UpgradeCard}>({
+      prompt: "Replace Upgrade?"
+    }).chooseFrom(
+      "choice", ['Yes', 'No'], 
+      { skipIf: 'never' }
+    ).do(({ upgrade, choice }) => {
+      if(choice == 'Yes') {
+        this.game.followUp({name: 'choosePump', args: {upgrade: upgrade}});
+      } else {
+        upgrade.putInto(game.first(Supply)!);
+      }
+    }),
+
+    choosePump: (player) => action<{upgrade: UpgradeCard}>({
+      prompt: 'Choose Pump to Discard',
+    }).chooseOnBoard(
+      'pump', player.board.all(UpgradeSpace).all(UpgradeCard, {type: UpgradeType.pump}),
+      { skipIf: 'never' }
+    ).do(({ pump }) => {
+      const space = pump.container(UpgradeSpace)!
+      pump.putInto(game.first(Supply)!);
+      pump.putInto(space);
+    }), 
     
     drawUpgrade: (player) => action({
       prompt: 'Draw Upgrade',
       condition: game.getPlayerToken(player, TokenAction.Upgrade).mayPeformAction(),
     }).do(() => {
       // this automatically happens .....
-      const upgrade = game.first(UpgradeDeck)!.first(UpgradeCard, {stage: game.getStage(game.round)})!;
+      const upgradeSpace = game.first(DrawUpgradeSpace)!;
+
+      for(var i = 0; i < 1 + this.powers.bonusUpgradeDraw(player); i++) {
+        const upgrade = game.first(UpgradeDeck)!.first(UpgradeCard, {stage: game.getStage(game.round)})!;
+        upgrade.putInto(upgradeSpace);
+      }
+
+      if(upgradeSpace.all(UpgradeCard).length > 1) {
+        game.followUp({name: 'chooseUpgradeFromDraw'});
+      } else {
+        const upgrade = upgradeSpace.first(UpgradeCard)!;
+        player.placeUpgrade(upgrade);
+        player.scorePoints(game.getEra() + this.powers.bonusUpgradePoints(upgrade, player));      
+        player.space.first(PowerTokenSpace, {action: TokenAction.Upgrade})!.complete = true;
+        game.message(player.name + " drew " + upgrade);
+      }
+    }),
+
+    chooseUpgradeFromDraw: (player) => action({
+      prompt: 'Choose Upgrade',
+    }).chooseOnBoard(
+      'upgrade', game.first(DrawUpgradeSpace)!.all(UpgradeCard),
+      { skipIf: 'never' }
+    ).do(({upgrade}) => {
       player.placeUpgrade(upgrade);
       player.scorePoints(game.getEra() + this.powers.bonusUpgradePoints(upgrade, player));      
       player.space.first(PowerTokenSpace, {action: TokenAction.Upgrade})!.complete = true;
+
+      this.game.first(DrawUpgradeSpace)!.all(UpgradeCard).forEach(x => x.putInto(this.game.first(Supply)!));
       game.message(player.name + " drew " + upgrade);
     }),
 

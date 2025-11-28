@@ -451,3 +451,7 @@ export class LEDCard extends Piece<MyGame> {
 export class PublishToken extends Piece<MyGame> {
   public flipped = false;
 }
+
+export class DrawUpgradeSpace extends Space<MyGame> {
+
+}

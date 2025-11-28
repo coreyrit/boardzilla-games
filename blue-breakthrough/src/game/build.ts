@@ -16,7 +16,8 @@ import { PlayerSpace, PlayerBoard, ResourceCube, CubeBag, Supply, CubeColor, Fun
   RoundTracker,
   PublishToken,
   ReferenceSpace,
-  PriorityPawn
+  PriorityPawn,
+  DrawUpgradeSpace
  } from './components.js';
 import { fundingCards } from './funding.js';
 import { upgradeCards } from './upgrades.js';
@@ -63,6 +64,8 @@ export function buildGame(game: MyGame) {
   const reference = game.create(ReferenceSpace, "reference");
   createGaN(reference, 'refaN_A');
   createGaAs(reference, 'refGaAs');
+
+  const drawnUpgrades = game.create(DrawUpgradeSpace, "drawnUpgrades");
 
   const r1 = mainBoard.create(RoundSpace, 'round1', {round: 1});
   r1.create(RoundTracker, 'roundTracker')
@@ -174,7 +177,7 @@ export function buildGame(game: MyGame) {
   for (const fundingCard of fundingCards) {
     fundingDeck.create(FundingCard, fundingCard.name!.replace(' ', '_'), fundingCard);
   }
-  fundingDeck.shuffle();
+  // fundingDeck.shuffle();
 
   const upgradeDeck = game.create(UpgradeDeck, "upgradeDeck");
   for (const upgradeCard of upgradeCards) {

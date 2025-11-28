@@ -134,8 +134,11 @@ export class BlueBreakthroughPlayer extends Player<MyGame, BlueBreakthroughPlaye
         const spaces = this.board.all(ReactorSpace, {type: UpgradeType.pump});
         if(spaces[0].all(UpgradeCard).length == 0) {
           space = spaces[0];
-        } else {
+        } else if(spaces[1].all(UpgradeCard).length == 0) {
           space = spaces[1];
+        } else {
+          this.game.followUp({name: 'discardPump', args: {upgrade: upgrade}});
+          return;
         }
       } else {
         space = this.board.first(ReactorSpace, {type: upgrade.type})!
@@ -448,7 +451,10 @@ export default createGame(BlueBreakthroughPlayer, MyGame, game => {
 
       // before funding
       eachPlayer({name: 'turn', do: [
-        playerActions({ actions: powers.actionsBeforeFunding() }),
+       ({turn}) => turn.doneActions = false,
+        whileLoop({while: ({turn}) => !turn.doneActions, do: ([
+          playerActions({ actions: powers.actionsBeforeFunding() }),
+        ])}),
       ]}),
 
       // resolve funding

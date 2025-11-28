@@ -17,23 +17,24 @@ export enum FundingName {
     EmergencyReset = "Emergency Reset",
     InvestorFavor = "Investor Favor",
     MiniStorage = "Mini-Storage",
-    LoanedTechnician = "Loaned Technician"
+    LoanedTechnician = "Loaned Technician",
+    MarketPeek = "Market Peek"
 }
 
 export const fundingCards: Partial<FundingCard>[] = [
+    {name: FundingName.MarketPeek,	type: FundingType.Permanent,	effect: 'When drawing random cards for upgrades: draw 2 upgrades, keep 1, and place the other on the bottom of the deck.'},
+    {name: FundingName.EmergencyReset,	type: FundingType.Instant,	effect: 'After all of the power tokens are revealed, you may swap any number with your available tokens.'},
     {name: FundingName.LoanedTechnician,	type: FundingType.Ongoing,	effect: 'Use one upgrade on your board twice during the testing phase.'},
     {name: FundingName.MiniStorage,	type: FundingType.Permanent,	effect: 'You may store up to 2 blue or white cubes here between rounds.'},
     {name: FundingName.InvestorBonus,	type: FundingType.Instant,	effect: 'Gain +4 ⭐ for each upgrade you purchased this phase.'},
-    {name: FundingName.ExtraTrapSlot,	type: FundingType.Permanent,	effect: 'Gain +1 storage slot (store 1 additional cube between rounds).'},
-    {name: FundingName.EmergencyReset,	type: FundingType.Instant,	effect: 'After all of the power tokens are revealed, you may swap any numer with your available tokens.'},
+    {name: FundingName.ExtraTrapSlot,	type: FundingType.Permanent,	effect: 'Gain +1 storage slot (store 1 additional cube between rounds).'},    
     {name: FundingName.InvestorFavor,	type: FundingType.Permanent,	effect: 'Gain +3 ⭐ whenever you buy an upgrade that costs 3 or more.'},
     {name: FundingName.CubeDraw,	type: FundingType.Permanent,	effect: 'When gaining cubes you may take them from 2 piles.  Combine those piles for other players after completion.'},
     {name: FundingName.SelectiveDraw, type: FundingType.Instant,	effect: 'Place 2 blue cubes and 2 white cubes in the bag and mix.  Next, draw 4 cubes.'},
     {name: FundingName.PowerRefund,	type: FundingType.Permanent,	effect: 'After testing, keep one cube used for scoring.  You must have room for it in storage.'},    
     {name: FundingName.PriorityWindow,	type: FundingType.Instant,	effect: 'Add +2 to your power when resolving Funding.'},    
     {name: FundingName.SharedUpgrade,	type: FundingType.Permanent,	effect: 'Upgrades cost 1 less.'},
-    {name: FundingName.ConverterVoucher,	type: FundingType.Ongoing,	effect: 'During testing, activate one upgrade without paying its requirement.'},
-    {name: 'Market Peek',	type: FundingType.Permanent,	effect: 'When drawing random cards for upgrades: draw 2 upgrades, keep 1, and place the other on the bottom of the deck.'},
+    {name: FundingName.ConverterVoucher,	type: FundingType.Ongoing,	effect: 'During testing, activate one upgrade without paying its requirement.'},    
     {name: FundingName.PowerSwap,	type: FundingType.Instant,	effect: 'Move all tokens in your cooldown pool to your available pool.'},
     {name: 'Storage Insurance',	type: FundingType.Permanent,	effect: 'Gain 2 ⭐ for each leftover cube you don\'t store after testing.'},
     {name: 'R&D Grant',	type: FundingType.Instant,	effect: 'Draw 2 funding cards, keep 1, and discard the other.'},

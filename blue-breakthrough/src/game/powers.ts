@@ -38,7 +38,7 @@ export class FundingPowers {
     }
 
     public actionsBeforeFunding() : string[] {
-        return ["usePriorityWindow", "skip"]
+        return ["usePriorityWindow", "useEmergencyReset", "skip"]
     }
 
     public actionsAfterTesting() : string[] {
@@ -98,6 +98,10 @@ export class FundingPowers {
         if(player.hasFunding(FundingName.ExtraTrapSlot)) {
             cube.putInto(this.game.first(FundingCard, FundingName.ExtraTrapSlot)!);
         }
+    }
+
+    public bonusUpgradeDraw(player: BlueBreakthroughPlayer) : number {
+        return player.hasFunding(FundingName.MarketPeek) ? 1 : 0;
     }
 
     public bonusStorage(player: BlueBreakthroughPlayer) : number {
@@ -202,7 +206,30 @@ export class FundingPowers {
                 condition: player.hasFunding(FundingName.PriorityWindow)
             }).do(() => {
                 player.fundingBoost = 2;
-                player.space.first(FundingCard, FundingName.PriorityWindow)!.rotation = 90;          
+                player.space.first(FundingCard, FundingName.PriorityWindow)!.rotation = 90;
+            }),
+
+            useEmergencyReset: (player) => action({
+                prompt: FundingName.EmergencyReset,
+                condition: player.hasFunding(FundingName.EmergencyReset)
+            }).do(() => {
+                this.game.followUp({name: 'useEmergencyResetReplaceToken', args: {action: TokenAction.Funding}});
+                this.game.followUp({name: 'useEmergencyResetReplaceToken', args: {action: TokenAction.Resources}});
+                this.game.followUp({name: 'useEmergencyResetReplaceToken', args: {action: TokenAction.Upgrade}});
+                player.space.first(FundingCard, FundingName.EmergencyReset)!.rotation = 90;
+            }),
+
+            useEmergencyResetReplaceToken: (player) => action<{action: TokenAction}>({
+                prompt: "Replace Token",
+            }).chooseOnBoard(
+                'currentToken', ({action}) => player.board.all(PowerTokenSpace, {action: action}).all(PowerToken)!,
+                { skipIf: 'never' }
+            ).chooseOnBoard(
+                'token', ({action}) => player.board.all(AvailableTokenSpace).all(PowerToken).concat(player.board.all(PowerTokenSpace).all(PowerToken)),
+                { skipIf: 'never' }
+            ).do(({currentToken, token, action}) => {
+                currentToken.putInto(token.container(Space)!);
+                token.putInto(player.board.first(PowerTokenSpace, {action: action})!);
             }),
 
             useConverterVoucher: (player) => action<{upgrade: UpgradeCard}>({
