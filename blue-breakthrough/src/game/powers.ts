@@ -42,6 +42,10 @@ export class FundingPowers {
         return ["usePriorityWindow", "useEmergencyReset", "skip"]
     }
 
+    public actionsBeforeTesting() : string[] {
+        return ["useReagentVoucher", "skip"]
+    }
+
     public actionsAfterTesting() : string[] {
         return ["useMiniStorage", "usePowerRefund", "skip"]
     }
@@ -209,6 +213,19 @@ export class FundingPowers {
                 cubes.forEach(x => x.putInto(player.space.first(FundingCard, {name: FundingName.MiniStorage})!));
             }),
 
+            useTemporarySlot: (player) => action<{upgrade: UpgradeCard}>({
+                prompt: FundingName.TemporarySlot,
+            }).chooseFrom(
+                "choice", ["Yes", "No"],
+                { skipIf: 'never'}
+            ).do(({ choice, upgrade }) => {
+                if(choice == "Yes") {
+                    upgrade.putInto(player.space.first(FundingCard, {name: FundingName.TemporarySlot})!);
+                } else {
+                    player.finishPlacingUpgrade(upgrade);
+                }                
+            }),
+
             usePowerRefund: (player) => action({
                 prompt: FundingName.PowerRefund,
                 condition: player.hasFunding(FundingName.PowerRefund)
@@ -227,6 +244,19 @@ export class FundingPowers {
             }).do(() => {
                 player.fundingBoost = 2;
                 player.space.first(FundingCard, FundingName.PriorityWindow)!.rotation = 90;
+            }),
+
+            useReagentVoucher: (player) => action({
+                prompt: FundingName.ReagentVoucher,
+                condition: player.hasFunding(FundingName.ReagentVoucher)
+            }).chooseFrom(
+                "choice", ['🟦', '⬜'],
+                { skipIf: 'never'}
+            ).do(({choice}) => {
+                const supply = game.first(Supply)!;
+                const color = game.colorFromSymbol(choice);
+                supply.first(ResourceCube, {color: color})!.putInto(player.space.first(ResourceSpace)!);
+                player.space.first(FundingCard, FundingName.ReagentVoucher)!.rotation = 90;
             }),
 
             useEmergencyReset: (player) => action({

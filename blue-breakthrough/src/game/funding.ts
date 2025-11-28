@@ -22,9 +22,13 @@ export enum FundingName {
     StorageInsurance = "Storage Insurance",
     RnDGrant = "R&D Grant",
     LateStageFunding = "Late-Stage Funding",
+    ReagentVoucher = "Reagent Voucher",
+    TemporarySlot = "Temporary Slot",
 }
 
 export const fundingCards: Partial<FundingCard>[] = [
+    {name: FundingName.TemporarySlot,	type: FundingType.Permanent,	effect: 'You may place an upgrade of any type here.'},
+    {name: FundingName.ReagentVoucher,	type: FundingType.Ongoing,	effect: 'Take either 1 white or 1 blue cube from the pool each round.'},
     {name: FundingName.LateStageFunding,	type: FundingType.Instant,	effect: 'In phase III, draw 2 funding cards.'},
     {name: FundingName.RnDGrant,	type: FundingType.Instant,	effect: 'Draw 2 funding cards, keep 1, and discard the other.'},
     {name: FundingName.StorageInsurance,	type: FundingType.Permanent,	effect: 'Gain 2 ⭐ for each leftover cube you don\'t store after testing.'},
@@ -41,9 +45,7 @@ export const fundingCards: Partial<FundingCard>[] = [
     {name: FundingName.PriorityWindow,	type: FundingType.Instant,	effect: 'Add +2 to your power when resolving Funding.'},    
     {name: FundingName.SharedUpgrade,	type: FundingType.Permanent,	effect: 'Upgrades cost 1 less.'},
     {name: FundingName.ConverterVoucher,	type: FundingType.Ongoing,	effect: 'During testing, activate one upgrade without paying its requirement.'},    
-    {name: FundingName.PowerSwap,	type: FundingType.Instant,	effect: 'Move all tokens in your cooldown pool to your available pool.'},        
-    {name: 'Reagent Voucher',	type: FundingType.Ongoing,	effect: 'Take either 1 white or 1 blue cube from the pool each round.'},
-    {name: 'Temporary Slot',	type: FundingType.Permanent,	effect: 'You may place an upgrade of any type here.'},
+    {name: FundingName.PowerSwap,	type: FundingType.Instant,	effect: 'Move all tokens in your cooldown pool to your available pool.'},                
     {name: FundingName.MarketSurge,	type: FundingType.Permanent,	effect: 'When gaining cubes, take +1 (max 4) above the power assigned.'},
     {name: FundingName.VictoryResearch,	type: FundingType.Instant,	effect: 'Score 5 ⭐ immediately.'},
     {name: FundingName.InvestorTrust,	type: FundingType.Ongoing,	effect: 'Once per round, discard another funding card to gain any 2 cubes instead of 1.'},

@@ -382,7 +382,7 @@ export class Actions {
     useUpgrade: (player) => action({
       prompt: 'Use Upgrade'
     }).chooseOnBoard(
-      'upgrade', player.board.all(UpgradeCard).filter(x => x.mayUse() || this.powers.bonusUpgradeUse(player)),
+      'upgrade', player.space.all(UpgradeCard).filter(x => x.mayUse() || this.powers.bonusUpgradeUse(player)),
     ).do(({upgrade}) => {        
       if(upgrade.input.length > 0 && this.powers.bonusUpgradeUse(player)) {
         game.followUp({name: 'useConverterVoucher', args: {upgrade: upgrade}});

@@ -43,7 +43,8 @@ export class BlueBreakthroughPlayer extends Player<MyGame, BlueBreakthroughPlaye
 
     public hasFunding(name: FundingName) : boolean {
       return this.space.all(FundingCard, {name: name}).length > 0 && 
-        this.space.first(FundingCard, {name: name})!.rotation == 0;
+          this.space.first(FundingCard, {name: name})!.rotation == 0 &&
+          this.space.first(FundingCard, {name: name})!.all(UpgradeCard).length == 0;
     }
 
     public spendUpgradeCost(upgrade: UpgradeCard) {
@@ -129,7 +130,16 @@ export class BlueBreakthroughPlayer extends Player<MyGame, BlueBreakthroughPlaye
     }
 
     public placeUpgrade(upgrade: UpgradeCard) : void {
+      if(this.hasFunding(FundingName.TemporarySlot)) {
+        this.game.followUp({name: 'useTemporarySlot', args: {upgrade: upgrade}});
+      } else {
+        this.finishPlacingUpgrade(upgrade);
+      }
+    }
+
+    public finishPlacingUpgrade(upgrade: UpgradeCard) : void {
       let space: ReactorSpace | null = null;
+      
       if(upgrade.type == UpgradeType.pump) {
         const spaces = this.board.all(ReactorSpace, {type: UpgradeType.pump});
         if(spaces[0].all(UpgradeCard).length == 0) {
@@ -494,6 +504,12 @@ export default createGame(BlueBreakthroughPlayer, MyGame, game => {
       // test phase
       eachPlayer({
         name: 'turn', do: [
+
+          ({turn}) => turn.doneActions = false,
+          whileLoop({while: ({turn}) => !turn.doneActions, do: ([
+            playerActions({ actions: powers.actionsBeforeTesting() }),
+          ])}),
+
           whileLoop({while: ({turn}) => 
             !turn.doneTesting, do: (
                 [
@@ -547,7 +563,7 @@ export default createGame(BlueBreakthroughPlayer, MyGame, game => {
         p.doneTesting = false;
         p.fundingBoost = 0;
         p.purchasedUpgrades = 0;
-        p.board.all(UpgradeCard).forEach( u => u.rotation = 0 );
+        p.space.all(UpgradeCard).forEach( u => u.rotation = 0 );
         p.board.first(LEDSpace)!.all(ResourceCube).forEach( c => c.putInto(game.first(Supply)!) );
         p.space.first(ResourceSpace)!.all(ResourceCube).forEach( c => c.putInto(game.first(Supply)!) );
 

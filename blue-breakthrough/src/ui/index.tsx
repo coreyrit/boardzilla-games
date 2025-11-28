@@ -43,7 +43,7 @@ render(setup, {
         .includes(a.name)),
         closeIf: actions => actions.some(a => 
           [
-            'chooseFunding'
+            'chooseFunding', 'chooseFundingFromDraw'
           ]
           .includes(a.name),
           ),
@@ -103,6 +103,12 @@ render(setup, {
             columns: 2, rows: 1, gap: {x:0.5, y:0},
           }
         );
+      game.all(FundingCard).layout(UpgradeCard,
+        {
+            area: { left: 5, top: 20, width: 90, height: 80 },
+            columns: 1, rows: 1, gap: {x:0, y:0},
+          }
+      )
 
       $.mainBoard.layout('cubePlate1', { area: { left: 5.5, top: 74.5, width: 10, height: 10 }});
       $.mainBoard.layout('cubePlate2', { area: { left: 22.5, top: 74.5, width: 10, height: 10 }});
