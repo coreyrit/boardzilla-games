@@ -362,24 +362,8 @@ export class MyGame extends Game<MyGame, BlueBreakthroughPlayer> {
     if([2, 4, 6].includes(round)) {
       const letter = this.game.first(LetterDeck)!.top(LetterCard)!
       letter.putInto(space);
-      switch(letter.name) {
-        case LetterName.TerminateProjectNotice:          
-          for(const p of this.game.players) {
-            let maxToken : PowerToken | null = null;
-            for(const token of p.board.first(AvailableTokenSpace)!.all(PowerToken)) {
-              if(maxToken == null) {
-                maxToken = token;
-              } else if(token.value > maxToken.value && ![TokenAbility.Publish, TokenAbility.Recall].includes(token.ability)) {
-                maxToken = token;
-              } else if(token.value == maxToken.value && maxToken.ability == TokenAbility.B && token.ability == TokenAbility.A) {
-                maxToken = token;
-              }
-            }
-            maxToken!.putInto(p.space.first(UnavailableTokenSpace)!);
-            maxToken!.showToAll();
-          }          
-          break;
-      }
+      const letters = new LetterEffects(this.game);
+      letters.applyLetter(letter);
     }
   }
 

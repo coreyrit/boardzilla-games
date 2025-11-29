@@ -1,17 +1,19 @@
 
-import { LetterCard } from "./components.js";
+import { AvailableTokenSpace, LetterCard, PowerToken, TokenAbility, UnavailableTokenSpace, UpgradeCard, UpgradeType } from "./components.js";
 import { MyGame } from "./index.js";
 
 export enum LetterName {
     TerminateProjectNotice = "Terminate Project Notice",
     BudgetFreeze = "Budget Freeze",
+    StopResearchFocusOnProfits = "Stop Research, Focus on Profits",
+    CutTestingHours = "Cut Testing Hours"
 }
 
 export const letterCards: Partial<LetterCard>[] = [
+    {name: LetterName.CutTestingHours,	effect: "Each player may use only 2 upgrades in their Test Phase (instead of all)."},
+    {name: LetterName.StopResearchFocusOnProfits,	effect: "You cannot use any Injection or Heater upgrades during Testing this round."},
     {name: LetterName.BudgetFreeze,	effect: "This round, all Upgrade cards cost +1 power."},
-    {name: LetterName.TerminateProjectNotice,	effect: "Players must place their highest available power token into the cooling pool."},    
-    {name: "Stop Research, Focus on Profits",	effect: "You cannot use any Injection or Heater upgrades during Testing this round."},
-    {name: "Cut Testing Hours",	effect: "Each player may use only 2 upgrades in their Test Phase (instead of all)."},
+    {name: LetterName.TerminateProjectNotice,	effect: "Players must place their highest available power token into the cooling pool."},        
     {name: "Mandatory Reporting",	effect: "At the end of the round, each player must discard 1 cube of their choice from their board or lose 2 ⭐."},
     {name: "Corporate Audit",	effect: "No funding cards can be used this round."},
     {name: "Equipment Maintenance",	effect: "Exhaust and Cooling upgrades do not function this round."},
@@ -35,8 +37,41 @@ export class LetterEffects {
         this.game = game
     }
 
+    upgradeForbidden(upgrade: UpgradeCard) : boolean {
+        if(this.game.hasLetter(LetterName.StopResearchFocusOnProfits) && [UpgradeType.injection, UpgradeType.heater].includes(upgrade.type)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    upgradeUseLimit() : number {
+        return this.game.hasLetter(LetterName.CutTestingHours) ? 2 : 100;
+    }
+
     upgradeTax() : number {
         return this.game.hasLetter(LetterName.BudgetFreeze) ? 1 : 0;
+    }
+
+    applyLetter(letter: LetterCard) {
+        switch(letter.name) {
+            case LetterName.TerminateProjectNotice:
+                for(const p of this.game.players) {
+                    let maxToken : PowerToken | null = null;
+                    for(const token of p.board.first(AvailableTokenSpace)!.all(PowerToken)) {
+                        if(maxToken == null) {
+                            maxToken = token;
+                        } else if(token.value > maxToken.value && ![TokenAbility.Publish, TokenAbility.Recall].includes(token.ability)) {
+                            maxToken = token;
+                        } else if(token.value == maxToken.value && maxToken.ability == TokenAbility.B && token.ability == TokenAbility.A) {
+                            maxToken = token;
+                        }
+                    }
+                    maxToken!.putInto(p.space.first(UnavailableTokenSpace)!);
+                    maxToken!.showToAll();
+                }
+            break;
+        }
     }
 }
 

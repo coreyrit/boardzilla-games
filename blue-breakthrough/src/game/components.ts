@@ -5,6 +5,7 @@ import {
 
 import { BlueBreakthroughPlayer, MyGame } from './index.js';
 import { FundingPowers } from './powers.js';
+import { LetterEffects } from './letters.js';
 
 export class MainBoard extends Space<MyGame> {
 }
@@ -198,12 +199,28 @@ export class UpgradeCard extends Piece<MyGame> {
     }
   }
 
-  public mayUse(player: BlueBreakthroughPlayer) : boolean {
+  public mayUse(player: BlueBreakthroughPlayer, ignoreCost: boolean = false) : boolean {
+    const letters = new LetterEffects(this.game);
+    const powers = new FundingPowers(this.game);
+
+    if(letters.upgradeForbidden(this)) {
+      return false;
+    }
+
+    if(player.space.all(UpgradeCard).filter(x => x.rotation == 90).length >= letters.upgradeUseLimit()) {
+      return false;
+    }    
+    
     if(this.rotation != 0) {
       return false;
     } else if(this.input == undefined) {
       return true;
-    }    
+    } 
+    
+    if(ignoreCost) {
+      return true;
+    }
+
     let requirementsMet: number = 0;
     const playerCubes = player.space.first(ResourceSpace)!.all(ResourceCube);
     for(const color of this.input) {
@@ -213,7 +230,6 @@ export class UpgradeCard extends Piece<MyGame> {
         requirementsMet++;
       }
     }
-    const powers = new FundingPowers(this.game);
     return requirementsMet >= (this.input.length - powers.bonusResourceDiscount(player, this));
   }
 

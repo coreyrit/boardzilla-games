@@ -83,6 +83,13 @@ export class FundingPowers {
           case FundingName.PublicDemonstration:
             this.game.followUp({name: 'usePublicDemonstration'});
             return true;
+          case FundingName.ConverterVoucher:
+            if(player.space.all(UpgradeCard).filter(x => x.mayUse(player, true)).length > 0) {
+                this.game.followUp({name: 'useConverterVoucher'});
+                return true;
+            } else {
+                return false;
+            }
           case FundingName.SelectiveDraw:
             const bag = this.game.first(CubeBag)!;
             const supply = this.game.first(Supply)!;
@@ -349,19 +356,12 @@ export class FundingPowers {
 
             useConverterVoucher: (player) => action<{upgrade: UpgradeCard}>({
                 prompt: FundingName.ConverterVoucher,
-                condition: player.hasFunding(FundingName.ConverterVoucher)
-            }).chooseFrom(
-                "choice", ['Yes', 'No'], 
+                // condition: player.hasFunding(FundingName.ConverterVoucher)
+            }).chooseOnBoard(
+                'upgrade', player.space.all(UpgradeCard).filter(x => x.input.length > 0 && x.mayUse(player, true)),
                 { skipIf: 'never' }
-    )       .do(({choice, upgrade})  => {
-                if(choice == "Yes") {
-                    player.space.first(FundingCard, {name: FundingName.ConverterVoucher})!.rotation = 90;
-                    player.useUpgrade(upgrade, false);
-                } else {
-                    if(upgrade.mayUse(player)) {
-                        player.useUpgrade(upgrade);
-                    }
-                }
+            ).do(({upgrade})  => {
+                player.useUpgrade(upgrade, false);
             }),
 
             useEfficiencyAudit: (player) => action<{upgrade: UpgradeCard}>({
