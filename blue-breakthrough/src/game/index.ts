@@ -184,6 +184,7 @@ export class BlueBreakthroughPlayer extends Player<MyGame, BlueBreakthroughPlaye
 
 export class MyGame extends Game<MyGame, BlueBreakthroughPlayer> {
   public round = 1;
+  public roundStarted = false;
   public priority = 1;
   public currentAction : TokenAction = TokenAction.Funding;
 
@@ -473,11 +474,24 @@ export default createGame(BlueBreakthroughPlayer, MyGame, game => {
 
       // start round
       ({round}) => game.round = round,
+      ({round}) => game.roundStarted = true,
+
+      // move round tracker
+      ({round}) => game.first(RoundTracker)!.putInto(game.first(RoundSpace, {round: round})!), 
+
+      // move priority pawn
+      () => game.first(PriorityPawn)!.putInto(game.players[game.priority-1].space),
+      
+      // reset players
+      () => game.players.forEach(x => {
+        game.getStorageCubes(x).forEach(c => c.putInto(x.space.first(ResourceSpace)!));
+        x.space.all(UpgradeCard).forEach(u => u.outOfOrder = false);
+      }),
+
+      // draw letter
       ({round}) => game.drawLetter(round),
       
-      () => game.first(PriorityPawn)!.putInto(game.players[game.priority-1].space),
-      ({round}) => game.first(RoundTracker)!.putInto(game.first(RoundSpace, {round: round})!),
-      () => game.players.forEach(x => game.getStorageCubes(x).forEach(c => c.putInto(x.space.first(ResourceSpace)!))),      
+      // fill board
       ({round}) => game.addRoundCubes(round),
       () => game.drawCubesToPlates(),
       () => game.fillFunding(),
@@ -486,14 +500,25 @@ export default createGame(BlueBreakthroughPlayer, MyGame, game => {
       // place tokens
       eachPlayer({
         name: 'turn', do: [
+          ifElse({
+            if: () => game.hasLetter(LetterName.RevisedReportingStandards), do: [
+              playerActions({ actions: ['revisedReportingStandards']}),
+            ],
+          }), 
+          ifElse({
+            if: () => game.hasLetter(LetterName.MoraleComitteeInitiative), do: [
+              playerActions({ actions: ['moraleComitteeInitiative']}),
+            ],
+          }), 
+          () => game.roundStarted = false,
           whileLoop({while: ({turn}) => 
             turn.board.all(PowerTokenSpace).all(PowerToken).length < 3, do: (
-                [
+                [                  
                   playerActions({ actions: ['placeToken']}),
                 ]
           )})          
         ]
-      }),        
+      }),
 
       // reveal tokens
       () => game.all(PowerTokenSpace).all(PowerToken).forEach( x=> x.showToAll() ),

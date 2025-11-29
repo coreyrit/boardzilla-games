@@ -29,7 +29,7 @@ import { PlayerSpace, PlayerBoard, ResourceCube, CubeBag, Supply, CubeColor, Fun
  } from './components.js';
 import { FundingPowers } from "./powers.js";
 import { FundingName } from "./funding.js";
-import { LetterEffects } from "./letters.js";
+import { LetterEffects, LetterName } from "./letters.js";
 export type SingleArgument = string | number | boolean | GameElement | Player;
 export type Argument = SingleArgument | SingleArgument[];
 
@@ -382,7 +382,7 @@ export class Actions {
     }),
 
     mandatoryReporting: (player) => action({
-      prompt: "Mandatory Reporting",
+      prompt: LetterName.MandatoryReporting,
     }).chooseOnBoard(
       'cubes', player.board.all(StorageSpace).all(ResourceCube),
       { min: 0, max: 1, skipIf: 'never' }
@@ -390,9 +390,31 @@ export class Actions {
       if(cubes.length > 0) {
         cubes[0].putInto(game.first(Supply)!);
       } else {
-        player.scorePoints(-2);
+        player.scorePoints(-3);
       }
     }), 
+
+    revisedReportingStandards: (player) => action({
+      prompt: LetterName.RevisedReportingStandards      
+    }).chooseOnBoard(
+      'upgrade', player.space.all(UpgradeCard),
+      { skipIf: 'never' }
+    ).do(({ upgrade }) => {
+      upgrade.outOfOrder = true;
+    }),
+    
+    moraleComitteeInitiative: (player) => action({
+      prompt: LetterName.MoraleComitteeInitiative,
+      condition: player.score >= 2
+    }).chooseFrom(
+      "choice", ['Purchase Cube', 'Skip'], 
+      { skipIf: 'never' }
+    ).do(({ choice }) => {
+      if(choice == "Purchase Cube") {
+        player.scorePoints(-2);
+        game.followUp({name: 'chooseAnyResource'});
+      }
+    }),
 
         }
     }

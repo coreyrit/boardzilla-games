@@ -155,6 +155,7 @@ export class UpgradeCard extends Piece<MyGame> {
   public input: CubeColor[];
   public output: CubeColor[];
   public points: number = 0;
+  public outOfOrder: boolean = false;
 
   public initialize() {    
     this.input = [];
@@ -202,6 +203,10 @@ export class UpgradeCard extends Piece<MyGame> {
   public mayUse(player: BlueBreakthroughPlayer, ignoreCost: boolean = false) : boolean {
     const letters = new LetterEffects(this.game);
     const powers = new FundingPowers(this.game);
+
+    if(this.outOfOrder) {
+      return false;
+    }
 
     if(letters.upgradeForbidden(this)) {
       return false;

@@ -19,9 +19,13 @@ export enum LetterName {
     SupplierDelay = "Supplier Delay",
     PerformanceEvaluation = "Performance Evaluation",
     InternalCompetitionPolicy = "Internal Competition Policy",
+    RevisedReportingStandards = "Revised Reporting Standards",
+    MoraleComitteeInitiative = "Morale Committee Initiative"
 }
 
 export const letterCards: Partial<LetterCard>[] = [
+    {name: LetterName.MoraleComitteeInitiative,	effect: "Each player may spend 2 ⭐ to gain any cube to start the round."},
+    {name: LetterName.RevisedReportingStandards,	effect: "All players must choose one upgrade on their board that cannot be used this round."},
     {name: LetterName.InternalCompetitionPolicy,	effect: "Players may only use upgrade types that all players have (e.g. exhaust allowed only if all players have exhaust upgrades)"},
     {name: LetterName.PerformanceEvaluation,	effect: "You must score at least 7 ⭐ this round during Testing, otherwise you score nothing."},
     {name: LetterName.SupplierDelay,	effect: "Only reveal 3 cubes per player this round.  Randomly draw and discard 1 cube per player as well."},
@@ -33,15 +37,11 @@ export const letterCards: Partial<LetterCard>[] = [
     {name: LetterName.ResearchReallocation,	effect: "Each player places all of their stored cubes into the bag and draws back an equal number."},
     {name: LetterName.EquipmentMaintenance,	effect: "You cannot use any Exhaust or Cooling upgrades during Testing this round."},
     {name: LetterName.CorporateAudit,	effect: "No funding cards can be used this round."},
-    {name: LetterName.MandatoryReporting,	effect: "At the end of the round, each player must discard 1 cube of their choice from their board or lose 2 ⭐."},
+    {name: LetterName.MandatoryReporting,	effect: "At the end of the round, each player must discard 1 cube of their choice from their board or lose 3 ⭐."},
     {name: LetterName.CutTestingHours,	effect: "Each player may use only 2 upgrades in their Test Phase (instead of all)."},
     {name: LetterName.StopResearchFocusOnProfits,	effect: "You cannot use any Injection or Heater upgrades during Testing this round."},
     {name: LetterName.BudgetFreeze,	effect: "This round, all Upgrade cards cost +1 power."},
-    {name: LetterName.TerminateProjectNotice,	effect: "Players must place their highest available power token into the cooling pool."},
-    
-    
-    {name: "Revised Reporting Standards",	effect: "All players must choose one upgrade on their board that cannot be used this round."},
-    {name: "Morale Committee Initiative",	effect: "Each player must give one stored cube to the player on their right. If they cannot they lose 1 ⭐."},    
+    {name: LetterName.TerminateProjectNotice,	effect: "Players must place their highest available power token into the cooling pool."},    
 ]
 
 export class LetterEffects {

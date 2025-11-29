@@ -41,7 +41,7 @@ render(setup, {
       { area: { left: 0, top: 10, width: 100, height: 90 }, openDirection: 'up', tab: 'Players',
         openIf: actions => actions.some(a => 
           [
-            'flipLED', 'placeToken', 'recallToken'
+            'flipLED', 'placeToken', 'recallToken', 'revisedReportingStandards', "moraleComitteeInitiative"
           ]
         .includes(a.name)),
         closeIf: actions => actions.some(a => 
@@ -53,12 +53,13 @@ render(setup, {
       });
 
       game.layoutAsDrawer($.reference as Space<MyGame>, 
-      { area: { left: 0, top: 0, width: 60, height: 24 }, openDirection: 'down', tab: 'Reference',
+      { area: { left: 0, top: 0, width: 60, height: 24 }, openDirection: 'down', tab: 'Reference'        
       });
       $.reference.layout(LEDCard, {columns: 2, rows: 1, gap: {x:2, y: 0}, scaling: 'fill'})
 
       game.layoutAsDrawer($.letters as Space<MyGame>, 
       { area: { left: 60, top: 0, width: 40, height: 24 }, openDirection: 'down', tab: 'Letter',
+        openIf: actions => game.round % 2 == 0 && game.roundStarted,
       });
       $.letters.layout(LetterCard, {columns: 1, rows: 1, gap: {x:0, y: 0}, scaling: 'fill'})
 
