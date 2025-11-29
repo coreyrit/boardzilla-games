@@ -29,16 +29,19 @@ import { PlayerSpace, PlayerBoard, ResourceCube, CubeBag, Supply, CubeColor, Fun
  } from './components.js';
 import { FundingPowers } from "./powers.js";
 import { FundingName } from "./funding.js";
+import { LetterEffects } from "./letters.js";
 export type SingleArgument = string | number | boolean | GameElement | Player;
 export type Argument = SingleArgument | SingleArgument[];
 
 export class Actions {
     game: MyGame
     powers: FundingPowers
+    letters: LetterEffects
 
-    constructor(game: MyGame, powers: FundingPowers) {
+    constructor(game: MyGame, powers: FundingPowers, letters: LetterEffects) {
         this.game = game
         this.powers = powers;
+        this.letters = letters;
     }
 
     getActions(): Record<string, (player: BlueBreakthroughPlayer) => Action<Record<string, Argument>>> {
@@ -222,9 +225,10 @@ export class Actions {
       condition: game.getPlayerToken(player, TokenAction.Upgrade).mayPeformAction(),
       prompt: "Choose Upgrades (" + game.getPlayerToken(player, TokenAction.Upgrade).value + ")"
     }).chooseOnBoard(
-      'upgrades', game.all(UpgradeSpace).all(UpgradeCard).filter(x => x.cost-this.powers.bonusUpgradeDiscout(player) <= game.getPlayerToken(player, TokenAction.Upgrade).value),
+      'upgrades', game.all(UpgradeSpace).all(UpgradeCard)
+        .filter(x => x.cost-this.powers.bonusUpgradeDiscout(player)+this.letters.upgradeTax() <= game.getPlayerToken(player, TokenAction.Upgrade).value),
       { min: 1, max: 2, skipIf: 'never', validate: ({upgrades}) => {
-        const upgradeSum = upgrades.reduce((sum, x) => sum + x.cost-this.powers.bonusUpgradeDiscout(player), 0)
+        const upgradeSum = upgrades.reduce((sum, x) => sum + x.cost-this.powers.bonusUpgradeDiscout(player)+this.letters.upgradeTax(), 0)
         return upgradeSum <= game.getPlayerToken(player, TokenAction.Upgrade).value;
       } }
     ).do(({ upgrades }) => {

@@ -26,6 +26,7 @@ import { PlayerSpace, PlayerBoard, ResourceCube, CubeBag, Supply, CubeColor, Fun
 
 import './style.scss';
 import { FundingPowers } from '../game/powers.js';
+import { LetterEffects } from '../game/letters.js';
 
 render(setup, {
   settings: {
@@ -246,6 +247,7 @@ render(setup, {
         );
 
       const powers = new FundingPowers(game);
+      const letters = new LetterEffects(game);
       game.all(UpgradeCard).appearance({render: x => ( 
         <div className='UpgradeCard'>
           <svg viewBox="0 0 100% 100%" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
@@ -254,7 +256,7 @@ render(setup, {
 
             <text x="17%" y="12%" text-anchor="middle" dominant-baseline="middle" 
               fill={game.players.current() != null && powers.bonusUpgradeDiscout(game.players.current()!) > 0 ? "red" : "black"} font-size="60%">
-              {x.cost - (game.players.current() != null ? powers.bonusUpgradeDiscout(game.players.current()!): 0)}
+              {x.cost - (game.players.current() != null ? powers.bonusUpgradeDiscout(game.players.current()!): 0) + letters.upgradeTax()}
             </text>
 
             <foreignObject x="28%" y="3%" width="70%" height="20%" fontSize="40%">

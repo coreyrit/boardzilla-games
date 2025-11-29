@@ -34,6 +34,7 @@ import { buildGame } from './build.js';
 import { Actions } from './actions.js';
 import { FundingPowers } from './powers.js';
 import { FundingName } from './funding.js';
+import { LetterEffects, LetterName } from './letters.js';
 
 export class BlueBreakthroughPlayer extends Player<MyGame, BlueBreakthroughPlayer> {
     space: PlayerSpace
@@ -188,6 +189,10 @@ export class MyGame extends Game<MyGame, BlueBreakthroughPlayer> {
     } else {
       return playerIndex - this.priority;
     }
+  }
+
+  public hasLetter(name: LetterName) : boolean {
+    return this.first(LetterSpace)!.all(LetterCard).length > 0 && this.first(LetterSpace)!.first(LetterCard)!.name == name;
   }
 
   public symbolFromColor(color: CubeColor) : string {
@@ -355,7 +360,26 @@ export class MyGame extends Game<MyGame, BlueBreakthroughPlayer> {
     const space = this.game.first(LetterSpace)!;
     space.all(LetterCard).forEach(x => x.putInto(this.game.first(Supply)!));
     if([2, 4, 6].includes(round)) {
-      this.game.first(LetterDeck)!.top(LetterCard)!.putInto(space);
+      const letter = this.game.first(LetterDeck)!.top(LetterCard)!
+      letter.putInto(space);
+      switch(letter.name) {
+        case LetterName.TerminateProjectNotice:          
+          for(const p of this.game.players) {
+            let maxToken : PowerToken | null = null;
+            for(const token of p.board.first(AvailableTokenSpace)!.all(PowerToken)) {
+              if(maxToken == null) {
+                maxToken = token;
+              } else if(token.value > maxToken.value && ![TokenAbility.Publish, TokenAbility.Recall].includes(token.ability)) {
+                maxToken = token;
+              } else if(token.value == maxToken.value && maxToken.ability == TokenAbility.B && token.ability == TokenAbility.A) {
+                maxToken = token;
+              }
+            }
+            maxToken!.putInto(p.space.first(UnavailableTokenSpace)!);
+            maxToken!.showToAll();
+          }          
+          break;
+      }
     }
   }
 
@@ -449,7 +473,8 @@ export default createGame(BlueBreakthroughPlayer, MyGame, game => {
   buildGame(game);
   
   const powers = new FundingPowers(game);
-  const actions = new Actions(game, powers);  
+  const letters = new LetterEffects(game);
+  const actions = new Actions(game, powers, letters);  
   const allActions = Object.assign({}, actions.getActions(), powers.getActions());
   game.defineActions(allActions);
 
