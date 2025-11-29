@@ -320,9 +320,9 @@ export class MyGame extends Game<MyGame, BlueBreakthroughPlayer> {
   }
 
   public drawCubesToPlates() {
-    
+    const letters = new LetterEffects(this.game);
       for(var i = 1; i <= this.players.length; i++) {
-        for(var j = 0; j < 4; j++) {
+        for(var j = 0; j < letters.cubesPerPlate(); j++) {
           const bag = this.first(CubeBag)!;
           const plate = this.first(CubePlate, {index: i})!;
           if(bag.all(ResourceCube).length > 0) {
@@ -473,14 +473,15 @@ export default createGame(BlueBreakthroughPlayer, MyGame, game => {
 
       // start round
       ({round}) => game.round = round,
+      ({round}) => game.drawLetter(round),
+      
       () => game.first(PriorityPawn)!.putInto(game.players[game.priority-1].space),
       ({round}) => game.first(RoundTracker)!.putInto(game.first(RoundSpace, {round: round})!),
       () => game.players.forEach(x => game.getStorageCubes(x).forEach(c => c.putInto(x.space.first(ResourceSpace)!))),      
       ({round}) => game.addRoundCubes(round),
       () => game.drawCubesToPlates(),
       () => game.fillFunding(),
-      ({round}) => game.fillUpgrades(round),
-      ({round}) => game.drawLetter(round),
+      ({round}) => game.fillUpgrades(round),      
 
       // place tokens
       eachPlayer({
