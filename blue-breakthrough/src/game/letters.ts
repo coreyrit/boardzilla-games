@@ -11,9 +11,11 @@ export enum LetterName {
     CorporateAudit = "Corporate Audit",
     EquipmentMaintenance = "Equipment Maintenance",
     ResearchReallocation = "Research Reallocation",
+    OvertimeRestrictions = "Overtime Restrictions",
 }
 
 export const letterCards: Partial<LetterCard>[] = [
+    {name: LetterName.OvertimeRestrictions,	effect: "Power tokens of 4 have no function this round."},
     {name: LetterName.ResearchReallocation,	effect: "Each player places all of their stored cubes into the bag and draws back an equal number."},
     {name: LetterName.EquipmentMaintenance,	effect: "You cannot use any Exhaust or Cooling upgrades during Testing this round."},
     {name: LetterName.CorporateAudit,	effect: "No funding cards can be used this round."},
@@ -21,8 +23,7 @@ export const letterCards: Partial<LetterCard>[] = [
     {name: LetterName.CutTestingHours,	effect: "Each player may use only 2 upgrades in their Test Phase (instead of all)."},
     {name: LetterName.StopResearchFocusOnProfits,	effect: "You cannot use any Injection or Heater upgrades during Testing this round."},
     {name: LetterName.BudgetFreeze,	effect: "This round, all Upgrade cards cost +1 power."},
-    {name: LetterName.TerminateProjectNotice,	effect: "Players must place their highest available power token into the cooling pool."},                    
-    {name: "Overtime Restrictions",	effect: "Power tokens of 4 cannot be used this round."},
+    {name: LetterName.TerminateProjectNotice,	effect: "Players must place their highest available power token into the cooling pool."},                        
     {name: "Cost-Cutting Measures",	effect: "Players cannot buy upgrades of cost 3 or 4 this round."},    
     {name: "Inventory Shortage",	effect: "When Gathering each player may only take up to 2 cubes regardless of power."},
     {name: "New Safety Protocols",	effect: "You may not use Exhaust upgrades this round. Cooling upgrades instead grant +1⭐ if used."},
@@ -45,6 +46,10 @@ export class LetterEffects {
         if(this.game.hasLetter(LetterName.MandatoryReporting)) {
             this.game.followUp({name: 'mandatoryReporting'});
         }
+    }
+
+    tokenForbidden(token: PowerToken) : boolean {
+        return this.game.hasLetter(LetterName.OvertimeRestrictions) && token.val == 4;
     }
 
     upgradeForbidden(upgrade: UpgradeCard) : boolean {
@@ -77,9 +82,9 @@ export class LetterEffects {
                     for(const token of p.board.first(AvailableTokenSpace)!.all(PowerToken)) {
                         if(maxToken == null) {
                             maxToken = token;
-                        } else if(token.value > maxToken.value && ![TokenAbility.Publish, TokenAbility.Recall].includes(token.ability)) {
+                        } else if(token.value() > maxToken.value() && ![TokenAbility.Publish, TokenAbility.Recall].includes(token.ability())) {
                             maxToken = token;
-                        } else if(token.value == maxToken.value && maxToken.ability == TokenAbility.B && token.ability == TokenAbility.A) {
+                        } else if(token.value() == maxToken.value() && maxToken.ability() == TokenAbility.B && token.ability() == TokenAbility.A) {
                             maxToken = token;
                         }
                     }

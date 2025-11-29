@@ -71,21 +71,28 @@ export class Actions {
     ).do(({ funding }) => {
       funding.putInto(player.space);
       player.space.first(PowerTokenSpace, {action: TokenAction.Funding})!.complete = true;
-      player.scorePoints(game.getPlayerToken(player, TokenAction.Funding).value);
+      player.scorePoints(game.getPlayerToken(player, TokenAction.Funding).value());
     }).message(`{{player}} took {{funding}}.`),
 
-    publishFunding: (player) => action({
+    publish: (player) => action({
       prompt: 'Publish',
-      condition: game.getPlayerToken(player, TokenAction.Funding).ability == TokenAbility.Publish
+      condition: game.getPlayerToken(player, game.currentAction).ability() == TokenAbility.Publish
     }).do(() => {
-      player.space.first(PowerTokenSpace, {action: TokenAction.Funding})!.complete = true;
+      player.space.first(PowerTokenSpace, {action: game.currentAction})!.complete = true;
     }),
 
-    recallFunding: (player) => action({
-      prompt: 'Recall',
-      condition: game.getPlayerToken(player, TokenAction.Funding).ability == TokenAbility.Recall
+    recall: (player) => action({
+      prompt: 'Publish',
+      condition: game.getPlayerToken(player, game.currentAction).ability() == TokenAbility.Recall
     }).do(() => {
-      player.space.first(PowerTokenSpace, {action: TokenAction.Funding})!.complete = true;
+      player.space.first(PowerTokenSpace, {action: game.currentAction})!.complete = true;
+    }),
+
+    forbidden: (player) => action({
+      prompt: 'Publish',
+      condition: game.getPlayerToken(player, game.currentAction).ability() == TokenAbility.Forbidden
+    }).do(() => {
+      player.space.first(PowerTokenSpace, {action: game.currentAction})!.complete = true;
     }),
 
     discardFunding: (player) => action<{upgrade: UpgradeCard}>({
@@ -139,7 +146,7 @@ export class Actions {
     }).chooseOnBoard(
       'token', player.board.all(PowerTokenSpace).all(PowerToken)
         .concat(player.board.first(UnavailableTokenSpace)!.all(PowerToken))
-        .filter(x => x.ability != TokenAbility.Recall),
+        .filter(x => x.ability() != TokenAbility.Recall),
       { skipIf: 'never' }
     ).do(({ token }) => {
       // player.scorePoints(player.space.first(UnavailableTokenSpace)!.all(PowerToken).length);
@@ -164,13 +171,13 @@ export class Actions {
 
     chooseResources: (player) => action({
       condition: game.getPlayerToken(player, TokenAction.Resources).mayPeformAction(),
-      prompt: "Gain Resources (" + (game.getPlayerToken(player, TokenAction.Resources).value + this.powers.bonusGainResource(player)) + ")"
+      prompt: "Gain Resources (" + (game.getPlayerToken(player, TokenAction.Resources).value() + this.powers.bonusGainResource(player)) + ")"
     }).chooseOnBoard(
       'plates', game.all(CubePlate).filter(x => x.all(ResourceCube).length > 0),
       { min: 1, max: 1 + this.powers.bonusPlateSelection(player), skipIf: 'never' }
     ).chooseOnBoard(
       'cubes', ({plates}) => plates[0].all(ResourceCube).concat(plates.length > 1 ? plates[1].all(ResourceCube) : []),
-      { number: ({plates}) => Math.min(game.getPlayerToken(player, TokenAction.Resources).value + this.powers.bonusGainResource(player),
+      { number: ({plates}) => Math.min(game.getPlayerToken(player, TokenAction.Resources).value() + this.powers.bonusGainResource(player),
         plates.reduce((sum, current) => sum + current.all(ResourceCube).length, 0)) }
     ).do(({ plates, cubes }) => {      
       
@@ -208,29 +215,15 @@ export class Actions {
       plate.all(ResourceCube).forEach( c=> c.putInto(game.first(Supply)!) );
     }),
 
-    publishResources: (player) => action({
-      prompt: 'Publish',
-      condition: game.getPlayerToken(player, TokenAction.Resources).ability == TokenAbility.Publish
-    }).do(() => {
-      player.space.first(PowerTokenSpace, {action: TokenAction.Resources})!.complete = true;
-    }),
-
-    recallResources: (player) => action({
-      prompt: 'Recall',
-      condition: game.getPlayerToken(player, TokenAction.Resources).ability == TokenAbility.Recall
-    }).do(() => {
-      player.space.first(PowerTokenSpace, {action: TokenAction.Resources})!.complete = true;
-    }),
-
     chooseUpgrades: (player) => action({
       condition: game.getPlayerToken(player, TokenAction.Upgrade).mayPeformAction(),
-      prompt: "Choose Upgrades (" + game.getPlayerToken(player, TokenAction.Upgrade).value + ")"
+      prompt: "Choose Upgrades (" + game.getPlayerToken(player, TokenAction.Upgrade).value() + ")"
     }).chooseOnBoard(
       'upgrades', game.all(UpgradeSpace).all(UpgradeCard)
-        .filter(x => x.cost-this.powers.bonusUpgradeDiscout(player)+this.letters.upgradeTax() <= game.getPlayerToken(player, TokenAction.Upgrade).value),
+        .filter(x => x.cost-this.powers.bonusUpgradeDiscout(player)+this.letters.upgradeTax() <= game.getPlayerToken(player, TokenAction.Upgrade).value()),
       { min: 1, max: 2, skipIf: 'never', validate: ({upgrades}) => {
         const upgradeSum = upgrades.reduce((sum, x) => sum + x.cost-this.powers.bonusUpgradeDiscout(player)+this.letters.upgradeTax(), 0)
-        return upgradeSum <= game.getPlayerToken(player, TokenAction.Upgrade).value;
+        return upgradeSum <= game.getPlayerToken(player, TokenAction.Upgrade).value();
       } }
     ).do(({ upgrades }) => {
       player.purchasedUpgrades = upgrades.length;
@@ -324,20 +317,6 @@ export class Actions {
       funding.putInto(player.space);
       this.game.first(DrawUpgradeSpace)!.all(FundingCard).forEach(x => x.putInto(this.game.first(Supply)!));
 
-    }),
-
-    publishUpgrades: (player) => action({
-      prompt: 'Publish',
-      condition: game.getPlayerToken(player, TokenAction.Upgrade).ability == TokenAbility.Publish
-    }).do(() => {
-      player.space.first(PowerTokenSpace, {action: TokenAction.Upgrade})!.complete = true;
-    }),
-
-    recallUpgrades: (player) => action({
-      prompt: 'Recall',
-      condition: game.getPlayerToken(player, TokenAction.Upgrade).ability == TokenAbility.Recall
-    }).do(() => {
-      player.space.first(PowerTokenSpace, {action: TokenAction.Upgrade})!.complete = true;
     }),
 
     end: () => action({

@@ -109,15 +109,15 @@ export function buildGame(game: MyGame) {
     const availableTokens = playerBoard.create(AvailableTokenSpace, 'availableTokens' + i);
     const unavailableTokens = playerBoard.create(UnavailableTokenSpace, 'unavailableTokens' + i);
 
-    availableTokens.create(PowerToken, 'token0-' + i, {value: 0, ability: TokenAbility.None});
-    availableTokens.create(PowerToken, 'token1-' + i, {value: 1, ability: TokenAbility.None});
-    availableTokens.create(PowerToken, 'token2a-' + i, {value: 2, ability: TokenAbility.A});
-    availableTokens.create(PowerToken, 'token2b-' + i, {value: 2, ability: TokenAbility.B});
-    availableTokens.create(PowerToken, 'token3a-' + i, {value: 3, ability: TokenAbility.A});
-    availableTokens.create(PowerToken, 'token3b-' + i, {value: 3, ability: TokenAbility.B});
-    availableTokens.create(PowerToken, 'token4-' + i, {value: 4, ability: TokenAbility.None});
-    availableTokens.create(PowerToken, 'tokenPublish-' + i, {value: 0, ability: TokenAbility.Publish});
-    availableTokens.create(PowerToken, 'tokenRecall-' + i, {value: 0, ability: TokenAbility.Recall});
+    availableTokens.create(PowerToken, 'token0-' + i, {val: 0, ab: TokenAbility.None});
+    availableTokens.create(PowerToken, 'token1-' + i, {val: 1, ab: TokenAbility.None});
+    availableTokens.create(PowerToken, 'token2a-' + i, {val: 2, ab: TokenAbility.A});
+    availableTokens.create(PowerToken, 'token2b-' + i, {val: 2, ab: TokenAbility.B});
+    availableTokens.create(PowerToken, 'token3a-' + i, {val: 3, ab: TokenAbility.A});
+    availableTokens.create(PowerToken, 'token3b-' + i, {val: 3, ab: TokenAbility.B});
+    availableTokens.create(PowerToken, 'token4-' + i, {val: 4, ab: TokenAbility.None});
+    availableTokens.create(PowerToken, 'tokenPublish-' + i, {val: 0, ab: TokenAbility.Publish});
+    availableTokens.create(PowerToken, 'tokenRecall-' + i, {val: 0, ab: TokenAbility.Recall});
 
     availableTokens.all(PowerToken).forEach( x => {
       x.showOnlyTo(player)
@@ -196,5 +196,5 @@ export function buildGame(game: MyGame) {
   for (const letterCard of letterCards) {
     const card = letterDeck.create(LetterCard, letterCard.name!.replace(' ', '_'), letterCard);
   }
-  letterDeck.shuffle();
+  // letterDeck.shuffle();
 }

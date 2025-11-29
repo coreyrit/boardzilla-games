@@ -268,15 +268,26 @@ export enum TokenAbility {
   A,
   B,
   Publish,
-  Recall
+  Recall,
+  Forbidden
 }
 export class PowerToken extends Piece<MyGame> {
   flipped: boolean = false;
-  value: number;
-  ability: TokenAbility;
+  val: number;
+  ab: TokenAbility;
+
+  public value() : number {
+    const letters = new LetterEffects(this.game);
+    return letters.tokenForbidden(this) ? 0 : this.val;
+  }
+
+  public ability() : TokenAbility {
+    const letters = new LetterEffects(this.game);
+    return letters.tokenForbidden(this) ? TokenAbility.Forbidden : this.ab;
+  }
 
   public mayPeformAction() : boolean {
-    return ![TokenAbility.Publish, TokenAbility.Recall].includes(this.ability);
+    return ![TokenAbility.Publish, TokenAbility.Recall, TokenAbility.Forbidden].includes(this.ability());
   }
 
   public getColor() : string {
@@ -291,10 +302,10 @@ export class PowerToken extends Piece<MyGame> {
 
   public getSymbol() : string {
     let symbol = "";
-    if(this.value != undefined &&![TokenAbility.Publish, TokenAbility.Recall].includes(this.ability)) {
-      symbol += this.value.toString();
+    if(this.val != undefined &&![TokenAbility.Publish, TokenAbility.Recall].includes(this.ab)) {
+      symbol += this.val.toString();
     }
-    switch(this.ability) {
+    switch(this.ab) {
       case TokenAbility.A:
         symbol += "A";
         break;

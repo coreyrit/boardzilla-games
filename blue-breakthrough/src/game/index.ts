@@ -185,6 +185,7 @@ export class BlueBreakthroughPlayer extends Player<MyGame, BlueBreakthroughPlaye
 export class MyGame extends Game<MyGame, BlueBreakthroughPlayer> {
   public round = 1;
   public priority = 1;
+  public currentAction : TokenAction = TokenAction.Funding;
 
   public getPriorityDistance(player: BlueBreakthroughPlayer): number {
     const playerIndex = this.players.indexOf(player) + 1;
@@ -389,10 +390,10 @@ export class MyGame extends Game<MyGame, BlueBreakthroughPlayer> {
     playersRemaining.forEach( p=> {
       const token = p.board.first(PowerTokenSpace, {action: action})!.first(PowerToken)!
       
-      const tokenValue = token.value + (action == TokenAction.Funding ? p.fundingBoost : 0);
+      const tokenValue = token.value() + (action == TokenAction.Funding ? p.fundingBoost : 0);
       const playerScore = p.getScore();
       const distance = this.getPriorityDistance(p);
-      const tokenSum = p.board.all(PowerTokenSpace).reduce((sum, x) => sum + x.first(PowerToken)!.value, 0);
+      const tokenSum = p.board.all(PowerTokenSpace).reduce((sum, x) => sum + x.first(PowerToken)!.value(), 0);
 
       let secondTieBreaker: boolean = false;
       switch(action) {
@@ -407,7 +408,7 @@ export class MyGame extends Game<MyGame, BlueBreakthroughPlayer> {
           break;
       }
 
-      if(bestToken == null || [TokenAbility.Publish, TokenAbility.Recall].includes(bestToken.ability)) {
+      if(bestToken == null || [TokenAbility.Publish, TokenAbility.Recall, TokenAbility.Forbidden].includes(bestToken.ability())) {
         bestToken = token; bestValue = tokenValue; nextPlayer = p; bestScore = playerScore; bestSum = tokenSum; bestPriority = distance;
         this.game.message("Initializing turn: " + nextPlayer);
       } else {
@@ -418,17 +419,17 @@ export class MyGame extends Game<MyGame, BlueBreakthroughPlayer> {
         } 
         // then check abilities if tied
         else if(tokenValue == bestValue && 
-            token.ability == TokenAbility.A && bestToken.ability == TokenAbility.B) {
+            token.ability() == TokenAbility.A && bestToken.ability() == TokenAbility.B) {
           bestToken = token; bestValue = tokenValue; nextPlayer = p; bestScore = playerScore; bestSum = tokenSum; bestPriority = distance;
           this.game.message("A vs B: " + nextPlayer);
         } 
         // then second tie-breakerif still tied
-        else if(tokenValue == bestValue && token.ability == bestToken.ability && secondTieBreaker) {
+        else if(tokenValue == bestValue && token.ability() == bestToken.ability() && secondTieBreaker) {
           bestToken = token; bestValue = tokenValue; nextPlayer = p; bestScore = playerScore; bestSum = tokenSum; bestPriority = distance;
           this.game.message("2nd tie-breaker: " + nextPlayer);
         }         
         // final tie goes to priority pawn
-        else if(tokenValue == bestValue && token.ability == bestToken.ability && !secondTieBreaker && distance < bestPriority) {
+        else if(tokenValue == bestValue && token.ability() == bestToken.ability() && !secondTieBreaker && distance < bestPriority) {
           bestToken = token; bestValue = tokenValue; nextPlayer = p; bestScore = playerScore; bestSum = tokenSum; bestPriority = distance;
           this.game.message("Priority: " + nextPlayer);
         }
@@ -496,7 +497,7 @@ export default createGame(BlueBreakthroughPlayer, MyGame, game => {
       // reveal tokens
       () => game.all(PowerTokenSpace).all(PowerToken).forEach( x=> x.showToAll() ),
 
-      // before funding
+      // before funding      
       eachPlayer({name: 'turn', do: [
        ({turn}) => turn.doneActions = false,
         whileLoop({while: ({turn}) => !turn.doneActions, do: ([
@@ -505,33 +506,36 @@ export default createGame(BlueBreakthroughPlayer, MyGame, game => {
       ]}),
 
       // resolve funding
+      () => game.currentAction = TokenAction.Funding,
       whileLoop({while: () => game.playersRemaining(TokenAction.Funding).length > 0, do: ([  
         eachPlayer({name: 'turn', do: [
           ifElse({
             if: ({turn}) => game.nextTurnOrder(TokenAction.Funding) == turn, do: [
-              playerActions({ actions: ['chooseFunding', 'publishFunding', 'recallFunding']}),
+              playerActions({ actions: ['chooseFunding', 'publish', 'recall', 'forbidden']}),
             ],
           }),   
         ]}),
       ])}),
 
       // resolve resources
+      () => game.currentAction = TokenAction.Resources,
       whileLoop({while: () => game.playersRemaining(TokenAction.Resources).length > 0, do: ([  
         eachPlayer({name: 'turn', do: [
           ifElse({
             if: ({turn}) => game.nextTurnOrder(TokenAction.Resources) == turn, do: [
-              playerActions({ actions: ['chooseResources', 'publishResources', 'recallResources']}),
+              playerActions({ actions: ['chooseResources', 'publish', 'recall', 'forbidden']}),
             ],
           }),   
         ]}),
       ])}),
 
       // resolve upgrades
+      () => game.currentAction = TokenAction.Upgrade,
       whileLoop({while: () => game.playersRemaining(TokenAction.Upgrade).length > 0, do: ([  
         eachPlayer({name: 'turn', do: [
           ifElse({
             if: ({turn}) => game.nextTurnOrder(TokenAction.Upgrade) == turn, do: [
-              playerActions({ actions: ['chooseUpgrades', 'publishUpgrades', 'recallUpgrades', 'drawUpgrade']}),
+              playerActions({ actions: ['chooseUpgrades', 'publish', 'recall', 'forbidden', 'drawUpgrade']}),
               playerActions({ actions: powers.actionsAfterUpgrades() }),
             ],
           }),                     
