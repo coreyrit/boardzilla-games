@@ -136,6 +136,12 @@ export class BlueBreakthroughPlayer extends Player<MyGame, BlueBreakthroughPlaye
     }
 
     public placeUpgrade(upgrade: UpgradeCard) : void {
+      for(const player of this.game.players) {
+        if(player != this && player.hasFunding(FundingName.PatentLicense) && player.space.all(UpgradeCard, {type: upgrade.type}).length > 0) {
+          player.scorePoints(1);
+        }
+      }
+
       if(this.hasFunding(FundingName.TemporarySlot)) {
         this.game.followUp({name: 'useTemporarySlot', args: {upgrade: upgrade}});
       } else {

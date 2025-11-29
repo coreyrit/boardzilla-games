@@ -30,10 +30,12 @@ export enum FundingName {
     BackupGenerator = "Backup Generator",
     ResearchCollaboration = "Research Collaboration",
     OverclockedReactor = "Overclocked Reactor",
-    PublicDemonstration = "Public Demonstration"
+    PublicDemonstration = "Public Demonstration",
+    PatentLicense = "Patent License"
 }
 
 export const fundingCards: Partial<FundingCard>[] = [
+    {name: FundingName.PatentLicense,	type: FundingType.Permanent,	effect: 'When another player buys an upgrade of a type you own gain +1 ⭐.'},        
     {name: FundingName.PublicDemonstration,	type: FundingType.Ongoing,	effect: 'Chose an upgrade to turn without using it and gain ⭐ equal to its cost.'},
     {name: FundingName.OverclockedReactor,	type: FundingType.Ongoing,	effect: 'Use one of the upgrades remaining in the market during testing.'},
     {name: FundingName.ResearchCollaboration,	type: FundingType.Ongoing,	effect: 'During the Test phase copy the effect of one other player’s Trap upgrade.'},
@@ -62,8 +64,7 @@ export const fundingCards: Partial<FundingCard>[] = [
     {name: FundingName.PowerSwap,	type: FundingType.Instant,	effect: 'Move all tokens in your cooldown pool to your available pool.'},                
     {name: FundingName.MarketSurge,	type: FundingType.Permanent,	effect: 'When gaining cubes, take +1 (max 4) above the power assigned.'},
     {name: FundingName.VictoryResearch,	type: FundingType.Instant,	effect: 'Score 5 ⭐ immediately.'},
-    {name: FundingName.InvestorTrust,	type: FundingType.Ongoing,	effect: 'Once per round, discard another funding card to gain any 2 cubes instead of 1.'},    
-    {name: 'Patent License',	type: FundingType.Permanent,	effect: 'When another player buys an upgrade of a type you own gain +1 ⭐.'},        
+    {name: FundingName.InvestorTrust,	type: FundingType.Ongoing,	effect: 'Once per round, discard another funding card to gain any 2 cubes instead of 1.'},        
     {name: FundingName.PreciseTools,	type: FundingType.Ongoing,	effect: 'When converting cubes with an upgrade you may change one cube in the result to any color.'},    
     {name: 'Maintenance Delay',	type: FundingType.Instant,	effect: 'Ignore an Employer Letter’s negative effect.'},            
 ]

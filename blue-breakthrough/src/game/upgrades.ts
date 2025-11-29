@@ -2,6 +2,7 @@ import { CubeColor, UpgradeCard, UpgradeType } from "./components.js";
 
 export const upgradeCards: Partial<UpgradeCard>[] = [
 {stage: 1,	name: 'Bench Trap',	type: UpgradeType.trap,	effect: 'Gain ⬜',	cost: 3},
+{stage: 1,	name: 'Vacuum Trap',	type: UpgradeType.trap,	effect: 'Gain 🟫',	cost: 2},
 {stage: 1,	name: 'Primary Heater',	type: UpgradeType.heater,	effect: '⬜ 🟧 → 🟦 ✳️',	cost: 4},
 {stage: 1,	name: 'Early Vent',	type: UpgradeType.exhaust,	effect: '🟧 → ⭐',	cost: 2},
 {stage: 1,	name: 'Sapphire Cooler',	type: UpgradeType.cooling,	effect: '⬜ → 🟫 ⭐',	cost: 2},
@@ -16,7 +17,6 @@ export const upgradeCards: Partial<UpgradeCard>[] = [
 {stage: 1,	name: 'ZnSe Pump',	type: UpgradeType.pump,	effect: '🟧 → ⬜ 🟦',	cost: 4},
 {stage: 1,	name: 'Crystal Pump',	type: UpgradeType.pump,	effect: '🟫 → ⬜ 🟧',	cost: 3},
 {stage: 1,	name: 'Prototype Pump',	type: UpgradeType.pump,	effect: '⬜ → 🟧 🟫',	cost: 2},
-{stage: 1,	name: 'Vacuum Trap',	type: UpgradeType.trap,	effect: 'Gain 🟫',	cost: 2},
 {stage: 2,	name: 'Bandgap Cooler',	type: UpgradeType.cooling,	effect: '🟥 → ⬛ ⭐',	cost: 1},
 {stage: 2,	name: 'Stabilizer Cooler',	type: UpgradeType.cooling,	effect: '⬛ → 🟦 ⭐',	cost: 1},
 {stage: 2,	name: 'Blue Cooler',	type: UpgradeType.cooling,	effect: '🟦 → 🟧 ⭐',	cost: 1},
