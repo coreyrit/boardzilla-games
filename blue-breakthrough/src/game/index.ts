@@ -447,10 +447,10 @@ export default createGame(BlueBreakthroughPlayer, MyGame, game => {
     forLoop({ name: 'round', initial: 1, next: round => round + 1, while: round => round <= 7, do: [
 
       // start round
+      ({round}) => game.round = round,
       () => game.first(PriorityPawn)!.putInto(game.players[game.priority-1].space),
       ({round}) => game.first(RoundTracker)!.putInto(game.first(RoundSpace, {round: round})!),
-      () => game.players.forEach(x => game.getStorageCubes(x).forEach(c => c.putInto(x.space.first(ResourceSpace)!))),
-      ({round}) => game.round = round,
+      () => game.players.forEach(x => game.getStorageCubes(x).forEach(c => c.putInto(x.space.first(ResourceSpace)!))),      
       ({round}) => game.addRoundCubes(round),
       () => game.drawCubesToPlates(),
       () => game.fillFunding(),
@@ -575,6 +575,7 @@ export default createGame(BlueBreakthroughPlayer, MyGame, game => {
         p.space.first(ResourceSpace)!.all(ResourceCube).forEach( c => c.putInto(game.first(Supply)!) );
 
         p.space.all(FundingCard, {type:FundingType.Ongoing}).forEach(x => x.rotation = 0);
+        p.space.all(FundingCard, {type:FundingType.Permanent}).forEach(x => x.rotation = 0);
       }),
       () => {
         game.priority++;

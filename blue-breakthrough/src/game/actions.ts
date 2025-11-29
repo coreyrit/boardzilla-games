@@ -138,7 +138,8 @@ export class Actions {
         .filter(x => x.ability != TokenAbility.Recall),
       { skipIf: 'never' }
     ).do(({ token }) => {
-      player.scorePoints(player.space.first(UnavailableTokenSpace)!.all(PowerToken).length);
+      // player.scorePoints(player.space.first(UnavailableTokenSpace)!.all(PowerToken).length);
+      player.scorePoints(game.round);
       token.showOnlyTo(player);
       token.putInto(player.space.first(AvailableTokenSpace)!);
     }),
@@ -368,15 +369,13 @@ export class Actions {
     chooseCostCube: (player) => action<{upgrade: UpgradeCard}>({
       prompt: 'Choose Cube'
     }).chooseOnBoard(
-      'cube', player.space.first(ResourceSpace)!.all(ResourceCube),
+      'cube', ({upgrade}) => player.space.first(ResourceSpace)!.all(ResourceCube)
+        .slice(0, player.space.first(ResourceSpace)!.all(ResourceCube).length - upgrade.output.length),
       { skipIf: 'never' }
     ).do(({upgrade, cube}) => {
       const supply = game.first(Supply)!;
       const resources = player.space.first(ResourceSpace)!
       cube.putInto(supply);
-      for(const color of upgrade.output) {
-          supply.first(ResourceCube, {color: color})!.putInto(resources);
-        }
     }),
 
     useUpgrade: (player) => action({

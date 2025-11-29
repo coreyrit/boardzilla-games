@@ -177,12 +177,12 @@ export function buildGame(game: MyGame) {
   for (const fundingCard of fundingCards) {
     fundingDeck.create(FundingCard, fundingCard.name!.replace(' ', '_'), fundingCard);
   }
-  // fundingDeck.shuffle();
+  fundingDeck.shuffle();
 
   const upgradeDeck = game.create(UpgradeDeck, "upgradeDeck");
   for (const upgradeCard of upgradeCards) {
     const card = upgradeDeck.create(UpgradeCard, upgradeDeck.name!.replace(' ', '_'), upgradeCard);
     card.initialize();
   }
-  // upgradeDeck.shuffle();
+  upgradeDeck.shuffle();
 }

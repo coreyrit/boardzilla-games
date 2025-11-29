@@ -255,6 +255,7 @@ export class FundingPowers {
                 const supply = game.first(Supply)!;
                 const color = game.colorFromSymbol(choice);
                 supply.first(ResourceCube, {color: color})!.putInto(player.space.first(ResourceSpace)!);
+                player.space.first(FundingCard, {name: FundingName.PowerRefund})!.rotation = 90;
             }),
 
             usePriorityWindow: (player) => action({

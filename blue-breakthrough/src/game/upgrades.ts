@@ -58,7 +58,7 @@ export const upgradeCards: Partial<UpgradeCard>[] = [
 {stage: 3,	name: 'Photon Heater',	type: UpgradeType.heater,	effect: '🟥 ⬛ → 🟨 ✳️',	cost: 1},
 {stage: 3,	name: 'Indium Heater',	type: UpgradeType.heater,	effect: '⬛ 🟦 → 🟨 ✳️',	cost: 2},
 {stage: 3,	name: 'Quantum Heater',	type: UpgradeType.heater,	effect: '🟦 ⬜ → 🟨 ✳️',	cost: 3},
-{stage: 3,	name: 'Laser Heater',	type: UpgradeType.heater,	effect: '🟨 🟥 → 🟨 ✳️',	cost: 1},
+{stage: 3,	name: 'Laser Heater',	type: UpgradeType.heater,	effect: '🟧 🟥 → 🟨 ✳️',	cost: 1},
 {stage: 3,	name: 'Crystal Heater',	type: UpgradeType.heater,	effect: '🟥 🟦 → 🟨 ✳️',	cost: 2},
 {stage: 3,	name: 'Indium Injection',	type: UpgradeType.injection,	effect: '✳️ → 🟨 🟥',	cost: 4},
 {stage: 3,	name: 'Indium Injection II',	type: UpgradeType.injection,	effect: '✳️ → 🟨 🟦',	cost: 4},

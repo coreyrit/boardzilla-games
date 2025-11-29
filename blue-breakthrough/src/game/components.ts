@@ -310,6 +310,22 @@ export class LEDSpace extends Space<MyGame> {
       }
 
     }
+
+    switch(led.letter) {
+      case "A":
+        let count = 0;
+        for(const layer of led.layers) {
+          const row = this.first(LEDRow, {index: layer.index})!;
+          const cubeColors = row.all(ResourceCube).map(x => x.color);
+          if(led.isComplete(layer, cubeColors)) {
+            count++;
+          }
+        }
+        if(count == 7) {
+          player.scorePoints(10);
+        }
+        break;
+    }
   }
 }
 
