@@ -83,7 +83,13 @@ export class BlueBreakthroughPlayer extends Player<MyGame, BlueBreakthroughPlaye
       }
       powers.usingUpgrade(this, upgrade);
       this.gainUpgradeBenefit(upgrade);
-      upgrade.rotation = 90;
+
+      if(this.hasFunding(FundingName.ReactorGrant) && upgrade.type == UpgradeType.heater) {
+        this.scorePoints(2);
+      }
+      if(!this.hasFunding(FundingName.BackupGenerator) || upgrade.type != UpgradeType.exhaust) {
+        upgrade.rotation = 90;
+      }
     }
 
     public scorePoints(points: number) {

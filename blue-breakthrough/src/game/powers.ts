@@ -74,6 +74,15 @@ export class FundingPowers {
           case FundingName.ExperimentalCatalyst:
             this.game.followUp({name: 'useExperimentalCatalyst'});
             return true; 
+          case FundingName.ResearchCollaboration:
+            this.game.followUp({name: 'useResearchCollaboration'});
+            return true; 
+          case FundingName.OverclockedReactor:
+            this.game.followUp({name: 'useOverclockedReactor'});
+            return true;
+          case FundingName.PublicDemonstration:
+            this.game.followUp({name: 'usePublicDemonstration'});
+            return true;
           case FundingName.SelectiveDraw:
             const bag = this.game.first(CubeBag)!;
             const supply = this.game.first(Supply)!;
@@ -279,6 +288,39 @@ export class FundingPowers {
                 const supply = game.first(Supply)!;
                 cube.putInto(supply);
                 game.followUp({name: 'chooseAnyResource'});
+            }),
+
+            useResearchCollaboration: (player) => action({
+                prompt: FundingName.ResearchCollaboration,
+                // condition: player.hasFunding(FundingName.ResearchCollaboration)
+            }).chooseOnBoard(
+                'upgrade', game.players.filter(p => p != player).flatMap(x => x.space.all(UpgradeCard, {type: UpgradeType.trap})),
+                { skipIf: 'never' }
+            ).do(({upgrade}) => {
+               const cube = game.first(Supply)!.first(ResourceCube, {color: upgrade.output[0]})!;
+               cube.putInto(player.space.first(ResourceSpace)!);
+            }),
+
+            useOverclockedReactor: (player) => action({
+                prompt: FundingName.OverclockedReactor,
+                // condition: player.hasFunding(FundingName.OverclockedReactor)
+            }).chooseOnBoard(
+                'upgrade', $.mainBoard.all(UpgradeCard).filter(x => x.mayUse(player)),
+                { skipIf: 'never' }
+            ).do(({upgrade}) => {
+               player.useUpgrade(upgrade);
+               upgrade.rotation = 0;
+            }),
+
+            usePublicDemonstration: (player) => action({
+                prompt: FundingName.PublicDemonstration,
+                // condition: player.hasFunding(FundingName.PublicDemonstration)
+            }).chooseOnBoard(
+                'upgrade', player.space.all(UpgradeCard).filter(x => x.rotation == 0),
+                { skipIf: 'never' }
+            ).do(({upgrade}) => {
+               upgrade.rotation = 90;
+               player.scorePoints(upgrade.cost);
             }),
 
             useEmergencyReset: (player) => action({

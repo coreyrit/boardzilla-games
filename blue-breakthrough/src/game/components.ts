@@ -197,7 +197,7 @@ export class UpgradeCard extends Piece<MyGame> {
       return true;
     }    
     let requirementsMet: number = 0;
-    const playerCubes = this.container(PlayerSpace)!.first(ResourceSpace)!.all(ResourceCube);
+    const playerCubes = player.space.first(ResourceSpace)!.all(ResourceCube);
     for(const color of this.input) {
       if((color != CubeColor.Any && !playerCubes.map( x => x.color ).includes(color)) || playerCubes.length == 0) {
         

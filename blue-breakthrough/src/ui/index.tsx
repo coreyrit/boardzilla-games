@@ -43,7 +43,7 @@ render(setup, {
         .includes(a.name)),
         closeIf: actions => actions.some(a => 
           [
-            'chooseFunding', 'chooseFundingFromDraw'
+            'chooseFunding', 'chooseFundingFromDraw', 'useOverclockedReactor'
           ]
           .includes(a.name),
           ),

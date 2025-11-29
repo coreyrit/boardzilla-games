@@ -184,5 +184,5 @@ export function buildGame(game: MyGame) {
     const card = upgradeDeck.create(UpgradeCard, upgradeDeck.name!.replace(' ', '_'), upgradeCard);
     card.initialize();
   }
-  upgradeDeck.shuffle();
+  // upgradeDeck.shuffle();
 }

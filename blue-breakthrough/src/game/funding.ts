@@ -25,10 +25,20 @@ export enum FundingName {
     ReagentVoucher = "Reagent Voucher",
     TemporarySlot = "Temporary Slot",
     ExperimentalCatalyst = "Experimental Catalyst",
-    EfficiencyAudit = "Efficiency Audit"
+    EfficiencyAudit = "Efficiency Audit",
+    ReactorGrant = "Reactor Grant",
+    BackupGenerator = "Backup Generator",
+    ResearchCollaboration = "Research Collaboration",
+    OverclockedReactor = "Overclocked Reactor",
+    PublicDemonstration = "Public Demonstration"
 }
 
 export const fundingCards: Partial<FundingCard>[] = [
+    {name: FundingName.PublicDemonstration,	type: FundingType.Ongoing,	effect: 'Chose an upgrade to turn without using it and gain ⭐ equal to its cost.'},
+    {name: FundingName.OverclockedReactor,	type: FundingType.Ongoing,	effect: 'Use one of the upgrades remaining in the market during testing.'},
+    {name: FundingName.ResearchCollaboration,	type: FundingType.Ongoing,	effect: 'During the Test phase copy the effect of one other player’s Trap upgrade.'},
+    {name: FundingName.BackupGenerator,	type: FundingType.Permanent,	effect: 'Your exhaust upgrade can be used an unlimited number of times during Testing.'},
+    {name: FundingName.ReactorGrant,	type: FundingType.Permanent,	effect: 'When using a Heater upgrade also gain +2 ⭐'},
     {name: FundingName.EfficiencyAudit,	type: FundingType.Permanent,	effect: 'Your upgrades that require 2 cubes now only require 1 cube (your choice).'},    
     {name: FundingName.ExperimentalCatalyst,	type: FundingType.Ongoing,	effect: 'Convert one cube of your choice into any color once per round.'},
     {name: FundingName.ReagentVoucher,	type: FundingType.Ongoing,	effect: 'Take either 1 white or 1 blue cube from the pool each round.'},
@@ -53,12 +63,7 @@ export const fundingCards: Partial<FundingCard>[] = [
     {name: FundingName.MarketSurge,	type: FundingType.Permanent,	effect: 'When gaining cubes, take +1 (max 4) above the power assigned.'},
     {name: FundingName.VictoryResearch,	type: FundingType.Instant,	effect: 'Score 5 ⭐ immediately.'},
     {name: FundingName.InvestorTrust,	type: FundingType.Ongoing,	effect: 'Once per round, discard another funding card to gain any 2 cubes instead of 1.'},    
-    {name: 'Patent License',	type: FundingType.Permanent,	effect: 'When another player buys an upgrade of a type you own gain +1 ⭐.'},    
-    {name: 'Backup Generator',	type: FundingType.Permanent,	effect: 'Your exhaust upgrade can be used an unlimited number of times during Testing.'},
-    {name: FundingName.PreciseTools,	type: FundingType.Ongoing,	effect: 'When converting cubes with an upgrade you may change one cube in the result to any color.'},
-    {name: 'Reactor Grant',	type: FundingType.Permanent,	effect: 'When using a Heater upgrade also gain +1 ⭐'},
-    {name: 'Maintenance Delay',	type: FundingType.Instant,	effect: 'Ignore an Employer Letter’s negative effect.'},
-    {name: 'Research Collaboration',	type: FundingType.Ongoing,	effect: 'During the Test phase copy the effect of one other player’s Trap upgrade.'},
-    {name: 'Overclocked Reactor',	type: FundingType.Ongoing,	effect: 'Use one of the upgrades remaining in the market during testing.'},
-    {name: 'Public Demonstration',	type: FundingType.Ongoing,	effect: 'Chose an upgrade to turn without using it and gain ⭐ equal to its cost.'},
+    {name: 'Patent License',	type: FundingType.Permanent,	effect: 'When another player buys an upgrade of a type you own gain +1 ⭐.'},        
+    {name: FundingName.PreciseTools,	type: FundingType.Ongoing,	effect: 'When converting cubes with an upgrade you may change one cube in the result to any color.'},    
+    {name: 'Maintenance Delay',	type: FundingType.Instant,	effect: 'Ignore an Employer Letter’s negative effect.'},            
 ]
