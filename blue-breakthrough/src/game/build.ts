@@ -17,11 +17,15 @@ import { PlayerSpace, PlayerBoard, ResourceCube, CubeBag, Supply, CubeColor, Fun
   PublishToken,
   ReferenceSpace,
   PriorityPawn,
-  DrawUpgradeSpace
+  DrawUpgradeSpace,
+  LetterDeck,
+  LetterSpace,
+  LetterCard
  } from './components.js';
 import { fundingCards } from './funding.js';
 import { upgradeCards } from './upgrades.js';
 import { Space } from '@boardzilla/core';
+import { letterCards } from './letters.js';
 
 function createGaAs(space: Space<MyGame>, name: string) : LEDCard {
   const GaAs = space.create(LEDCard, name, { 
@@ -64,6 +68,8 @@ export function buildGame(game: MyGame) {
   const reference = game.create(ReferenceSpace, "reference");
   createGaN(reference, 'refaN_A');
   createGaAs(reference, 'refGaAs');
+
+  const letters = game.create(LetterSpace, "letters");
 
   const drawnUpgrades = game.create(DrawUpgradeSpace, "drawnUpgrades");
 
@@ -181,8 +187,14 @@ export function buildGame(game: MyGame) {
 
   const upgradeDeck = game.create(UpgradeDeck, "upgradeDeck");
   for (const upgradeCard of upgradeCards) {
-    const card = upgradeDeck.create(UpgradeCard, upgradeDeck.name!.replace(' ', '_'), upgradeCard);
+    const card = upgradeDeck.create(UpgradeCard, upgradeCard.name!.replace(' ', '_'), upgradeCard);
     card.initialize();
   }
   upgradeDeck.shuffle();
+
+  const letterDeck = game.create(LetterDeck, "letterDeck");
+  for (const letterCard of letterCards) {
+    const card = letterDeck.create(LetterCard, letterCard.name!.replace(' ', '_'), letterCard);
+  }
+  letterDeck.shuffle();
 }

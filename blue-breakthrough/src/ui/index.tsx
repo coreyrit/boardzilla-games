@@ -20,6 +20,8 @@ import { PlayerSpace, PlayerBoard, ResourceCube, CubeBag, Supply, CubeColor, Fun
   ReferenceSpace,
   PriorityPawn,
   DrawUpgradeSpace,
+  LetterCard,
+  LetterSpace,
  } from '../game/components.js';
 
 import './style.scss';
@@ -50,9 +52,14 @@ render(setup, {
       });
 
       game.layoutAsDrawer($.reference as Space<MyGame>, 
-      { area: { left: 0, top: 0, width: 75, height: 28 }, openDirection: 'down', tab: 'Reference',
+      { area: { left: 0, top: 0, width: 60, height: 24 }, openDirection: 'down', tab: 'Reference',
       });
       $.reference.layout(LEDCard, {columns: 2, rows: 1, gap: {x:2, y: 0}, scaling: 'fill'})
+
+      game.layoutAsDrawer($.letters as Space<MyGame>, 
+      { area: { left: 60, top: 0, width: 40, height: 24 }, openDirection: 'down', tab: 'Letter',
+      });
+      $.letters.layout(LetterCard, {columns: 1, rows: 1, gap: {x:0, y: 0}, scaling: 'fill'})
 
       var index = 0;
       let tabSpaces: Record<string, Space<MyGame> | string> = {};
@@ -89,6 +96,7 @@ render(setup, {
       game.layout('supply', { area: { left: 0, top: 0, width: 0, height: 0 }});
       game.layout('fundingDeck', { area: { left: 0, top: 0, width: 0, height: 0 }});
       game.layout('upgradeDeck', { area: { left: 0, top: 0, width: 0, height: 0 }});
+      game.layout('letterDeck', { area: { left: 0, top: 0, width: 0, height: 0 }});
 
       // game.layout('drawnUpgrades', { area: { left: 40, top: 10, width: 80, height: 50 }});
       game.all(DrawUpgradeSpace).layout(UpgradeCard, 
@@ -165,6 +173,12 @@ render(setup, {
           </svg>
       </div>
       )});
+      game.all(LetterSpace).appearance({ render: x => ( 
+      <div className='LetterSpace'>
+        <svg viewBox="0 0 100 80" xmlns="http://www.w3.org/2000/svg">      
+          </svg>
+      </div>
+      )});
 
 
       game.all(CubePlate).appearance({render: x => ( 
@@ -210,6 +224,20 @@ render(setup, {
           </svg>
         </div>
       )});
+
+      game.all(LetterCard).appearance({render: x => ( 
+        <div className='LetterCard'>
+          <svg viewBox="0 0 100% 100%" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+            <rect x="0" y="0" width="100%" height="100%" fill='white' stroke="black" strokeWidth="3" />
+            <foreignObject x="2%" y="3%" width="96%" height="60%" fontSize="50%">
+              <div><center><b>{x.name}</b></center></div>
+              <br />
+              <div><center>{x.effect}</center></div>
+            </foreignObject>
+          </svg>
+        </div>
+      )});
+
       game.all(FundingCard).layout(ResourceCube, 
           {
             area: { left: 5, top: 20, width: 90, height: 60 },

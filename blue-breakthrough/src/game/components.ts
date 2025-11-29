@@ -22,6 +22,9 @@ export class RoundSpace extends Space<MyGame> {
 export class ReferenceSpace extends Space<MyGame> {
 }
 
+export class LetterSpace extends Space<MyGame> {
+}
+
 export class RoundTracker extends Piece<MyGame> {
 }
 
@@ -123,6 +126,11 @@ export enum FundingType {
 export class FundingCard extends Piece<MyGame> {
   public name: string;
   public type: FundingType;
+  public effect: string;
+}
+
+export class LetterCard extends Piece<MyGame> {
+  public name: string;
   public effect: string;
 }
 
@@ -234,6 +242,9 @@ export class FundingDeck extends Space<MyGame> {
 }
 
 export class UpgradeDeck extends Space<MyGame> {
+}
+
+export class LetterDeck extends Space<MyGame> {
 }
 
 export enum TokenAbility {

@@ -25,7 +25,10 @@ import { PlayerSpace, PlayerBoard, ResourceCube, CubeBag, Supply, CubeColor, Fun
   RoundTracker,
   PublishToken,
   PriorityPawn,
-  FundingType
+  FundingType,
+  LetterSpace,
+  LetterCard,
+  LetterDeck
  } from './components.js';
 import { buildGame } from './build.js';
 import { Actions } from './actions.js';
@@ -348,6 +351,14 @@ export class MyGame extends Game<MyGame, BlueBreakthroughPlayer> {
     }
   }
 
+  public drawLetter(round: number) {
+    const space = this.game.first(LetterSpace)!;
+    space.all(LetterCard).forEach(x => x.putInto(this.game.first(Supply)!));
+    if([2, 4, 6].includes(round)) {
+      this.game.first(LetterDeck)!.top(LetterCard)!.putInto(space);
+    }
+  }
+
   public playersRemaining(action: TokenAction): BlueBreakthroughPlayer[] {
     return this.all(PowerTokenSpace, 
       {action: action, complete: false}).map(x => x.container(PlayerSpace)!.player!);
@@ -455,6 +466,7 @@ export default createGame(BlueBreakthroughPlayer, MyGame, game => {
       () => game.drawCubesToPlates(),
       () => game.fillFunding(),
       ({round}) => game.fillUpgrades(round),
+      ({round}) => game.drawLetter(round),
 
       // place tokens
       eachPlayer({
