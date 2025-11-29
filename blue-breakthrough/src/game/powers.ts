@@ -28,6 +28,7 @@ import { PlayerSpace, PlayerBoard, ResourceCube, CubeBag, Supply, CubeColor, Fun
   DrawUpgradeSpace
  } from './components.js';
 import { FundingName } from "./funding.js";
+import { LetterEffects } from "./letters.js";
 export type SingleArgument = string | number | boolean | GameElement | Player;
 export type Argument = SingleArgument | SingleArgument[];
 
@@ -67,6 +68,11 @@ export class FundingPowers {
     }
 
     public useAbility(player: BlueBreakthroughPlayer, funding: FundingCard) : boolean {
+        const letters = new LetterEffects(this.game);
+        if(letters.fundingForbidden()) {
+            return false;
+        }
+
         switch(funding.name) {
           case FundingName.ReagentVoucher:
             this.game.followUp({name: 'useReagentVoucher'});

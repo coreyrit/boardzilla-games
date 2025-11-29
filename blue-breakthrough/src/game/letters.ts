@@ -1,23 +1,27 @@
 
-import { AvailableTokenSpace, LetterCard, PowerToken, TokenAbility, UnavailableTokenSpace, UpgradeCard, UpgradeType } from "./components.js";
-import { MyGame } from "./index.js";
+import { AvailableTokenSpace, CubeBag, LetterCard, PowerToken, ResourceCube, ResourceSpace, TokenAbility, UnavailableTokenSpace, UpgradeCard, UpgradeType } from "./components.js";
+import { BlueBreakthroughPlayer, MyGame } from "./index.js";
 
 export enum LetterName {
     TerminateProjectNotice = "Terminate Project Notice",
     BudgetFreeze = "Budget Freeze",
     StopResearchFocusOnProfits = "Stop Research, Focus on Profits",
-    CutTestingHours = "Cut Testing Hours"
+    CutTestingHours = "Cut Testing Hours",
+    MandatoryReporting = "Mandatory Reporting",
+    CorporateAudit = "Corporate Audit",
+    EquipmentMaintenance = "Equipment Maintenance",
+    ResearchReallocation = "Research Reallocation",
 }
 
 export const letterCards: Partial<LetterCard>[] = [
+    {name: LetterName.ResearchReallocation,	effect: "Each player places all of their stored cubes into the bag and draws back an equal number."},
+    {name: LetterName.EquipmentMaintenance,	effect: "You cannot use any Exhaust or Cooling upgrades during Testing this round."},
+    {name: LetterName.CorporateAudit,	effect: "No funding cards can be used this round."},
+    {name: LetterName.MandatoryReporting,	effect: "At the end of the round, each player must discard 1 cube of their choice from their board or lose 2 ⭐."},
     {name: LetterName.CutTestingHours,	effect: "Each player may use only 2 upgrades in their Test Phase (instead of all)."},
     {name: LetterName.StopResearchFocusOnProfits,	effect: "You cannot use any Injection or Heater upgrades during Testing this round."},
     {name: LetterName.BudgetFreeze,	effect: "This round, all Upgrade cards cost +1 power."},
-    {name: LetterName.TerminateProjectNotice,	effect: "Players must place their highest available power token into the cooling pool."},        
-    {name: "Mandatory Reporting",	effect: "At the end of the round, each player must discard 1 cube of their choice from their board or lose 2 ⭐."},
-    {name: "Corporate Audit",	effect: "No funding cards can be used this round."},
-    {name: "Equipment Maintenance",	effect: "Exhaust and Cooling upgrades do not function this round."},
-    {name: "Research Reallocation",	effect: "Each player places all of their stored cubes into the bag and draws back an equal number."},
+    {name: LetterName.TerminateProjectNotice,	effect: "Players must place their highest available power token into the cooling pool."},                    
     {name: "Overtime Restrictions",	effect: "Power tokens of 4 cannot be used this round."},
     {name: "Cost-Cutting Measures",	effect: "Players cannot buy upgrades of cost 3 or 4 this round."},    
     {name: "Inventory Shortage",	effect: "When Gathering each player may only take up to 2 cubes regardless of power."},
@@ -37,12 +41,24 @@ export class LetterEffects {
         this.game = game
     }
 
+    finishTesting(player: BlueBreakthroughPlayer) {
+        if(this.game.hasLetter(LetterName.MandatoryReporting)) {
+            this.game.followUp({name: 'mandatoryReporting'});
+        }
+    }
+
     upgradeForbidden(upgrade: UpgradeCard) : boolean {
         if(this.game.hasLetter(LetterName.StopResearchFocusOnProfits) && [UpgradeType.injection, UpgradeType.heater].includes(upgrade.type)) {
+            return true;
+        } else if(this.game.hasLetter(LetterName.EquipmentMaintenance) && [UpgradeType.exhaust, UpgradeType.cooling].includes(upgrade.type)) {
             return true;
         } else {
             return false;
         }
+    }
+
+    fundingForbidden() : boolean {
+        return this.game.hasLetter(LetterName.CorporateAudit);
     }
 
     upgradeUseLimit() : number {
@@ -70,6 +86,22 @@ export class LetterEffects {
                     maxToken!.putInto(p.space.first(UnavailableTokenSpace)!);
                     maxToken!.showToAll();
                 }
+            case LetterName.ResearchReallocation:
+                let myMap = new Map<BlueBreakthroughPlayer, number>();
+                const bag = this.game.first(CubeBag)!
+                for(const p of this.game.players) {
+                    const cubes = p.space.first(ResourceSpace)!.all(ResourceCube); 
+                    myMap.set(p, cubes.length);
+                    cubes.forEach(c => c.putInto(bag));
+                }
+                bag.shuffle();
+                for(const p of this.game.players) {
+                    const n = myMap.get(p)!;
+                    for(var i = 0; i < n; i++) {
+                        bag.top(ResourceCube)!.putInto(p.space.first(ResourceSpace)!);
+                    }
+                }
+                break;
             break;
         }
     }

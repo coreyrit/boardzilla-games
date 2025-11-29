@@ -46,6 +46,10 @@ export class BlueBreakthroughPlayer extends Player<MyGame, BlueBreakthroughPlaye
     purchasedUpgrades: number = 0;
 
     public hasFunding(name: FundingName) : boolean {
+      const letters = new LetterEffects(this.game);
+      if(letters.fundingForbidden()) {
+        return false;
+      }
       return this.space.all(FundingCard, {name: name}).length > 0 && 
           this.space.first(FundingCard, {name: name})!.rotation == 0 &&
           this.space.first(FundingCard, {name: name})!.all(UpgradeCard).length == 0;

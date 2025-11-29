@@ -131,6 +131,7 @@ export class Actions {
         }
       }
       this.powers.handleLeftoverCubes(player, player.space.first(ResourceSpace)!.all(ResourceCube));
+      this.letters.finishTesting(player);
     }),
     
     recallToken: (player) => action({
@@ -399,6 +400,20 @@ export class Actions {
     }).do(() => {
       player.doneTesting = true;
     }),
+
+    mandatoryReporting: (player) => action({
+      prompt: "Mandatory Reporting",
+    }).chooseOnBoard(
+      'cubes', player.board.all(StorageSpace).all(ResourceCube),
+      { min: 0, max: 1, skipIf: 'never' }
+    ).do(({ cubes }) => {
+      if(cubes.length > 0) {
+        cubes[0].putInto(game.first(Supply)!);
+      } else {
+        player.scorePoints(-2);
+      }
+    }), 
+
         }
     }
 
