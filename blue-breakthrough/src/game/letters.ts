@@ -17,9 +17,13 @@ export enum LetterName {
     NewSafetyProtocols = "New Safety Protocols",
     BudgetReviewBoardVisit = "Budget Review Board Visit",
     SupplierDelay = "Supplier Delay",
+    PerformanceEvaluation = "Performance Evaluation",
+    InternalCompetitionPolicy = "Internal Competition Policy",
 }
 
 export const letterCards: Partial<LetterCard>[] = [
+    {name: LetterName.InternalCompetitionPolicy,	effect: "Players may only use upgrade types that all players have (e.g. exhaust allowed only if all players have exhaust upgrades)"},
+    {name: LetterName.PerformanceEvaluation,	effect: "You must score at least 7 ⭐ this round during Testing, otherwise you score nothing."},
     {name: LetterName.SupplierDelay,	effect: "Only reveal 3 cubes per player this round.  Randomly draw and discard 1 cube per player as well."},
     {name: LetterName.BudgetReviewBoardVisit,	effect: "The player(s) with the fewest upgrades gains +5 ⭐; all others lose 2 ⭐."},
     {name: LetterName.NewSafetyProtocols,	effect: "You cannot use any Pump upgrades during Testing this round."},
@@ -33,12 +37,11 @@ export const letterCards: Partial<LetterCard>[] = [
     {name: LetterName.CutTestingHours,	effect: "Each player may use only 2 upgrades in their Test Phase (instead of all)."},
     {name: LetterName.StopResearchFocusOnProfits,	effect: "You cannot use any Injection or Heater upgrades during Testing this round."},
     {name: LetterName.BudgetFreeze,	effect: "This round, all Upgrade cards cost +1 power."},
-    {name: LetterName.TerminateProjectNotice,	effect: "Players must place their highest available power token into the cooling pool."},                                
+    {name: LetterName.TerminateProjectNotice,	effect: "Players must place their highest available power token into the cooling pool."},
     
-    {name: "Revised Reporting Standards",	effect: "All players must choose one upgrade on their board that cannot be used this round."},    
-    {name: "Morale Committee Initiative",	effect: "Each player must give one stored cube to the player on their right. If they cannot they lose 1 ⭐."},
-    {name: "Performance Evaluation",	effect: "If you score at least 7 ⭐ this round during Testing, score an additional 5 ⭐."},
-    {name: "Internal Competition Policy",	effect: "Players may only use upgrade types that all players have (e.g. exhaust allowed only if all players have exhaust upgrades)"},
+    
+    {name: "Revised Reporting Standards",	effect: "All players must choose one upgrade on their board that cannot be used this round."},
+    {name: "Morale Committee Initiative",	effect: "Each player must give one stored cube to the player on their right. If they cannot they lose 1 ⭐."},    
 ]
 
 export class LetterEffects {
@@ -46,6 +49,10 @@ export class LetterEffects {
 
     constructor(game: MyGame) {
         this.game = game
+    }
+
+    testingPointCheck(points: number) : boolean {
+        return !this.game.hasLetter(LetterName.PerformanceEvaluation) || points >= 7;
     }
 
     finishTesting(player: BlueBreakthroughPlayer) {
@@ -67,7 +74,10 @@ export class LetterEffects {
     }
 
     upgradeForbidden(upgrade: UpgradeCard) : boolean {
-        if(this.game.hasLetter(LetterName.StopResearchFocusOnProfits) && [UpgradeType.injection, UpgradeType.heater].includes(upgrade.type)) {
+        if(this.game.hasLetter(LetterName.InternalCompetitionPolicy)) {
+            return this.game.players.map(p => p.space.all(UpgradeCard, {type: upgrade.type}).length > 0 ? 1 : 0)
+                .reduce((sum, current) => sum + current, 0) != this.game.players.length; 
+        } else if(this.game.hasLetter(LetterName.StopResearchFocusOnProfits) && [UpgradeType.injection, UpgradeType.heater].includes(upgrade.type)) {
             return true;
         } else if(this.game.hasLetter(LetterName.EquipmentMaintenance) && [UpgradeType.exhaust, UpgradeType.cooling].includes(upgrade.type)) {
             return true;

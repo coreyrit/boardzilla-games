@@ -328,25 +328,30 @@ export class ReactorSpace extends Space<MyGame> {
 }
 
 export class LEDSpace extends Space<MyGame> {
-  scoreTesting(player: BlueBreakthroughPlayer) : void {
+  scoreTesting(player: BlueBreakthroughPlayer) : void {    
     const led = this.first(LEDCard)!;
-    for(const layer of led.layers) {
 
+    let points : number[] = [];
+
+    for(const layer of led.layers) {
       const row = this.first(LEDRow, {index: layer.index})!;
       let cubeColors = row.all(ResourceCube).map(x => x.color);
-      // this.game.message(cubeColors.join(","));
 
       while(led.isComplete(layer, cubeColors)) {
-        // this.game.message("complete = " + led.isComplete(layer, cubeColors));
-
-        player.scorePoints(led.getScoring(layer, row));
+        points.push(led.getScoring(layer, row));
         for(const color of layer.colors) {
           const index = cubeColors.indexOf(color);
           cubeColors.splice(index, 1);
-          // this.game.message(cubeColors.join(","));
         }
       }
+    }
 
+    const letters = new LetterEffects(this.game);
+    const pointTotal = points.reduce((sum, c) => sum + c, 0);
+    if(letters.testingPointCheck(pointTotal)) {
+      for(const p of points) {
+        player.scorePoints(p);
+      }
     }
 
     switch(led.letter) {
