@@ -28,7 +28,8 @@ import { PlayerSpace, PlayerBoard, ResourceCube, CubeBag, Supply, CubeColor, Fun
   FundingType,
   LetterSpace,
   LetterCard,
-  LetterDeck
+  LetterDeck,
+  HundredToken
  } from './components.js';
 import { buildGame } from './build.js';
 import { Actions } from './actions.js';
@@ -45,6 +46,10 @@ export class BlueBreakthroughPlayer extends Player<MyGame, BlueBreakthroughPlaye
     doneActions: boolean = false;
     fundingBoost: number = 0;
     purchasedUpgrades: number = 0;
+
+    public finalScore() : number {
+      return (this.space.all(HundredToken).length * 100) + this.score;
+    }
 
     public hasFunding(name: FundingName) : boolean {
       const letters = new LetterEffects(this.game);
@@ -107,13 +112,13 @@ export class BlueBreakthroughPlayer extends Player<MyGame, BlueBreakthroughPlaye
       const oneCube = this.board.first(ScoreTrack, {tens: false})!.first(ScoreCube)!;
       const tenCube = this.board.first(ScoreTrack, {tens: true})!.first(ScoreCube)!;
 
-      let temp = this.score;
-      while(temp >= 100) {
-        temp -= 100;
+      if(this.score >= 100) {
+        this.game.first(Supply)!.first(HundredToken)!.putInto(this.space);
+        this.score -= 100;
       }
 
-      const tens = Math.floor(temp / 10);
-      const ones = temp % 10;
+      const tens = Math.floor(this.score / 10);
+      const ones = this.score % 10;
 
       oneCube.putInto(this.board.first(ScoreTrack, {tens: false})!.first(ScoreSpace, {value: ones})!);
       tenCube.putInto(this.board.first(ScoreTrack, {tens: true})!.first(ScoreSpace, {value: tens * 10})!);
@@ -451,6 +456,21 @@ export class MyGame extends Game<MyGame, BlueBreakthroughPlayer> {
     const powers = new FundingPowers(this);
     return player.board.all(StorageSpace).all(ResourceCube).concat(powers.getExtraStorageCubes(player));
   }
+
+  public announceWinner() : void {
+    var winners: BlueBreakthroughPlayer[] = []
+    var highScore: number = 0;
+
+    this.players.forEach(x => {
+      if(x.finalScore() > highScore) {
+        winners = [x];
+        highScore = x.finalScore();
+      } else if(x.finalScore() == highScore) {
+        winners.push(x);
+      }
+    });
+    this.finish(winners);
+  }
 }
 
 export default createGame(BlueBreakthroughPlayer, MyGame, game => {
@@ -648,6 +668,6 @@ export default createGame(BlueBreakthroughPlayer, MyGame, game => {
 
     ]}),
 
-    () => game.message("Game Over."),
+    () => game.announceWinner(),
   );
 });

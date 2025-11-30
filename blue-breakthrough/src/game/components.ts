@@ -390,6 +390,9 @@ export class LEDRow extends Space<MyGame> {
   public index: number;
 }
 
+export class HundredToken extends Piece<MyGame> {
+}
+
 export class LEDCard extends Piece<MyGame> {
   public letter: string;
   public special: string;

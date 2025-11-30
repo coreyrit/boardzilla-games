@@ -22,6 +22,7 @@ import { PlayerSpace, PlayerBoard, ResourceCube, CubeBag, Supply, CubeColor, Fun
   DrawUpgradeSpace,
   LetterCard,
   LetterSpace,
+  HundredToken,
  } from '../game/components.js';
 
 import './style.scss';
@@ -380,6 +381,15 @@ render(setup, {
         </div>
       )});
 
+      game.all(HundredToken).appearance({render: x => ( 
+        <div className='PriorityPawn'>
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <rect x="0" y="0" width="100" height="100" fill='white' stroke="black" strokeWidth="4" />
+            <text x="50" y="54" text-anchor="middle" dominant-baseline="middle" fill="black" font-size="50">100</text>
+          </svg>
+        </div>
+      )});
+
       game.all(PublishToken).appearance({render: x => ( 
         <div className='RoundTracker'>
           <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
@@ -453,6 +463,13 @@ render(setup, {
 
       game.all(AvailableTokenSpace).layout(PowerToken, {columns: 1, rows: 9, gap: {x:0, y: -2}})
       game.all(UnavailableTokenSpace).layout(PowerToken, {columns: 1, rows: 9, gap: {x:0, y: -2}})
+
+      game.all(PlayerSpace).layout(HundredToken, 
+          {
+            area: { left: 0.5, top: 20, width: 4, height: 30 },
+            columns: 1, rows: 5, gap: {x:0, y:0.5},
+          }
+        );
 
       game.players.forEach(x => {
         x.space.layout(PlayerBoard, {area: { left: 0, top: 2, width: 90, height: 100 }});

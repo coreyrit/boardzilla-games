@@ -20,7 +20,8 @@ import { PlayerSpace, PlayerBoard, ResourceCube, CubeBag, Supply, CubeColor, Fun
   DrawUpgradeSpace,
   LetterDeck,
   LetterSpace,
-  LetterCard
+  LetterCard,
+  HundredToken
  } from './components.js';
 import { fundingCards } from './funding.js';
 import { upgradeCards } from './upgrades.js';
@@ -177,6 +178,9 @@ export function buildGame(game: MyGame) {
     for(const color of colors) {
       supply.create(ResourceCube, color + "Cube" + i, {color: color});
     }
+  }
+  for(var i = 1; i <= 10; i++) {
+    supply.create(HundredToken, 'hundred' + i);
   }
 
   const fundingDeck = game.create(FundingDeck, "fundingDeck");
