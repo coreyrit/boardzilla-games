@@ -232,7 +232,7 @@ export class Actions {
       player.purchasedUpgrades = upgrades.length;
       upgrades.forEach( c=> player.placeUpgrade(c) );
       player.scorePoints((game.getEra() * upgrades.length) + 
-        upgrades.reduce((sum, current) => sum + this.powers.bonusUpgradePoints(current, player), 0), "Upgrades");
+        upgrades.reduce((sum, current) => sum + this.powers.bonusUpgradePoints(current, player), 0), this.powers.bonusUpgradePointsReason(player));
       player.space.first(PowerTokenSpace, {action: TokenAction.Upgrade})!.complete = true;
     }).message(`{{player}} bought {{upgrades}}`),  
 

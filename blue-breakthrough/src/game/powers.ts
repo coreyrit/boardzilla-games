@@ -62,8 +62,6 @@ export class FundingPowers {
     public usingUpgrade(player: BlueBreakthroughPlayer, upgrade: UpgradeCard) {
         if(player.hasFunding(FundingName.PreciseTools)) {
           this.game.followUp({name: 'usePrecisionTools', args: {upgrade: upgrade}});
-        } else if(player.hasFunding(FundingName.LoanedTechnician)) {
-            this.game.followUp({name: 'useLoanedTechnicial', args: {upgrade: upgrade}});
         }
     }
 
@@ -74,6 +72,9 @@ export class FundingPowers {
         }
 
         switch(funding.name) {
+            case FundingName.LoanedTechnician:
+            this.game.followUp({name: 'useLoanedTechnicial'});
+            return true;
           case FundingName.ReagentVoucher:
             this.game.followUp({name: 'useReagentVoucher'});
             return true;
@@ -176,6 +177,10 @@ export class FundingPowers {
         return player.hasFunding(FundingName.InvestorFavor) && upgrade.cost >= 3 ? 3 : 0;
     }
 
+    public bonusUpgradePointsReason(player: BlueBreakthroughPlayer) : string {
+        return player.hasFunding(FundingName.InvestorFavor) ? "Upgrades with " + FundingName.InvestorFavor : "Upgrades";
+    }
+
     public bonusUpgradeUse(player: BlueBreakthroughPlayer) : boolean {
         return player.hasFunding(FundingName.ConverterVoucher);
     }
@@ -212,23 +217,16 @@ export class FundingPowers {
                     // remove the original color
                     player.space.first(ResourceSpace)!.first(ResourceCube, {color: color})!.putInto(supply);
                     player.space.first(FundingCard, FundingName.PreciseTools)!.rotation = 90;
-
-                    if(player.hasFunding(FundingName.LoanedTechnician)) {
-                        this.game.followUp({name: 'useLoanedTechnicial', args: {upgrade: upgrade}});
-                    }
                 }
             }),
 
             useLoanedTechnicial: (player) => action<{upgrade: UpgradeCard}>({
                 prompt: FundingName.LoanedTechnician
-            }).chooseFrom(
-                "choice", ({upgrade}) => ["Yes", "No"],
-                { skipIf: 'never'}
-            ).do(({upgrade, choice}) => {
-                if(choice == "Yes") {
-                    player.space.first(FundingCard, {name: FundingName.LoanedTechnician})!.rotation = 90;  
-                    upgrade.rotation = 0; 
-                }
+            }).chooseOnBoard(
+                'upgrade', player.space.all(UpgradeCard).filter(x => x.rotation == 90),
+                { skipIf: 'never' }
+            ).do(({upgrade}) => {
+                upgrade.rotation = 0; 
             }),
 
             useMiniStorage: (player) => action({
@@ -383,7 +381,7 @@ export class FundingPowers {
 
             useInvestorBonus: (player) => action({
                 prompt: FundingName.InvestorBonus,
-                condition: player.hasFunding(FundingName.InvestorBonus)
+                condition: player.hasFunding(FundingName.InvestorBonus) && player.purchasedUpgrades > 0
             }).do(() => {
                 player.scorePoints(player.purchasedUpgrades * 4, FundingName.InvestorBonus);
                 player.space.first(FundingCard, FundingName.InvestorBonus)!.rotation = 90;          
