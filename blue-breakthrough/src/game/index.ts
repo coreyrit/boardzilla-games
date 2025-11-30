@@ -112,6 +112,15 @@ export class BlueBreakthroughPlayer extends Player<MyGame, BlueBreakthroughPlaye
       const oneCube = this.board.first(ScoreTrack, {tens: false})!.first(ScoreCube)!;
       const tenCube = this.board.first(ScoreTrack, {tens: true})!.first(ScoreCube)!;
 
+      if(this.score < 0) {
+        if(this.space.all(HundredToken).length > 0) {
+          this.space.first(HundredToken)!.putInto(this.game.first(Supply)!);
+          this.score += 100;          
+        } else {
+          this.score = 0; // can't have less than 0 points
+        }
+      }
+
       if(this.score >= 100) {
         this.game.first(Supply)!.first(HundredToken)!.putInto(this.space);
         this.score -= 100;
@@ -184,6 +193,16 @@ export class BlueBreakthroughPlayer extends Player<MyGame, BlueBreakthroughPlaye
         this.game.followUp({name: 'discardUpgrade', args: {upgrade: upgrade}});
       } else {
         upgrade.putInto(space!);
+      }
+    }
+
+    public checkCooldown() : void {
+      const cooldown = this.space.first(UnavailableTokenSpace)!;
+      if(cooldown.all(PowerToken).length >= 7) {
+        cooldown.all(PowerToken).forEach(x => {
+          x.showOnlyTo(this);
+          x.putInto(this.board.first(AvailableTokenSpace)!)
+        });
       }
     }
 }
@@ -642,12 +661,7 @@ export default createGame(BlueBreakthroughPlayer, MyGame, game => {
       () => game.players.forEach( p=> {
         const cooldown = p.board.first(UnavailableTokenSpace)!;
         p.board.all(PowerTokenSpace).all(PowerToken).forEach( t=> t.putInto(cooldown) );
-        if(cooldown.all(PowerToken).length >= 7) {
-          cooldown.all(PowerToken).forEach(x => {
-            x.showOnlyTo(p);
-            x.putInto(p.board.first(AvailableTokenSpace)!)
-          });
-        }
+        p.checkCooldown();
         p.board.all(PowerTokenSpace).forEach( s=> s.complete = false );
         p.doneTesting = false;
         p.fundingBoost = 0;

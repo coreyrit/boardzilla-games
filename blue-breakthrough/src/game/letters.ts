@@ -24,11 +24,11 @@ export enum LetterName {
 }
 
 export const letterCards: Partial<LetterCard>[] = [
-    {name: LetterName.MoraleComitteeInitiative,	effect: "Each player may spend 2 ⭐ to gain any cube to start the round."},
+    {name: LetterName.SupplierDelay,	effect: "Discarding leftover cubes when gaining resources loses points per cube instead of earning."},
+    {name: LetterName.MoraleComitteeInitiative,	effect: "Each player may spend 3 ⭐ to gain any cube to start the round or lose 1 ⭐."},
     {name: LetterName.RevisedReportingStandards,	effect: "All players must choose one upgrade on their board that cannot be used this round."},
     {name: LetterName.InternalCompetitionPolicy,	effect: "Players may only use upgrade types that all players have (e.g. exhaust allowed only if all players have exhaust upgrades)"},
-    {name: LetterName.PerformanceEvaluation,	effect: "You must score at least 7 ⭐ this round during Testing, otherwise you score nothing."},
-    // {name: LetterName.SupplierDelay,	effect: "Only reveal 3 cubes per player this round.  Randomly draw and discard 1 cube per player as well."},
+    {name: LetterName.PerformanceEvaluation,	effect: "You must score at least 7 ⭐ this round during Testing, otherwise you score nothing."},    
     {name: LetterName.BudgetReviewBoardVisit,	effect: "The player(s) with the fewest upgrades gains +5 ⭐; all others lose 2 ⭐."},
     {name: LetterName.NewSafetyProtocols,	effect: "You cannot use any Pump upgrades during Testing this round."},
     {name: LetterName.InventoryShortage,	effect: "When Gathering each player may only take up to 2 cubes regardless of power."},
@@ -36,7 +36,7 @@ export const letterCards: Partial<LetterCard>[] = [
     {name: LetterName.OvertimeRestrictions,	effect: "Power tokens of 4 have no function this round."},
     {name: LetterName.ResearchReallocation,	effect: "Each player places all of their stored cubes into the bag and draws back an equal number."},
     {name: LetterName.EquipmentMaintenance,	effect: "You cannot use any Exhaust or Cooling upgrades during Testing this round."},
-    {name: LetterName.CorporateAudit,	effect: "No funding cards can be used this round."},
+    {name: LetterName.CorporateAudit,	effect: "No funding cards can be used this round (including Maintenance Delay)."},
     {name: LetterName.MandatoryReporting,	effect: "At the end of the round, each player must discard 1 cube of their choice from their board or lose 3 ⭐."},
     {name: LetterName.CutTestingHours,	effect: "Each player may use only 2 upgrades in their Test Phase (instead of all)."},
     {name: LetterName.StopResearchFocusOnProfits,	effect: "You cannot use any Injection or Heater upgrades during Testing this round."},
@@ -74,8 +74,13 @@ export class LetterEffects {
     }
 
     cubesPerPlate() : number {
-        return this.game.hasLetter(LetterName.SupplierDelay) ? 3 : 4;
+        return 4;
     }
+
+    discardedCubePoints(player: BlueBreakthroughPlayer, count : number) : number {
+        return this.game.hasLetter(LetterName.SupplierDelay) && !player.letterImmune ? -1 * count : count;
+    }
+
 
     upgradeForbidden(player: BlueBreakthroughPlayer, upgrade: UpgradeCard) : boolean {
         if(this.game.hasLetter(LetterName.InternalCompetitionPolicy) && !player.letterImmune) {
@@ -128,6 +133,7 @@ export class LetterEffects {
                         }
                         maxToken!.putInto(p.space.first(UnavailableTokenSpace)!);
                         maxToken!.showToAll();
+                        p.checkCooldown();
                     }
                 }
             case LetterName.ResearchReallocation:
@@ -166,11 +172,6 @@ export class LetterEffects {
                             p.scorePoints(-2);
                         }
                     }
-                }
-                break;
-            case LetterName.SupplierDelay:
-                for(var i = 0; i < this.game.players.length; i++) {
-                    this.game.first(CubeBag)!.top(ResourceCube)!.putInto(this.game.first(Supply)!);
                 }
                 break;
         }

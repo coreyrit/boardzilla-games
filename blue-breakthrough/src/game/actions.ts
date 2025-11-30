@@ -212,7 +212,8 @@ export class Actions {
         }
       }
 
-      player.scorePoints(plate.all(ResourceCube).length);
+      player.scorePoints(this.letters.discardedCubePoints(player, plate.all(ResourceCube).length));
+
       plate.all(ResourceCube).forEach( c=> c.putInto(game.first(Supply)!) );
     }),
 
@@ -419,8 +420,10 @@ export class Actions {
       { skipIf: 'never' }
     ).do(({ choice }) => {
       if(choice == "Purchase Cube") {
-        player.scorePoints(-2);
+        player.scorePoints(-3);
         game.followUp({name: 'chooseAnyResource'});
+      } else {
+        player.scorePoints(-1);
       }
     }),
 
