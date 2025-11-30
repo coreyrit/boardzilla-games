@@ -28,7 +28,7 @@ export const letterCards: Partial<LetterCard>[] = [
     {name: LetterName.RevisedReportingStandards,	effect: "All players must choose one upgrade on their board that cannot be used this round."},
     {name: LetterName.InternalCompetitionPolicy,	effect: "Players may only use upgrade types that all players have (e.g. exhaust allowed only if all players have exhaust upgrades)"},
     {name: LetterName.PerformanceEvaluation,	effect: "You must score at least 7 ⭐ this round during Testing, otherwise you score nothing."},
-    {name: LetterName.SupplierDelay,	effect: "Only reveal 3 cubes per player this round.  Randomly draw and discard 1 cube per player as well."},
+    // {name: LetterName.SupplierDelay,	effect: "Only reveal 3 cubes per player this round.  Randomly draw and discard 1 cube per player as well."},
     {name: LetterName.BudgetReviewBoardVisit,	effect: "The player(s) with the fewest upgrades gains +5 ⭐; all others lose 2 ⭐."},
     {name: LetterName.NewSafetyProtocols,	effect: "You cannot use any Pump upgrades during Testing this round."},
     {name: LetterName.InventoryShortage,	effect: "When Gathering each player may only take up to 2 cubes regardless of power."},
@@ -51,92 +51,102 @@ export class LetterEffects {
         this.game = game
     }
 
-    testingPointCheck(points: number) : boolean {
-        return !this.game.hasLetter(LetterName.PerformanceEvaluation) || points >= 7;
+    testingPointCheck(player: BlueBreakthroughPlayer, points: number) : boolean {
+        if(this.game.hasLetter(LetterName.PerformanceEvaluation) && !player.letterImmune) {
+            return points >= 7;
+        } else {
+            return false;
+        }
     }
 
     finishTesting(player: BlueBreakthroughPlayer) {
-        if(this.game.hasLetter(LetterName.MandatoryReporting)) {
+        if(this.game.hasLetter(LetterName.MandatoryReporting) && !player.letterImmune) {
             this.game.followUp({name: 'mandatoryReporting'});
         }
     }
 
-    maxResources() : number {
-        return this.game.hasLetter(LetterName.InventoryShortage) ? 2 : 100;
+    maxResources(player: BlueBreakthroughPlayer) : number {
+        return this.game.hasLetter(LetterName.InventoryShortage) && !player.letterImmune ? 2 : 100;
     }
 
-    tokenForbidden(token: PowerToken) : boolean {
-        return this.game.hasLetter(LetterName.OvertimeRestrictions) && token.val == 4;
+    tokenForbidden(player: BlueBreakthroughPlayer, token: PowerToken) : boolean {
+        return this.game.hasLetter(LetterName.OvertimeRestrictions) && token.val == 4 && !player.letterImmune;
     }
 
     cubesPerPlate() : number {
         return this.game.hasLetter(LetterName.SupplierDelay) ? 3 : 4;
     }
 
-    upgradeForbidden(upgrade: UpgradeCard) : boolean {
-        if(this.game.hasLetter(LetterName.InternalCompetitionPolicy)) {
+    upgradeForbidden(player: BlueBreakthroughPlayer, upgrade: UpgradeCard) : boolean {
+        if(this.game.hasLetter(LetterName.InternalCompetitionPolicy) && !player.letterImmune) {
             return this.game.players.map(p => p.space.all(UpgradeCard, {type: upgrade.type}).length > 0 ? 1 : 0)
                 .reduce((sum, current) => sum + current, 0) != this.game.players.length; 
-        } else if(this.game.hasLetter(LetterName.StopResearchFocusOnProfits) && [UpgradeType.injection, UpgradeType.heater].includes(upgrade.type)) {
+        } else if(this.game.hasLetter(LetterName.StopResearchFocusOnProfits) && [UpgradeType.injection, UpgradeType.heater].includes(upgrade.type) && !player.letterImmune) {
             return true;
-        } else if(this.game.hasLetter(LetterName.EquipmentMaintenance) && [UpgradeType.exhaust, UpgradeType.cooling].includes(upgrade.type)) {
+        } else if(this.game.hasLetter(LetterName.EquipmentMaintenance) && [UpgradeType.exhaust, UpgradeType.cooling].includes(upgrade.type) && !player.letterImmune) {
             return true;
-        } else if(this.game.hasLetter(LetterName.NewSafetyProtocols) && [UpgradeType.pump].includes(upgrade.type)) {
+        } else if(this.game.hasLetter(LetterName.NewSafetyProtocols) && [UpgradeType.pump].includes(upgrade.type) && !player.letterImmune) {
             return true;
         } else {
             return false;
         }
     }
 
-    upgradeAvailable(upgrade: UpgradeCard) : boolean {
-        if(this.game.hasLetter(LetterName.CostCuttingMeasures) && upgrade.cost >= 3) {
+    upgradeAvailable(player: BlueBreakthroughPlayer, upgrade: UpgradeCard) : boolean {
+        if(this.game.hasLetter(LetterName.CostCuttingMeasures) && !player.letterImmune && upgrade.cost >= 3) {
             return false;
         }
         return true;
     }
 
-    fundingForbidden() : boolean {
-        return this.game.hasLetter(LetterName.CorporateAudit);
+    fundingForbidden(player: BlueBreakthroughPlayer) : boolean {
+        return this.game.hasLetter(LetterName.CorporateAudit) && !player.letterImmune;
     }
 
-    upgradeUseLimit() : number {
-        return this.game.hasLetter(LetterName.CutTestingHours) ? 2 : 100;
+    upgradeUseLimit(player: BlueBreakthroughPlayer) : number {
+        return this.game.hasLetter(LetterName.CutTestingHours) && !player.letterImmune ? 2 : 100;
     }
 
-    upgradeTax() : number {
-        return this.game.hasLetter(LetterName.BudgetFreeze) ? 1 : 0;
+    upgradeTax(player: BlueBreakthroughPlayer) : number {
+        return this.game.hasLetter(LetterName.BudgetFreeze) && !player.letterImmune ? 1 : 0;
     }
 
     applyLetter(letter: LetterCard) {
         switch(letter.name) {
             case LetterName.TerminateProjectNotice:
                 for(const p of this.game.players) {
-                    let maxToken : PowerToken | null = null;
-                    for(const token of p.board.first(AvailableTokenSpace)!.all(PowerToken)) {
-                        if(maxToken == null) {
-                            maxToken = token;
-                        } else if(token.value() > maxToken.value() && ![TokenAbility.Publish, TokenAbility.Recall].includes(token.ability())) {
-                            maxToken = token;
-                        } else if(token.value() == maxToken.value() && maxToken.ability() == TokenAbility.B && token.ability() == TokenAbility.A) {
-                            maxToken = token;
+                    if(!p.letterImmune) {
+                        let maxToken : PowerToken | null = null;
+                        for(const token of p.board.first(AvailableTokenSpace)!.all(PowerToken)) {
+                            if(maxToken == null) {
+                                maxToken = token;
+                            } else if(token.value() > maxToken.value() && ![TokenAbility.Publish, TokenAbility.Recall].includes(token.ability())) {
+                                maxToken = token;
+                            } else if(token.value() == maxToken.value() && maxToken.ability() == TokenAbility.B && token.ability() == TokenAbility.A) {
+                                maxToken = token;
+                            }
                         }
+                        maxToken!.putInto(p.space.first(UnavailableTokenSpace)!);
+                        maxToken!.showToAll();
                     }
-                    maxToken!.putInto(p.space.first(UnavailableTokenSpace)!);
-                    maxToken!.showToAll();
                 }
             case LetterName.ResearchReallocation:
                 let myMap = new Map<BlueBreakthroughPlayer, number>();
                 const bag = this.game.first(CubeBag)!
                 for(const p of this.game.players) {
-                    const cubes = p.space.first(ResourceSpace)!.all(ResourceCube); 
-                    myMap.set(p, cubes.length);
-                    cubes.forEach(c => c.putInto(bag));
+                    if(!p.letterImmune) {
+                        const cubes = p.space.first(ResourceSpace)!.all(ResourceCube); 
+                        myMap.set(p, cubes.length);
+                        cubes.forEach(c => c.putInto(bag));
+                    }
                 }
                 bag.shuffle();
                 for(const p of this.game.players) {
-                    const n = myMap.get(p)!;
-                    for(var i = 0; i < n; i++) {
-                        bag.top(ResourceCube)!.putInto(p.space.first(ResourceSpace)!);
+                    if(!p.letterImmune) {
+                        const n = myMap.get(p)!;
+                        for(var i = 0; i < n; i++) {
+                            bag.top(ResourceCube)!.putInto(p.space.first(ResourceSpace)!);
+                        }
                     }
                 }
                 break;
@@ -149,10 +159,12 @@ export class LetterEffects {
                     }
                 }
                 for(const p of this.game.players) {
-                    if(p.space.all(UpgradeCard).length == minUpgrades) {
-                        p.scorePoints(5);
-                    } else {
-                        p.scorePoints(-2);
+                    if(!p.letterImmune) {
+                        if(p.space.all(UpgradeCard).length == minUpgrades) {
+                            p.scorePoints(5);
+                        } else {
+                            p.scorePoints(-2);
+                        }
                     }
                 }
                 break;

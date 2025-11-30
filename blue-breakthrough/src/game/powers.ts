@@ -69,7 +69,7 @@ export class FundingPowers {
 
     public useAbility(player: BlueBreakthroughPlayer, funding: FundingCard) : boolean {
         const letters = new LetterEffects(this.game);
-        if(letters.fundingForbidden()) {
+        if(letters.fundingForbidden(player)) {
             return false;
         }
 
@@ -387,6 +387,19 @@ export class FundingPowers {
             }).do(() => {
                 player.scorePoints(player.purchasedUpgrades * 4);
                 player.space.first(FundingCard, FundingName.InvestorBonus)!.rotation = 90;          
+            }),
+
+            useMaintenanceDelay: (player) => action({
+                prompt: FundingName.MaintenanceDelay,
+                // condition: player.hasFunding(FundingName.MaintenanceDelay)
+            }).chooseFrom(
+                "choice", ['Yes', 'No'],
+                { skipIf: 'never'}
+            ).do(({choice}) => {
+                if(choice == "Yes") {
+                    player.letterImmune = true;
+                    player.space.first(FundingCard, FundingName.MaintenanceDelay)!.rotation = 90;
+                }
             }),
 
         }

@@ -196,5 +196,5 @@ export function buildGame(game: MyGame) {
   for (const letterCard of letterCards) {
     const card = letterDeck.create(LetterCard, letterCard.name!.replace(' ', '_'), letterCard);
   }
-  // letterDeck.shuffle();
+  letterDeck.shuffle();
 }

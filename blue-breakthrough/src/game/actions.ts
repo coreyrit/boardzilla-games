@@ -25,7 +25,8 @@ import { PlayerSpace, PlayerBoard, ResourceCube, CubeBag, Supply, CubeColor, Fun
   PublishToken,
   PriorityPawn,
   FundingType,
-  DrawUpgradeSpace
+  DrawUpgradeSpace,
+  LetterCard
  } from './components.js';
 import { FundingPowers } from "./powers.js";
 import { FundingName } from "./funding.js";
@@ -171,13 +172,13 @@ export class Actions {
 
     chooseResources: (player) => action({
       condition: game.getPlayerToken(player, TokenAction.Resources).mayPeformAction(),
-      prompt: "Gain Resources (" + Math.min((game.getPlayerToken(player, TokenAction.Resources).value() + this.powers.bonusGainResource(player)), this.letters.maxResources()) + ")"
+      prompt: "Gain Resources (" + Math.min((game.getPlayerToken(player, TokenAction.Resources).value() + this.powers.bonusGainResource(player)), this.letters.maxResources(player)) + ")"
     }).chooseOnBoard(
       'plates', game.all(CubePlate).filter(x => x.all(ResourceCube).length > 0),
       { min: 1, max: 1 + this.powers.bonusPlateSelection(player), skipIf: 'never' }
     ).chooseOnBoard(
       'cubes', ({plates}) => plates[0].all(ResourceCube).concat(plates.length > 1 ? plates[1].all(ResourceCube) : []),
-      { number: ({plates}) => Math.min(Math.min(game.getPlayerToken(player, TokenAction.Resources).value() + this.powers.bonusGainResource(player), this.letters.maxResources()),
+      { number: ({plates}) => Math.min(Math.min(game.getPlayerToken(player, TokenAction.Resources).value() + this.powers.bonusGainResource(player), this.letters.maxResources(player)),
         plates.reduce((sum, current) => sum + current.all(ResourceCube).length, 0)) }
     ).do(({ plates, cubes }) => {      
       
@@ -220,10 +221,10 @@ export class Actions {
       prompt: "Choose Upgrades (" + game.getPlayerToken(player, TokenAction.Upgrade).value() + ")"
     }).chooseOnBoard(
       'upgrades', game.all(UpgradeSpace).all(UpgradeCard)
-        .filter(x => x.cost-this.powers.bonusUpgradeDiscout(player)+this.letters.upgradeTax() <= game.getPlayerToken(player, TokenAction.Upgrade).value())
-        .filter(x => this.letters.upgradeAvailable(x)),
+        .filter(x => x.cost-this.powers.bonusUpgradeDiscout(player)+this.letters.upgradeTax(player) <= game.getPlayerToken(player, TokenAction.Upgrade).value())
+        .filter(x => this.letters.upgradeAvailable(player, x)),
       { min: 1, max: 2, skipIf: 'never', validate: ({upgrades}) => {
-        const upgradeSum = upgrades.reduce((sum, x) => sum + x.cost-this.powers.bonusUpgradeDiscout(player)+this.letters.upgradeTax(), 0)
+        const upgradeSum = upgrades.reduce((sum, x) => sum + x.cost-this.powers.bonusUpgradeDiscout(player)+this.letters.upgradeTax(player), 0)
         return upgradeSum <= game.getPlayerToken(player, TokenAction.Upgrade).value();
       } }
     ).do(({ upgrades }) => {
@@ -379,6 +380,13 @@ export class Actions {
       prompt: 'Finish Testing'
     }).do(() => {
       player.doneTesting = true;
+    }),
+
+    reactToLetter: (player) => action({
+    }).do(() => {
+      if(player.hasFunding(FundingName.MaintenanceDelay) && !game.hasLetter(LetterName.CorporateAudit)) {
+        game.followUp({name: 'useMaintenanceDelay'});
+      }
     }),
 
     mandatoryReporting: (player) => action({

@@ -59,7 +59,11 @@ render(setup, {
 
       game.layoutAsDrawer($.letters as Space<MyGame>, 
       { area: { left: 60, top: 0, width: 40, height: 24 }, openDirection: 'down', tab: 'Letter',
-        openIf: actions => game.round % 2 == 0 && game.roundStarted,
+        openIf: actions => actions.some(a => 
+          [
+            'reactToLetter'
+          ]
+        .includes(a.name)),
       });
       $.letters.layout(LetterCard, {columns: 1, rows: 1, gap: {x:0, y: 0}, scaling: 'fill'})
 
@@ -257,7 +261,7 @@ render(setup, {
 
             <text x="17%" y="12%" text-anchor="middle" dominant-baseline="middle" 
               fill={game.players.current() != null && powers.bonusUpgradeDiscout(game.players.current()!) > 0 ? "red" : "black"} font-size="60%">
-              {x.cost - (game.players.current() != null ? powers.bonusUpgradeDiscout(game.players.current()!): 0) + letters.upgradeTax()}
+              {x.cost - (game.players.current() != null ? powers.bonusUpgradeDiscout(game.players.current()!): 0) + letters.upgradeTax(game.players.current()!)}
             </text>
 
             <foreignObject x="28%" y="3%" width="70%" height="20%" fontSize="40%">

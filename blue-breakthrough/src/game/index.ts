@@ -40,6 +40,7 @@ export class BlueBreakthroughPlayer extends Player<MyGame, BlueBreakthroughPlaye
     space: PlayerSpace
     board: PlayerBoard
     score: number = 0;
+    letterImmune: boolean = false;
     doneTesting: boolean = false;
     doneActions: boolean = false;
     fundingBoost: number = 0;
@@ -47,7 +48,7 @@ export class BlueBreakthroughPlayer extends Player<MyGame, BlueBreakthroughPlaye
 
     public hasFunding(name: FundingName) : boolean {
       const letters = new LetterEffects(this.game);
-      if(letters.fundingForbidden()) {
+      if(letters.fundingForbidden(this)) {
         return false;
       }
       return this.space.all(FundingCard, {name: name}).length > 0 && 
@@ -184,7 +185,6 @@ export class BlueBreakthroughPlayer extends Player<MyGame, BlueBreakthroughPlaye
 
 export class MyGame extends Game<MyGame, BlueBreakthroughPlayer> {
   public round = 1;
-  public roundStarted = false;
   public priority = 1;
   public currentAction : TokenAction = TokenAction.Funding;
 
@@ -368,8 +368,6 @@ export class MyGame extends Game<MyGame, BlueBreakthroughPlayer> {
     if([2, 4, 6].includes(round)) {
       const letter = this.game.first(LetterDeck)!.top(LetterCard)!
       letter.putInto(space);
-      const letters = new LetterEffects(this.game);
-      letters.applyLetter(letter);
     }
   }
 
@@ -474,7 +472,6 @@ export default createGame(BlueBreakthroughPlayer, MyGame, game => {
 
       // start round
       ({round}) => game.round = round,
-      ({round}) => game.roundStarted = true,
 
       // move round tracker
       ({round}) => game.first(RoundTracker)!.putInto(game.first(RoundSpace, {round: round})!), 
@@ -484,12 +481,23 @@ export default createGame(BlueBreakthroughPlayer, MyGame, game => {
       
       // reset players
       () => game.players.forEach(x => {
+        x.letterImmune = false;
         game.getStorageCubes(x).forEach(c => c.putInto(x.space.first(ResourceSpace)!));
         x.space.all(UpgradeCard).forEach(u => u.outOfOrder = false);
       }),
 
       // draw letter
-      ({round}) => game.drawLetter(round),
+      ({round}) => game.drawLetter(round),      
+      ifElse({
+        if: () => game.first(LetterSpace)!.all(LetterCard).length > 0, do: [
+          eachPlayer({
+            name: 'turn', do: [
+              playerActions({ actions: ['reactToLetter']}),
+            ]
+          }),
+          () => letters.applyLetter(game.first(LetterSpace)!.first(LetterCard)!),
+        ]
+      }),
       
       // fill board
       ({round}) => game.addRoundCubes(round),
@@ -501,16 +509,15 @@ export default createGame(BlueBreakthroughPlayer, MyGame, game => {
       eachPlayer({
         name: 'turn', do: [
           ifElse({
-            if: () => game.hasLetter(LetterName.RevisedReportingStandards), do: [
+            if: ({turn}) => !turn.letterImmune && game.hasLetter(LetterName.RevisedReportingStandards), do: [
               playerActions({ actions: ['revisedReportingStandards']}),
             ],
           }), 
           ifElse({
-            if: () => game.hasLetter(LetterName.MoraleComitteeInitiative), do: [
+            if: ({turn}) => !turn.letterImmune && game.hasLetter(LetterName.MoraleComitteeInitiative), do: [
               playerActions({ actions: ['moraleComitteeInitiative']}),
             ],
-          }), 
-          () => game.roundStarted = false,
+          }),
           whileLoop({while: ({turn}) => 
             turn.board.all(PowerTokenSpace).all(PowerToken).length < 3, do: (
                 [                  

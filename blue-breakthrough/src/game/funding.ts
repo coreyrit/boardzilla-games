@@ -31,10 +31,12 @@ export enum FundingName {
     ResearchCollaboration = "Research Collaboration",
     OverclockedReactor = "Overclocked Reactor",
     PublicDemonstration = "Public Demonstration",
-    PatentLicense = "Patent License"
+    PatentLicense = "Patent License",
+    MaintenanceDelay = "Maintenance Delay"
 }
 
 export const fundingCards: Partial<FundingCard>[] = [
+    {name: FundingName.MaintenanceDelay,	type: FundingType.Instant,	effect: 'Ignore an Employer Letter’s negative effect.'},
     {name: FundingName.PatentLicense,	type: FundingType.Permanent,	effect: 'When another player buys an upgrade of a type you own gain +1 ⭐.'},        
     {name: FundingName.PublicDemonstration,	type: FundingType.Ongoing,	effect: 'Chose an upgrade to turn without using it and gain ⭐ equal to its cost.'},
     {name: FundingName.OverclockedReactor,	type: FundingType.Ongoing,	effect: 'Use one of the upgrades remaining in the market during testing.'},
@@ -66,5 +68,4 @@ export const fundingCards: Partial<FundingCard>[] = [
     {name: FundingName.VictoryResearch,	type: FundingType.Instant,	effect: 'Score 5 ⭐ immediately.'},
     {name: FundingName.InvestorTrust,	type: FundingType.Ongoing,	effect: 'Once per round, discard another funding card to gain any 2 cubes instead of 1.'},        
     {name: FundingName.PreciseTools,	type: FundingType.Ongoing,	effect: 'When converting cubes with an upgrade you may change one cube in the result to any color.'},    
-    {name: 'Maintenance Delay',	type: FundingType.Instant,	effect: 'Ignore an Employer Letter’s negative effect.'},            
 ]

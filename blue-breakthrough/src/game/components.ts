@@ -208,11 +208,11 @@ export class UpgradeCard extends Piece<MyGame> {
       return false;
     }
 
-    if(letters.upgradeForbidden(this)) {
+    if(letters.upgradeForbidden(player, this)) {
       return false;
     }
 
-    if(player.space.all(UpgradeCard).filter(x => x.rotation == 90).length >= letters.upgradeUseLimit()) {
+    if(player.space.all(UpgradeCard).filter(x => x.rotation == 90).length >= letters.upgradeUseLimit(player)) {
       return false;
     }    
     
@@ -283,12 +283,12 @@ export class PowerToken extends Piece<MyGame> {
 
   public value() : number {
     const letters = new LetterEffects(this.game);
-    return letters.tokenForbidden(this) ? 0 : this.val;
+    return letters.tokenForbidden(this.container(PlayerSpace)!.player!, this) ? 0 : this.val;
   }
 
   public ability() : TokenAbility {
     const letters = new LetterEffects(this.game);
-    return letters.tokenForbidden(this) ? TokenAbility.Forbidden : this.ab;
+    return letters.tokenForbidden(this.container(PlayerSpace)!.player!, this) ? TokenAbility.Forbidden : this.ab;
   }
 
   public mayPeformAction() : boolean {
@@ -353,7 +353,7 @@ export class LEDSpace extends Space<MyGame> {
 
     const letters = new LetterEffects(this.game);
     const pointTotal = points.reduce((sum, c) => sum + c, 0);
-    if(letters.testingPointCheck(pointTotal)) {
+    if(letters.testingPointCheck(player, pointTotal)) {
       for(const p of points) {
         player.scorePoints(p);
       }
