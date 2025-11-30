@@ -167,9 +167,9 @@ export class LetterEffects {
                 for(const p of this.game.players) {
                     if(!p.letterImmune) {
                         if(p.space.all(UpgradeCard).length == minUpgrades) {
-                            p.scorePoints(5);
+                            p.scorePoints(5, LetterName.BudgetReviewBoardVisit);
                         } else {
-                            p.scorePoints(-2);
+                            p.scorePoints(-2, LetterName.BudgetReviewBoardVisit);
                         }
                     }
                 }

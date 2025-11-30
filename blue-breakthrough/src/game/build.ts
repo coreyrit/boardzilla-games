@@ -154,7 +154,23 @@ export function buildGame(game: MyGame) {
     playerBoard.create(ReactorSpace, 'heater' + i, {type: UpgradeType.heater});
     playerBoard.create(ReactorSpace, 'trap' + i, {type: UpgradeType.trap});
 
-    playerSpace.create(ResourceSpace, 'resourceSpace' + i);
+    const temp = playerSpace.create(ResourceSpace, 'resourceSpace' + i);
+    // temp.create(ResourceCube, 'test1', {color: CubeColor.White});
+    // temp.create(ResourceCube, 'test2', {color: CubeColor.White});
+    // temp.create(ResourceCube, 'test3', {color: CubeColor.Blue});
+    // temp.create(ResourceCube, 'test4', {color: CubeColor.Blue});
+    // temp.create(ResourceCube, 'test5', {color: CubeColor.Blue});
+    // temp.create(ResourceCube, 'test6', {color: CubeColor.Red});
+    // temp.create(ResourceCube, 'test6', {color: CubeColor.Red});
+    // temp.create(ResourceCube, 'test6', {color: CubeColor.Red});
+    // temp.create(ResourceCube, 'test6', {color: CubeColor.Red});
+    // temp.create(ResourceCube, 'test6', {color: CubeColor.Red});
+    // temp.create(ResourceCube, 'test7', {color: CubeColor.Yellow});
+    // temp.create(ResourceCube, 'test7', {color: CubeColor.Yellow});
+    // temp.create(ResourceCube, 'test7', {color: CubeColor.Yellow});
+    // temp.create(ResourceCube, 'test7', {color: CubeColor.Yellow});
+
+
 
     const led = playerBoard.create(LEDSpace, 'led' + i);
 

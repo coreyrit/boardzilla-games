@@ -91,7 +91,7 @@ export class BlueBreakthroughPlayer extends Player<MyGame, BlueBreakthroughPlaye
 
     public useUpgrade(upgrade: UpgradeCard, spendCost: boolean = true) {
       const powers = new FundingPowers(this.game);
-      this.scorePoints(upgrade.points);
+      this.scorePoints(upgrade.points, upgrade.name);
       if(spendCost) {
         this.spendUpgradeCost(upgrade);
       }
@@ -99,15 +99,18 @@ export class BlueBreakthroughPlayer extends Player<MyGame, BlueBreakthroughPlaye
       this.gainUpgradeBenefit(upgrade);
 
       if(this.hasFunding(FundingName.ReactorGrant) && upgrade.type == UpgradeType.heater) {
-        this.scorePoints(2);
+        this.scorePoints(2, FundingName.ReactorGrant);
       }
       if(!this.hasFunding(FundingName.BackupGenerator) || upgrade.type != UpgradeType.exhaust) {
         upgrade.rotation = 90;
       }
     }
 
-    public scorePoints(points: number) {
-      this.game.message(this + " score " + points + " points.");
+    public scorePoints(points: number, reason: string = "") {
+      if(reason != "") {
+        this.game.message(`{{player}} scores <b>{{points}}</b> points for <b>{{reason}}</b>.`, {player: this, points: points, reason: reason})
+      }
+
       this.score += points;
       const oneCube = this.board.first(ScoreTrack, {tens: false})!.first(ScoreCube)!;
       const tenCube = this.board.first(ScoreTrack, {tens: true})!.first(ScoreCube)!;
@@ -137,19 +140,19 @@ export class BlueBreakthroughPlayer extends Player<MyGame, BlueBreakthroughPlaye
       this.space.first(PublishToken, {flipped: false})!.flipped = true;
       switch(this.space.all(PublishToken, {flipped: true}).length) {
         case 1:
-          this.scorePoints(1);
+          this.scorePoints(1, 'Publish (1)');
           break;
         case 2:
-          this.scorePoints(3);
+          this.scorePoints(3, 'Publish (2)');
           break;
         case 3:
-          this.scorePoints(6);
+          this.scorePoints(6, 'Publish (3)');
           break;
         case 4:
-          this.scorePoints(10);
+          this.scorePoints(10, 'Publish (4)');
           break;
         case 5:
-          this.scorePoints(15);
+          this.scorePoints(15, 'Publish (5)');
           break;
       }
     }
@@ -161,7 +164,7 @@ export class BlueBreakthroughPlayer extends Player<MyGame, BlueBreakthroughPlaye
     public placeUpgrade(upgrade: UpgradeCard) : void {
       for(const player of this.game.players) {
         if(player != this && player.hasFunding(FundingName.PatentLicense) && player.space.all(UpgradeCard, {type: upgrade.type}).length > 0) {
-          player.scorePoints(1);
+          player.scorePoints(1, FundingName.PatentLicense);
         }
       }
 
@@ -341,7 +344,7 @@ export class MyGame extends Game<MyGame, BlueBreakthroughPlayer> {
       }
     }
     bag .shuffle();
-    this.game.message("Bag size: " + bag.all(ResourceCube).length);
+    // this.game.message("Bag size: " + bag.all(ResourceCube).length);
   }
 
   public drawCubesToPlates() {
@@ -433,33 +436,33 @@ export class MyGame extends Game<MyGame, BlueBreakthroughPlayer> {
 
       if(bestToken == null || [TokenAbility.Publish, TokenAbility.Recall, TokenAbility.Forbidden].includes(bestToken.ability())) {
         bestToken = token; bestValue = tokenValue; nextPlayer = p; bestScore = playerScore; bestSum = tokenSum; bestPriority = distance;
-        this.game.message("Initializing turn: " + nextPlayer);
+        // this.game.message("Initializing turn: " + nextPlayer);
       } else {
         // first check token value
         if(action == TokenAction.Funding ? tokenValue > bestValue : tokenValue < bestValue) {
           bestToken = token; bestValue = tokenValue; nextPlayer = p; bestScore = playerScore; bestSum = tokenSum; bestPriority = distance;
-          this.game.message("Highest value: " + nextPlayer);
+          // this.game.message("Highest value: " + nextPlayer);
         } 
         // then check abilities if tied
         else if(tokenValue == bestValue && 
             token.ability() == TokenAbility.A && bestToken.ability() == TokenAbility.B) {
           bestToken = token; bestValue = tokenValue; nextPlayer = p; bestScore = playerScore; bestSum = tokenSum; bestPriority = distance;
-          this.game.message("A vs B: " + nextPlayer);
+          // this.game.message("A vs B: " + nextPlayer);
         } 
         // then second tie-breakerif still tied
         else if(tokenValue == bestValue && token.ability() == bestToken.ability() && secondTieBreaker) {
           bestToken = token; bestValue = tokenValue; nextPlayer = p; bestScore = playerScore; bestSum = tokenSum; bestPriority = distance;
-          this.game.message("2nd tie-breaker: " + nextPlayer);
+          // this.game.message("2nd tie-breaker: " + nextPlayer);
         }         
         // final tie goes to priority pawn
         else if(tokenValue == bestValue && token.ability() == bestToken.ability() && !secondTieBreaker && distance < bestPriority) {
           bestToken = token; bestValue = tokenValue; nextPlayer = p; bestScore = playerScore; bestSum = tokenSum; bestPriority = distance;
-          this.game.message("Priority: " + nextPlayer);
+          // this.game.message("Priority: " + nextPlayer);
         }
       }
     })
 
-    this.game.message("Next turn: " + nextPlayer);
+    // this.game.message("Next turn: " + nextPlayer);
     return nextPlayer!;
   }
   
@@ -643,14 +646,14 @@ export default createGame(BlueBreakthroughPlayer, MyGame, game => {
 
           // activate player publish ability
           ifElse({
-            if: ({turn}) => turn.board.all(PowerTokenSpace).all(PowerToken, {ability: TokenAbility.Publish}).length > 0, do: [
+            if: ({turn}) => turn.board.all(PowerTokenSpace).all(PowerToken, {ab: TokenAbility.Publish}).length > 0, do: [
               ({turn}) => turn.publishPaper(),
             ],
-          }),
+          }),          
 
           // activate player recall ability
           ifElse({
-            if: ({turn}) => turn.board.all(PowerTokenSpace).all(PowerToken, {ability: TokenAbility.Recall}).length > 0, do: [
+            if: ({turn}) => turn.board.all(PowerTokenSpace).all(PowerToken, {ab: TokenAbility.Recall}).length > 0, do: [
               playerActions({ actions: ['recallToken']}),
             ],
           }),

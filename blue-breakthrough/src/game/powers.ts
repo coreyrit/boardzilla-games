@@ -111,7 +111,7 @@ export class FundingPowers {
             bag.top(ResourceCube)!.putInto(space);
             return true;
           case FundingName.VictoryResearch:
-            player.scorePoints(5);
+            player.scorePoints(5, FundingName.VictoryResearch);
             return true;
           case FundingName.PowerSwap:
             player.space.first(UnavailableTokenSpace)!.all(PowerToken).forEach(x => {
@@ -144,7 +144,7 @@ export class FundingPowers {
 
     public handleLeftoverCubes(player: BlueBreakthroughPlayer, cubes: ResourceCube[]) {
         if(player.hasFunding(FundingName.StorageInsurance)) {
-            player.scorePoints(cubes.length * 2);
+            player.scorePoints(cubes.length * 2, FundingName.StorageInsurance);
         }
     }
 
@@ -334,7 +334,7 @@ export class FundingPowers {
                 { skipIf: 'never' }
             ).do(({upgrade}) => {
                upgrade.rotation = 90;
-               player.scorePoints(upgrade.cost);
+               player.scorePoints(upgrade.cost, FundingName.PublicDemonstration);
             }),
 
             useEmergencyReset: (player) => action({
@@ -385,7 +385,7 @@ export class FundingPowers {
                 prompt: FundingName.InvestorBonus,
                 condition: player.hasFunding(FundingName.InvestorBonus)
             }).do(() => {
-                player.scorePoints(player.purchasedUpgrades * 4);
+                player.scorePoints(player.purchasedUpgrades * 4, FundingName.InvestorBonus);
                 player.space.first(FundingCard, FundingName.InvestorBonus)!.rotation = 90;          
             }),
 

@@ -72,7 +72,7 @@ export class Actions {
     ).do(({ funding }) => {
       funding.putInto(player.space);
       player.space.first(PowerTokenSpace, {action: TokenAction.Funding})!.complete = true;
-      player.scorePoints(game.getPlayerToken(player, TokenAction.Funding).value());
+      player.scorePoints(game.getPlayerToken(player, TokenAction.Funding).value(), 'Funding');
     }).message(`{{player}} took {{funding}}.`),
 
     publish: (player) => action({
@@ -151,7 +151,7 @@ export class Actions {
       { skipIf: 'never' }
     ).do(({ token }) => {
       // player.scorePoints(player.space.first(UnavailableTokenSpace)!.all(PowerToken).length);
-      player.scorePoints(game.round);
+      player.scorePoints(game.round, "Recall");
       token.showOnlyTo(player);
       token.putInto(player.space.first(AvailableTokenSpace)!);
     }),
@@ -212,7 +212,7 @@ export class Actions {
         }
       }
 
-      player.scorePoints(this.letters.discardedCubePoints(player, plate.all(ResourceCube).length));
+      player.scorePoints(this.letters.discardedCubePoints(player, plate.all(ResourceCube).length), "Gather Resources");
 
       plate.all(ResourceCube).forEach( c=> c.putInto(game.first(Supply)!) );
     }),
@@ -232,9 +232,9 @@ export class Actions {
       player.purchasedUpgrades = upgrades.length;
       upgrades.forEach( c=> player.placeUpgrade(c) );
       player.scorePoints((game.getEra() * upgrades.length) + 
-        upgrades.reduce((sum, current) => sum + this.powers.bonusUpgradePoints(current, player), 0));
+        upgrades.reduce((sum, current) => sum + this.powers.bonusUpgradePoints(current, player), 0), "Upgrades");
       player.space.first(PowerTokenSpace, {action: TokenAction.Upgrade})!.complete = true;
-    }),  
+    }).message(`{{player}} bought {{upgrades}}`),  
 
     drawUpgrade: (player) => action({
       prompt: 'Draw Upgrade',
@@ -253,9 +253,9 @@ export class Actions {
       } else {
         const upgrade = upgradeSpace.first(UpgradeCard)!;
         player.placeUpgrade(upgrade);
-        player.scorePoints(game.getEra() + this.powers.bonusUpgradePoints(upgrade, player));      
+        player.scorePoints(game.getEra() + this.powers.bonusUpgradePoints(upgrade, player), "Upgrade");      
         player.space.first(PowerTokenSpace, {action: TokenAction.Upgrade})!.complete = true;
-        game.message(player.name + " drew " + upgrade);
+        game.message(`{{player}} drew {{upgrade}}.`, {player: player, upgrade: upgrade})
       }
     }),
 
@@ -308,7 +308,7 @@ export class Actions {
       player.space.first(PowerTokenSpace, {action: TokenAction.Upgrade})!.complete = true;
 
       this.game.first(DrawUpgradeSpace)!.all(UpgradeCard).forEach(x => x.putInto(this.game.first(Supply)!));
-      game.message(player.name + " drew " + upgrade);
+      game.message(`{{player}} drew {{upgrade}}.`, {player: player, upgrade: upgrade})
     }),
 
     chooseFundingFromDraw: (player) => action({
@@ -399,7 +399,7 @@ export class Actions {
       if(cubes.length > 0) {
         cubes[0].putInto(game.first(Supply)!);
       } else {
-        player.scorePoints(-3);
+        player.scorePoints(-3, LetterName.MandatoryReporting);
       }
     }), 
 
@@ -420,10 +420,10 @@ export class Actions {
       { skipIf: 'never' }
     ).do(({ choice }) => {
       if(choice == "Purchase Cube") {
-        player.scorePoints(-3);
+        player.scorePoints(-3, LetterName.MoraleComitteeInitiative);
         game.followUp({name: 'chooseAnyResource'});
       } else {
-        player.scorePoints(-1);
+        player.scorePoints(-1, LetterName.MoraleComitteeInitiative);
       }
     }),
 

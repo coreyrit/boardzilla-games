@@ -342,20 +342,28 @@ export class LEDSpace extends Space<MyGame> {
       const row = this.first(LEDRow, {index: layer.index})!;
       let cubeColors = row.all(ResourceCube).map(x => x.color);
 
+      this.game.message("row " + layer.index + "  colors: " + cubeColors.join(","));
+
+      let layerPoints = 0;
       while(led.isComplete(layer, cubeColors)) {
-        points.push(led.getScoring(layer, row));
+        const scoring =led.getScoring(layer, row) 
+        layerPoints += scoring.points;
+        if(scoring.finish) {
+          break;
+        }
         for(const color of layer.colors) {
           const index = cubeColors.indexOf(color);
           cubeColors.splice(index, 1);
         }
       }
+      points.push(layerPoints);
     }
 
     const letters = new LetterEffects(this.game);
     const pointTotal = points.reduce((sum, c) => sum + c, 0);
-    if(letters.testingPointCheck(player, pointTotal)) {
-      for(const p of points) {
-        player.scorePoints(p);
+    if(!letters.testingPointCheck(player, pointTotal)) {
+      for(var i = 1; i < points.length; i++) {
+        player.scorePoints(points[i-1], "Layer " + i);
       }
     }
 
@@ -370,7 +378,7 @@ export class LEDSpace extends Space<MyGame> {
           }
         }
         if(count == 7) {
-          player.scorePoints(10);
+          player.scorePoints(10, 'GaN Bonus');
         }
         break;
     }
@@ -393,6 +401,16 @@ export class LEDRow extends Space<MyGame> {
 export class HundredToken extends Piece<MyGame> {
 }
 
+export class LEDScore {
+  public points: number;
+  public finish: boolean;
+
+  constructor(points: number, finish: boolean) {
+        this.points = points
+        this.finish = finish;
+    }
+}
+
 export class LEDCard extends Piece<MyGame> {
   public letter: string;
   public special: string;
@@ -403,16 +421,16 @@ export class LEDCard extends Piece<MyGame> {
     if(this.letter == "A" && layer.index == 5) {
       switch(row.all(ResourceCube, {color: CubeColor.Yellow}).length) {
         case 1:
-          return 5;
+          return new LEDScore(5, true);
         case 2:
-          return 12
+          return new LEDScore(12, true);
         case 3:
-          return 20;
+          return new LEDScore(20, true);
         default:
-          return 0;
+          return new LEDScore(0, true);
       }
     } else {
-      return layer.points;
+      return new LEDScore(layer.points, false);
     }
   }
 
