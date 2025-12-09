@@ -262,7 +262,9 @@ render(setup, {
 
             <text x="17%" y="12%" text-anchor="middle" dominant-baseline="middle" 
               fill={game.players.current() != null && powers.bonusUpgradeDiscout(game.players.current()!) > 0 ? "red" : "black"} font-size="60%">
-              {x.cost - (game.players.current() != null ? powers.bonusUpgradeDiscout(game.players.current()!): 0) + letters.upgradeTax(game.players.current()!)}
+              {x.cost - 
+                (game.players.current() != null ? powers.bonusUpgradeDiscout(game.players.current()!): 0) + 
+                (game.players.current() != null ? letters.upgradeTax(game.players.current()!) : 0)}
             </text>
 
             <foreignObject x="28%" y="3%" width="70%" height="20%" fontSize="40%">

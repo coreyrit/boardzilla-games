@@ -274,7 +274,7 @@ export class Actions {
     }),  
 
     discardPump: (player) => action<{upgrade: UpgradeCard}>({
-      prompt: "Replace Upgrade?"
+      prompt: "Replace Pump?"
     }).chooseFrom(
       "choice", ['Yes', 'No'], 
       { skipIf: 'never' }
@@ -289,10 +289,10 @@ export class Actions {
     choosePump: (player) => action<{upgrade: UpgradeCard}>({
       prompt: 'Choose Pump to Discard',
     }).chooseOnBoard(
-      'pump', player.board.all(UpgradeSpace).all(UpgradeCard, {type: UpgradeType.pump}),
+      'pump', player.board.all(ReactorSpace).all(UpgradeCard, {type: UpgradeType.pump}),
       { skipIf: 'never' }
     ).do(({ pump }) => {
-      const space = pump.container(UpgradeSpace)!
+      const space = pump.container(ReactorSpace)!
       pump.putInto(game.first(Supply)!);
       pump.putInto(space);
     }), 
