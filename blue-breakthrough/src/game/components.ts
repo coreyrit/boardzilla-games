@@ -361,7 +361,7 @@ export class LEDSpace extends Space<MyGame> {
 
     const letters = new LetterEffects(this.game);
     const pointTotal = points.reduce((sum, c) => sum + c, 0);
-    if(!letters.testingPointCheck(player, pointTotal)) {
+    if(letters.testingPointCheck(player, pointTotal)) {
       for(var i = 1; i < points.length; i++) {
         player.scorePoints(points[i-1], "Layer " + i);
       }

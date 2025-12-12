@@ -55,7 +55,7 @@ export class LetterEffects {
         if(this.game.hasLetter(LetterName.PerformanceEvaluation) && !player.letterImmune) {
             return points >= 7;
         } else {
-            return false;
+            return true;
         }
     }
 

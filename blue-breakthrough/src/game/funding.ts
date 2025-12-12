@@ -64,7 +64,7 @@ export const fundingCards: Partial<FundingCard>[] = [
     {name: FundingName.SharedUpgrade,	type: FundingType.Permanent,	effect: 'Upgrades cost 1 less.'},
     {name: FundingName.ConverterVoucher,	type: FundingType.Ongoing,	effect: 'During testing, activate one upgrade without paying its requirement.'},    
     {name: FundingName.PowerSwap,	type: FundingType.Instant,	effect: 'Move all tokens in your cooldown pool to your available pool.'},                
-    {name: FundingName.MarketSurge,	type: FundingType.Permanent,	effect: 'When gaining cubes, take +1 (max 4) above the power assigned.'},
+    {name: FundingName.MarketSurge,	type: FundingType.Permanent,	effect: 'When gaining cubes, take +1 above the power assigned.'},
     {name: FundingName.VictoryResearch,	type: FundingType.Instant,	effect: 'Score 5 ⭐ immediately.'},
     {name: FundingName.InvestorTrust,	type: FundingType.Ongoing,	effect: 'Once per round, discard another funding card to gain any 2 cubes instead of 1.'},        
     {name: FundingName.PreciseTools,	type: FundingType.Ongoing,	effect: 'When converting cubes with an upgrade you may change one cube in the result to any color.'},    
