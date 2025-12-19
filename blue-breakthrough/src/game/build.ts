@@ -31,13 +31,13 @@ import { letterCards } from './letters.js';
 function createGaAs(space: Space<MyGame>, name: string) : LEDCard {
   const GaAs = space.create(LEDCard, name, { 
     layers: [
-        {index: 1, text: '🟫 → 2 ⭐ ea.', colors: [CubeColor.Brown], optional: false, repeatable: true, points: 2},
-        {index: 2, text: '🟧 →2 ⭐ ea.', colors: [CubeColor.Orange], optional: false, repeatable: true, points: 2},
-        {index: 3, text: '⬛ → 3 ⭐ ea.', colors: [CubeColor.Black], optional: false, repeatable: true, points: 3},
-        {index: 4, text: '✳️ →1 ⭐ ea. ', colors: [CubeColor.Any], optional: false, repeatable: true, points: 1},
-        {index: 5, text: '', colors: [], optional: false, repeatable: false, points: 0},
-        {index: 6, text: '', colors: [], optional: false, repeatable: false, points: 0},
-        {index: 7, text: '', colors: [], optional: false, repeatable: false, points: 0},
+        {index: 1, text: '🟫,(🟫),(🟫) → 2 ⭐ ea.', colors: [CubeColor.Brown], optional: false, repeatable: 3, points: 2},
+        {index: 2, text: '🟧,(🟧),(🟧) → 2 ⭐ ea.', colors: [CubeColor.Orange], optional: false, repeatable: 3, points: 2},
+        {index: 3, text: '⬛,(⬛),(⬛) → 3 ⭐ ea.', colors: [CubeColor.Black], optional: false, repeatable: 3, points: 3},
+        {index: 4, text: '✳️ →1 ⭐ ea. ', colors: [CubeColor.Any], optional: false, repeatable: 1000, points: 1},
+        {index: 5, text: '', colors: [], optional: false, repeatable: 0, points: 0},
+        {index: 6, text: '', colors: [], optional: false, repeatable: 0, points: 0},
+        {index: 7, text: '', colors: [], optional: false, repeatable: 0, points: 0},
       ]}
     );
   return GaAs
@@ -47,14 +47,14 @@ function createGaN(space: Space<MyGame>, name: string) : LEDCard {
   const GaN = space.create(LEDCard, name, { 
     letter: 'A',
     layers: [
-      {index: 1, text: '⬜ → 1 ⭐ ea.', colors: [CubeColor.White], optional: false, repeatable: true, points: 1},
-      {index: 2, text: '(⬜ 🟦) → 5 ⭐', colors: [CubeColor.White, CubeColor.Blue], optional: true, repeatable: false, points: 5},
-      {index: 3, text: '🟦 → 1 ⭐ ea. ', colors: [CubeColor.Blue], optional: false, repeatable: true, points: 1},
-      {index: 4, text: '🟦 🟥 → 5 ⭐', colors: [CubeColor.Blue, CubeColor.Red], optional: false, repeatable: false, points: 5},
+      {index: 1, text: '⬜,(⬜),(⬜) → 1 ⭐ ea.', colors: [CubeColor.White], optional: false, repeatable: 3, points: 1},
+      {index: 2, text: '(⬜ 🟦) → 5 ⭐', colors: [CubeColor.White, CubeColor.Blue], optional: true, repeatable: 1, points: 5},
+      {index: 3, text: '🟦,(🟦),(🟦) → 1 ⭐ ea. ', colors: [CubeColor.Blue], optional: false, repeatable: 3, points: 1},
+      {index: 4, text: '🟦 🟥 → 5 ⭐', colors: [CubeColor.Blue, CubeColor.Red], optional: false, repeatable: 1, points: 5},
       // special rules in place for this
-      {index: 5, text: '(🟨),(🟨),(🟨) → 5,12,20 ⭐', colors: [CubeColor.Yellow], optional: true, repeatable: true, points: 5},
-      {index: 6, text: '🟨 🟥 → 8 ⭐', colors: [CubeColor.Yellow, CubeColor.Red], optional: false, repeatable: false, points: 8},
-      {index: 7, text: '🟥 → 5 ⭐ ea.', colors: [CubeColor.Red], optional: false, repeatable: true, points: 5},
+      {index: 5, text: '(🟨),(🟨),(🟨) → 5,12,20 ⭐', colors: [CubeColor.Yellow], optional: true, repeatable: 3, points: 5},
+      {index: 6, text: '🟨 🟥 → 8 ⭐', colors: [CubeColor.Yellow, CubeColor.Red], optional: false, repeatable: 1, points: 8},
+      {index: 7, text: '🟥,(🟥) → 5 ⭐ ea.', colors: [CubeColor.Red], optional: false, repeatable: 2, points: 5},
     ], 
     special: 'If at least one cube per row: 10 ⭐' 
   });
@@ -155,6 +155,7 @@ export function buildGame(game: MyGame) {
     playerBoard.create(ReactorSpace, 'trap' + i, {type: UpgradeType.trap});
 
     const temp = playerSpace.create(ResourceSpace, 'resourceSpace' + i);
+
     // temp.create(ResourceCube, 'test1', {color: CubeColor.White});
     // temp.create(ResourceCube, 'test2', {color: CubeColor.White});
     // temp.create(ResourceCube, 'test3', {color: CubeColor.Blue});
@@ -169,6 +170,13 @@ export function buildGame(game: MyGame) {
     // temp.create(ResourceCube, 'test7', {color: CubeColor.Yellow});
     // temp.create(ResourceCube, 'test7', {color: CubeColor.Yellow});
     // temp.create(ResourceCube, 'test7', {color: CubeColor.Yellow});
+    // temp.create(ResourceCube, 'test7', {color: CubeColor.Yellow});
+    // temp.create(ResourceCube, 'test7', {color: CubeColor.Brown});
+    // temp.create(ResourceCube, 'test7', {color: CubeColor.Brown});
+    // temp.create(ResourceCube, 'test7', {color: CubeColor.Brown});
+    // temp.create(ResourceCube, 'test7', {color: CubeColor.Brown});
+    // temp.create(ResourceCube, 'test7', {color: CubeColor.Brown});
+
 
 
 

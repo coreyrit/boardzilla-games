@@ -362,7 +362,7 @@ export class LEDSpace extends Space<MyGame> {
     const letters = new LetterEffects(this.game);
     const pointTotal = points.reduce((sum, c) => sum + c, 0);
     if(letters.testingPointCheck(player, pointTotal)) {
-      for(var i = 1; i < points.length; i++) {
+      for(var i = 1; i <= points.length; i++) {
         player.scorePoints(points[i-1], "Layer " + i);
       }
     }
@@ -390,7 +390,7 @@ export class LEDLayer {
   public text: string;
   public colors: CubeColor[];
   public optional: boolean;
-  public repeatable: boolean;
+  public repeatable: number;
   public points: number;
 }
 
@@ -435,11 +435,18 @@ export class LEDCard extends Piece<MyGame> {
   }
 
   public canRepeat(layer: LEDLayer, row: LEDRow) {
-    if(this.letter == "A" && layer.index == 5) {
-      return row.all(ResourceCube, {color: CubeColor.Yellow}).length < 3;
-    } else {
-      return layer.repeatable;
-    }
+    // if(this.letter == "A" && layer.index == 5) {
+      // return row.all(ResourceCube, {color: CubeColor.Yellow}).length < 3;
+    // } else {
+      var minCount = 1000;
+      for(const c of layer.colors) {
+        const count = row.all(ResourceCube, {color: c}).length;
+        if(count < minCount) {
+          minCount = count;
+        }
+      }
+      return minCount < layer.repeatable;
+    // }
   }
 
   public isLayerComplete(layer: LEDLayer, includeOptional: boolean = true): boolean {
