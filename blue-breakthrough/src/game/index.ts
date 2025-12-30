@@ -417,7 +417,7 @@ export class MyGame extends Game<MyGame, BlueBreakthroughPlayer> {
       const token = p.board.first(PowerTokenSpace, {action: action})!.first(PowerToken)!
       
       const tokenValue = token.value() + (action == TokenAction.Funding ? p.fundingBoost : 0);
-      const playerScore = p.getScore();
+      const playerScore = p.finalScore();
       const distance = this.getPriorityDistance(p);
       const tokenSum = p.board.all(PowerTokenSpace).reduce((sum, x) => sum + x.first(PowerToken)!.value(), 0);
 
