@@ -1,0 +1,48 @@
+#play-area {
+
+    .EventCover {
+      opacity: 100%;
+      &:hover {
+        opacity: 0%;
+      }
+    }
+
+  .tabs-tab {
+    // background: var(--player-color);
+    // opacity: 25%;
+    filter: brightness(0.5);
+    &.active {
+      // opacity: 100%;
+      filter: brightness(1.0);
+    }
+    &:hover {
+      opacity: 100%;
+      filter: brightness(1.5);
+    }
+  }
+
+  .playerTab {
+    position: absolute;
+    top: 0;
+    left: 40%;
+  }
+
+  .drawer {
+    z-index: 2000;
+  }
+  .drawer-tab {
+    z-index: 2200;
+    // background-color: var(--player-color);
+  }
+  .drawer-content {
+    z-index: 2100;
+  }
+
+  svg {
+  // border: 1px solid black;
+  flex-grow: 1;
+  width: 100%;
+  height: 100%;
+}
+
+}
