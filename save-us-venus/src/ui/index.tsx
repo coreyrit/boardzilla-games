@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, Space } from '@boardzilla/core';
-import { BuildingCard, BuildingDeck, EarthCard, EarthPlayerSpace, EventCard, EventCover, EventRow, Hand, HumanToken, LandCard, LandSpace, MyGame, OverlayRow, PlayersSpace, RejectionCard, default as setup, TrustCard, VenusCard } from '../game/index.js';
+import { BuildingCard, BuildingDeck, EarthCard, EarthPlayerSpace, EventCard, EventCover, EventRow, Hand, HumanToken, LandCard, LandSpace, LostHumanSpace, MyGame, OverlayRow, PlayersSpace, RejectionCard, default as setup, TrustCard, VenusCard } from '../game/index.js';
 
 import './style.scss';
 
@@ -90,11 +90,15 @@ render(setup, {
 
     for(let i = 1; i < game.players.length; i++) {
       game.players[i].space.layout(LandSpace, {columns: 4, rows: 1, gap: {x:0.5, y: 0.5}, scaling: 'fill', area: { left: 0, top: 0, width: 80, height: 100 }});
-      game.all(LandSpace).layout(LandCard, { area: { left: 25, top: 30, width: 50, height: 35 }});
+      game.all(LandSpace).layout(LandCard, { area: { left: 5, top: 30, width: 90, height: 35 }});
+      game.all(LandSpace).layout(BuildingCard, { columns: 1, rows: 1, area: { left: 35, top: 5, width: 30, height: 20 }});
       game.all(LandSpace).layout(HumanToken, { columns: 3, rows: 3, gap: {x:0.5, y: 0.5}, area: { left: 25, top: 40, width: 50, height: 25 }});
 
-      game.all(Hand).layout(RejectionCard, { columns: 3, rows: 3, gap: {x:0.5, y: 0.5}, area: { left: 80, top: 20, width: 20, height: 80 }});
+      game.all(Hand).layout(RejectionCard, { columns: 2, rows: 2, gap: {x:0.5, y: 0.5}, area: { left: 82, top: 22, width: 16, height:60 }});
       game.all(LandSpace).layout(EarthCard, { columns: 2, rows: 1, gap: {x:0.5, y: 0.5}, area: { left: 5, top: 68, width: 90, height: 30 }});      
+
+      game.players[i].space.layout(LostHumanSpace, {area: { left: 80, top: 83, width: 18, height: 15 }});
+      game.players[i].space.all(LostHumanSpace).layout(HumanToken, { columns: 6, rows: 2, gap: {x:0.5, y: 0.5}});
 
       game.players[i].space.layout(BuildingDeck, {area: { left: 80, top: 0, width: 20, height: 20 }});
       game.all(BuildingDeck).layout(BuildingCard, {columns: 4, rows: 1});
@@ -104,6 +108,8 @@ render(setup, {
     $.rejectionSpace.appearance({render: x => null});
     $.motivationDeck.appearance({render: x => null});
 
+    game.all(BuildingDeck).appearance({render: x => null});
+    game.all(LostHumanSpace).appearance({render: x => null});
     game.all(EventRow).appearance({render: x => null});
     game.all(OverlayRow).appearance({render: x => null});
     game.all(LandSpace).appearance({render: x => null});
@@ -190,6 +196,50 @@ render(setup, {
             <foreignObject x="5%" y="65%" width="90%" height="30%" fontSize="50%" color="red">
               <center>
                   {x.getSideEffectText()}
+              </center>
+            </foreignObject>
+          </svg>
+        </div>
+      )});
+
+      game.all(RejectionCard).appearance({render: x => ( 
+        <div className='RejectionCard'>
+          <svg xmlns="http://www.w3.org/2000/svg" color={game.getColor(x)}>      
+            <rect x="0%" y="0%" width="100%" height="100%" fill='white' stroke="black" strokeWidth="4" />
+            <rect x="0%" y="0%" width="100%" height="30%" fill='currentColor' stroke="black" strokeWidth="4" />
+            <foreignObject x="5%" y="2%" width="90%" height="20%" fontSize="50%" color="white">
+              <center>
+                  {x.getTitle()}
+              </center>
+            </foreignObject>
+
+            <foreignObject x="0%" y="80%" width="100%" height="20%" fontSize="80%" color="red">
+              <center>
+                  {x.getTitle() == "" ? "" : "Rejection"}
+              </center>
+            </foreignObject>
+          </svg>
+        </div>
+      )});
+
+      game.all(BuildingCard).appearance({render: x => ( 
+        <div className='BuildingCard'>
+          <svg xmlns="http://www.w3.org/2000/svg" color={game.getColor(x)}>      
+            <rect x="0%" y="0%" width="100%" height="100%" fill='white' stroke="black" strokeWidth="2" />
+            <rect x="0%" y="0%" width="100%" height="20%" fill='currentColor' stroke="black" strokeWidth="2" />
+            <foreignObject x="0%" y="0%" width="100%" height="20%" fontSize="75%" color="white">
+              <center>
+                  {x.buildingType}
+              </center>
+            </foreignObject>
+            <foreignObject x="0%" y="20%" width="100%" height="40%" fontSize="200%" color="white">
+              <center>
+                  {game.getBuildingIcon(x.buildingType)}
+              </center>
+            </foreignObject>
+            <foreignObject x="5%" y="65%" width="90%" height="30%" fontSize="75%" color="black">
+              <center>
+                  {x.getText()}
               </center>
             </foreignObject>
           </svg>

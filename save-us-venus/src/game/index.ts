@@ -24,7 +24,7 @@ export class MyGame extends Game<MyGame, SUVPlayer> {
         // Injure the humans
         landSpace.all(HumanToken).forEach(human => {
           if(human.isInjured) {
-            human.putInto($.box);
+            human.putInto(landSpace.first(LostHumanSpace)!);
           } else {
             human.isInjured = true;
           }
@@ -84,6 +84,20 @@ export class MyGame extends Game<MyGame, SUVPlayer> {
     }
     return "";
   }
+
+  public getBuildingIcon(buildingType: BuildingType) : string {
+    switch(buildingType) {
+      case BuildingType.Hospital:
+        return '🏥';
+      case BuildingType.Sanctuary:
+        return '⛪';
+      case BuildingType.Capitol:
+        return '🏛';
+      case BuildingType.Base:
+        return '🏠';
+    }
+    return "";
+  }
 }
 
 export class Deck extends Space<MyGame> {
@@ -102,17 +116,17 @@ export enum EarthRole {
 }
 
 export enum LandType {
-  Beach,
-  Mountains,
-  Farm,
-  Forest
+  Beach = "Beach",
+  Mountains = "Mountains",
+  Farm = "Farm",
+  Forest = "Forest"
 }
 
 export enum BuildingType {
-  Hospital,
-  Sanctuary,
-  Capitol,
-  Base
+  Hospital = "Hospital",
+  Sanctuary = "Sanctuary",
+  Capitol = "Capitol",
+  Base = "Base"
 }
 
 export class EarthCard extends Piece<MyGame> {
@@ -323,11 +337,45 @@ export class EarthPlayerSpace extends Space<MyGame> {
 export class RejectionCard extends EarthCard {
   public earthAction: EarthAction;
   public color: string = 'white';
+
+  public getTitle() : string {
+    switch(this.earthAction) {
+      case EarthAction.Move2From1Land:
+        return 'Move 2 from 1 Land';
+      case EarthAction.Heal3On1Land:
+        return 'Heal 3 on 1 Land';
+      case EarthAction.BuildAnywhere:
+        return 'Build Anywhere';
+      case EarthAction.Recover1ToAnywhere:
+        return 'Recover 1 to Anywhere';
+      case EarthAction.DrawAny2EarthCards:
+        return 'Draw Any 2 Earth Cards';
+    }
+    return "";  
+  }
 }
 
 export class BuildingCard extends Piece<MyGame> {
   public buildingType: BuildingType;
   public color: string = 'white';
+
+  public getText() : string {
+    switch(this.buildingType) {
+      case BuildingType.Hospital:
+        return 'Heal 3 Here';
+      case BuildingType.Sanctuary:
+        return 'Recover 1 Here';
+      case BuildingType.Capitol:
+        return 'Draw 1 Here';
+      case BuildingType.Base:
+        return 'Move 2 To Here';
+    }
+    return "";
+  }
+}
+
+export class LostHumanSpace extends Space<MyGame> {
+
 }
 
 export class PlayersSpace extends Space<MyGame> {
@@ -419,6 +467,8 @@ export default createGame(SUVPlayer, MyGame, game => {
       $.box.create(RejectionCard, 'rejectionRecover' + p + '_' + i, {earthAction: EarthAction.Recover1ToAnywhere});
       $.box.create(RejectionCard, 'rejectionDraw' + p + '_' + i, {earthAction: EarthAction.DrawAny2EarthCards});
     }
+    $.box.all(RejectionCard).hideFromAll();
+
     for(let i = 0; i < 3; i++) {
       $.box.create(HumanToken, 'engineer' + p + '_' + i, {earthRole: EarthRole.Engineer});
       $.box.create(HumanToken, 'medic' + p + '_' + i, {earthRole: EarthRole.Medic});
@@ -448,12 +498,16 @@ export default createGame(SUVPlayer, MyGame, game => {
     $.box.topN(2, RejectionCard).putInto(forest);
     
     $.box.topN(2, RejectionCard).putInto(earthHand);
+    earthHand.all(RejectionCard).showOnlyTo(game.players[p]);
 
     const buildingDeck = playerSpace.create(BuildingDeck, 'buildingDeck' + p);
     buildingDeck.create(BuildingCard, 'hospital' + p, {buildingType: BuildingType.Hospital});
     buildingDeck.create(BuildingCard, 'sanctuary' + p, {buildingType: BuildingType.Sanctuary});
     buildingDeck.create(BuildingCard, 'capitol' + p, {buildingType: BuildingType.Capitol});
     buildingDeck.create(BuildingCard, 'base' + p, {buildingType: BuildingType.Base});
+
+    const lostHumansSpace = playerSpace.create(LostHumanSpace, 'lostHumansSpace' + p);
+    // lostHumansSpace.create(HumanToken, 'lostHuman' + p, {earthRole: EarthRole.Medic});
   }
 
   game.defineActions({
@@ -484,7 +538,89 @@ export default createGame(SUVPlayer, MyGame, game => {
     }).chooseOnBoard(
       'engineer', player.space.all(HumanToken, {earthRole: EarthRole.Engineer})
     ).do(({engineer}) => {        
-      
+      const land = engineer.container(LandSpace)!;
+      if(land.all(BuildingCard).length == 0 && player.space.all(BuildingDeck).all(BuildingCard).length > 0) {
+        game.followUp({name: 'buildBuilding', args: {land: land}});
+      }
+    }),
+
+    buildBuilding: (player) => action<{land: LandSpace}>({
+      prompt: 'Choose Building to Build'
+    }).chooseOnBoard(
+      'building', ({land}) => player.space.all(BuildingDeck).all(BuildingCard),
+    ).do(({land, building}) => {        
+      building.putInto(land);
+
+      switch(building.buildingType) {
+        case BuildingType.Hospital:
+          game.followUp({name: 'healHumans', args: {land: land, count: 3}});
+          break;
+        case BuildingType.Base:
+          game.followUp({name: 'moveHumansTo', args: {land: land}});
+          break;
+        case BuildingType.Capitol:
+          if(player.space.all(RejectionCard).length > 0) {
+            game.followUp({name: 'drawCard', args: {land: land}});
+          }
+          break;
+        case BuildingType.Sanctuary:
+          if(player.space.all(LostHumanSpace).all(HumanToken).length > 0) {
+            game.followUp({name: 'recoverHuman', args: {land: land}});
+          }
+          break;
+      }
+    }),
+
+    recoverHuman: (player) => action<{land: LandSpace}>({
+      prompt: 'Choose Human to Recover'
+    }).chooseOnBoard(
+      'human', ({land}) => player.space.first(LostHumanSpace)!.all(HumanToken),
+    ).do(({human, land}) => {        
+      human.isInjured = false;
+      human.putInto(land);
+    }),
+
+    drawCard: (player) => action<{land: LandSpace}>({
+      prompt: 'Draw Earth Card'
+    }).chooseOnBoard(
+      'card', ({land}) => land.all(RejectionCard)
+    ).do(({card}) => {        
+      card.putInto(player.space.first(Hand)!);
+      card.showOnlyTo(player);
+    }),
+
+    moveHumansTo: (player) => action<{land: LandSpace}>({
+      prompt: 'Choose Humans to Move'
+    }).chooseOnBoard(
+      'humans', ({land}) => player.space.all(HumanToken).filter(x => x.container(LandSpace) != land),
+      { min: 0, max: 2 }
+    ).do(({humans, land}) => {        
+      humans.forEach(human => {
+        human.putInto(land);
+      })
+    }),
+
+    moveHumansFrom: (player) => action<{soldier: HumanToken, land: LandSpace, count: number}>({
+      prompt: 'Choose Human to Move'
+    }).chooseOnBoard(
+      'human', ({soldier, land}) => land.all(HumanToken).filter(x => x != soldier),
+      { skipIf: 'never' }
+      // { min: 0, max: 1 }
+    ).do(({human, soldier, land, count}) => {        
+      if(human != undefined) {
+        game.followUp({name: 'chooseHumanLocation', args: {human: human, soldier: soldier, land: land, count: count}});
+      }
+    }),
+
+    chooseHumanLocation: (player) => action<{human: HumanToken, soldier: HumanToken, land: LandSpace, count: number}>({
+      prompt: 'Choose Location for Human'
+    }).chooseOnBoard(
+      'destination', ({land}) => player.space.all(LandSpace), //.filter(x => x != land),
+    ).do(({destination, human, soldier, land, count}) => {        
+      human.putInto(destination);
+      if(count > 1) {
+        game.followUp({name: 'moveHumansFrom', args: {soldier: soldier, land: land, count: count - 1}});
+      }
     }),
 
     activateMedic: (player) => action({
@@ -493,14 +629,14 @@ export default createGame(SUVPlayer, MyGame, game => {
       'medic', player.space.all(HumanToken, {earthRole: EarthRole.Medic})
     ).do(({medic}) => {        
       const land = medic.container(LandSpace)!;
-      game.followUp({name: 'healHumans', args: {land: land}});
+      game.followUp({name: 'healHumans', args: {land: land, count: 2}});
     }),
 
-     healHumans: (player) => action<{land: LandSpace}>({
+    healHumans: (player) => action<{land: LandSpace, count: number}>({
       prompt: 'Choose Humans to Heal'
     }).chooseOnBoard(
       'humans', ({land}) => land.all(HumanToken, {isInjured: true}),
-      { min: 0, max: 2 }
+      { min: 0, max: ({count}) => count }
     ).do(({humans}) => {        
       humans.forEach(human => {
         human.isInjured = false;
@@ -511,8 +647,10 @@ export default createGame(SUVPlayer, MyGame, game => {
       prompt: 'Activate Diplomat'
     }).chooseOnBoard(
       'diplomat', player.space.all(HumanToken, {earthRole: EarthRole.Diplomat})
-    ).do(({diplomat}) => {        
-      
+    ).do(({diplomat}) => {   
+      if(player.space.all(RejectionCard).length > 0) {
+        game.followUp({name: 'drawCard', args: {land: diplomat.container(LandSpace)!}});
+      }
     }),
     
     activateSoldier: (player) => action({
@@ -520,7 +658,20 @@ export default createGame(SUVPlayer, MyGame, game => {
     }).chooseOnBoard(
       'soldier', player.space.all(HumanToken, {earthRole: EarthRole.Soldier})
     ).do(({soldier}) => {
+      game.followUp({name: 'moveToOrFrom', args: {soldier: soldier, land: soldier.container(LandSpace)!}});
+    }),
 
+    moveToOrFrom: (player) => action<{soldier: HumanToken, land: LandSpace}>({
+      prompt: 'To or From?'
+    }).chooseFrom(
+      "choice", ({land}) => ['Move To ' + land.landType, 'Move From ' + land.landType], 
+      { skipIf: 'never' }
+    ).do(({choice, soldier, land}) => {        
+      if(choice.startsWith('Move To')) {
+        game.followUp({name: 'moveHumansTo', args: {land: land}});
+      } else {
+        game.followUp({name: 'moveHumansFrom', args: {soldier: soldier, land: land, count: 2}});
+      }
     }),
   });
 
