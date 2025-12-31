@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, Space } from '@boardzilla/core';
-import { BuildingCard, BuildingDeck, EarthCard, EarthPlayerSpace, EventCard, EventCover, EventRow, Hand, HumanToken, LandCard, LandSpace, LostHumanSpace, MyGame, OverlayRow, PlayersSpace, RejectionCard, default as setup, TrustCard, VenusCard } from '../game/index.js';
+import { BuildingCard, BuildingDeck, EarthCard, EarthPlayerSpace, EventCard, EventCover, EventRow, Hand, HumanToken, LandCard, LandSpace, LostHumanSpace, MyGame, OfferingRow, OverlayRow, PlayersSpace, RejectionCard, default as setup, TrustCard, TrustToken, VenusCard } from '../game/index.js';
 
 import './style.scss';
 
@@ -76,6 +76,12 @@ render(setup, {
     game.layout('eventRow', { area: { left: 0, top: 30, width: 100, height: 14 }});
     $.eventRow.layout(EventCard, {columns: 10, rows: 1, gap: {x:0.5, y: 0}, scaling: 'fill'})
 
+    game.layout('offeringRow', { area: { left: 0, top: 17.5, width: 100, height: 11.5 }});
+    $.offeringRow.layout(VenusCard, {columns: 10, rows: 1, gap: {x:0.5, y: 0}, scaling: 'fill'})
+
+    game.layout('rejectionRow', { area: { left: 0, top: 44.5, width: 100, height: 11.5 }});
+    $.rejectionRow.layout(RejectionCard, {columns: 10, rows: 1, gap: {x:0.5, y: 0}, scaling: 'fill'})
+
     game.layout('overlayRow', { area: { left: 0, top: 30, width: 100, height: 14 }});
     $.overlayRow.layout(EventCover, {columns: 10, rows: 1, gap: {x:0.5, y: 0}, scaling: 'fill', direction: 'rtl'})
 
@@ -87,6 +93,8 @@ render(setup, {
    
     game.layout('eventDeck', { area: { left: 0, top: 0, width: 0, height: 0 }});
     $.eventDeck.layout(EventCard, {columns: 1, rows: 1, gap: {x: 0, y: 0}, scaling: 'fill'})
+
+    $.venusHand.layout(TrustToken, {columns: 1, rows: 1, area: { left: 75, top: 20, width: 8, height: 40 }});
 
     for(let i = 1; i < game.players.length; i++) {
       game.players[i].space.layout(LandSpace, {columns: 4, rows: 1, gap: {x:0.5, y: 0.5}, scaling: 'fill', area: { left: 0, top: 0, width: 80, height: 100 }});
@@ -108,6 +116,7 @@ render(setup, {
     $.rejectionSpace.appearance({render: x => null});
     $.motivationDeck.appearance({render: x => null});
 
+    game.all(OfferingRow).appearance({render: x => null});
     game.all(BuildingDeck).appearance({render: x => null});
     game.all(LostHumanSpace).appearance({render: x => null});
     game.all(EventRow).appearance({render: x => null});
@@ -137,6 +146,25 @@ render(setup, {
           </svg>
         </div>
     )});
+
+    game.all(TrustToken).appearance({render: x => ( 
+        <div className='HumanToken'>
+          <svg xmlns="http://www.w3.org/2000/svg" color={game.getColor(x)}>
+            <rect x="0%" y="0%" width="100%" height="100%" fill='white' stroke="green" strokeWidth="8" />
+            <foreignObject x="0%" y="5%" width="100%" height="25%" fontSize="125%" color="green">
+              <center>
+                  Trust
+              </center>
+            </foreignObject>
+            <foreignObject x="0%" y="30%" width="100%" height="70%" fontSize="250%" color="green">
+              <center>
+                  {$.venusHand.all(TrustToken).length}
+              </center>
+            </foreignObject>
+          </svg>
+        </div>
+    )});
+
 
     game.all(LandCard).appearance({render: x => ( 
         <div className='LandCard'>

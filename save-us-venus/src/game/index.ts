@@ -5,9 +5,11 @@ import {
   Piece,
   Game,
 } from '@boardzilla/core';
+import { off } from 'process';
 
 export class SUVPlayer extends Player<MyGame, SUVPlayer> {
   space: EarthPlayerSpace;
+  trust: boolean = false;
 }
 
 export class MyGame extends Game<MyGame, SUVPlayer> {
@@ -16,6 +18,8 @@ export class MyGame extends Game<MyGame, SUVPlayer> {
     this.first(EventCover)!.putInto($.box);
 
     const event = $.eventRow.all(EventCard)[9 - $.overlayRow.all(EventCover).length];
+    event.showToAll();
+
     this.game.all(LandSpace, {landType: event.disasterLocation}).forEach(landSpace => {
       if(landSpace.all(BuildingCard).length > 0) {
         // Destroy the building
@@ -275,6 +279,12 @@ export class Hand extends Space<MyGame> {
 export class OverlayRow extends Space<MyGame> {
 }
 
+export class OfferingRow extends Space<MyGame> {
+}
+
+export class RejectionRow extends Space<MyGame> {
+}
+
 export class EventRow extends Space<MyGame> {
 }
 
@@ -431,6 +441,9 @@ export default createGame(SUVPlayer, MyGame, game => {
   game.create(EventRow, 'eventRow');
   $.eventDeck.topN(10).putInto($.eventRow);
 
+  game.create(OfferingRow, 'offeringRow');
+  game.create(RejectionRow, 'rejectionRow');
+
   game.create(OverlayRow, 'overlayRow');
   $.overlayRow.create(EventCover, 'eventCover1');
   $.overlayRow.create(EventCover, 'eventCover2');
@@ -533,6 +546,17 @@ export default createGame(SUVPlayer, MyGame, game => {
       }
     }),
 
+    chooseOffering: (player) => action({
+      prompt: 'Choose Offering'
+    }).chooseOnBoard(
+      'offering', $.venusHand.all(VenusCard),
+      { skipIf: 'never' }
+    ).do(({offering}) => {
+      offering.putInto($.offeringRow);
+      offering.showToAll();
+      $.venusDeck.top(VenusCard)!.putInto($.venusHand);
+    }),
+
     activateEngineer: (player) => action({
       prompt: 'Activate Engineer'
     }).chooseOnBoard(
@@ -615,7 +639,7 @@ export default createGame(SUVPlayer, MyGame, game => {
     chooseHumanLocation: (player) => action<{human: HumanToken, soldier: HumanToken, land: LandSpace, count: number}>({
       prompt: 'Choose Location for Human'
     }).chooseOnBoard(
-      'destination', ({land}) => player.space.all(LandSpace), //.filter(x => x != land),
+      'destination', ({land}) => player.space.all(LandSpace).filter(x => x != land),
     ).do(({destination, human, soldier, land, count}) => {        
       human.putInto(destination);
       if(count > 1) {
@@ -641,6 +665,38 @@ export default createGame(SUVPlayer, MyGame, game => {
       humans.forEach(human => {
         human.isInjured = false;
       });
+    }),
+
+    injureHumans: (player) => action<{lands: [LandType], countEach: number}>({
+      prompt: 'Choose Human(s) to Injure'
+    }).chooseOnBoard(
+      'humans', ({lands}) => player.space.first(LandSpace, {landType: lands[0]})!.all(HumanToken),
+      // { min: ({lands}) => Math.min(2, player.space.first(LandSpace, {landType: lands[0]})!.all(HumanToken).length), max: ({countEach}) => countEach }
+      { number: ({lands, countEach}) => Math.min(countEach, player.space.first(LandSpace, {landType: lands[0]})!.all(HumanToken).length) }
+    ).do(({lands, humans}) => {        
+      humans.forEach(human => {
+        if(human.isInjured) {
+          human.putInto(player.space.first(LostHumanSpace)!);
+        } else {
+          human.isInjured = true;
+        }
+      });
+
+      if(lands.length > 1) {
+        game.followUp({name: 'injureHumans', args: {lands: lands.slice(1), countEach: 1}});
+      }
+    }),
+
+    injureRole: (player) => action<{earthRole: EarthRole}>({
+      prompt: 'Choose Humans to Injure'
+    }).chooseOnBoard(
+      'human', ({earthRole}) => player.space.all(LandSpace).all(HumanToken, {earthRole: earthRole}),
+    ).do(({human}) => {        
+      if(human.isInjured) {
+        human.putInto(player.space.first(LostHumanSpace)!);
+      } else {
+        human.isInjured;
+      }
     }),
 
     activateDiplomat: (player) => action({
@@ -673,6 +729,112 @@ export default createGame(SUVPlayer, MyGame, game => {
         game.followUp({name: 'moveHumansFrom', args: {soldier: soldier, land: land, count: 2}});
       }
     }),
+
+    trustVenus: (player) => action({
+      prompt: 'Trust?'
+    }).chooseFrom(
+      "trust", ['Trust Venus'], 
+      { skipIf: 'never' }
+    ).do(({trust}) => {
+      player.trust = true;
+      $.trustPile.first(TrustToken)!.putInto($.venusHand);
+
+      const offering = $.offeringRow.all(VenusCard)[9 - $.overlayRow.all(EventCover).length];
+      game.message(offering.getTitle());
+
+      switch(offering.venusAction) {
+        case VenumAction.Move2ToTheBeach:
+          game.followUp({name: 'moveHumansTo', args: {land: player.space.first(LandSpace, {landType: LandType.Beach})!}});
+          break;
+        case VenumAction.Move2FromTheBeach:
+          game.followUp({name: 'moveHumansFrom', args: {land: player.space.first(LandSpace, {landType: LandType.Beach})!, count: 2}});
+          break;
+        case VenumAction.Move2ToTheMountains:
+          game.followUp({name: 'moveHumansTo', args: {land: player.space.first(LandSpace, {landType: LandType.Mountains})!}});
+          break;
+        case VenumAction.Move2FromTheMountains:
+          game.followUp({name: 'moveHumansFrom', args: {land: player.space.first(LandSpace, {landType: LandType.Mountains})!, count: 2}});
+          break;
+        case VenumAction.Move2ToTheFarm:
+          game.followUp({name: 'moveHumansTo', args: {land: player.space.first(LandSpace, {landType: LandType.Farm})!}});
+          break;
+        case VenumAction.Move2FromTheFarm:
+          game.followUp({name: 'moveHumansFrom', args: {land: player.space.first(LandSpace, {landType: LandType.Farm})!, count: 2}});
+          break;
+        case VenumAction.Move2ToTheForest:
+          game.followUp({name: 'moveHumansTo', args: {land: player.space.first(LandSpace, {landType: LandType.Forest})!}});
+          break;
+        case VenumAction.Move2FromTheForest:
+          game.followUp({name: 'moveHumansFrom', args: {land: player.space.first(LandSpace, {landType: LandType.Forest})!, count: 2}});
+          break;
+        case VenumAction.ActivateAnEngineer:
+          game.followUp({name: 'activateEngineer'});
+          break;
+        case VenumAction.ActivateADiplomat:
+          game.followUp({name: 'activateDiplomat'});
+          break;
+        case VenumAction.ActivateAMedic:
+          game.followUp({name: 'activateMedic'});
+          break;
+        case VenumAction.ActivateASoldier:
+          game.followUp({name: 'activateSoldier'});
+          break;
+      }
+    }),
+
+    venusSideEffect: (player) => action({
+      prompt: 'Venus Side Effect'
+    }).do(() => {
+      const offering = $.offeringRow.all(VenusCard)[9 - $.overlayRow.all(EventCover).length];
+      game.message(offering.getSideEffectText());
+      switch(offering.sideEffect) {
+        case SideEffect.Injure2AtTheBeach:
+          game.followUp({name: 'injureHumans', args: {lands: [LandType.Beach], countEach: 2}});
+          break;
+        case SideEffect.Injure1AtTheMountainsFarmAndForest:
+          game.followUp({name: 'injureHumans', args: {lands: [LandType.Mountains, LandType.Farm, LandType.Forest], countEach: 1}});
+          break;
+        case SideEffect.Injure2AtTheMountains:
+          game.followUp({name: 'injureHumans', args: {lands: [LandType.Mountains], countEach: 2}});
+          break;
+        case SideEffect.Injure1AtTheBeachFarmAndForest:
+          game.followUp({name: 'injureHumans', args: {lands: [LandType.Beach, LandType.Farm, LandType.Forest], countEach: 1}});
+          break;
+        case SideEffect.Injure2AtTheFarm:
+          game.followUp({name: 'injureHumans', args: {lands: [LandType.Farm], countEach: 2}});
+          break;
+        case SideEffect.Injure1AtTheBeachMountainsAndForest:
+          game.followUp({name: 'injureHumans', args: {lands: [LandType.Beach, LandType.Mountains, LandType.Forest], countEach: 1}});
+          break;
+        case SideEffect.Injure2AtTheForest:
+          game.followUp({name: 'injureHumans', args: {lands: [LandType.Forest], countEach: 2}});
+          break;
+        case SideEffect.Injure1AtTheBeachMountainsAndFarm:
+          game.followUp({name: 'injureHumans', args: {lands: [LandType.Beach, LandType.Mountains, LandType.Farm], countEach: 1}});
+          break;
+        case SideEffect.InjureAnEngineer:
+          game.followUp({name: 'injureRole', args: {earthRole: EarthRole.Engineer}});
+          break;
+        case SideEffect.InjureADiplomat:
+          game.followUp({name: 'injureRole', args: {earthRole: EarthRole.Diplomat}});
+          break;
+        case SideEffect.InjureAMedic:
+          game.followUp({name: 'injureRole', args: {earthRole: EarthRole.Medic}});
+          break;
+        case SideEffect.InjureASoldier:
+          game.followUp({name: 'injureRole', args: {earthRole: EarthRole.Soldier}});
+          break;
+      }
+    }),
+
+    rejectVenus: (player) => action({
+      prompt: 'Reject Venus'
+    }).chooseOnBoard(
+      'card', player.space.all(Hand).all(RejectionCard)
+    ).do(({card}) => {
+      player.trust = false;
+      
+    }),
   });
 
   game.defineFlow(
@@ -689,6 +851,39 @@ export default createGame(SUVPlayer, MyGame, game => {
         ifElse({
           if: ({turn}) => turn != game.players[0], do: [
               playerActions({ actions: ['chooseMotivation']}),
+          ],
+        }),
+      ]
+    }),
+
+    // 4. Venus Offering
+    eachPlayer({
+      name: 'turn', do: [
+        ifElse({
+          if: ({turn}) => turn == game.players[0], do: [
+              playerActions({ actions: ['chooseOffering']}),
+          ],
+        }),
+      ]
+    }),
+
+    // 5. Earth Trusts or Rejects
+    eachPlayer({
+      name: 'turn', do: [
+        ifElse({
+          if: ({turn}) => turn != game.players[0], do: [
+              playerActions({ actions: ['trustVenus', 'rejectVenus']}),
+          ],
+        }),
+      ]
+    }),
+
+    // 6. Venus Side Effect
+    eachPlayer({
+      name: 'turn', do: [
+        ifElse({
+          if: ({turn}) => turn != game.players[0] && turn.trust, do: [
+              playerActions({ actions: ['venusSideEffect']}),
           ],
         }),
       ]
