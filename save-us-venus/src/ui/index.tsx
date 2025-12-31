@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, Space } from '@boardzilla/core';
-import { BuildingCard, BuildingDeck, EarthCard, EarthPlayerSpace, EventCard, EventCover, EventRow, Hand, HumanToken, LandCard, LandSpace, MyGame, OverlayRow, PlayersSpace, RejectionCard, default as setup, VenusCard } from '../game/index.js';
+import { BuildingCard, BuildingDeck, EarthCard, EarthPlayerSpace, EventCard, EventCover, EventRow, Hand, HumanToken, LandCard, LandSpace, MyGame, OverlayRow, PlayersSpace, RejectionCard, default as setup, TrustCard, VenusCard } from '../game/index.js';
 
 import './style.scss';
 
@@ -33,7 +33,7 @@ render(setup, {
       // game.players.forEach(x => {
       for(let i = 1; i < game.players.length; i++) {
         const x = game.players[i];
-        tabSpaces['player' + index] = x.space;
+        tabSpaces['player' + i] = x.space;
         const tab = (
           <div>          
             <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" color={x.color}>            
@@ -44,7 +44,7 @@ render(setup, {
             </div>
           </div>
         );
-        tabDefs['player' + index]  = tab;
+        tabDefs['player' + i]  = tab;
         index++;
       };
 
@@ -68,17 +68,22 @@ render(setup, {
     game.layout('venusHand', { area: { left: 0, top: 0, width: 100, height: 20 }});
     $.venusHand.layout(VenusCard, {columns: 3, rows: 1, gap: {x:0.5, y: 0}, scaling: 'fill', area: { left: 10, top: 15, width: 30, height: 70 }});
 
+    game.layout('trustSpace', { area: { left: 50, top: 3, width: 20, height: 14 }});
+    $.trustSpace.layout(TrustCard, {columns: 2, rows: 1, gap: {x:0.5, y: 0}, scaling: 'fill'})
+    
+    game.layout('rejectionSpace', { area: { left: 75, top: 3, width: 10, height: 14 }});
+
     game.layout('eventRow', { area: { left: 0, top: 30, width: 100, height: 14 }});
     $.eventRow.layout(EventCard, {columns: 10, rows: 1, gap: {x:0.5, y: 0}, scaling: 'fill'})
 
     game.layout('overlayRow', { area: { left: 0, top: 30, width: 100, height: 14 }});
-    $.overlayRow.layout(EventCover, {columns: 10, rows: 1, gap: {x:0.5, y: 0}, scaling: 'fill'})
+    $.overlayRow.layout(EventCover, {columns: 10, rows: 1, gap: {x:0.5, y: 0}, scaling: 'fill', direction: 'rtl'})
 
     $.motivationDeck.layout(EarthCard, {columns: 1, rows: 1, gap: {x: 0, y: 0}, scaling: 'fill'})
-    $.venusHand.layout('motivationDeck', { area: { left: 70, top: 15, width: 10, height: 70 }});
+    $.venusHand.layout('motivationDeck', { area: { left: 90, top: 15, width: 10, height: 70 }});
 
     game.layout('venusDeck', { area: { left: 0, top: 0, width: 0, height: 0 }});
-    $.venusDeck.layout(VenusCard, {columns: 1, rows: 1, gap: {x: 0, y: 0}, scaling: 'fill'})
+    $.venusDeck.layout(VenusCard, {columns: 1, rows: 1, gap: {x: 0, y: 0}, scaling: 'fill'})    
    
     game.layout('eventDeck', { area: { left: 0, top: 0, width: 0, height: 0 }});
     $.eventDeck.layout(EventCard, {columns: 1, rows: 1, gap: {x: 0, y: 0}, scaling: 'fill'})
@@ -94,6 +99,10 @@ render(setup, {
       game.players[i].space.layout(BuildingDeck, {area: { left: 80, top: 0, width: 20, height: 20 }});
       game.all(BuildingDeck).layout(BuildingCard, {columns: 4, rows: 1});
     }
+
+    $.trustSpace.appearance({render: x => null});
+    $.rejectionSpace.appearance({render: x => null});
+    $.motivationDeck.appearance({render: x => null});
 
     game.all(EventRow).appearance({render: x => null});
     game.all(OverlayRow).appearance({render: x => null});
@@ -113,10 +122,10 @@ render(setup, {
     game.all(HumanToken).appearance({render: x => ( 
         <div className='HumanToken'>
           <svg xmlns="http://www.w3.org/2000/svg" color={game.getColor(x)}>
-            <rect x="0%" y="0%" width="100%" height="100%" fill='white' stroke="currentColor" strokeWidth="8" />
+            <rect x="0%" y="0%" width="100%" height="100%" fill={x.isInjured ? 'red' : 'white'} stroke="currentColor" strokeWidth="8" />
             <foreignObject x="0%" y="-15%" width="100%" height="100%" fontSize="600%" color="black">
               <center>
-                  {x.getRoleIcon()}
+                  {game.getRoleIcon(x.earthRole)}
               </center>
             </foreignObject>
           </svg>
@@ -183,6 +192,43 @@ render(setup, {
                   {x.getSideEffectText()}
               </center>
             </foreignObject>
+          </svg>
+        </div>
+      )});
+
+
+      game.all(TrustCard).appearance({render: x => ( 
+        <div className='TrustCard'>
+          <svg xmlns="http://www.w3.org/2000/svg">      
+            <rect x="0%" y="0%" width="100%" height="100%" fill='white' stroke="black" strokeWidth="4" />
+            <foreignObject x="0%" y="10%" width="100%" height="20%" fontSize="80%" color="black">
+              <center>
+                  {x.earthRole}
+              </center>
+            </foreignObject>
+            <foreignObject x="0%" y="15%" width="100%" height="60%" fontSize="300%" color="black">
+              <center>
+                  {game.getRoleIcon(x.earthRole)}
+              </center>
+            </foreignObject>
+            <foreignObject x="0%" y="80%" width="100%" height="20%" fontSize="80%" color="green">
+              <center>
+                  {x.earthRole == "" ? "" : "Trust"}
+              </center>
+            </foreignObject>
+
+            {/*<foreignObject x="0%" y="33%" width="100%" height="45%" fontSize="125%" color="black">
+              <center>
+                  {x.getImage()}
+              </center>
+            </foreignObject>
+
+            <rect x="0%" y="63%" width="100%" height="35%" fill='white' stroke="black" strokeWidth="1" fillOpacity="0" />
+            <foreignObject x="5%" y="65%" width="90%" height="30%" fontSize="50%" color="red">
+              <center>
+                  {x.getSideEffectText()}
+              </center>
+            </foreignObject> */}
           </svg>
         </div>
       )});

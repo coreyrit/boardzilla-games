@@ -11,6 +11,56 @@ export class SUVPlayer extends Player<MyGame, SUVPlayer> {
 }
 
 export class MyGame extends Game<MyGame, SUVPlayer> {
+
+  public revealNextEvent() : void {
+    this.first(EventCover)!.putInto($.box);
+
+    const event = $.eventRow.all(EventCard)[9 - $.overlayRow.all(EventCover).length];
+    this.game.all(LandSpace, {landType: event.disasterLocation}).forEach(landSpace => {
+      if(landSpace.all(BuildingCard).length > 0) {
+        // Destroy the building
+        landSpace.first(BuildingCard)!.putInto($.box);
+      } else {
+        // Injure the humans
+        landSpace.all(HumanToken).forEach(human => {
+          if(human.isInjured) {
+            human.putInto($.box);
+          } else {
+            human.isInjured = true;
+          }
+        });
+      }
+    });
+  }
+
+  public venusMotivation() : void {
+    $.motivationDeck.shuffle();
+    while($.trustSpace.all(TrustCard).length < 2) {
+      const card = $.motivationDeck.top(EarthCard)!;
+      card.showToAll();
+      if(card instanceof TrustCard) {
+        card.putInto($.trustSpace);         
+      } else {
+        card.putInto($.rejectionSpace);
+      }
+    }
+  }
+
+
+  public getRoleIcon(role: EarthRole) : string {
+    switch(role) {
+      case EarthRole.Engineer:
+        return '⚙';
+      case EarthRole.Medic:
+        return '+';
+      case EarthRole.Diplomat:
+        return '⚖︎';
+      case EarthRole.Soldier:
+        return '⭑';
+    }
+    return "";
+  }
+
   public getColor(piece: Piece<MyGame>) : string {
     if(piece.container(EarthPlayerSpace) != undefined) {
       const playerSpace = piece.container(EarthPlayerSpace)!;
@@ -44,11 +94,11 @@ export class BuildingDeck extends Deck {
 
 
 export enum EarthRole {
-  Engineer,
-  Medic,
-  Diplomat,
-  Soldier,
-  None
+  Engineer = "Engineer",
+  Medic = "Medic",
+  Diplomat = "Diplomat",
+  Soldier = "Soldier",
+  None = ""
 }
 
 export enum LandType {
@@ -256,20 +306,6 @@ export class TrustToken extends Piece<MyGame> {
 export class HumanToken extends Piece<MyGame> {
   public isInjured: boolean = false;
   public earthRole: EarthRole = EarthRole.None;
-
-  public getRoleIcon() : string {
-    switch(this.earthRole) {
-      case EarthRole.Engineer:
-        return '⚙';
-      case EarthRole.Medic:
-        return '+';
-      case EarthRole.Diplomat:
-        return '⚖︎';
-      case EarthRole.Soldier:
-        return '⭑';
-    }
-    return "";
-  }
 }
 
 export class LandSpace extends Space<MyGame> {
@@ -301,7 +337,7 @@ export class PlayersSpace extends Space<MyGame> {
 export default createGame(SUVPlayer, MyGame, game => {
 
   const { action } = game;
-  const { playerActions, loop, eachPlayer } = game.flowCommands;
+  const { playerActions, loop, eachPlayer, ifElse } = game.flowCommands;
 
 
   game.create(Space<MyGame>, 'box');
@@ -314,6 +350,7 @@ export default createGame(SUVPlayer, MyGame, game => {
   $.motivationDeck.create(TrustCard, 'trustDiplomat', {earthRole: EarthRole.Diplomat});
   $.motivationDeck.create(TrustCard, 'trustSoldier', {earthRole: EarthRole.Soldier});
   $.motivationDeck.create(TrustCard, 'trust', {earthRole: EarthRole.None});
+  $.motivationDeck.all(TrustCard).hideFromAll();
   $.motivationDeck.shuffle();
 
   game.create(Deck, 'venusDeck');
@@ -364,6 +401,9 @@ export default createGame(SUVPlayer, MyGame, game => {
   for(let i = 0; i < 24; i++) {
     $.trustPile.create(TrustToken, 'trustToken' + i);
   }
+
+  game.create(Space<MyGame>, 'trustSpace');
+  game.create(Space<MyGame>, 'rejectionSpace');
 
   const playersSpace = game.create(PlayersSpace, 'playersSpace')
   for(let p = 1; p < game.players.length; p++) {
@@ -417,9 +457,92 @@ export default createGame(SUVPlayer, MyGame, game => {
   }
 
   game.defineActions({
+    chooseMotivation: (player) => action({
+      prompt: 'Choose Motivation'
+    }).chooseOnBoard(
+      'motivation', $.trustSpace.all(TrustCard).filter(card => card.earthRole != EarthRole.None),
+      { skipIf: 'never' }
+    ).do(({motivation}) => {
+      switch(motivation.earthRole) {
+        case EarthRole.Engineer:
+          game.followUp({name: 'activateEngineer'});
+          break;
+        case EarthRole.Medic:
+          game.followUp({name: 'activateMedic'});
+          break;
+        case EarthRole.Diplomat:
+          game.followUp({name: 'activateDiplomat'});
+          break;
+        case EarthRole.Soldier:
+          game.followUp({name: 'activateSoldier'});
+          break;
+      }
+    }),
+
+    activateEngineer: (player) => action({
+      prompt: 'Activate Engineer'
+    }).chooseOnBoard(
+      'engineer', player.space.all(HumanToken, {earthRole: EarthRole.Engineer})
+    ).do(({engineer}) => {        
+      
+    }),
+
+    activateMedic: (player) => action({
+      prompt: 'Activate Medic'
+    }).chooseOnBoard(
+      'medic', player.space.all(HumanToken, {earthRole: EarthRole.Medic})
+    ).do(({medic}) => {        
+      const land = medic.container(LandSpace)!;
+      game.followUp({name: 'healHumans', args: {land: land}});
+    }),
+
+     healHumans: (player) => action<{land: LandSpace}>({
+      prompt: 'Choose Humans to Heal'
+    }).chooseOnBoard(
+      'humans', ({land}) => land.all(HumanToken, {isInjured: true}),
+      { min: 0, max: 2 }
+    ).do(({humans}) => {        
+      humans.forEach(human => {
+        human.isInjured = false;
+      });
+    }),
+
+    activateDiplomat: (player) => action({
+      prompt: 'Activate Diplomat'
+    }).chooseOnBoard(
+      'diplomat', player.space.all(HumanToken, {earthRole: EarthRole.Diplomat})
+    ).do(({diplomat}) => {        
+      
+    }),
+    
+    activateSoldier: (player) => action({
+      prompt: 'Activate Soldier'
+    }).chooseOnBoard(
+      'soldier', player.space.all(HumanToken, {earthRole: EarthRole.Soldier})
+    ).do(({soldier}) => {
+
+    }),
   });
 
   game.defineFlow(
+
+    // 1. Reveal Next Event and Apply Disaster
+    () => game.revealNextEvent(),
+
+    // 2. Venus Motivation
+    () => game.venusMotivation(),
+
+    // 3. Earth Abilities
+    eachPlayer({
+      name: 'turn', do: [
+        ifElse({
+          if: ({turn}) => turn != game.players[0], do: [
+              playerActions({ actions: ['chooseMotivation']}),
+          ],
+        }),
+      ]
+    }),
+
     playerActions({ actions: []}),
   );
 });
