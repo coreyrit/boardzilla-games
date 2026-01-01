@@ -11,9 +11,63 @@ import { off } from 'process';
 export class SUVPlayer extends Player<MyGame, SUVPlayer> {
   space: EarthPlayerSpace;
   trust: boolean = false;
+  playedOffering: boolean = false;
+  acceptDisaster: boolean = false;
 }
 
 export class MyGame extends Game<MyGame, SUVPlayer> {
+  public gameOver : boolean = false;
+
+  announceResult() : void {
+    $.venusGoal.all(GoalCard).showToAll();
+    $.earthGoal.all(GoalCard).showToAll();
+
+    if(this.lostGame()) {
+      this.finish(undefined, 'lost')
+    } else {
+
+      const beachHumanCount = this.all(LandSpace, {landType: LandType.Beach}).all(HumanToken).length;
+      const mountainsHumanCount = this.all(LandSpace, {landType: LandType.Mountains}).all(HumanToken).length;
+      const farmHumanCount = this.all(LandSpace, {landType: LandType.Farm}).all(HumanToken).length;
+      const forestHumanCount = this.all(LandSpace, {landType: LandType.Forest}).all(HumanToken).length;
+      
+      const engineersCount = this.all(LandSpace).all(HumanToken, {earthRole: EarthRole.Engineer}).length;
+      const medicsCount = this.all(LandSpace).all(HumanToken, {earthRole: EarthRole.Medic}).length;
+      const diplomatsCount = this.all(LandSpace).all(HumanToken, {earthRole: EarthRole.Diplomat}).length;
+      const soldiersCount = this.all(LandSpace)?.all(HumanToken, {earthRole: EarthRole.Soldier}).length;
+
+      const earthGoal = $.earthGoal.first(GoalCard)!;
+      const beachGoal = beachHumanCount >= earthGoal.earthBeach;
+      const mountainsGoal = mountainsHumanCount >= earthGoal.earthMountains;
+      const farmGoal = farmHumanCount >= earthGoal.earthFarm;
+      const forestGoal = forestHumanCount >= earthGoal.earthForest;
+
+      const venusGoal = $.venusGoal.first(GoalCard)!;
+      const engineersGoal = engineersCount >= venusGoal.venusEngineers;
+      const medicsGoal = engineersCount >= venusGoal.venusMedics;
+      const diplomatsGoal = engineersCount >= venusGoal.venusDiplomats;
+      const soldiersGoal = engineersCount >= venusGoal.venusSoldiers;
+
+      if(beachGoal && mountainsGoal && farmGoal && forestGoal && engineersGoal && medicsGoal && diplomatsGoal && soldiersGoal) {
+        this.finish(undefined, 'win')
+      } else {
+        this.finish(undefined, 'lost')
+      }      
+    }
+  }
+
+  public lostGame() : boolean {
+    const rejectionCount = $.rejectionSpace.all(RejectionCard).length;
+    switch(this.game.players.length-1) {
+      case 1:
+        return rejectionCount >= 2;
+      case 2:
+        return rejectionCount >= 5;
+      case 3:
+        return rejectionCount >= 8;
+    }
+    return this.game.all(LandSpace).all(HumanToken).length == 0;
+  }
 
   public revealNextEvent() : void {
     $.overlayRow.first(EventCover)!.putInto($.box);
@@ -21,7 +75,11 @@ export class MyGame extends Game<MyGame, SUVPlayer> {
     const event = $.eventRow.all(EventCard)[9 - $.overlayRow.all(EventCover).length];
     event.showToAll();
 
-    this.game.all(LandSpace, {landType: event.disasterLocation}).forEach(landSpace => {
+    this.destroyLocation(event.disasterLocation);
+  }
+
+  public destroyLocation(disasterLocation: LandType) {
+    this.game.all(LandSpace, {landType: disasterLocation}).forEach(landSpace => {
       if(landSpace.all(BuildingCard).length > 0) {
         // Destroy the building
         landSpace.first(BuildingCard)!.putInto($.box);
@@ -51,8 +109,9 @@ export class MyGame extends Game<MyGame, SUVPlayer> {
         card.putInto($.rejectionSpace);
       }
     }
-  }
 
+    this.game.gameOver = this.game.lostGame();
+  }
 
   public getRoleIcon(role: EarthRole) : string {
     switch(role) {
@@ -317,6 +376,9 @@ export class OfferingRow extends Space<MyGame> {
 export class RejectionRow extends Space<MyGame> {
 }
 
+export class DisasterSpace extends Space<MyGame> {
+}
+
 export class EventRow extends Space<MyGame> {
 }
 
@@ -424,10 +486,14 @@ export class PlayersSpace extends Space<MyGame> {
 
 }
 
+export class RejectionSpace extends Space<MyGame> {
+
+}
+
 export default createGame(SUVPlayer, MyGame, game => {
 
   const { action } = game;
-  const { playerActions, forLoop, loop, eachPlayer, ifElse } = game.flowCommands;
+  const { playerActions, forLoop, whileLoop, loop, eachPlayer, ifElse } = game.flowCommands;
 
 
   game.create(Space<MyGame>, 'box');
@@ -477,6 +543,7 @@ export default createGame(SUVPlayer, MyGame, game => {
 
   game.create(OfferingRow, 'offeringRow');
   game.create(RejectionRow, 'rejectionRow');
+  game.create(DisasterSpace, 'disasterSpace');
 
   game.create(OverlayRow, 'overlayRow');
   $.overlayRow.create(EventCover, 'eventCover1');
@@ -498,7 +565,7 @@ export default createGame(SUVPlayer, MyGame, game => {
   }
 
   game.create(Space<MyGame>, 'trustSpace');
-  game.create(Space<MyGame>, 'rejectionSpace');
+  game.create(RejectionSpace, 'rejectionSpace');
 
   const playersSpace = game.create(PlayersSpace, 'playersSpace')
   for(let p = 1; p < game.players.length; p++) {
@@ -566,12 +633,7 @@ export default createGame(SUVPlayer, MyGame, game => {
     for(let i = 1; i < game.players.length; i++) {
       earthGoal.showTo(game.players[i]);
     }
-    earthGoal.putInto($.earthGoal);    
-
-    const beach = playerSpace.create(LandSpace, 'beachLand' + p, {landType: LandType.Beach});
-    beach.create(LandCard, 'beachLandCard' + p, {landType: LandType.Beach});
-    $.box.topN(3, HumanToken).putInto(beach);
-    $.box.topN(2, RejectionCard).putInto(beach);
+    earthGoal.putInto($.earthGoal);        
 
     const mountains = playerSpace.create(LandSpace, 'mountainsLand' + p, {landType: LandType.Mountains});
     mountains.create(LandCard, 'mountainsLandCard' + p, {landType: LandType.Mountains});
@@ -582,6 +644,11 @@ export default createGame(SUVPlayer, MyGame, game => {
     farm.create(LandCard, 'farmLandCard' + p, {landType: LandType.Farm});
     $.box.topN(3, HumanToken).putInto(farm);
     $.box.topN(2, RejectionCard).putInto(farm);
+
+    const beach = playerSpace.create(LandSpace, 'beachLand' + p, {landType: LandType.Beach});
+    beach.create(LandCard, 'beachLandCard' + p, {landType: LandType.Beach});
+    $.box.topN(3, HumanToken).putInto(beach);
+    $.box.topN(2, RejectionCard).putInto(beach);
 
     const forest = playerSpace.create(LandSpace, 'forestLand' + p, {landType: LandType.Forest});  
     forest.create(LandCard, 'forestLandCard' + p, {landType: LandType.Forest});
@@ -610,16 +677,24 @@ export default createGame(SUVPlayer, MyGame, game => {
     ).do(({motivation}) => {
       switch(motivation.earthRole) {
         case EarthRole.Engineer:
-          game.followUp({name: 'activateEngineer'});
+          if(player.space.all(LandSpace).all(HumanToken, {earthRole: EarthRole.Engineer}).length > 0) {
+            game.followUp({name: 'activateEngineer'});
+          }
           break;
         case EarthRole.Medic:
-          game.followUp({name: 'activateMedic'});
+          if(player.space.all(LandSpace).all(HumanToken, {earthRole: EarthRole.Medic}).length > 0) {
+            game.followUp({name: 'activateMedic'});
+          }
           break;
         case EarthRole.Diplomat:
-          game.followUp({name: 'activateDiplomat'});
+          if(player.space.all(LandSpace).all(HumanToken, {earthRole: EarthRole.Diplomat}).length > 0) {
+            game.followUp({name: 'activateDiplomat'});
+          }
           break;
         case EarthRole.Soldier:
-          game.followUp({name: 'activateSoldier'});
+          if(player.space.all(LandSpace).all(HumanToken, {earthRole: EarthRole.Soldier}).length > 0) {
+            game.followUp({name: 'activateSoldier'});
+          }
           break;
       }
     }),
@@ -630,17 +705,87 @@ export default createGame(SUVPlayer, MyGame, game => {
       'offering', $.venusHand.all(VenusCard),
       { skipIf: 'never' }
     ).do(({offering}) => {
+      player.playedOffering = true;
       offering.putInto($.offeringRow);
       offering.showToAll();
-      const next = $.venusDeck.top(VenusCard)!;
-      next.showOnlyTo(game.players[0]);
-      next.putInto($.venusHand);
+      if($.venusDeck.all(VenusCard).length > 0) {
+        const next = $.venusDeck.top(VenusCard)!;
+        next.showOnlyTo(game.players[0]);
+        next.putInto($.venusHand);
+      }
+    }),
+
+    newEvent: (player) => action({
+      prompt: 'Replace Event',
+      condition: $.venusHand.all(TrustToken).length >= (game.players.length-1)
+    }).do(() => {
+      game.followUp({name: 'replaceEventCard'});
+    }),
+
+    replaceEventCard: (player) => action({
+      prompt: 'Choose Event Card to Replace'
+    }).chooseOnBoard(
+      'card', $.eventRow.all(EventCard).splice(10-$.overlayRow.all(EventCover).length)
+    ).do(({card}) => {
+      const position = $.eventRow.all(EventCard).indexOf(card);
+      card.putInto($.eventDeck, {position: $.eventDeck.all(EventCard).length});
+      const event = $.eventDeck.top(EventCard)!;
+      event.showOnlyTo(game.players[0]);
+      event.putInto($.eventRow, {position: position});
+      $.venusHand.topN((game.players.length-1), TrustToken).putInto($.box);
+    }),
+
+    swapEvents: (player) => action({
+      prompt: 'Swap 2 Events',
+      condition: $.venusHand.all(TrustToken).length >= (game.players.length-1)*2 && $.overlayRow.all(EventCover).length >= 2
+    }).do(() => {
+      game.followUp({name: 'chooseEventCardsToSwap'});
+    }),
+
+    chooseEventCardsToSwap: (player) => action({
+      prompt: 'Choose Event Cards to Swap'
+    }).chooseOnBoard(
+      'cards', $.eventRow.all(EventCard).splice(10-$.overlayRow.all(EventCover).length),
+      {number: 2}
+    ).do(({cards}) => {
+      const position1 = $.eventRow.all(EventCard).indexOf(cards[0]);
+      const position2 = $.eventRow.all(EventCard).indexOf(cards[1]);
+
+      if(position1 < position2) {
+        cards[1].putInto($.eventRow, {position: position1});
+        cards[0].putInto($.eventRow, {position: position2});
+      } else {
+        cards[0].putInto($.eventRow, {position: position2});
+        cards[1].putInto($.eventRow, {position: position1});
+      }
+
+      $.venusHand.topN((game.players.length-1)*2, TrustToken).putInto($.box);
+    }),
+
+    newVenusCard: (player) => action({
+      prompt: 'Draw New Venus Card',
+      condition: $.venusHand.all(TrustToken).length >= (game.players.length-1)*2 && $.venusDeck.all(VenusCard).length > 0
+    }).do(() => {
+      const card = $.venusDeck.top(VenusCard)!
+      card.showOnlyTo(game.players[0]);
+      card.putInto($.venusHand);
+      game.followUp({name: 'discardVenusCard'});
+      $.venusHand.topN((game.players.length-1)*2, TrustToken).putInto($.box);
+    }),
+
+    discardVenusCard: (player) => action({
+      prompt: 'Choose Venus Card to Discard'
+    }).chooseOnBoard(
+      'card', $.venusHand.all(VenusCard)
+    ).do(({card}) => {        
+      card.hideFromAll();
+      card.putInto($.venusDeck, {position: $.venusDeck.all(VenusCard).length});
     }),
 
     activateEngineer: (player) => action({
       prompt: 'Activate Engineer'
     }).chooseOnBoard(
-      'engineer', player.space.all(HumanToken, {earthRole: EarthRole.Engineer})
+      'engineer', player.space.all(LandSpace).all(HumanToken, {earthRole: EarthRole.Engineer})
     ).do(({engineer}) => {        
       const land = engineer.container(LandSpace)!;
       if(land.all(BuildingCard).length == 0 && player.space.all(BuildingDeck).all(BuildingCard).length > 0) {
@@ -653,7 +798,9 @@ export default createGame(SUVPlayer, MyGame, game => {
     }).chooseOnBoard(
       'land', player.space.all(LandSpace).filter(x => x.all(BuildingCard).length == 0)
     ).do(({land}) => {        
-      game.followUp({name: 'buildBuilding', args: {land: land}});
+      if(land.all(BuildingCard).length == 0 && player.space.all(BuildingDeck).all(BuildingCard).length > 0) {
+        game.followUp({name: 'buildBuilding', args: {land: land}});
+      }
     }),
 
     healWhere: (player) => action({
@@ -669,15 +816,20 @@ export default createGame(SUVPlayer, MyGame, game => {
     }).chooseOnBoard(
       'land', player.space.all(LandSpace)
     ).do(({land}) => {        
-      game.followUp({name: 'recoverHuman', args: {land: land}});
+      if(player.space.all(LostHumanSpace).all(HumanToken).length > 0) {
+        game.followUp({name: 'recoverHuman', args: {land: land}});
+      }
     }),
 
     moveFromWhere: (player) => action({
       prompt: 'Choose where to move from'
     }).chooseOnBoard(
       'land', player.space.all(LandSpace)
-    ).do(({land}) => {        
-      game.followUp({name: 'moveHumansFrom', args: {land: land, count: 2}});
+    ).do(({land}) => {      
+      const count = land.all(HumanToken).length;
+      if(count > 0) {  
+        game.followUp({name: 'moveHumansFrom', args: {land: land, count: Math.min(count, 2)}});
+      }
     }),
 
     buildBuilding: (player) => action<{land: LandSpace}>({
@@ -731,8 +883,8 @@ export default createGame(SUVPlayer, MyGame, game => {
     moveHumansTo: (player) => action<{land: LandSpace}>({
       prompt: 'Choose Humans to Move'
     }).chooseOnBoard(
-      'humans', ({land}) => player.space.all(HumanToken).filter(x => x.container(LandSpace) != land),
-      { min: 0, max: 2 }
+      'humans', ({land}) => player.space.all(LandSpace).all(HumanToken).filter(x => x.container(LandSpace) != land),
+      { number: ({land}) => Math.min(player.space.all(LandSpace).all(HumanToken).filter(x => x.container(LandSpace) != land).length, 2) }
     ).do(({humans, land}) => {        
       humans.forEach(human => {
         human.putInto(land);
@@ -743,29 +895,36 @@ export default createGame(SUVPlayer, MyGame, game => {
       prompt: 'Choose Human to Move'
     }).chooseOnBoard(
       'human', ({soldier, land}) => land.all(HumanToken).filter(x => x != soldier),
-      { skipIf: 'never', number: ({land, count}) => Math.min(land.all(HumanToken).length, count) }
-      // { min: 0, max: 1 }
-    ).do(({human, soldier, land, count}) => {        
-      if(human != undefined) {
-        game.followUp({name: 'chooseHumanLocation', args: {human: human, soldier: soldier, land: land, count: count}});
-      }
-    }),
-
-    chooseHumanLocation: (player) => action<{human: HumanToken, soldier: HumanToken, land: LandSpace, count: number}>({
-      prompt: 'Choose Location for Human'
-    }).chooseOnBoard(
+      { skipIf: 'never' }
+    ).chooseOnBoard(
       'destination', ({land}) => player.space.all(LandSpace).filter(x => x != land),
-    ).do(({destination, human, soldier, land, count}) => {        
+    ).do(({destination, human, soldier, land, count}) => {      
       human.putInto(destination);
       if(count > 1) {
         game.followUp({name: 'moveHumansFrom', args: {soldier: soldier, land: land, count: count - 1}});
       }
     }),
 
+    // chooseHumanLocation: (player) => action<{human: HumanToken, soldier: HumanToken, land: LandSpace, count: number}>({
+    //   prompt: 'Choose Location for Human'
+    // }).chooseOnBoard(
+    //   'destination', ({land}) => player.space.all(LandSpace).filter(x => x != land),
+    // ).do(({destination, human, soldier, land, count}) => {
+    //   game.message('human = ' + human);
+    //   game.message('soldier = ' + soldier);
+    //   game.message('land = ' + land);
+    //   game.message('destination = ' + destination);
+    //   game.message('count = ' + count);
+    //   human.putInto(destination);
+    //   if(count > 1) {
+    //     game.followUp({name: 'moveHumansFrom', args: {soldier: soldier, land: land, count: count - 1}});
+    //   }
+    // }),
+
     activateMedic: (player) => action({
       prompt: 'Activate Medic'
     }).chooseOnBoard(
-      'medic', player.space.all(HumanToken, {earthRole: EarthRole.Medic})
+      'medic', player.space.all(LandSpace).all(HumanToken, {earthRole: EarthRole.Medic})
     ).do(({medic}) => {        
       const land = medic.container(LandSpace)!;
       game.followUp({name: 'healHumans', args: {land: land, count: 2}});
@@ -817,17 +976,18 @@ export default createGame(SUVPlayer, MyGame, game => {
     activateDiplomat: (player) => action({
       prompt: 'Activate Diplomat'
     }).chooseOnBoard(
-      'diplomat', player.space.all(HumanToken, {earthRole: EarthRole.Diplomat})
+      'diplomat', player.space.all(LandSpace).all(HumanToken, {earthRole: EarthRole.Diplomat})
     ).do(({diplomat}) => {   
-      if(player.space.all(RejectionCard).length > 0) {
-        game.followUp({name: 'drawCard', args: {lands: [diplomat.container(LandSpace)!], count: 1}});
+      const land = diplomat.container(LandSpace)!;
+      if(land.all(RejectionCard).length > 0) {
+        game.followUp({name: 'drawCard', args: {lands: [land], count: 1}});
       }
     }),
     
     activateSoldier: (player) => action({
       prompt: 'Activate Soldier'
     }).chooseOnBoard(
-      'soldier', player.space.all(HumanToken, {earthRole: EarthRole.Soldier})
+      'soldier', player.space.all(LandSpace).all(HumanToken, {earthRole: EarthRole.Soldier})
     ).do(({soldier}) => {
       game.followUp({name: 'moveToOrFrom', args: {soldier: soldier, land: soldier.container(LandSpace)!}});
     }),
@@ -841,7 +1001,10 @@ export default createGame(SUVPlayer, MyGame, game => {
       if(choice.startsWith('Move To')) {
         game.followUp({name: 'moveHumansTo', args: {land: land}});
       } else {
-        game.followUp({name: 'moveHumansFrom', args: {soldier: soldier, land: land, count: 2}});
+        const count = land.all(HumanToken).filter(x => x != soldier).length;
+        if(count > 0) {
+          game.followUp({name: 'moveHumansFrom', args: {soldier: soldier, land: land, count: Math.min(count,2)}});
+        }
       }
     }),
 
@@ -857,42 +1020,63 @@ export default createGame(SUVPlayer, MyGame, game => {
       const offering = $.offeringRow.all(VenusCard)[9 - $.overlayRow.all(EventCover).length];
       game.message(offering.getTitle());
 
+      const beachHumanCount = player.space.first(LandSpace, {landType: LandType.Beach})!.all(HumanToken).length;
+      const mountainsHumanCount = player.space.first(LandSpace, {landType: LandType.Mountains})!.all(HumanToken).length;
+      const farmHumanCount = player.space.first(LandSpace, {landType: LandType.Farm})!.all(HumanToken).length;
+      const forestHumanCount = player.space.first(LandSpace, {landType: LandType.Forest})!.all(HumanToken).length;
+
       switch(offering.venusAction) {
         case VenumAction.Move2ToTheBeach:
           game.followUp({name: 'moveHumansTo', args: {land: player.space.first(LandSpace, {landType: LandType.Beach})!}});
           break;
         case VenumAction.Move2FromTheBeach:
-          game.followUp({name: 'moveHumansFrom', args: {land: player.space.first(LandSpace, {landType: LandType.Beach})!, count: 2}});
+          if(beachHumanCount > 0) {
+            game.followUp({name: 'moveHumansFrom', args: {land: player.space.first(LandSpace, {landType: LandType.Beach})!, count: Math.min(beachHumanCount, 2)}});
+          }
           break;
         case VenumAction.Move2ToTheMountains:
           game.followUp({name: 'moveHumansTo', args: {land: player.space.first(LandSpace, {landType: LandType.Mountains})!}});
           break;
         case VenumAction.Move2FromTheMountains:
-          game.followUp({name: 'moveHumansFrom', args: {land: player.space.first(LandSpace, {landType: LandType.Mountains})!, count: 2}});
+          if(mountainsHumanCount > 0) {
+            game.followUp({name: 'moveHumansFrom', args: {land: player.space.first(LandSpace, {landType: LandType.Mountains})!, count: Math.min(mountainsHumanCount, 2)}});
+          }
           break;
         case VenumAction.Move2ToTheFarm:
           game.followUp({name: 'moveHumansTo', args: {land: player.space.first(LandSpace, {landType: LandType.Farm})!}});
           break;
         case VenumAction.Move2FromTheFarm:
-          game.followUp({name: 'moveHumansFrom', args: {land: player.space.first(LandSpace, {landType: LandType.Farm})!, count: 2}});
+          if(farmHumanCount > 0) {
+            game.followUp({name: 'moveHumansFrom', args: {land: player.space.first(LandSpace, {landType: LandType.Farm})!, count: Math.min(farmHumanCount, 2)}});
+          }
           break;
         case VenumAction.Move2ToTheForest:
           game.followUp({name: 'moveHumansTo', args: {land: player.space.first(LandSpace, {landType: LandType.Forest})!}});
           break;
         case VenumAction.Move2FromTheForest:
-          game.followUp({name: 'moveHumansFrom', args: {land: player.space.first(LandSpace, {landType: LandType.Forest})!, count: 2}});
+          if(forestHumanCount > 0) {
+            game.followUp({name: 'moveHumansFrom', args: {land: player.space.first(LandSpace, {landType: LandType.Forest})!, count: Math.min(forestHumanCount, 2)}});
+          }          
           break;
         case VenumAction.ActivateAnEngineer:
-          game.followUp({name: 'activateEngineer'});
+          if(player.space.all(LandSpace).all(HumanToken, {earthRole: EarthRole.Engineer}).length > 0) {
+            game.followUp({name: 'activateEngineer'});
+          }
           break;
         case VenumAction.ActivateADiplomat:
-          game.followUp({name: 'activateDiplomat'});
+          if(player.space.all(LandSpace).all(HumanToken, {earthRole: EarthRole.Diplomat}).length > 0) {
+            game.followUp({name: 'activateDiplomat'});
+          }
           break;
         case VenumAction.ActivateAMedic:
-          game.followUp({name: 'activateMedic'});
+          if(player.space.all(LandSpace).all(HumanToken, {earthRole: EarthRole.Medic}).length > 0) {
+            game.followUp({name: 'activateMedic'});
+          }
           break;
         case VenumAction.ActivateASoldier:
-          game.followUp({name: 'activateSoldier'});
+          if(player.space.all(LandSpace).all(HumanToken, {earthRole: EarthRole.Soldier}).length > 0) {
+            game.followUp({name: 'activateSoldier'});
+          }
           break;
       }
     }),
@@ -902,42 +1086,91 @@ export default createGame(SUVPlayer, MyGame, game => {
     }).do(() => {
       const offering = $.offeringRow.all(VenusCard)[9 - $.overlayRow.all(EventCover).length];
       game.message(offering.getSideEffectText());
+
+      const beachHumanCount = player.space.first(LandSpace, {landType: LandType.Beach})!.all(HumanToken).length;
+      const mountainsHumanCount = player.space.first(LandSpace, {landType: LandType.Mountains})!.all(HumanToken).length;
+      const farmHumanCount = player.space.first(LandSpace, {landType: LandType.Farm})!.all(HumanToken).length;
+      const forestHumanCount = player.space.first(LandSpace, {landType: LandType.Forest})!.all(HumanToken).length;
+      
+      const engineersCount = player.space.all(LandSpace).all(HumanToken, {earthRole: EarthRole.Engineer}).length;
+      const medicsCount = player.space.all(LandSpace).all(HumanToken, {earthRole: EarthRole.Medic}).length;
+      const diplomatsCount = player.space.all(LandSpace).all(HumanToken, {earthRole: EarthRole.Diplomat}).length;
+      const soldiersCount = player.space.all(LandSpace)?.all(HumanToken, {earthRole: EarthRole.Soldier}).length;
+
+      const lands : LandType[] = []
+      
       switch(offering.sideEffect) {
         case SideEffect.Injure2AtTheBeach:
-          game.followUp({name: 'injureHumans', args: {lands: [LandType.Beach], countEach: 2}});
+          if(beachHumanCount > 0) {
+            game.followUp({name: 'injureHumans', args: {lands: [LandType.Beach], countEach: 2}});
+          }
           break;
-        case SideEffect.Injure1AtTheMountainsFarmAndForest:
-          game.followUp({name: 'injureHumans', args: {lands: [LandType.Mountains, LandType.Farm, LandType.Forest], countEach: 1}});
+        case SideEffect.Injure1AtTheMountainsFarmAndForest:          
+          if(mountainsHumanCount > 0) {lands.push(LandType.Mountains)}
+          if(farmHumanCount > 0) {lands.push(LandType.Farm)}
+          if(forestHumanCount > 0) {lands.push(LandType.Forest)}
+          if(lands.length > 0) {
+            game.followUp({name: 'injureHumans', args: {lands: lands, countEach: 1}});
+          }
           break;
         case SideEffect.Injure2AtTheMountains:
-          game.followUp({name: 'injureHumans', args: {lands: [LandType.Mountains], countEach: 2}});
+          if(mountainsHumanCount > 0) {
+            game.followUp({name: 'injureHumans', args: {lands: [LandType.Mountains], countEach: 2}});
+          }
           break;
         case SideEffect.Injure1AtTheBeachFarmAndForest:
-          game.followUp({name: 'injureHumans', args: {lands: [LandType.Beach, LandType.Farm, LandType.Forest], countEach: 1}});
+          if(beachHumanCount > 0) {lands.push(LandType.Beach)}
+          if(farmHumanCount > 0) {lands.push(LandType.Farm)}
+          if(forestHumanCount > 0) {lands.push(LandType.Forest)}
+          if(lands.length > 0) {
+            game.followUp({name: 'injureHumans', args: {lands: lands, countEach: 1}});
+          }
           break;
         case SideEffect.Injure2AtTheFarm:
-          game.followUp({name: 'injureHumans', args: {lands: [LandType.Farm], countEach: 2}});
+          if(farmHumanCount > 0) {
+            game.followUp({name: 'injureHumans', args: {lands: [LandType.Farm], countEach: 2}});
+          }
           break;
         case SideEffect.Injure1AtTheBeachMountainsAndForest:
-          game.followUp({name: 'injureHumans', args: {lands: [LandType.Beach, LandType.Mountains, LandType.Forest], countEach: 1}});
+          if(beachHumanCount > 0) {lands.push(LandType.Beach)}
+          if(mountainsHumanCount > 0) {lands.push(LandType.Mountains)}
+          if(forestHumanCount > 0) {lands.push(LandType.Forest)}
+          if(lands.length > 0) {
+            game.followUp({name: 'injureHumans', args: {lands: lands, countEach: 1}});
+          }
           break;
         case SideEffect.Injure2AtTheForest:
-          game.followUp({name: 'injureHumans', args: {lands: [LandType.Forest], countEach: 2}});
+          if(forestHumanCount > 0) {
+            game.followUp({name: 'injureHumans', args: {lands: [LandType.Forest], countEach: 2}});
+          }
           break;
         case SideEffect.Injure1AtTheBeachMountainsAndFarm:
-          game.followUp({name: 'injureHumans', args: {lands: [LandType.Beach, LandType.Mountains, LandType.Farm], countEach: 1}});
+          if(beachHumanCount > 0) {lands.push(LandType.Beach)}
+          if(mountainsHumanCount > 0) {lands.push(LandType.Mountains)}
+          if(farmHumanCount > 0) {lands.push(LandType.Farm)}
+          if(lands.length > 0) {
+            game.followUp({name: 'injureHumans', args: {lands: lands, countEach: 1}});
+          }
           break;
         case SideEffect.InjureAnEngineer:
-          game.followUp({name: 'injureRole', args: {earthRole: EarthRole.Engineer}});
+          if(engineersCount > 0) {
+            game.followUp({name: 'injureRole', args: {earthRole: EarthRole.Engineer}});
+          }
           break;
         case SideEffect.InjureADiplomat:
-          game.followUp({name: 'injureRole', args: {earthRole: EarthRole.Diplomat}});
+          if(diplomatsCount > 0) {
+            game.followUp({name: 'injureRole', args: {earthRole: EarthRole.Diplomat}});
+          }
           break;
         case SideEffect.InjureAMedic:
-          game.followUp({name: 'injureRole', args: {earthRole: EarthRole.Medic}});
+          if(medicsCount > 0) {
+            game.followUp({name: 'injureRole', args: {earthRole: EarthRole.Medic}});
+          }
           break;
         case SideEffect.InjureASoldier:
-          game.followUp({name: 'injureRole', args: {earthRole: EarthRole.Soldier}});
+          if(soldiersCount > 0) {
+            game.followUp({name: 'injureRole', args: {earthRole: EarthRole.Soldier}});
+          }
           break;
       }
     }),
@@ -970,64 +1203,111 @@ export default createGame(SUVPlayer, MyGame, game => {
           break;
       }
     }),
+
+    acceptDisaster: (player) => action({
+      prompt: 'Accept Disaster'
+    }).do(() => {
+      player.acceptDisaster = true;
+    }),
+
+    newDisaster: (player) => action({
+      prompt: 'New Disaster',
+      condition: $.venusHand.all(TrustToken).length >= (game.players.length-1) && $.eventDeck.all(EventCard).length > 0
+    }).do(() => {
+      $.disasterSpace.all(EventCard).putInto($.box);
+      $.venusHand.topN((game.players.length-1), TrustToken).putInto($.box);
+    }),
+  
   });
 
   game.defineFlow(
 
-    forLoop({ name: 'round', initial: 1, next: round => round + 1, while: round => round <= 10, do: [
+    forLoop({ name: 'round', initial: 1, next: round => round + 1, while: round => round <= 10 && !game.gameOver, do: [
       
-    // 1. Reveal Next Event and Apply Disaster
-    () => game.revealNextEvent(),
+      // 1. Reveal Next Event and Apply Disaster
+      () => game.revealNextEvent(),
 
-    // 2. Venus Motivation
-    () => game.venusMotivation(),
+      // 2. Venus Motivation
+      () => game.venusMotivation(),
 
-    // 3. Earth Abilities
-    eachPlayer({
-      name: 'turn', do: [
-        ifElse({
-          if: ({turn}) => turn != game.players[0], do: [
-              playerActions({ actions: ['chooseMotivation']}),
-          ],
-        }),
-      ]
-    }),
+      ifElse({
+        if: () => !game.gameOver, do: [
 
-    // 4. Venus Offering
-    eachPlayer({
-      name: 'turn', do: [
-        ifElse({
-          if: ({turn}) => turn == game.players[0], do: [
-              playerActions({ actions: ['chooseOffering']}),
-          ],
-        }),
-      ]
-    }),
+          // 3. Earth Abilities
+          eachPlayer({
+            name: 'turn', do: [
+              ifElse({
+                if: ({turn}) => turn != game.players[0], do: [
+                  playerActions({ actions: ['chooseMotivation']}),
+                ],
+              }),
+            ]
+          }),
 
-    // 5. Earth Trusts or Rejects
-    eachPlayer({
-      name: 'turn', do: [
-        ifElse({
-          if: ({turn}) => turn != game.players[0], do: [
-              playerActions({ actions: ['trustVenus', 'rejectVenus']}),
-          ],
-        }),
-      ]
-    }),
+          // 4. Venus Offering
+          eachPlayer({
+            name: 'turn', do: [
+              ifElse({
+                if: ({turn}) => turn == game.players[0], do: [
+                  ({turn}) => turn.playedOffering = false,
+                  whileLoop({while: ({turn}) => !turn.playedOffering, do: ([
+                    playerActions({ actions: ['chooseOffering', 'newEvent', 'swapEvents', 'newVenusCard']}),
+                  ])}),
+                ],
+              }),
+            ]
+          }),
 
-    // 6. Venus Side Effect
-    eachPlayer({
-      name: 'turn', do: [
-        ifElse({
-          if: ({turn}) => turn != game.players[0] && turn.trust, do: [
-              playerActions({ actions: ['venusSideEffect']}),
-          ],
-        }),
-      ]
-    }),
+          // 5. Earth Trusts or Rejects
+          eachPlayer({
+            name: 'turn', do: [
+              ifElse({
+                if: ({turn}) => turn != game.players[0], do: [
+                  playerActions({ actions: ['trustVenus', 'rejectVenus']}),
+                ],
+              }),
+            ]
+          }),
 
-    () => $.rejectionRow.all(RejectionCard).putInto($.motivationDeck),
+          // 6. Venus Side Effect
+          eachPlayer({
+            name: 'turn', do: [
+              ifElse({
+                if: ({turn}) => turn != game.players[0] && turn.trust, do: [
+                  playerActions({ actions: ['venusSideEffect']}),
+                ],
+              }),
+            ]
+          }),
 
-    ]}),
-  );
+          () => $.rejectionRow.all(RejectionCard).putInto($.motivationDeck),
+        ]}),
+      ]}),
+
+      // Final Disaster
+      ifElse({
+        if: () => !game.gameOver, do: [
+          eachPlayer({
+            name: 'turn', do: [
+              ifElse({
+                if: ({turn}) => turn == game.players[0], do: [
+                  whileLoop({while: ({turn}) => !turn.acceptDisaster, do: ([
+                    () => {
+                      const disaster = $.eventDeck.top(EventCard)!;
+                      disaster.putInto($.disasterSpace);
+                      disaster.showToAll();
+                    },
+                    playerActions({ actions: ['acceptDisaster', 'newDisaster']}),
+                  ])}),
+                ],
+              }),
+            ]
+          }),
+          () => game.destroyLocation($.disasterSpace.first(EventCard)!.disasterLocation),
+        ],        
+      }),      
+
+      // Game Over
+      () => game.announceResult()
+    );
 });
