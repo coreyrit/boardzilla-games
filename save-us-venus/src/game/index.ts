@@ -5,6 +5,7 @@ import {
   Piece,
   Game,
 } from '@boardzilla/core';
+import { count } from 'console';
 import { off } from 'process';
 
 export class SUVPlayer extends Player<MyGame, SUVPlayer> {
@@ -15,7 +16,7 @@ export class SUVPlayer extends Player<MyGame, SUVPlayer> {
 export class MyGame extends Game<MyGame, SUVPlayer> {
 
   public revealNextEvent() : void {
-    this.first(EventCover)!.putInto($.box);
+    $.overlayRow.first(EventCover)!.putInto($.box);
 
     const event = $.eventRow.all(EventCard)[9 - $.overlayRow.all(EventCover).length];
     event.showToAll();
@@ -28,7 +29,7 @@ export class MyGame extends Game<MyGame, SUVPlayer> {
         // Injure the humans
         landSpace.all(HumanToken).forEach(human => {
           if(human.isInjured) {
-            human.putInto(landSpace.first(LostHumanSpace)!);
+            human.putInto(landSpace.container(PlayersSpace)!.first(LostHumanSpace)!);
           } else {
             human.isInjured = true;
           }
@@ -38,6 +39,8 @@ export class MyGame extends Game<MyGame, SUVPlayer> {
   }
 
   public venusMotivation() : void {
+    $.trustSpace.all(TrustCard).putInto($.motivationDeck);
+    $.motivationDeck.all(EarthCard).hideFromAll();
     $.motivationDeck.shuffle();
     while($.trustSpace.all(TrustCard).length < 2) {
       const card = $.motivationDeck.top(EarthCard)!;
@@ -110,6 +113,34 @@ export class Deck extends Space<MyGame> {
 export class BuildingDeck extends Deck {
 }
 
+export class GoalCard extends Piece<MyGame> {
+  public earthPlayerCount: number;
+
+  public forEarthPlayer: boolean;
+  
+  public earthMountains: number;
+  public earthFarm: number;
+  public earthBeach: number;
+  public earthForest: number;
+  
+  public venusMedics: number;
+  public venusEngineers: number;
+  public venusDiplomats: number;
+  public venusSoldiers: number;
+
+  public getPlayerCountColor() : string {
+    switch(this.earthPlayerCount) {
+      case 1:
+        return "lightGreen";
+      case 2:
+        return "lightYellow";
+      case 3:
+        return "lightRed";
+    }
+    return "white";
+  }
+}
+
 
 export enum EarthRole {
   Engineer = "Engineer",
@@ -138,6 +169,7 @@ export class EarthCard extends Piece<MyGame> {
 
 export class TrustCard extends EarthCard {
   public earthRole: EarthRole = EarthRole.None;
+  public visible: string = "Yes";
 }
 
 export enum VenumAction {
@@ -346,7 +378,7 @@ export class EarthPlayerSpace extends Space<MyGame> {
 
 export class RejectionCard extends EarthCard {
   public earthAction: EarthAction;
-  public color: string = 'white';
+  public color: string = 'black';
 
   public getTitle() : string {
     switch(this.earthAction) {
@@ -395,7 +427,7 @@ export class PlayersSpace extends Space<MyGame> {
 export default createGame(SUVPlayer, MyGame, game => {
 
   const { action } = game;
-  const { playerActions, loop, eachPlayer, ifElse } = game.flowCommands;
+  const { playerActions, forLoop, loop, eachPlayer, ifElse } = game.flowCommands;
 
 
   game.create(Space<MyGame>, 'box');
@@ -425,6 +457,8 @@ export default createGame(SUVPlayer, MyGame, game => {
   $.venusDeck.create(VenusCard, 'activateAMedic', {venusAction: VenumAction.ActivateAMedic, sideEffect: SideEffect.InjureAMedic});
   $.venusDeck.create(VenusCard, 'activateASoldier', {venusAction: VenumAction.ActivateASoldier, sideEffect: SideEffect.InjureASoldier});
   $.venusDeck.shuffle();
+
+  $.venusDeck.all(VenusCard).hideFromAll();
   
   $.venusDeck.topN(3).putInto($.venusHand);
   $.venusHand.all(VenusCard).showOnlyTo(game.players[0]);
@@ -488,7 +522,51 @@ export default createGame(SUVPlayer, MyGame, game => {
       $.box.create(HumanToken, 'soldier' + p + '_' + i, {earthRole: EarthRole.Soldier});
       $.box.create(HumanToken, 'diplomat' + p + '_' + i, {earthRole: EarthRole.Diplomat});
     }
+
+    $.box.create(GoalCard, 'goal1_1', {earthPlayerCount: 1, 
+      earthMountains: 2, earthFarm: 1, earthBeach: 2, earthForest: 1, venusMedics: 2, venusEngineers: 1, venusDiplomats: 2, venusSoldiers: 1});
+    $.box.create(GoalCard, 'goal1_2', {earthPlayerCount: 1, 
+      earthMountains: 2, earthFarm: 2, earthBeach: 1, earthForest: 1, venusMedics: 1, venusEngineers: 2, venusDiplomats: 1, venusSoldiers: 2});
+    $.box.create(GoalCard, 'goal1_3', {earthPlayerCount: 1, 
+      earthMountains: 1, earthFarm: 2, earthBeach: 1, earthForest: 2, venusMedics: 1, venusEngineers: 2, venusDiplomats: 2, venusSoldiers: 1});
+    $.box.create(GoalCard, 'goal1_4', {earthPlayerCount: 1, 
+      earthMountains: 1, earthFarm: 1, earthBeach: 2, earthForest: 2, venusMedics: 2, venusEngineers: 1, venusDiplomats: 1, venusSoldiers: 2});
+
+    $.box.create(GoalCard, 'goal2_1', {earthPlayerCount: 2, 
+      earthMountains: 4, earthFarm: 2, earthBeach: 3, earthForest: 3, venusMedics: 4, venusEngineers: 3, venusDiplomats: 2, venusSoldiers: 3});
+    $.box.create(GoalCard, 'goal2_2', {earthPlayerCount: 2, 
+      earthMountains: 3, earthFarm: 4, earthBeach: 3, earthForest: 2, venusMedics: 3, venusEngineers: 4, venusDiplomats: 3, venusSoldiers: 2});
+    $.box.create(GoalCard, 'goal2_3', {earthPlayerCount: 2, 
+      earthMountains: 2, earthFarm: 3, earthBeach: 4, earthForest: 3, venusMedics: 3, venusEngineers: 2, venusDiplomats: 4, venusSoldiers: 3});
+    $.box.create(GoalCard, 'goal2_4', {earthPlayerCount: 2, 
+      earthMountains: 3, earthFarm: 3, earthBeach: 2, earthForest: 4, venusMedics: 2, venusEngineers: 3, venusDiplomats: 3, venusSoldiers: 4});
+
+    $.box.create(GoalCard, 'goal3_1', {earthPlayerCount: 3, 
+      earthMountains: 6, earthFarm: 3, earthBeach: 5, earthForest: 4, venusMedics: 6, venusEngineers: 4, venusDiplomats: 3, venusSoldiers: 5});
+    $.box.create(GoalCard, 'goal3_2', {earthPlayerCount: 3, 
+      earthMountains: 3, earthFarm: 5, earthBeach: 4, earthForest: 6, venusMedics: 4, venusEngineers: 6, venusDiplomats: 5, venusSoldiers: 3});
+    $.box.create(GoalCard, 'goal3_3', {earthPlayerCount: 3, 
+      earthMountains: 5, earthFarm: 4, earthBeach: 6, earthForest: 3, venusMedics: 3, venusEngineers: 5, venusDiplomats: 6, venusSoldiers: 4});
+    $.box.create(GoalCard, 'goal3_4', {earthPlayerCount: 3, 
+      earthMountains: 4, earthFarm: 6, earthBeach: 3, earthForest: 5, venusMedics: 5, venusEngineers: 3, venusDiplomats: 4, venusSoldiers: 6});
+
     $.box.shuffle();
+
+    game.create(Space<MyGame>, 'venusGoal');
+    game.create(Space<MyGame>, 'earthGoal');
+
+    const venusGoal = $.box.first(GoalCard, {earthPlayerCount: game.players.length-1})!;
+    venusGoal.forEarthPlayer = false;
+    venusGoal.showOnlyTo(game.players[0]);
+    venusGoal.putInto($.venusGoal);
+  
+    const earthGoal = $.box.first(GoalCard, {earthPlayerCount: game.players.length-1})!;
+    earthGoal.forEarthPlayer = true;
+    earthGoal.hideFromAll();
+    for(let i = 1; i < game.players.length; i++) {
+      earthGoal.showTo(game.players[i]);
+    }
+    earthGoal.putInto($.earthGoal);    
 
     const beach = playerSpace.create(LandSpace, 'beachLand' + p, {landType: LandType.Beach});
     beach.create(LandCard, 'beachLandCard' + p, {landType: LandType.Beach});
@@ -554,7 +632,9 @@ export default createGame(SUVPlayer, MyGame, game => {
     ).do(({offering}) => {
       offering.putInto($.offeringRow);
       offering.showToAll();
-      $.venusDeck.top(VenusCard)!.putInto($.venusHand);
+      const next = $.venusDeck.top(VenusCard)!;
+      next.showOnlyTo(game.players[0]);
+      next.putInto($.venusHand);
     }),
 
     activateEngineer: (player) => action({
@@ -566,6 +646,38 @@ export default createGame(SUVPlayer, MyGame, game => {
       if(land.all(BuildingCard).length == 0 && player.space.all(BuildingDeck).all(BuildingCard).length > 0) {
         game.followUp({name: 'buildBuilding', args: {land: land}});
       }
+    }),
+
+    buildWhere: (player) => action({
+      prompt: 'Choose where to build'
+    }).chooseOnBoard(
+      'land', player.space.all(LandSpace).filter(x => x.all(BuildingCard).length == 0)
+    ).do(({land}) => {        
+      game.followUp({name: 'buildBuilding', args: {land: land}});
+    }),
+
+    healWhere: (player) => action({
+      prompt: 'Choose where to heal'
+    }).chooseOnBoard(
+      'land', player.space.all(LandSpace)
+    ).do(({land}) => {        
+      game.followUp({name: 'healHumans', args: {land: land, count: 3}});
+    }),
+
+    recoverWhere: (player) => action({
+      prompt: 'Choose where to recover'
+    }).chooseOnBoard(
+      'land', player.space.all(LandSpace)
+    ).do(({land}) => {        
+      game.followUp({name: 'recoverHuman', args: {land: land}});
+    }),
+
+    moveFromWhere: (player) => action({
+      prompt: 'Choose where to move from'
+    }).chooseOnBoard(
+      'land', player.space.all(LandSpace)
+    ).do(({land}) => {        
+      game.followUp({name: 'moveHumansFrom', args: {land: land, count: 2}});
     }),
 
     buildBuilding: (player) => action<{land: LandSpace}>({
@@ -584,7 +696,7 @@ export default createGame(SUVPlayer, MyGame, game => {
           break;
         case BuildingType.Capitol:
           if(player.space.all(RejectionCard).length > 0) {
-            game.followUp({name: 'drawCard', args: {land: land}});
+            game.followUp({name: 'drawCard', args: {lands: [land], count: 1}});
           }
           break;
         case BuildingType.Sanctuary:
@@ -604,13 +716,16 @@ export default createGame(SUVPlayer, MyGame, game => {
       human.putInto(land);
     }),
 
-    drawCard: (player) => action<{land: LandSpace}>({
-      prompt: 'Draw Earth Card'
+    drawCard: (player) => action<{lands: [LandSpace], count: number}>({
+      prompt: 'Draw Earth Card(s)'
     }).chooseOnBoard(
-      'card', ({land}) => land.all(RejectionCard)
-    ).do(({card}) => {        
-      card.putInto(player.space.first(Hand)!);
-      card.showOnlyTo(player);
+      'cards', ({lands}) => lands.flatMap(x => x.all(RejectionCard)),
+      {number: ({count}) => count}
+    ).do(({cards}) => {       
+       cards.forEach(card => {
+        card.putInto(player.space.first(Hand)!);
+        card.showOnlyTo(player);
+       });
     }),
 
     moveHumansTo: (player) => action<{land: LandSpace}>({
@@ -628,7 +743,7 @@ export default createGame(SUVPlayer, MyGame, game => {
       prompt: 'Choose Human to Move'
     }).chooseOnBoard(
       'human', ({soldier, land}) => land.all(HumanToken).filter(x => x != soldier),
-      { skipIf: 'never' }
+      { skipIf: 'never', number: ({land, count}) => Math.min(land.all(HumanToken).length, count) }
       // { min: 0, max: 1 }
     ).do(({human, soldier, land, count}) => {        
       if(human != undefined) {
@@ -695,7 +810,7 @@ export default createGame(SUVPlayer, MyGame, game => {
       if(human.isInjured) {
         human.putInto(player.space.first(LostHumanSpace)!);
       } else {
-        human.isInjured;
+        human.isInjured = true;
       }
     }),
 
@@ -705,7 +820,7 @@ export default createGame(SUVPlayer, MyGame, game => {
       'diplomat', player.space.all(HumanToken, {earthRole: EarthRole.Diplomat})
     ).do(({diplomat}) => {   
       if(player.space.all(RejectionCard).length > 0) {
-        game.followUp({name: 'drawCard', args: {land: diplomat.container(LandSpace)!}});
+        game.followUp({name: 'drawCard', args: {lands: [diplomat.container(LandSpace)!], count: 1}});
       }
     }),
     
@@ -833,12 +948,34 @@ export default createGame(SUVPlayer, MyGame, game => {
       'card', player.space.all(Hand).all(RejectionCard)
     ).do(({card}) => {
       player.trust = false;
-      
+      card.color = game.getColor(card);
+      card.putInto($.rejectionRow);      
+      card.showToAll();
+
+      switch(card.earthAction) {
+        case EarthAction.DrawAny2EarthCards:
+          game.followUp({name: 'drawCard', args: {lands: player.space.all(LandSpace), count: 2}});
+          break;
+        case EarthAction.BuildAnywhere:
+          game.followUp({name: 'buildWhere'});
+          break;
+        case EarthAction.Heal3On1Land:
+          game.followUp({name: 'healWhere'});
+          break;
+        case EarthAction.Recover1ToAnywhere:
+          game.followUp({name: 'recoverWhere'});
+          break;
+        case EarthAction.Move2From1Land:
+          game.followUp({name: 'moveFromWhere'});
+          break;
+      }
     }),
   });
 
   game.defineFlow(
 
+    forLoop({ name: 'round', initial: 1, next: round => round + 1, while: round => round <= 10, do: [
+      
     // 1. Reveal Next Event and Apply Disaster
     () => game.revealNextEvent(),
 
@@ -889,6 +1026,8 @@ export default createGame(SUVPlayer, MyGame, game => {
       ]
     }),
 
-    playerActions({ actions: []}),
+    () => $.rejectionRow.all(RejectionCard).putInto($.motivationDeck),
+
+    ]}),
   );
 });

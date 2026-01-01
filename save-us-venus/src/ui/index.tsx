@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, Space } from '@boardzilla/core';
-import { BuildingCard, BuildingDeck, EarthCard, EarthPlayerSpace, EventCard, EventCover, EventRow, Hand, HumanToken, LandCard, LandSpace, LostHumanSpace, MyGame, OfferingRow, OverlayRow, PlayersSpace, RejectionCard, default as setup, TrustCard, TrustToken, VenusCard } from '../game/index.js';
+import { BuildingCard, BuildingDeck, EarthCard, EarthPlayerSpace, EarthRole, EventCard, EventCover, EventRow, GoalCard, Hand, HumanToken, LandCard, LandSpace, LandType, LostHumanSpace, MyGame, OfferingRow, OverlayRow, PlayersSpace, RejectionCard, RejectionRow, default as setup, TrustCard, TrustToken, VenusCard } from '../game/index.js';
 
 import './style.scss';
 
@@ -79,8 +79,11 @@ render(setup, {
     game.layout('offeringRow', { area: { left: 0, top: 17.5, width: 100, height: 11.5 }});
     $.offeringRow.layout(VenusCard, {columns: 10, rows: 1, gap: {x:0.5, y: 0}, scaling: 'fill'})
 
-    game.layout('rejectionRow', { area: { left: 0, top: 44.5, width: 100, height: 11.5 }});
-    $.rejectionRow.layout(RejectionCard, {columns: 10, rows: 1, gap: {x:0.5, y: 0}, scaling: 'fill'})
+    game.layout('rejectionRow', { area: { left: 45, top: 44.5, width: 10, height: 11.5 }});
+    $.rejectionRow.layout(RejectionCard, {columns: 1, rows: 1, gap: {x:0.5, y: 0}, scaling: 'fill'})
+
+    game.layout('venusGoal', { area: { left: 10, top: 44.5, width: 20, height: 11.5 }});
+    game.layout('earthGoal', { area: { left: 70, top: 44.5, width: 20, height: 11.5 }});
 
     game.layout('overlayRow', { area: { left: 0, top: 30, width: 100, height: 14 }});
     $.overlayRow.layout(EventCover, {columns: 10, rows: 1, gap: {x:0.5, y: 0}, scaling: 'fill', direction: 'rtl'})
@@ -116,6 +119,7 @@ render(setup, {
     $.rejectionSpace.appearance({render: x => null});
     $.motivationDeck.appearance({render: x => null});
 
+    game.all(RejectionRow).appearance({render: x => null});
     game.all(OfferingRow).appearance({render: x => null});
     game.all(BuildingDeck).appearance({render: x => null});
     game.all(LostHumanSpace).appearance({render: x => null});
@@ -234,7 +238,7 @@ render(setup, {
         <div className='RejectionCard'>
           <svg xmlns="http://www.w3.org/2000/svg" color={game.getColor(x)}>      
             <rect x="0%" y="0%" width="100%" height="100%" fill='white' stroke="black" strokeWidth="4" />
-            <rect x="0%" y="0%" width="100%" height="30%" fill='currentColor' stroke="black" strokeWidth="4" />
+            <rect x="0%" y="0%" width="100%" height="30%" fill={game.getColor(x) == 'white' ? x.color : 'currentColor'} stroke="black" strokeWidth="4" />
             <foreignObject x="5%" y="2%" width="90%" height="20%" fontSize="50%" color="white">
               <center>
                   {x.getTitle()}
@@ -274,7 +278,6 @@ render(setup, {
         </div>
       )});
 
-
       game.all(TrustCard).appearance({render: x => ( 
         <div className='TrustCard'>
           <svg xmlns="http://www.w3.org/2000/svg">      
@@ -291,20 +294,65 @@ render(setup, {
             </foreignObject>
             <foreignObject x="0%" y="80%" width="100%" height="20%" fontSize="80%" color="green">
               <center>
-                  {x.earthRole == "" ? "" : "Trust"}
+                  {x.visible == "" ? "" : "Trust"}
+              </center>
+            </foreignObject>
+          </svg>
+        </div>
+      )});
+
+      game.all(GoalCard).appearance({render: x => ( 
+        <div className='GoalCard'>
+          <svg xmlns="http://www.w3.org/2000/svg">      
+            <rect x="0%" y="0%" width="100%" height="100%" fill='white' stroke="black" strokeWidth="3" />
+            
+            <line x1="32.5%" y1="0%" x2="32.5%" y2="100%" stroke="black" />
+            <line x1="55%" y1="0%" x2="55%" y2="100%" stroke="black" />
+            <line x1="77.5%" y1="0%" x2="77.5%" y2="100%" stroke="black" />
+
+            <rect x="0%" y="0%" width="10%" height="100%" fill={x.getPlayerCountColor()} stroke="black" strokeWidth="3" />
+            <rect x="10%" y="0%" width="90%" height="20%" fill={x.earthPlayerCount > 0 ? (x.forEarthPlayer ? "green" : "purple") : "white"} stroke="black" strokeWidth="3" />
+            
+            <foreignObject x="12%" y="30%" width="20%" height="88%" fontSize="150%" color="black">
+              <center>
+                  {x.earthPlayerCount > 0 ? (x.forEarthPlayer ? game.getLocationIcon(LandType.Mountains) : game.getRoleIcon(EarthRole.Medic)) : ""}
+                  <br />
+                  {x.earthPlayerCount > 0 ? (x.forEarthPlayer ? x.earthMountains : x.venusMedics) : ""}
               </center>
             </foreignObject>
 
-            {/*<foreignObject x="0%" y="33%" width="100%" height="45%" fontSize="125%" color="black">
+            <foreignObject x="34%" y="30%" width="20%" height="88%" fontSize="150%" color="black">
               <center>
-                  {x.getImage()}
+                  {x.earthPlayerCount > 0 ? (x.forEarthPlayer ? game.getLocationIcon(LandType.Farm) : game.getRoleIcon(EarthRole.Engineer)) : ""}
+                  <br />
+                  {x.earthPlayerCount > 0 ? (x.forEarthPlayer ? x.earthFarm : x.venusEngineers) : ""}
               </center>
             </foreignObject>
 
-            <rect x="0%" y="63%" width="100%" height="35%" fill='white' stroke="black" strokeWidth="1" fillOpacity="0" />
-            <foreignObject x="5%" y="65%" width="90%" height="30%" fontSize="50%" color="red">
+            <foreignObject x="56%" y="30%" width="20%" height="88%" fontSize="150%" color="black">
               <center>
-                  {x.getSideEffectText()}
+                  {x.earthPlayerCount > 0 ? (x.forEarthPlayer ? game.getLocationIcon(LandType.Beach) : game.getRoleIcon(EarthRole.Diplomat)) : ""}
+                  <br />
+                  {x.earthPlayerCount > 0 ? (x.forEarthPlayer ? x.earthBeach : x.venusDiplomats) : ""}
+              </center>
+            </foreignObject>
+
+            <foreignObject x="78%" y="30%" width="20%" height="88%" fontSize="150%" color="black">
+              <center>
+                  {x.earthPlayerCount > 0 ? (x.forEarthPlayer ? game.getLocationIcon(LandType.Forest) : game.getRoleIcon(EarthRole.Soldier)) : ""}
+                  <br />
+                  {x.earthPlayerCount > 0 ? (x.forEarthPlayer ? x.earthForest : x.venusSoldiers) : ""}
+              </center>
+            </foreignObject>
+
+            {/*<foreignObject x="0%" y="15%" width="100%" height="60%" fontSize="300%" color="black">
+              <center>
+                  {game.getRoleIcon(x.earthRole)}
+              </center>
+            </foreignObject>
+            <foreignObject x="0%" y="80%" width="100%" height="20%" fontSize="80%" color="green">
+              <center>
+                  {x.visible == "" ? "" : "Trust"}
               </center>
             </foreignObject> */}
           </svg>
