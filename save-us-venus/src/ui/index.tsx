@@ -284,6 +284,7 @@ render(setup, {
               </center>
             </foreignObject>
           </svg>
+          <span className="tooltiptext">{x.getTitle()}</span>
         </div>
       )});
 
@@ -308,6 +309,7 @@ render(setup, {
               </center>
             </foreignObject>
           </svg>
+          <span className="tooltiptext">{x.getText()}</span>
         </div>
       )});
 

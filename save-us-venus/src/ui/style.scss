@@ -30,15 +30,13 @@
         }  
     }
 
-    .LandSpace {
+    .LandCard {
         &.selectable {
-            z-index: 10;
             > div {      
                 border: 3px solid magenta;                
             }
         }
         &.selected {
-            z-index: 20;
             > div {      
                 border: 3px solid cyan;  
             }
@@ -73,10 +71,30 @@
                 border: 3px solid cyan;  
             }
         }  
-        // &:hover {
-        //     z-index: 1000;
-        //     transform: scale(1.5);
-        // }
+        
+        .tooltiptext {
+            visibility: hidden;
+            padding: 0.25em 0.5em;
+            background-color: black;
+            color: #fff;
+            text-align: center;
+            border-radius: 0.25em;
+            white-space: nowrap;
+  
+            /* Position the tooltip */
+            position: absolute;
+            z-index: 1000;
+            top: -35%;
+            left: 30%;
+            transition-property: visibility;
+            transition-delay: 0s;
+        }
+
+        &:hover .tooltiptext {
+            visibility: visible;
+            transition-delay: 0.3s;
+            transform: scale(2.0);
+        }
     }
 
     .BuildingCard {
@@ -92,6 +110,29 @@
                 border: 3px solid cyan;  
             }
         }  
+        .tooltiptext {
+            visibility: hidden;
+            padding: 0.25em 0.5em;
+            background-color: black;
+            color: #fff;
+            text-align: center;
+            border-radius: 0.25em;
+            white-space: nowrap;
+  
+            /* Position the tooltip */
+            position: absolute;
+            z-index: 1000;
+            top: 80%;
+            left: 30%;
+            transition-property: visibility;
+            transition-delay: 0s;
+        }
+
+        &:hover .tooltiptext {
+            visibility: visible;
+            transition-delay: 0.3s;
+            transform: scale(2.0);
+        }
     }
 
     .HumanToken {
@@ -126,7 +167,11 @@
             transition-delay: 0s;
         }
 
-        &:hover .tooltiptext {
+        &:hover {
+            filter: brightness(1.5);
+        }
+
+        &:hover .tooltiptext {        
             visibility: visible;
             transition-delay: 0.3s;
             transform: scale(5.0);

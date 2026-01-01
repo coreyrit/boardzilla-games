@@ -44,9 +44,9 @@ export class MyGame extends Game<MyGame, SUVPlayer> {
 
       const venusGoal = $.venusGoal.first(GoalCard)!;
       const engineersGoal = engineersCount >= venusGoal.venusEngineers;
-      const medicsGoal = engineersCount >= venusGoal.venusMedics;
-      const diplomatsGoal = engineersCount >= venusGoal.venusDiplomats;
-      const soldiersGoal = engineersCount >= venusGoal.venusSoldiers;
+      const medicsGoal = medicsCount >= venusGoal.venusMedics;
+      const diplomatsGoal = diplomatsCount >= venusGoal.venusDiplomats;
+      const soldiersGoal = soldiersCount >= venusGoal.venusSoldiers;
 
       if(beachGoal && mountainsGoal && farmGoal && forestGoal && engineersGoal && medicsGoal && diplomatsGoal && soldiersGoal) {
         this.finish(undefined, 'win')
@@ -716,7 +716,7 @@ export default createGame(SUVPlayer, MyGame, game => {
     }),
 
     newEvent: (player) => action({
-      prompt: 'Replace Event',
+      prompt: 'Replace Event (' + (game.players.length-1) + ')',
       condition: $.venusHand.all(TrustToken).length >= (game.players.length-1)
     }).do(() => {
       game.followUp({name: 'replaceEventCard'});
@@ -736,7 +736,7 @@ export default createGame(SUVPlayer, MyGame, game => {
     }),
 
     swapEvents: (player) => action({
-      prompt: 'Swap 2 Events',
+      prompt: 'Swap 2 Events (' + ((game.players.length-1)*2) + ')',
       condition: $.venusHand.all(TrustToken).length >= (game.players.length-1)*2 && $.overlayRow.all(EventCover).length >= 2
     }).do(() => {
       game.followUp({name: 'chooseEventCardsToSwap'});
@@ -763,7 +763,7 @@ export default createGame(SUVPlayer, MyGame, game => {
     }),
 
     newVenusCard: (player) => action({
-      prompt: 'Draw New Venus Card',
+      prompt: 'Draw New Venus Card (' + ((game.players.length-1)*2) + ')',
       condition: $.venusHand.all(TrustToken).length >= (game.players.length-1)*2 && $.venusDeck.all(VenusCard).length > 0
     }).do(() => {
       const card = $.venusDeck.top(VenusCard)!
@@ -785,7 +785,8 @@ export default createGame(SUVPlayer, MyGame, game => {
     activateEngineer: (player) => action({
       prompt: 'Activate Engineer'
     }).chooseOnBoard(
-      'engineer', player.space.all(LandSpace).all(HumanToken, {earthRole: EarthRole.Engineer})
+      'engineer', player.space.all(LandSpace).all(HumanToken, {earthRole: EarthRole.Engineer}),
+      {skipIf: 'never'}
     ).do(({engineer}) => {        
       const land = engineer.container(LandSpace)!;
       if(land.all(BuildingCard).length == 0 && player.space.all(BuildingDeck).all(BuildingCard).length > 0) {
@@ -796,8 +797,9 @@ export default createGame(SUVPlayer, MyGame, game => {
     buildWhere: (player) => action({
       prompt: 'Choose where to build'
     }).chooseOnBoard(
-      'land', player.space.all(LandSpace).filter(x => x.all(BuildingCard).length == 0)
-    ).do(({land}) => {        
+      'ld', player.space.all(LandSpace).filter(x => x.all(BuildingCard).length == 0).map(x => x.first(LandCard)!)
+    ).do(({ld}) => {        
+      const land = ld.container(LandSpace)!;
       if(land.all(BuildingCard).length == 0 && player.space.all(BuildingDeck).all(BuildingCard).length > 0) {
         game.followUp({name: 'buildBuilding', args: {land: land}});
       }
@@ -806,16 +808,18 @@ export default createGame(SUVPlayer, MyGame, game => {
     healWhere: (player) => action({
       prompt: 'Choose where to heal'
     }).chooseOnBoard(
-      'land', player.space.all(LandSpace)
-    ).do(({land}) => {        
+      'ld', player.space.all(LandSpace).map(x => x.first(LandCard)!)
+    ).do(({ld}) => {        
+      const land = ld.container(LandSpace)!;
       game.followUp({name: 'healHumans', args: {land: land, count: 3}});
     }),
 
     recoverWhere: (player) => action({
       prompt: 'Choose where to recover'
     }).chooseOnBoard(
-      'land', player.space.all(LandSpace)
-    ).do(({land}) => {        
+      'ld', player.space.all(LandSpace).map(x => x.first(LandCard)!)
+    ).do(({ld}) => {   
+      const land = ld.container(LandSpace)!;     
       if(player.space.all(LostHumanSpace).all(HumanToken).length > 0) {
         game.followUp({name: 'recoverHuman', args: {land: land}});
       }
@@ -824,8 +828,9 @@ export default createGame(SUVPlayer, MyGame, game => {
     moveFromWhere: (player) => action({
       prompt: 'Choose where to move from'
     }).chooseOnBoard(
-      'land', player.space.all(LandSpace)
-    ).do(({land}) => {      
+      'ld', player.space.all(LandSpace).map(x => x.first(LandCard)!)
+    ).do(({ld}) => {      
+      const land = ld.container(LandSpace)!;
       const count = land.all(HumanToken).length;
       if(count > 0) {  
         game.followUp({name: 'moveHumansFrom', args: {land: land, count: Math.min(count, 2)}});
@@ -897,8 +902,9 @@ export default createGame(SUVPlayer, MyGame, game => {
       'human', ({soldier, land}) => land.all(HumanToken).filter(x => x != soldier),
       { skipIf: 'never' }
     ).chooseOnBoard(
-      'destination', ({land}) => player.space.all(LandSpace).filter(x => x != land),
-    ).do(({destination, human, soldier, land, count}) => {      
+      'dest', ({land}) => player.space.all(LandCard).filter(x => x != land.first(LandCard)!),
+    ).do(({dest, human, soldier, land, count}) => {      
+      const destination = dest.container(LandSpace)!;
       human.putInto(destination);
       if(count > 1) {
         game.followUp({name: 'moveHumansFrom', args: {soldier: soldier, land: land, count: count - 1}});
@@ -924,7 +930,8 @@ export default createGame(SUVPlayer, MyGame, game => {
     activateMedic: (player) => action({
       prompt: 'Activate Medic'
     }).chooseOnBoard(
-      'medic', player.space.all(LandSpace).all(HumanToken, {earthRole: EarthRole.Medic})
+      'medic', player.space.all(LandSpace).all(HumanToken, {earthRole: EarthRole.Medic}),
+      {skipIf: 'never'}
     ).do(({medic}) => {        
       const land = medic.container(LandSpace)!;
       game.followUp({name: 'healHumans', args: {land: land, count: 2}});
@@ -976,7 +983,8 @@ export default createGame(SUVPlayer, MyGame, game => {
     activateDiplomat: (player) => action({
       prompt: 'Activate Diplomat'
     }).chooseOnBoard(
-      'diplomat', player.space.all(LandSpace).all(HumanToken, {earthRole: EarthRole.Diplomat})
+      'diplomat', player.space.all(LandSpace).all(HumanToken, {earthRole: EarthRole.Diplomat}),
+      {skipIf: 'never'}
     ).do(({diplomat}) => {   
       const land = diplomat.container(LandSpace)!;
       if(land.all(RejectionCard).length > 0) {
@@ -985,9 +993,10 @@ export default createGame(SUVPlayer, MyGame, game => {
     }),
     
     activateSoldier: (player) => action({
-      prompt: 'Activate Soldier'
+      prompt: 'Activate Soldier',
     }).chooseOnBoard(
-      'soldier', player.space.all(LandSpace).all(HumanToken, {earthRole: EarthRole.Soldier})
+      'soldier', player.space.all(LandSpace).all(HumanToken, {earthRole: EarthRole.Soldier}),
+      {skipIf: 'never'}
     ).do(({soldier}) => {
       game.followUp({name: 'moveToOrFrom', args: {soldier: soldier, land: soldier.container(LandSpace)!}});
     }),
@@ -1211,7 +1220,7 @@ export default createGame(SUVPlayer, MyGame, game => {
     }),
 
     newDisaster: (player) => action({
-      prompt: 'New Disaster',
+      prompt: 'New Disaster (' + (game.players.length-1) + ')',
       condition: $.venusHand.all(TrustToken).length >= (game.players.length-1) && $.eventDeck.all(EventCard).length > 0
     }).do(() => {
       $.disasterSpace.all(EventCard).putInto($.box);
