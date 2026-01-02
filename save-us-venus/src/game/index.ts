@@ -81,6 +81,12 @@ export class MyGame extends Game<MyGame, SUVPlayer> {
     this.destroyLocation(event.disasterLocation);
   }
 
+  public drawFinalDisaster() : void {
+    const disaster = $.eventDeck.top(EventCard)!;
+    disaster.putInto($.disasterSpace);
+    disaster.showOnlyTo(this.players[0]);
+  }
+
   public destroyLocation(disasterLocation: LandType) {
     for(let i = 1; i < this.players.length; i++) {
       const player = this.players[i];
@@ -203,7 +209,7 @@ export class GoalCard extends Piece<MyGame> {
       case 1:
         return "lightGreen";
       case 2:
-        return "lightYellow";
+        return "yellow";
       case 3:
         return "lightRed";
     }
@@ -504,7 +510,7 @@ export class RejectionSpace extends Space<MyGame> {
 export default createGame(SUVPlayer, MyGame, game => {
 
   const { action } = game;
-  const { playerActions, forLoop, whileLoop, loop, eachPlayer, ifElse } = game.flowCommands;
+  const { playerActions, forLoop, forEach, whileLoop, loop, eachPlayer, ifElse } = game.flowCommands;
 
 
   game.create(Space<MyGame>, 'box');
@@ -578,6 +584,9 @@ export default createGame(SUVPlayer, MyGame, game => {
   game.create(Space<MyGame>, 'trustSpace');
   game.create(RejectionSpace, 'rejectionSpace');
 
+  game.create(Space<MyGame>, 'venusGoal');
+  game.create(Space<MyGame>, 'earthGoal'); 
+
   const playersSpace = game.create(PlayersSpace, 'playersSpace')
   for(let p = 1; p < game.players.length; p++) {
     const playerSpace = playersSpace.create(EarthPlayerSpace, 'earthPlayerSpace' + p);
@@ -628,23 +637,7 @@ export default createGame(SUVPlayer, MyGame, game => {
     $.box.create(GoalCard, 'goal3_4', {earthPlayerCount: 3, 
       earthMountains: 4, earthFarm: 6, earthBeach: 3, earthForest: 5, venusMedics: 5, venusEngineers: 3, venusDiplomats: 4, venusSoldiers: 6});
 
-    $.box.shuffle();
-
-    game.create(Space<MyGame>, 'venusGoal');
-    game.create(Space<MyGame>, 'earthGoal');
-
-    const venusGoal = $.box.first(GoalCard, {earthPlayerCount: game.players.length-1})!;
-    venusGoal.forEarthPlayer = false;
-    venusGoal.showOnlyTo(game.players[0]);
-    venusGoal.putInto($.venusGoal);
-  
-    const earthGoal = $.box.first(GoalCard, {earthPlayerCount: game.players.length-1})!;
-    earthGoal.forEarthPlayer = true;
-    earthGoal.hideFromAll();
-    for(let i = 1; i < game.players.length; i++) {
-      earthGoal.showTo(game.players[i]);
-    }
-    earthGoal.putInto($.earthGoal);        
+    $.box.shuffle();         
 
     const mountains = playerSpace.create(LandSpace, 'mountainsLand' + p, {landType: LandType.Mountains});
     mountains.create(LandCard, 'mountainsLandCard' + p, {landType: LandType.Mountains});
@@ -678,6 +671,19 @@ export default createGame(SUVPlayer, MyGame, game => {
     const lostHumansSpace = playerSpace.create(LostHumanSpace, 'lostHumansSpace' + p);
     // lostHumansSpace.create(HumanToken, 'lostHuman' + p, {earthRole: EarthRole.Medic});
   }
+
+  const venusGoal = $.box.first(GoalCard, {earthPlayerCount: game.players.length-1})!;
+  venusGoal.forEarthPlayer = false;
+  venusGoal.showOnlyTo(game.players[0]);
+  venusGoal.putInto($.venusGoal);
+  
+  const earthGoal = $.box.first(GoalCard, {earthPlayerCount: game.players.length-1})!;
+  earthGoal.forEarthPlayer = true;
+  earthGoal.hideFromAll();
+  for(let i = 1; i < game.players.length; i++) {
+    earthGoal.showTo(game.players[i]);
+  }
+  earthGoal.putInto($.earthGoal);   
 
   game.defineActions({
     chooseMotivation: (player) => action({
@@ -1285,78 +1291,45 @@ export default createGame(SUVPlayer, MyGame, game => {
         if: () => !game.gameOver, do: [
 
           // 3. Earth Abilities
-          eachPlayer({
-            name: 'turn', do: [
-              ifElse({
-                if: ({turn}) => turn != game.players[0], do: [
-                  playerActions({ actions: ['chooseMotivation']}),
-                ],
-              }),
-            ]
-          }),
+          eachPlayer({name: 'turn', startingPlayer: player => game.players[1], continueUntil: (p) => p == game.players[0], do: [
+            playerActions({ actions: ['chooseMotivation']}),
+          ]}),
 
           // 4. Venus Offering
-          eachPlayer({
-            name: 'turn', do: [
-              ifElse({
-                if: ({turn}) => turn == game.players[0], do: [
-                  ({turn}) => turn.playedOffering = false,
-                  whileLoop({while: ({turn}) => !turn.playedOffering, do: ([
-                    playerActions({ actions: ['chooseOffering', 'newEvent', 'swapEvents', 'newVenusCard']}),
-                  ])}),
-                ],
-              }),
-            ]
-          }),
+          () => game.players[0].playedOffering = false,
+          eachPlayer({name: 'turn', startingPlayer: player => game.players[0], continueUntil: (p) => p == game.players[1], do: [
+            whileLoop({while: ()=> !game.players[0].playedOffering, do: ([
+              playerActions({ player: game.players[0], actions: ['chooseOffering', 'newEvent', 'swapEvents', 'newVenusCard']}),
+            ])}),
+          ]}),
 
           // 5. Earth Trusts or Rejects
-          eachPlayer({
-            name: 'turn', do: [
-              ifElse({
-                if: ({turn}) => turn != game.players[0], do: [
-                  playerActions({ actions: ['trustVenus', 'rejectVenus']}),
-                ],
-              }),
-            ]
-          }),
+          eachPlayer({name: 'turn', startingPlayer: player => game.players[1], continueUntil: (p) => p == game.players[0], do: [
+            playerActions({ actions: ['trustVenus', 'rejectVenus']}),
+          ]}),
 
           // 6. Venus Side Effect
-          eachPlayer({
-            name: 'turn', do: [
-              ifElse({
-                if: ({turn}) => turn != game.players[0] && turn.trust, do: [
-                  playerActions({ actions: ['venusSideEffect']}),
-                ],
-              }),
-            ]
-          }),
+          eachPlayer({name: 'turn', startingPlayer: player => game.players[1], continueUntil: (p) => p == game.players[0], do: [
+            ifElse({if: ({turn}) => turn != turn.trust, do: [
+              playerActions({ actions: ['venusSideEffect']}),
+            ]})
+          ]}),
 
+          // Set up for next round
           () => $.rejectionRow.all(RejectionCard).putInto($.motivationDeck),
         ]}),
       ]}),
 
       // Final Disaster
-      ifElse({
-        if: () => !game.gameOver, do: [
-          eachPlayer({
-            name: 'turn', do: [
-              ifElse({
-                if: ({turn}) => turn == game.players[0], do: [
-                  whileLoop({while: ({turn}) => !turn.acceptDisaster, do: ([
-                    () => {
-                      const disaster = $.eventDeck.top(EventCard)!;
-                      disaster.putInto($.disasterSpace);
-                      disaster.showOnlyTo(game.players[0]);
-                    },
-                    playerActions({ actions: ['acceptDisaster', 'newDisaster']}),
-                  ])}),
-                ],
-              }),
-            ]
-          }),
-          () => game.destroyLocation($.disasterSpace.first(EventCard)!.disasterLocation),
-        ],        
-      }),      
+      ifElse({if: () => !game.gameOver, do: [
+        eachPlayer({name: 'turn', startingPlayer: player => game.players[0], continueUntil: (p) => p == game.players[1], do: [
+          whileLoop({while: ({turn}) => !turn.acceptDisaster, do: ([
+            () => game.drawFinalDisaster(),
+            playerActions({ actions: ['acceptDisaster', 'newDisaster']}),
+          ])}),
+        ]}),
+      ]}),
+      () => game.destroyLocation($.disasterSpace.first(EventCard)!.disasterLocation),      
 
       // Game Over
       () => game.announceResult()
