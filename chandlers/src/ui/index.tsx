@@ -12,7 +12,8 @@ render(setup, {
     // captureWorkers: toggleSetting('Capture workers when stacking')
   },
   layout: game => {
-    const LEFT_POSITION_OFFSET = 25; // formerly -25
+    // const LEFT_POSITION_OFFSET = 25;
+    const LEFT_POSITION_OFFSET = 0;
 
     game.appearance({
       render: () => null

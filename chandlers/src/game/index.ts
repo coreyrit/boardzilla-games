@@ -1462,8 +1462,11 @@ export default createGame(ChandlersPlayer, MyGame, game => {
 
       switch(space.letter) {
         case 'A': {
-          player.increaseScore();
-          game.message(player.name + ' scores 1 point.');
+          // player.increaseScore();
+          // game.message(player.name + ' scores 1 point.');
+          if(player.board.all(PowerTile, {flipped: false}).length > 0) {
+            game.followUp({name: 'choosePowerTile'});
+          }
           break;
         }
         case 'B': {
