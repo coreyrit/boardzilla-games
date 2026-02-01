@@ -2398,6 +2398,20 @@ export default createGame(ChandlersPlayer, MyGame, game => {
         game.message(player.name + ' chooses their starting goal.');
     }),
 
+    chooseGoal: (player) => action<{goal1: GoalCard, goal2: GoalCard}>({
+      prompt: 'Choose goal',
+    }).chooseOnBoard(
+      'goal', ({goal1, goal2}) =>[goal1, goal2],
+      { skipIf: 'never' }
+    ).do(({ goal, goal1, goal2 }) => {
+      if(goal == goal1) {
+        goal2.putInto($.bag);
+      } else {
+        goal1.putInto($.bag);
+      }
+      game.message(player.name + ' chooses a goal.');
+    }),
+
     pause: (player) => action({}).do(() => {}),
 
   });

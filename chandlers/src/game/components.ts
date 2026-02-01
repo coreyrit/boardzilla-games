@@ -294,7 +294,7 @@ export class BackAlleyTile extends Piece<MyGame> {
           return true;
         }
         case 'gain-goal-card': {
-          return $.goalDeck.all(GoalCard).length > 0;
+          return $.goalDeck.all(GoalCard).length + $.bag.all(GoalCard).length > 1;
         }
         case 'place-white-candle': {
           return player.board.all(CandlePawn, {color: Color.White}).length > 0;
@@ -364,12 +364,16 @@ export class BackAlleyTile extends Piece<MyGame> {
           break;
         }
         case 'gain-goal-card': {
-          if($.goalDeck.all(GoalCard).length > 0) {
-            const goal = game.drawTopGoal()
-            console.log(goal.name);
-            console.log(game.currentPlayer().space.name);
-            goal.putInto(game.currentPlayer().space);
-            goal.showOnlyTo(game.currentPlayer());
+          if($.goalDeck.all(GoalCard).length + $.bag.all(GoalCard).length > 1) {
+            const goal1 = game.drawTopGoal()            
+            goal1.putInto(game.currentPlayer().space);
+            goal1.showOnlyTo(game.currentPlayer());
+
+            const goal2 = game.drawTopGoal()
+            goal2.putInto(game.currentPlayer().space);
+            goal2.showOnlyTo(game.currentPlayer());
+
+            game.followUp({name: 'chooseGoal', args: {goal1: goal1, goal2: goal2}});
           }
           break;
         }

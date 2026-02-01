@@ -35,7 +35,7 @@ render(setup, {
           'choosePigmentsToRemove', 'chooseWhiteCandle', 'chooseCustomerToSwap', 'chooseKeyAndShape',
           'chooseStartingCustomer', 'chooseStartingGoal', 'usePower',
           'chooseMeltToMixInto', 'chooseMeltToMixIntoFromMastery',
-          'choosePassAction'
+          'choosePassAction', 'chooseGoal'
         ]
         .includes(a.name)),
       closeIf: actions => actions.some(a => 
