@@ -151,11 +151,19 @@ render(setup, {
     game.layout('round3', { area: { left: 101.5 + LEFT_POSITION_OFFSET, top: 6, width: 5, height: 5 }});
     // game.layout('round4', { area: { left: 102.5 + LEFT_OFFSET, top: 6, width: 5, height: 5 }});
 
-    game.layout('roundEndSpace1', { area: { left: -19.5 + LEFT_POSITION_OFFSET, top: 88, width: 16.6, height: 6.5 }});
-    game.layout('roundEndSpace2', { area: { left: -1 + LEFT_POSITION_OFFSET, top: 88, width: 16.6, height: 6.5 }});
-    game.layout('roundEndSpace3', { area: { left: 17 + LEFT_POSITION_OFFSET, top: 88, width: 16.6, height: 6.5 }});
-    game.layout('roundEndSpace4', { area: { left: 35.5 + LEFT_POSITION_OFFSET, top: 88, width: 16.6, height: 6.5 }});
-    game.layout('roundEndSpace5', { area: { left: 54 + LEFT_POSITION_OFFSET, top: 88, width: 16.6, height: 6.5 }});
+    const roundEndX = -19.5 + LEFT_POSITION_OFFSET;
+    var roundEndIndex = 1;
+    game.all(RoundEndSpace).forEach(x => {
+      game.layout('roundEndSpace' + roundEndIndex, { 
+        area: { 
+          left: roundEndX + ((roundEndIndex - 1) * 18.5), 
+          top: 88, 
+          width: 16.6, 
+          height: 6.5 
+        }
+      });
+      roundEndIndex++;
+    });
 
     game.layout('playerOrder1', { area: { left: 2.1 + LEFT_POSITION_OFFSET, top: 10, width: 2.5, height: 2.5 }});
     game.layout('playerOrder2', { area: { left: 2.1 + LEFT_POSITION_OFFSET, top: 12.7, width: 2.5, height: 2.5 }});

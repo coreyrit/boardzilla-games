@@ -1014,11 +1014,9 @@ export default createGame(ChandlersPlayer, MyGame, game => {
   // game.create(PlayerOrderSpace, 'playerOrderPass4', {num: 4, pass: true});
 
   // round end goals
-  game.create(RoundEndSpace, 'roundEndSpace1')
-  game.create(RoundEndSpace, 'roundEndSpace2')
-  game.create(RoundEndSpace, 'roundEndSpace3')
-  game.create(RoundEndSpace, 'roundEndSpace4')
-  game.create(RoundEndSpace, 'roundEndSpace5')
+  for(var i = 1; i <= game.players.length + 1; i++) {
+    game.create(RoundEndSpace, 'roundEndSpace' + i)
+  }
 
   bag.create(RoundEndTile, 'customer-satisfaction')
   bag.create(RoundEndTile, 'five-colors')
