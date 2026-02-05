@@ -1,0 +1,418 @@
+#play-area {
+
+  .die-face {
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover; /* or contain, depending on your art */
+  }
+
+  .die-face .dot {
+    display: none;
+  }
+
+  .die-face[data-face="1"] {
+    background-image: url("./assets/pollen-die-0.jpg");
+    background-size: 600% 800%;
+    background-position: 50% 35%;
+  }
+
+  .die-face[data-face="2"] {
+    background-image: url("./assets/pollen-die-0.jpg");
+    background-size: 600% 800%;
+    background-position: 27% 50%;
+  }
+
+  .die-face[data-face="3"] {
+    background-image: url("./assets/pollen-die-0.jpg");
+    background-size: 600% 800%;
+    background-position: 50% 50%;
+  }
+
+  .die-face[data-face="4"] {
+    background-image: url("./assets/pollen-die-0.jpg");
+    background-size: 600% 800%;
+    background-position: 72% 50%;
+  }
+
+  .die-face[data-face="5"] {
+    background-image: url("./assets/pollen-die-0.jpg");
+    background-size: 600% 800%;
+    background-position: 50% 65%;
+  }
+
+  .die-face[data-face="6"] {
+    background-image: url("./assets/pollen-die-0.jpg");
+    background-size: 600% 800%;
+    background-position: 50% 80%;
+  }
+
+    .FirstPlayerToken {
+        background-image: url(./assets/gold-hex.png);
+        width: 100%;
+        height: 100%;
+
+        background-repeat: no-repeat;
+        background-position: 50% 50%;
+        background-size: 100%;
+    }
+
+    .LarvaHex {
+        background-image: url(./assets/larva-hex-0.jpg);
+        width: 100%;
+        height: 100%;
+
+        background-repeat: no-repeat;
+        background-position: 50% 50%;
+        background-size: 100%;
+
+        clip-path: polygon(
+          30% 12%,
+          70% 12%,
+          88% 50%,
+          70% 88%,
+          30% 88%,
+          12% 50%
+        );
+        overflow: hidden;
+    }
+
+    .Disc {
+      width: 100%;
+      height: 100%;
+    }
+
+    .Disc > div {
+      width: 100%;
+      height: 100%;
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: contain;
+
+      filter: drop-shadow(0 1px 1px rgba(0,0,0,0.35));
+    }
+
+    .Disc > .green  { background-image: url("./assets/green-disc.png"); }
+    .Disc > .yellow { background-image: url("./assets/yellow-disc.png"); }
+    .Disc > .purple { background-image: url("./assets/purple-disc.png"); }
+
+    .ApiaryCard {
+      width: 100%;
+      height: 100%;            
+    }
+
+    .ApiaryCard > div {
+      width: 100%;
+      height: 100%;
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: contain;
+
+      border-radius: 5%;
+      background-size: 125%;
+
+      filter: drop-shadow(0 1px 1px rgba(0,0,0,0.35));
+    }
+
+    .ApiaryCard > .green  { background-image: url("./assets/apiary-2.jpg"); }
+    .ApiaryCard > .yellow { background-image: url("./assets/apiary-4.jpg"); }
+    .ApiaryCard > .purple { background-image: url("./assets/apiary-0.jpg"); }
+
+    .HoneyCard {
+      filter: drop-shadow(0 1px 1px rgba(0,0,0,0.35));
+
+      /* shared card surface styles */
+      > .face,
+      > .back {
+        position: absolute;
+        inset: 0;            /* true fill */
+
+        border-radius: 5%;
+        background-repeat: no-repeat;
+        background-position: 50% 50%;
+        background-size: 125%;
+        background-image: url(./assets/honey-card-0.jpg); /* fallback */
+      }
+
+      &[data-name="honey-card-1"] .face { background-image: url(./assets/honey-card-1.jpg) } .back { background-image: url(./assets/honey-card-0.jpg) }
+      &[data-name="honey-card-2"] .face { background-image: url(./assets/honey-card-2.jpg) } .back { background-image: url(./assets/honey-card-0.jpg) }
+      &[data-name="honey-card-3"] .face { background-image: url(./assets/honey-card-3.jpg) } .back { background-image: url(./assets/honey-card-0.jpg) }
+      &[data-name="honey-card-4"] .face { background-image: url(./assets/honey-card-4.jpg) } .back { background-image: url(./assets/honey-card-0.jpg) }
+      &[data-name="honey-card-5"] .face { background-image: url(./assets/honey-card-5.jpg) } .back { background-image: url(./assets/honey-card-0.jpg) }
+      &[data-name="honey-card-6"] .face { background-image: url(./assets/honey-card-6.jpg) } .back { background-image: url(./assets/honey-card-0.jpg) }
+      &[data-name="honey-card-7"] .face { background-image: url(./assets/honey-card-7.jpg) } .back { background-image: url(./assets/honey-card-0.jpg) }
+      &[data-name="honey-card-8"] .face { background-image: url(./assets/honey-card-8.jpg) } .back { background-image: url(./assets/honey-card-0.jpg) }
+      &[data-name="honey-card-9"] .face { background-image: url(./assets/honey-card-9.jpg) } .back { background-image: url(./assets/honey-card-0.jpg) }
+      &[data-name="honey-card-10"] .face { background-image: url(./assets/honey-card-10.jpg) } .back { background-image: url(./assets/honey-card-0.jpg) }
+      &[data-name="honey-card-11"] .face { background-image: url(./assets/honey-card-11.jpg) } .back { background-image: url(./assets/honey-card-0.jpg) }
+      &[data-name="honey-card-12"] .face { background-image: url(./assets/honey-card-12.jpg) } .back { background-image: url(./assets/honey-card-0.jpg) }
+      &[data-name="honey-card-13"] .face { background-image: url(./assets/honey-card-13.jpg) } .back { background-image: url(./assets/honey-card-0.jpg) }
+      &[data-name="honey-card-14"] .face { background-image: url(./assets/honey-card-14.jpg) } .back { background-image: url(./assets/honey-card-0.jpg) }
+      &[data-name="honey-card-15"] .face { background-image: url(./assets/honey-card-15.jpg) } .back { background-image: url(./assets/honey-card-0.jpg) }
+      &[data-name="honey-card-16"] .face { background-image: url(./assets/honey-card-16.jpg) } .back { background-image: url(./assets/honey-card-0.jpg) }
+      &[data-name="honey-card-17"] .face { background-image: url(./assets/honey-card-17.jpg) } .back { background-image: url(./assets/honey-card-0.jpg) }
+      &[data-name="honey-card-18"] .face { background-image: url(./assets/honey-card-18.jpg) } .back { background-image: url(./assets/honey-card-0.jpg) }
+      &[data-name="honey-card-19"] .face { background-image: url(./assets/honey-card-19.jpg) } .back { background-image: url(./assets/honey-card-0.jpg) }
+      &[data-name="honey-card-20"] .face { background-image: url(./assets/honey-card-20.jpg) } .back { background-image: url(./assets/honey-card-0.jpg) }
+      &[data-name="honey-card-21"] .face { background-image: url(./assets/honey-card-21.jpg) } .back { background-image: url(./assets/honey-card-0.jpg) }
+    }
+
+    .HoneyCard > .rot {
+      position: absolute;
+      inset: 0;
+
+      border-radius: 5%;
+      background-repeat: no-repeat;
+      background-position: 50% 50%;
+      background-size: 125%;
+      background-image: url("./assets/honey-card-0-rotate.jpg");
+    }
+
+    .FlowerCard { 
+        &[data-name="starter-mint-1"] .face { background-image: url(./assets/starter-flower-13.jpg) } .back { background-image: url(./assets/starter-flower-10.jpg) }
+        &[data-name="starter-dandelion-1"] .face { background-image: url(./assets/starter-flower-3.jpg) } .back { background-image: url(./assets/starter-flower-0.jpg) }
+        &[data-name="starter-lavender-1"] .face { background-image: url(./assets/starter-flower-8.jpg) } .back { background-image: url(./assets/starter-flower-5.jpg) }
+
+        &[data-name="starter-mint-2"] .face { background-image: url(./assets/starter-flower-12.jpg) } .back { background-image: url(./assets/starter-flower-10.jpg) }
+        &[data-name="starter-dandelion-2"] .face { background-image: url(./assets/starter-flower-2.jpg) } .back { background-image: url(./assets/starter-flower-0.jpg) }
+        &[data-name="starter-lavender-2"] .face { background-image: url(./assets/starter-flower-7.jpg) } .back { background-image: url(./assets/starter-flower-5.jpg) }
+
+        &[data-name="starter-mint-3"] .face { background-image: url(./assets/starter-flower-14.jpg) } .back { background-image: url(./assets/starter-flower-10.jpg) }
+        &[data-name="starter-dandelion-3"] .face { background-image: url(./assets/starter-flower-4.jpg) } .back { background-image: url(./assets/starter-flower-0.jpg) }
+        &[data-name="starter-lavender-3"] .face { background-image: url(./assets/starter-flower-9.jpg) } .back { background-image: url(./assets/starter-flower-5.jpg) }
+
+        &[data-name="starter-mint-4"] .face { background-image: url(./assets/starter-flower-11.jpg) } .back { background-image: url(./assets/starter-flower-10.jpg) }
+        &[data-name="starter-dandelion-4"] .face { background-image: url(./assets/starter-flower-1.jpg) } .back { background-image: url(./assets/starter-flower-0.jpg) }
+        &[data-name="starter-lavender-4"] .face { background-image: url(./assets/starter-flower-6.jpg) } .back { background-image: url(./assets/starter-flower-5.jpg) }
+
+        &[data-name="flower-card-1"] .face { background-image: url(./assets/flower-card-1.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+        &[data-name="flower-card-2"] .face { background-image: url(./assets/flower-card-2.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+        &[data-name="flower-card-3"] .face { background-image: url(./assets/flower-card-3.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+        &[data-name="flower-card-4"] .face { background-image: url(./assets/flower-card-4.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+        &[data-name="flower-card-5"] .face { background-image: url(./assets/flower-card-5.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+        &[data-name="flower-card-6"] .face { background-image: url(./assets/flower-card-6.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+        &[data-name="flower-card-7"] .face { background-image: url(./assets/flower-card-7.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+        &[data-name="flower-card-8"] .face { background-image: url(./assets/flower-card-8.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+        &[data-name="flower-card-9"] .face { background-image: url(./assets/flower-card-9.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+        &[data-name="flower-card-10"] .face { background-image: url(./assets/flower-card-10.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+        &[data-name="flower-card-11"] .face { background-image: url(./assets/flower-card-11.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+        &[data-name="flower-card-12"] .face { background-image: url(./assets/flower-card-12.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+        &[data-name="flower-card-13"] .face { background-image: url(./assets/flower-card-13.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+
+        &[data-name="flower-card-14"] .face { background-image: url(./assets/flower-card-14.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+        &[data-name="flower-card-15"] .face { background-image: url(./assets/flower-card-15.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+        &[data-name="flower-card-16"] .face { background-image: url(./assets/flower-card-16.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+        &[data-name="flower-card-17"] .face { background-image: url(./assets/flower-card-17.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+        &[data-name="flower-card-18"] .face { background-image: url(./assets/flower-card-18.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+        &[data-name="flower-card-19"] .face { background-image: url(./assets/flower-card-19.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+        &[data-name="flower-card-20"] .face { background-image: url(./assets/flower-card-20.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+        &[data-name="flower-card-21"] .face { background-image: url(./assets/flower-card-21.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+        &[data-name="flower-card-22"] .face { background-image: url(./assets/flower-card-22.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+        &[data-name="flower-card-23"] .face { background-image: url(./assets/flower-card-23.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+        &[data-name="flower-card-24"] .face { background-image: url(./assets/flower-card-24.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+        &[data-name="flower-card-25"] .face { background-image: url(./assets/flower-card-25.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+        &[data-name="flower-card-26"] .face { background-image: url(./assets/flower-card-26.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+
+        &[data-name="flower-card-27"] .face { background-image: url(./assets/flower-card-27.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+        &[data-name="flower-card-28"] .face { background-image: url(./assets/flower-card-28.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+        &[data-name="flower-card-29"] .face { background-image: url(./assets/flower-card-29.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+        &[data-name="flower-card-30"] .face { background-image: url(./assets/flower-card-30.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+        &[data-name="flower-card-31"] .face { background-image: url(./assets/flower-card-31.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+        &[data-name="flower-card-32"] .face { background-image: url(./assets/flower-card-32.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+        &[data-name="flower-card-33"] .face { background-image: url(./assets/flower-card-33.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+        &[data-name="flower-card-34"] .face { background-image: url(./assets/flower-card-34.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+        &[data-name="flower-card-35"] .face { background-image: url(./assets/flower-card-35.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+        &[data-name="flower-card-36"] .face { background-image: url(./assets/flower-card-36.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+        &[data-name="flower-card-37"] .face { background-image: url(./assets/flower-card-37.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+        &[data-name="flower-card-38"] .face { background-image: url(./assets/flower-card-38.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+        &[data-name="flower-card-39"] .face { background-image: url(./assets/flower-card-39.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+
+        &[data-name="flower-card-40"] .face { background-image: url(./assets/flower-card-40.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+        &[data-name="flower-card-41"] .face { background-image: url(./assets/flower-card-41.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+        &[data-name="flower-card-42"] .face { background-image: url(./assets/flower-card-42.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+        
+        filter: drop-shadow(0 1px 1px rgba(0,0,0,0.35));
+        
+        > .face,
+        > .back {
+            width: 100%;
+            height: 100%;
+            border-radius: 5%;
+
+            background-repeat: no-repeat;
+            background-position: 50% 50%;
+            background-image: url(./assets/flower-card-0.jpg);
+
+            background-size: 125%;
+        }
+    }
+
+    .ArrangementCard { 
+        &[data-name="dandelion-base"] .face { background-image: url(./assets/goal-card-1.jpg) }
+        &[data-name="layered-nectar"] .face { background-image: url(./assets/goal-card-2.jpg) }
+        &[data-name="flower-pairing"] .face { background-image: url(./assets/goal-card-3.jpg) }
+        &[data-name="lavender-rows"] .face { background-image: url(./assets/goal-card-4.jpg) }
+        &[data-name="under-bloom"] .face { background-image: url(./assets/goal-card-5.jpg) }
+        &[data-name="angled-planting"] .face { background-image: url(./assets/goal-card-6.jpg) }
+        &[data-name="mint-massing"] .face { background-image: url(./assets/goal-card-7.jpg) }
+        &[data-name="mixed-forage"] .face { background-image: url(./assets/goal-card-8.jpg) }
+        &[data-name="garden-abundance"] .face { background-image: url(./assets/goal-card-9.jpg) }
+
+        filter: drop-shadow(0 1px 1px rgba(0,0,0,0.35));
+        
+        > .face,
+        > .back {
+            width: 100%;
+            height: 100%;
+            border-radius: 5%;
+
+            background-repeat: no-repeat;
+            background-position: 50% 50%;
+            background-image: url(./assets/goal-card-0.jpg);
+
+            background-size: 125%;
+        }
+    }
+
+    .BeeToken {    
+        &[data-name="bee-token-zephyr-bee-1"] .base { background-image: url(./assets/bee-token-0.jpg) } 
+        &[data-name="bee-token-zephyr-bee-1"] .upgraded { background-image: url(./assets/bee-token-1.jpg) }
+
+        &[data-name="bee-token-two-bee-1"] .base { background-image: url(./assets/bee-token-2.jpg) } 
+        &[data-name="bee-token-two-bee-1"] .upgraded { background-image: url(./assets/bee-token-3.jpg) }
+
+        &[data-name="bee-token-roll-bee-1"] .base { background-image: url(./assets/bee-token-4.jpg) }
+        &[data-name="bee-token-roll-bee-1"] .upgraded { background-image: url(./assets/bee-token-5.jpg) }
+
+        &[data-name="bee-token-zephyr-bee-2"] .base { background-image: url(./assets/bee-token-6.jpg) } 
+        &[data-name="bee-token-zephyr-bee-2"] .upgraded { background-image: url(./assets/bee-token-7.jpg) }
+
+        &[data-name="bee-token-two-bee-2"] .base { background-image: url(./assets/bee-token-8.jpg) } 
+        &[data-name="bee-token-two-bee-2"] .upgraded { background-image: url(./assets/bee-token-9.jpg) }
+
+        &[data-name="bee-token-roll-bee-2"] .base { background-image: url(./assets/bee-token-10.jpg) } 
+        &[data-name="bee-token-roll-bee-2"] .upgraded { background-image: url(./assets/bee-token-11.jpg) }
+
+        &[data-name="bee-token-zephyr-bee-3"] .base { background-image: url(./assets/bee-token-12.jpg) } 
+        &[data-name="bee-token-zephyr-bee-3"] .upgraded { background-image: url(./assets/bee-token-13.jpg) }
+
+        &[data-name="bee-token-two-bee-3"] .base { background-image: url(./assets/bee-token-14.jpg) } 
+        &[data-name="bee-token-two-bee-3"] .upgraded { background-image: url(./assets/bee-token-15.jpg) }
+
+        &[data-name="bee-token-roll-bee-3"] .base { background-image: url(./assets/bee-token-16.jpg) } 
+        &[data-name="bee-token-roll-bee-3"] .upgraded { background-image: url(./assets/bee-token-17.jpg) }
+
+        &[data-name="bee-token-zephyr-bee-4"] .base { background-image: url(./assets/bee-token-18.jpg) } 
+        &[data-name="bee-token-zephyr-bee-4"] .upgraded { background-image: url(./assets/bee-token-19.jpg) }
+
+        &[data-name="bee-token-two-bee-4"] .base { background-image: url(./assets/bee-token-20.jpg) } 
+        &[data-name="bee-token-two-bee-4"] .upgraded { background-image: url(./assets/bee-token-21.jpg) }
+
+        &[data-name="bee-token-roll-bee-4"] .base { background-image: url(./assets/bee-token-22.jpg) } 
+        &[data-name="bee-token-roll-bee-4"] .upgraded { background-image: url(./assets/bee-token-23.jpg) }
+
+        &[data-name="bee-token-player-bee-1"] .base { background-image: url(./assets/bee-token-32.jpg) } 
+        &[data-name="bee-token-player-bee-1"] .upgraded { background-image: url(./assets/bee-token-33.jpg) }
+
+        &[data-name="bee-token-player-bee-2"] .base { background-image: url(./assets/bee-token-30.jpg) } 
+        &[data-name="bee-token-player-bee-2"] .upgraded { background-image: url(./assets/bee-token-31.jpg) }
+
+        &[data-name="bee-token-player-bee-3"] .base { background-image: url(./assets/bee-token-28.jpg) } 
+        &[data-name="bee-token-player-bee-3"] .upgraded { background-image: url(./assets/bee-token-29.jpg) }
+
+        &[data-name="bee-token-player-bee-4"] .base { background-image: url(./assets/bee-token-26.jpg) } 
+        &[data-name="bee-token-player-bee-4"] .upgraded { background-image: url(./assets/bee-token-27.jpg) }
+
+        &[data-name="bonus-bee-1"] .base { background-image: url(./assets/bee-token-24.jpg) } 
+        &[data-name="bonus-bee-1"] .upgraded { background-image: url(./assets/bee-token-25.jpg) }
+        &[data-name="bonus-bee-2"] .base { background-image: url(./assets/bee-token-24.jpg) } 
+        &[data-name="bonus-bee-2"] .upgraded { background-image: url(./assets/bee-token-25.jpg) }
+        &[data-name="bonus-bee-3"] .base { background-image: url(./assets/bee-token-24.jpg) } 
+        &[data-name="bonus-bee-3"] .upgraded { background-image: url(./assets/bee-token-25.jpg) }
+        &[data-name="bonus-bee-4"] .base { background-image: url(./assets/bee-token-24.jpg) } 
+        &[data-name="bonus-bee-4"] .upgraded { background-image: url(./assets/bee-token-25.jpg) }
+        &[data-name="bonus-bee-5"] .base { background-image: url(./assets/bee-token-24.jpg) } 
+        &[data-name="bonus-bee-5"] .upgraded { background-image: url(./assets/bee-token-25.jpg) }
+        &[data-name="bonus-bee-6"] .base { background-image: url(./assets/bee-token-24.jpg) } 
+        &[data-name="bonus-bee-6"] .upgraded { background-image: url(./assets/bee-token-25.jpg) }
+        &[data-name="bonus-bee-7"] .base { background-image: url(./assets/bee-token-24.jpg) } 
+        &[data-name="bonus-bee-7"] .upgraded { background-image: url(./assets/bee-token-25.jpg) }
+        &[data-name="bonus-bee-8"] .base { background-image: url(./assets/bee-token-24.jpg) } 
+        &[data-name="bonus-bee-8"] .upgraded { background-image: url(./assets/bee-token-25.jpg) }
+
+        filter: drop-shadow(0 1px 1px rgba(0,0,0,0.35));
+        
+        // the actual token face (your inner div)
+        > .base,
+        > .upgraded {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+
+            background-repeat: no-repeat;
+            background-position: 50% 50%;
+
+            /* this is the "only show a portion" part */
+            background-size: 140%;   // tweak: 120%–200% depending on how zoomed-in you want
+        }
+    }
+
+
+  .tabs-tab {
+    // background: var(--player-color);
+    // opacity: 25%;
+    filter: brightness(0.5);
+    &.active {
+      // opacity: 100%;
+      filter: brightness(1.0);
+    }
+    &:hover {
+      opacity: 100%;
+      filter: brightness(1.5);
+    }
+  }
+
+  .playerTab {
+    position: absolute;
+    top: 0;
+    left: 40%;
+  }
+
+  .drawer {
+    z-index: 2000;     
+  }
+  .drawer-tab {
+    z-index: 2200;
+    // background-color: var(--player-color);
+  }
+  .drawer-content {
+    z-index: 2100;
+
+    overflow: hidden;
+  }
+
+}
+
+
+.player-controls {
+    z-index: 3000;
+  font-size: .4em;
+  // position: absolute;
+  // // top: 50%; 
+  // right: 50%;
+  // transform: translate(50%,0%);
+  // background-color: rgb(0,0,0,0);
+
+      button {
+        // width: 100%;
+      background: #448;
+      color: #fffcdc;
+      html.dark & {
+        background: #114;
+        color: #cc9;
+      }
+      box-shadow: inset -0.2em -0.2em 0.5em -0.2em #000c, inset 0.2em 0.2em 0.5em -0.2em #fffc;
+      &.cancel {
+        background: #666;
+      }
+    }
+}
