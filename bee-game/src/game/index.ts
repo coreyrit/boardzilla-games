@@ -782,19 +782,22 @@ function setupGame(game: MyGame) {
       case 1:
         playerSpace.create(BeeToken, 'bee-token-player-bee-' + i, {
           oneTimeUse: true, upgraded: false,
-          beeCount: 1, beeVP: 0, ability: BeeAbility.None,
+          // beeCount: 1, beeVP: 0, ability: BeeAbility.None,
+          beeCount: 1, beeVP: 0, ability: BeeAbility.RollDie,
           upgradedBeeCount: 0, upgradedBeeVP: 2, upgradedAbility: BeeAbility.None});
         break;
       case 2:
         playerSpace.create(BeeToken, 'bee-token-player-bee-' + i, {
           oneTimeUse: true, upgraded: false,
-          beeCount: 1, beeVP: 0, ability: BeeAbility.RollDie,
+          // beeCount: 1, beeVP: 0, ability: BeeAbility.RollDie,
+          beeCount: 2, beeVP: 0, ability: BeeAbility.None,
           upgradedBeeCount: 0, upgradedBeeVP: 2, upgradedAbility: BeeAbility.RollDie});
         break;
       case 3:
         playerSpace.create(BeeToken, 'bee-token-player-bee-' + i, {
           oneTimeUse: true, upgraded: false,
-          beeCount: 2, beeVP: 0, ability: BeeAbility.None,
+          // beeCount: 2, beeVP: 0, ability: BeeAbility.None,
+          beeCount: 1, beeVP: 0, ability: BeeAbility.ChooseDisc,
           upgradedBeeCount: 0, upgradedBeeVP: 2, upgradedAbility: BeeAbility.None});
         break;
       case 4:
@@ -838,12 +841,14 @@ function setupGame(game: MyGame) {
   honeyDeck.create(HoneyCard, 'honey-card-4', {type: FlowerType.Lavender, cost: [FlowerType.Lavender, FlowerType.Lavender, FlowerType.Lavender, FlowerType.Lavender, FlowerType.Dandelion], scoring: HoneyScoring.VP3_7_12});
   honeyDeck.create(HoneyCard, 'honey-card-5', {type: FlowerType.Mint, cost: [FlowerType.Mint, FlowerType.Mint, FlowerType.Mint, FlowerType.Mint, FlowerType.Lavender], scoring: HoneyScoring.VP3_7_12});
   honeyDeck.create(HoneyCard, 'honey-card-6', {type: FlowerType.Mint, cost: [FlowerType.Mint, FlowerType.Mint, FlowerType.Mint, FlowerType.Dandelion, FlowerType.Dandelion], scoring: HoneyScoring.VP3_7_12});
-  honeyDeck.create(HoneyCard, 'honey-card-7', {type: FlowerType.Mint, cost: [FlowerType.Mint, FlowerType.Mint, FlowerType.Mint, FlowerType.Mint, FlowerType.Lavender], scoring: HoneyScoring.VP3_7_12});
+  // honeyDeck.create(HoneyCard, 'honey-card-7', {type: FlowerType.Mint, cost: [FlowerType.Mint, FlowerType.Mint, FlowerType.Mint, FlowerType.Mint, FlowerType.Lavender], scoring: HoneyScoring.VP3_7_12});
+honeyDeck.create(HoneyCard, 'honey-card-7', {type: FlowerType.Mint, cost: [FlowerType.Mint, FlowerType.Mint, FlowerType.Mint, FlowerType.Mint, FlowerType.Mint], scoring: HoneyScoring.VP3_7_12});
   honeyDeck.create(HoneyCard, 'honey-card-8', {type: FlowerType.Dandelion, cost: [FlowerType.Dandelion, FlowerType.Dandelion, FlowerType.Dandelion, FlowerType.Lavender, FlowerType.Mint], scoring: HoneyScoring.VP3_7_12});
   honeyDeck.create(HoneyCard, 'honey-card-9', {type: FlowerType.Dandelion, cost: [FlowerType.Dandelion, FlowerType.Dandelion, FlowerType.Dandelion, FlowerType.Lavender, FlowerType.Lavender], scoring: HoneyScoring.VP3_7_12});
   honeyDeck.create(HoneyCard, 'honey-card-10', {type: FlowerType.None, cost: [FlowerType.Mint, FlowerType.Mint, FlowerType.Lavender, FlowerType.Lavender, FlowerType.Dandelion], scoring: HoneyScoring.VP4});
   honeyDeck.create(HoneyCard, 'honey-card-11', {type: FlowerType.None, cost: [FlowerType.Dandelion, FlowerType.Dandelion, FlowerType.Lavender, FlowerType.Lavender, FlowerType.Mint], scoring: HoneyScoring.VP4});
-  honeyDeck.create(HoneyCard, 'honey-card-12', {type: FlowerType.Dandelion, cost: [FlowerType.Dandelion, FlowerType.Dandelion, FlowerType.Dandelion, FlowerType.Lavender, FlowerType.Mint], scoring: HoneyScoring.VP3_7_12});
+  // honeyDeck.create(HoneyCard, 'honey-card-12', {type: FlowerType.Dandelion, cost: [FlowerType.Dandelion, FlowerType.Dandelion, FlowerType.Dandelion, FlowerType.Lavender, FlowerType.Mint], scoring: HoneyScoring.VP3_7_12});
+honeyDeck.create(HoneyCard, 'honey-card-12', {type: FlowerType.Dandelion, cost: [FlowerType.Dandelion, FlowerType.Dandelion, FlowerType.Dandelion, FlowerType.Mint, FlowerType.Mint], scoring: HoneyScoring.VP3_7_12});
   honeyDeck.create(HoneyCard, 'honey-card-13', {type: FlowerType.None, cost: [FlowerType.Mint, FlowerType.Mint, FlowerType.Dandelion, FlowerType.Dandelion, FlowerType.Lavender], scoring: HoneyScoring.VP4});
   honeyDeck.create(HoneyCard, 'honey-card-14', {type: FlowerType.Mint, cost: [FlowerType.Mint, FlowerType.Mint, FlowerType.Mint, FlowerType.Lavender, FlowerType.Dandelion], scoring: HoneyScoring.VP3_7_12});
   honeyDeck.create(HoneyCard, 'honey-card-15', {type: FlowerType.Lavender, cost: [FlowerType.Lavender, FlowerType.Lavender, FlowerType.Lavender, FlowerType.Mint, FlowerType.Mint], scoring: HoneyScoring.VP3_7_12});

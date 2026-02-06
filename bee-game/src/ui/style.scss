@@ -241,21 +241,21 @@
     }
 
     .FlowerCard { 
-        &[data-name="starter-mint-1"] .face { background-image: url(./assets/starter-flower-13.jpg) } .back { background-image: url(./assets/starter-flower-10.jpg) }
-        &[data-name="starter-dandelion-1"] .face { background-image: url(./assets/starter-flower-3.jpg) } .back { background-image: url(./assets/starter-flower-0.jpg) }
-        &[data-name="starter-lavender-1"] .face { background-image: url(./assets/starter-flower-8.jpg) } .back { background-image: url(./assets/starter-flower-5.jpg) }
+        &[data-name="starter-mint-1"] .face { background-image: url(./assets/starter-flower-13.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+        &[data-name="starter-dandelion-1"] .face { background-image: url(./assets/starter-flower-3.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+        &[data-name="starter-lavender-1"] .face { background-image: url(./assets/starter-flower-8.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
 
-        &[data-name="starter-mint-2"] .face { background-image: url(./assets/starter-flower-12.jpg) } .back { background-image: url(./assets/starter-flower-10.jpg) }
-        &[data-name="starter-dandelion-2"] .face { background-image: url(./assets/starter-flower-2.jpg) } .back { background-image: url(./assets/starter-flower-0.jpg) }
-        &[data-name="starter-lavender-2"] .face { background-image: url(./assets/starter-flower-7.jpg) } .back { background-image: url(./assets/starter-flower-5.jpg) }
+        &[data-name="starter-mint-2"] .face { background-image: url(./assets/starter-flower-12.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+        &[data-name="starter-dandelion-2"] .face { background-image: url(./assets/starter-flower-2.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+        &[data-name="starter-lavender-2"] .face { background-image: url(./assets/starter-flower-7.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
 
-        &[data-name="starter-mint-3"] .face { background-image: url(./assets/starter-flower-14.jpg) } .back { background-image: url(./assets/starter-flower-10.jpg) }
-        &[data-name="starter-dandelion-3"] .face { background-image: url(./assets/starter-flower-4.jpg) } .back { background-image: url(./assets/starter-flower-0.jpg) }
-        &[data-name="starter-lavender-3"] .face { background-image: url(./assets/starter-flower-9.jpg) } .back { background-image: url(./assets/starter-flower-5.jpg) }
+        &[data-name="starter-mint-3"] .face { background-image: url(./assets/starter-flower-14.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+        &[data-name="starter-dandelion-3"] .face { background-image: url(./assets/starter-flower-4.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+        &[data-name="starter-lavender-3"] .face { background-image: url(./assets/starter-flower-9.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
 
-        &[data-name="starter-mint-4"] .face { background-image: url(./assets/starter-flower-11.jpg) } .back { background-image: url(./assets/starter-flower-10.jpg) }
-        &[data-name="starter-dandelion-4"] .face { background-image: url(./assets/starter-flower-1.jpg) } .back { background-image: url(./assets/starter-flower-0.jpg) }
-        &[data-name="starter-lavender-4"] .face { background-image: url(./assets/starter-flower-6.jpg) } .back { background-image: url(./assets/starter-flower-5.jpg) }
+        &[data-name="starter-mint-4"] .face { background-image: url(./assets/starter-flower-11.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+        &[data-name="starter-dandelion-4"] .face { background-image: url(./assets/starter-flower-1.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
+        &[data-name="starter-lavender-4"] .face { background-image: url(./assets/starter-flower-6.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
 
         &[data-name="flower-card-1"] .face { background-image: url(./assets/flower-card-1.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
         &[data-name="flower-card-2"] .face { background-image: url(./assets/flower-card-2.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
@@ -326,7 +326,8 @@
             background-position: 50% 50%;
             background-image: url(./assets/flower-card-0.jpg);
 
-            background-size: 125%;
+            // background-size: 125%;
+            background-size: 100%;
         }
     }
 
@@ -451,7 +452,8 @@
             background-position: 50% 50%;
 
             /* this is the "only show a portion" part */
-            background-size: 140%;   // tweak: 120%–200% depending on how zoomed-in you want
+            // background-size: 140%;   // tweak: 120%–200% depending on how zoomed-in you want
+            background-size: 100%;
         }
     }
 
