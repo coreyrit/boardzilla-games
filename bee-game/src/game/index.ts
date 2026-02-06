@@ -643,8 +643,8 @@ export class MyGame extends Game<MyGame, BeeGamePlayer> {
 
   public checkForGameEnd() {
     this.players.forEach(x => {      
-      // if(x.space.all(HoneyCard).length + x.space.all(FlowerCard).length >= 12) {
-      if(x.space.all(HoneyCard).length + x.space.all(FlowerCard).length >= 5) {
+      if(x.space.all(HoneyCard).length + x.space.all(FlowerCard).length >= 12) {
+      // if(x.space.all(HoneyCard).length + x.space.all(FlowerCard).length >= 5) {
         this.gameOver = true;
       }
     });
