@@ -273,18 +273,23 @@ export class BeeGamePlayer extends Player<MyGame, BeeGamePlayer> {
     public rollDie() {
       const die = this.game.first(D6)!;
       die.roll();
+      let result = '';
       switch(die.current) {
         case 2:
           $.pool.first(Disc, {type: FlowerType.Dandelion})!.putInto(this.space.first(DiscSpace)!);
+          result = FlowerType.Dandelion;
           break;
         case 3:
           this.game.followUp({name: 'chooseDiscColor', args: {colors: [FlowerType.Mint, FlowerType.Dandelion, FlowerType.Lavender]}});
+          result = 'Any Disc';
           break;
         case 4:
           $.pool.first(Disc, {type: FlowerType.Lavender})!.putInto(this.space.first(DiscSpace)!);
+          result = FlowerType.Lavender;
           break;
         case 6:
           $.pool.first(Disc, {type: FlowerType.Mint})!.putInto(this.space.first(DiscSpace)!);
+          result = FlowerType.Mint;
           break;
         case 1:
         case 5:
@@ -294,8 +299,11 @@ export class BeeGamePlayer extends Player<MyGame, BeeGamePlayer> {
           } else {
             $.pool.first(LarvaHex)!.putInto(this.space);
           }
+          result = 'Larva';
           break;
       }
+
+      this.game.message(`{{player}} rolled the die and got {{result}}.`, {player: this, result: result});
     }
 }
 
@@ -311,6 +319,10 @@ export class PlayerSpace extends Space<MyGame> {
 
 export class FlowerColumn extends Space<MyGame> {
   index: number;
+
+  public override toString(): string {
+    return this.first(FlowerCard)!.type + ' Column';
+  }
 }
 
 export class FieldSpace extends Space<MyGame> {
@@ -342,22 +354,22 @@ export enum FlowerType {
 
 export enum FlowerAbility {
   None,
-  RollDie,
-  Send2YellowApiary,
-  Send2GreenApiary,
-  Send2PurpleApiary,
-  RollAndGainYellow,
-  RollAndGainGreen,
-  RollAndGainPurple,
-  DandelionHoney2Less,
-  MintHoney2Less,
-  LavenderHoney2Less,
-  GreenOrPurple,
-  YellowOrPurple,
-  GreenOrYellow,
-  AnyForLavender,
-  AnyForDandelion,
-  AnyForMint
+  RollDie = 'Roll Die',
+  Send2YellowApiary = 'Send Any 2 Discs to Yellow Apiary',
+  Send2GreenApiary = 'Send Any 2 Discs to Green Apiary',
+  Send2PurpleApiary = 'Send Any 2 Discs to Purple Apiary',
+  RollAndGainYellow = 'Roll Die and Gain Dandelion',
+  RollAndGainGreen = 'Roll Die and Gain Mint',
+  RollAndGainPurple = 'Roll Die and Gain Lavender',
+  DandelionHoney2Less = 'Make Dandelion Honey for 2 Less',
+  MintHoney2Less = 'Make Mint Honey for 2 Less',
+  LavenderHoney2Less = 'Make Lavneder Honey for 2 Less',
+  GreenOrPurple = 'Take Mint or Lavender',
+  YellowOrPurple = 'Take Dandelion or Lavender',
+  GreenOrYellow = 'Take Mint or Dandelion',
+  AnyForLavender = 'Pay Any Disc for Lavender Flower',
+  AnyForDandelion = 'Pay Any Disc for Dandelion Flower',
+  AnyForMint = 'Pay Any Disc for Mint Flower'
 }
 
 export enum FlowerScoring {
@@ -442,6 +454,14 @@ export class FlowerCard extends Piece<MyGame> {
         break;
     }
   }
+
+  public override toString(): string {
+    if(this.wild) {
+      return 'Wildflower';
+    } else {
+      return this.type + ' Flower (' + this.ability + ')';
+    }
+  }
 }
 
 export enum HoneyScoring {
@@ -472,11 +492,32 @@ export class HoneyCard extends Piece<MyGame> {
   rot: boolean = false;
   cost: FlowerType[];
   scoring: HoneyScoring;
+
+  public override toString(): string {
+    if(this.faceUp) {
+      if(this.scoring == HoneyScoring.VP4) {
+        return 'Rare Honey';
+      } else {
+        return this.type + ' Honey'
+      }
+    } else {
+      return 'Common Honey'
+    }
+  }
 }
 
 export class ApiaryCard extends Piece<MyGame> {
   type: FlowerType;
   color: string;
+
+  public capitalize(str: string): string {
+    if (!str) return str;
+    return str[0].toUpperCase() + str.slice(1);
+  }
+
+  public override toString(): string {
+    return this.type + ' Apiary' 
+  }
 }
 
 export class ApiaryConvert extends Piece<MyGame> {
@@ -486,6 +527,10 @@ export class ApiaryConvert extends Piece<MyGame> {
 export class Disc extends Piece<MyGame> {
   type: FlowerType;
   color: string;
+
+  public override toString(): string {
+    return this.type;
+  }
 }
 
 export class DiscSpace extends Space<MyGame> {
@@ -497,11 +542,11 @@ export class LarvaHex extends Piece<MyGame> {
 }
 
 export enum BeeAbility {
-  None,
-  ZephyrAndApiary,
-  RollDie,
-  ChooseDisc,
-  Zephyr
+  None = '',
+  ZephyrAndApiary = 'Zepyr & Apiary',
+  RollDie = 'Roll Die',
+  ChooseDisc = 'Choose Disc',
+  Zephyr = 'Zephyr'
 }
 
 // export enum BeeColor {
@@ -550,10 +595,28 @@ export class BeeToken extends Piece<MyGame> {
             $.pool.first(Disc, {type: x.type})!.putInto(x);
           }
         })
+        this.game.message(`{{player}} used Zepnyr to refill the field.`, {player: this});
         break;
       case BeeAbility.ChooseDisc:
         this.game.followUp({name: 'chooseDiscColor', args: {colors: [FlowerType.Mint, FlowerType.Dandelion, FlowerType.Lavender]}});
         break;
+    }
+  }
+
+  public override toString(): string {
+    if(this.beeCount == 0) {
+      return this.beeVP + 'VP'; 
+    } else {
+      let str = '';
+      if(this.oneTimeUse) {
+        str += 'Single-Use '
+      }
+      if(this.ability != BeeAbility.None) {
+        str += this.ability + ' + ' + this.beeCount + ' Bee';
+      } else {
+        str += this.beeCount + ' Bee';
+      }
+      return str;
     }
   }
 }
@@ -896,6 +959,8 @@ export default createGame(BeeGamePlayer, MyGame, game => {
           $.pool.first(Disc, {type: FlowerType.Lavender})!.putInto(player.space.first(DiscSpace)!);
           break;  
       }
+
+      game.message(`{{player}} gained a {{choice}} from the supply.`, {player: player, choice: choice});
     }),
 
     chooseBeeToken: (player) => action({
@@ -927,27 +992,30 @@ export default createGame(BeeGamePlayer, MyGame, game => {
       token.performAbility(player);
 
       // figure out which flowers the bees map to
-      let flowers = [];
+      let discs = [];
       for(let i = 0; i < token.beeCount; i++) {
         switch(space.side) {
           case BeeSpaceSide.Top:
-            flowers.push(game.first(FieldSpace, {row: 1+i, column: space.index})!.first(FlowerCard)!);
+            discs.push(game.first(FieldSpace, {row: 1+i, column: space.index})!.first(FlowerCard)!.first(Disc)!);
             break;
           case BeeSpaceSide.Bottom:
-            flowers.push(game.first(FieldSpace, {row: 3-i, column: space.index})!.first(FlowerCard)!);
+            discs.push(game.first(FieldSpace, {row: 3-i, column: space.index})!.first(FlowerCard)!.first(Disc)!);
             break;
           case BeeSpaceSide.Left:
-            flowers.push(game.first(FieldSpace, {row: space.index, column: 1+i})!.first(FlowerCard)!);
+            discs.push(game.first(FieldSpace, {row: space.index, column: 1+i})!.first(FlowerCard)!.first(Disc)!);
             break;
           case BeeSpaceSide.Right:
-            flowers.push(game.first(FieldSpace, {row: space.index, column: 3-i})!.first(FlowerCard)!);
+            discs.push(game.first(FieldSpace, {row: space.index, column: 3-i})!.first(FlowerCard)!.first(Disc)!);
             break;
         }   
       }
 
-      flowers.forEach(f => {
-        f.all(Disc).putInto(player.space.first(DiscSpace)!);
+      discs.forEach(d => {
+        d.putInto(player.space.first(DiscSpace)!);
       })
+
+      game.message(`{{player}} placed their {{token}} and gained {{discs}} from the supply.`, 
+        {player: player, token: token, discs: discs});
     }),
 
     chooseDiscForFlower: (player) => action<{flower: FlowerCard}>({
@@ -957,6 +1025,7 @@ export default createGame(BeeGamePlayer, MyGame, game => {
       { skipIf: 'never' }
     ).do(({ disc, flower }) => {
       disc.putInto($.pool);
+      game.message(`{{player}} payed {{disc}}.`, {player: player, disc: disc});
       game.followUp({name: 'plantFlower', args: {flower: flower, ignoreCost: true}});
     }),
 
@@ -988,9 +1057,13 @@ export default createGame(BeeGamePlayer, MyGame, game => {
       { skipIf: 'never' }
     ).do(({ column, flower, ignoreCost }) => {
       if(!ignoreCost) {
+        let discs: Disc[] = [];
         flower.cost.forEach(x => {
-          player.space.first(DiscSpace)!.first(Disc, {type: x})!.putInto($.pool);
+          const disc = player.space.first(DiscSpace)!.first(Disc, {type: x})!;
+          discs.push(disc);
+          disc.putInto($.pool);
         });
+        game.message(`{{player}} payed {{discs}}.`, {player: player, discs: discs});
       }
       
       const columns = player.space.all(FlowerColumn);
@@ -1003,6 +1076,9 @@ export default createGame(BeeGamePlayer, MyGame, game => {
       if(minAfter > minBefore) {
         $.pool.first(BeeToken, {upgradedBeeVP: 3})!.putInto(player.space);
       }
+
+      game.message(`{{player}} planted {{flower}} in the {{column}}.`,
+        {player: player, flower: flower, column: column.container(FlowerColumn)!});
 
     }),
 
@@ -1021,6 +1097,7 @@ export default createGame(BeeGamePlayer, MyGame, game => {
       "choice", [FlowerType.Mint, FlowerType.Dandelion, FlowerType.Lavender],
     ).do(({choice, apiary}) => {
       game.sendDiscToApiary(choice, apiary);
+      game.message(`{{player}} sent {{disc}} to {{apiary}} from the supply.`, {player: player, disc: choice, apiary: apiary});
     }),
 
     choose2ColorsForApiary: (player) => action<{apiary: ApiaryCard}>({
@@ -1032,6 +1109,7 @@ export default createGame(BeeGamePlayer, MyGame, game => {
       [disc1, disc2].forEach(choice => { 
         game.sendDiscToApiary(choice, apiary);
       });
+      game.message(`{{player}} sent {{discs}} to {{apiary}} from the supply.`, {player: player, discs: [disc1, disc2], apiary: apiary});
     }),
 
     chooseDiscForApiary: (player) => action<{apiary: ApiaryCard}>({
@@ -1043,6 +1121,7 @@ export default createGame(BeeGamePlayer, MyGame, game => {
     ).do(({ disc, apiary }) => {
       disc.forEach(x => x.putInto(apiary));
       player.placedInApiary = true;
+      game.message(`{{player}} placed {{discs}} in {{apiary}}.`, {player: player, discs: disc, apiary: apiary});
     }),
 
     activateFlower: (player) => action({
@@ -1054,6 +1133,8 @@ export default createGame(BeeGamePlayer, MyGame, game => {
     ).do(({ flower }) => {
       player.space.first(DiscSpace)!.first(Disc, {type: flower.type})!.putInto(flower);
       flower.performAbility(player);
+
+      game.message(`{{player}} activated {{flower}}}.`, {player: player, flower: flower});
     }),
 
     recallBees: (player) => action({
@@ -1063,6 +1144,8 @@ export default createGame(BeeGamePlayer, MyGame, game => {
       game.all(BeeSpace).all(BeeToken, {player: player}).putInto(player.space);
       player.space.all(FlowerCard).all(Disc).putInto($.pool);
       player.rollDie();
+
+      game.message(`{{player}} recalled their bees.`, {player: player});
     }),
 
     purchaseHoney: (player) => action({
@@ -1092,6 +1175,9 @@ export default createGame(BeeGamePlayer, MyGame, game => {
             game.followUp({name: 'upgradeBeetoken'});
         }
       }    
+
+      game.message(`{{player}} emptied their {{apiary}} to make {{honey}}.`, 
+        {player: player, apiary: apiary, honey: honey});
     }),
 
     upgradeBeetoken: (player) => action({
@@ -1105,6 +1191,8 @@ export default createGame(BeeGamePlayer, MyGame, game => {
       bee.beeCount = bee.upgradedBeeCount;
       bee.ability = bee.upgradedAbility;
       bee.beeVP = bee.upgradedBeeVP;
+
+      game.message(`{{player}} upgraded a bee to {{bee}}.`, {player: player, bee: bee});
     }),
 
     finishTurn: (player) => action({
@@ -1114,6 +1202,7 @@ export default createGame(BeeGamePlayer, MyGame, game => {
       { skipIf: 'never'}
     ).do(() => {
       // do nothing
+      game.message(`{{player}} ended their turn.`, {player: player});
     }),
 
     chooseWildflowerType: (player) => action<{wildflower: FlowerCard}>({
@@ -1135,6 +1224,8 @@ export default createGame(BeeGamePlayer, MyGame, game => {
       { number: 2 }
     ).do(({converter, discs}) => {
        discs.forEach(x => x.putInto(($.pool)));
+       game.message(`{{player}} converted {{discs}}.`, {player: player, discs: discs});
+
        game.followUp({name: 'chooseColorForApiary', args: {apiary: converter.container(ApiaryCard)!, count: 1}})
     }),
 
