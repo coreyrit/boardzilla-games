@@ -1,5 +1,4 @@
 /node_modules
 /.save-states
-src/ui/assets
 /build
 tsconfig.tsbuildinfo
