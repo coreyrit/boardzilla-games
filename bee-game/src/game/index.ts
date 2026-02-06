@@ -31,6 +31,7 @@ export class BeeGamePlayer extends Player<MyGame, BeeGamePlayer> {
     score += this.getFlowerScore(true);
     score += this.getBeeScore(true);
     score += this.getHoneyScore(true);
+    score += this.getLeftoverScore(true);
     this.space.first(PlayerScore)!.score = score;
   }
 
@@ -93,24 +94,25 @@ export class BeeGamePlayer extends Player<MyGame, BeeGamePlayer> {
     return score;
   }
 
+  public getLeftoverScore(log : boolean = false) : number {
+    const score = Math.floor(
+      (this.space.all(ApiaryCard).all(Disc).length + this.space.all(LarvaHex).length) / 2
+    );
+    if(log) this.game.message(this.name + ' scored ' + score + ' points for leftovers.');
+    return score;
+  }
+
   public getHoneyScore(log : boolean = false) : number {
     let score = 0;
 
-    const mintHoney = this.space.all(HoneyCard, {faceUp: true, type: FlowerType.Mint}).length;
-    const dandelionHoney = this.space.all(HoneyCard, {faceUp: true, type: FlowerType.Dandelion}).length;
-    const lavenderHoney = this.space.all(HoneyCard, {faceUp: true, type: FlowerType.Lavender}).length;
-
     // get score for honey
-    const mintScore = mintHoney > 3 ? this.getHoneySetScore(3) + this.getHoneySetScore(mintHoney-3) : this.getHoneySetScore(mintHoney);
-    score += mintScore;
-    if(log) this.game.message(this.name + ' scored ' + mintScore + ' points for ' + FlowerType.Mint + ' honey.');
-    const lavenderScore = lavenderHoney > 3 ? this.getHoneySetScore(3) + this.getHoneySetScore(lavenderHoney-3) : this.getHoneySetScore(lavenderHoney);
-    score += lavenderScore;
-    if(log) this.game.message(this.name + ' scored ' + lavenderScore + ' points for ' + FlowerType.Lavender + ' honey.');
-    const dandelionScore = dandelionHoney > 3 ? this.getHoneySetScore(3) + this.getHoneySetScore(dandelionHoney-3) : this.getHoneySetScore(dandelionHoney);
-    score += dandelionScore;
-    if(log) this.game.message(this.name + ' scored ' + dandelionScore + ' points for ' + FlowerType.Dandelion + ' honey.');
-      
+    [FlowerType.Mint, FlowerType.Dandelion, FlowerType.Lavender].forEach( x => {
+      const honeyCount = this.space.all(HoneyCard, {faceUp: true, type: x}).length;
+      const honeyScore = honeyCount > 3 ? this.getHoneySetScore(3) + this.getHoneySetScore(honeyCount-3) : this.getHoneySetScore(honeyCount);
+      score += honeyScore;
+      if(log) this.game.message(this.name + ' scored ' + honeyScore + ' points for ' + x + ' honey.');
+    });
+
     const commonHoney = this.space.all(HoneyCard, {faceUp: false}).length * 3;
     score += commonHoney;
     if(log) this.game.message(this.name + ' scored ' + commonHoney + ' points for common honey.');
@@ -162,8 +164,13 @@ export class BeeGamePlayer extends Player<MyGame, BeeGamePlayer> {
         return 2 * helper.countDirectlyBelow(this, FlowerType.Dandelion, FlowerType.Mint);
       }
       case ArrangementScoring.GardenAbundance: {
-        // nothing yet
-        return 0;
+        let total = 0;
+        [FlowerType.Mint, FlowerType.Dandelion, FlowerType.Lavender].forEach( x => {
+          const max = this.game.players.reduce((acc, val) => Math.max(acc, val.space.all(FlowerCard, {type: x}).length), -Infinity);
+          const my = this.space.all(FlowerCard, {type: x}).length;
+          if(my == max) total += 2;
+        });
+        return total;
       }
       default: {
         return 0;
