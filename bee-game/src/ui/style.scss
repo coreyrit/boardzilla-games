@@ -46,10 +46,17 @@
     background-position: 50% 80%;
   }
 
+  .PlayerSpace {
+    background-image: url("./assets/table.jpg");
+    background-size: 100% 100%;
+  }
+
     .FirstPlayerToken {
         background-image: url(./assets/gold-hex.png);
         width: 100%;
         height: 100%;
+
+        filter: drop-shadow(0 1px 1px rgba(0,0,0,0.35));
 
         background-repeat: no-repeat;
         background-position: 50% 50%;
@@ -61,6 +68,8 @@
         width: 100%;
         height: 100%;
 
+        filter: drop-shadow(0 1px 1px rgba(0,0,0,0.35));
+        
         background-repeat: no-repeat;
         background-position: 50% 50%;
         background-size: 100%;
@@ -76,10 +85,39 @@
         overflow: hidden;
     }
 
+    
     .Disc {
       width: 100%;
       height: 100%;
+
+      
     }
+
+.Disc.selectable::after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 40%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: .25em solid blue;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.Disc.selected::after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 40%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: .25em solid red;
+  border-radius: 50%;
+  pointer-events: none;
+}
 
     .Disc > div {
       width: 100%;
@@ -95,9 +133,37 @@
     .Disc > .yellow { background-image: url("./assets/yellow-disc.png"); }
     .Disc > .purple { background-image: url("./assets/purple-disc.png"); }
 
+    .ApiaryConvert {
+      &.selectable {
+        > div {      
+          border: .8em solid blue;
+          border-radius: 5%;
+        }
+      }
+      &.selected {
+        > div {      
+          border: .8em solid red;
+          border-radius: 5%;
+        }
+      }
+    }
+
     .ApiaryCard {
       width: 100%;
-      height: 100%;            
+      height: 100%; 
+      
+      &.selectable {
+        > div {      
+          border: .2em solid blue;
+          border-radius: 5%;
+        }
+      }
+      &.selected {
+        > div {      
+          border: .2em solid red;
+          border-radius: 5%;
+        }
+      }
     }
 
     .ApiaryCard > div {
@@ -119,6 +185,13 @@
 
     .HoneyCard {
       filter: drop-shadow(0 1px 1px rgba(0,0,0,0.35));
+
+      &.selectable {
+        > div {      
+          border: .1em solid blue;
+          border-radius: 5%;
+        }
+      }
 
       /* shared card surface styles */
       > .face,
@@ -231,6 +304,13 @@
         &[data-name="flower-card-42"] .face { background-image: url(./assets/flower-card-42.jpg) } .back { background-image: url(./assets/flower-card-0.jpg) }
         
         filter: drop-shadow(0 1px 1px rgba(0,0,0,0.35));
+
+        &.selectable {
+          > div {      
+            border: .1em solid blue;
+            border-radius: 5%;
+          }
+        }
         
         > .face,
         > .back {
@@ -271,6 +351,10 @@
 
             background-size: 125%;
         }
+    }
+
+    .BeeSpace.selectable svg circle {
+      stroke-opacity: 1;
     }
 
     .BeeToken {    
@@ -340,6 +424,17 @@
         &[data-name="bonus-bee-8"] .upgraded { background-image: url(./assets/bee-token-25.jpg) }
 
         filter: drop-shadow(0 1px 1px rgba(0,0,0,0.35));
+
+        // &.selectable {
+        //   filter: brightness(1.5);        
+        // }
+
+        &.selectable {
+          > div {      
+            border: .3em solid blue;
+            border-radius: 50%;
+          }
+        }
         
         // the actual token face (your inner div)
         > .base,

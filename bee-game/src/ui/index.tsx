@@ -1,6 +1,6 @@
 import React from 'react';
 import { Piece, render, Space } from '@boardzilla/core';
-import { ApiaryCard, ArrangementCard, BeeSpace, BeeToken, Disc, DiscSpace, FieldSpace, FirstPlayerToken, FlowerCard, FlowerColumn, HoneyCard, LarvaHex, MyGame, PlayerScore, PlayerSpace, PlayersSpace, default as setup } from '../game/index.js';
+import { ApiaryCard, ApiaryConvert, ArrangementCard, BeeSpace, BeeToken, Disc, DiscSpace, FieldSpace, FirstPlayerToken, FlowerCard, FlowerColumn, HoneyCard, LarvaHex, MyGame, PlayerScore, PlayerSpace, PlayersSpace, default as setup } from '../game/index.js';
 import { D6, useD6 } from '@boardzilla/core/components';
 
 import './style.scss';
@@ -18,7 +18,7 @@ render(setup, {
       { area: { left: 0, top: 10, width: 100, height: 90 }, openDirection: 'up', tab: 'Players',
         openIf: actions => actions.some(a => 
           [
-            'chooseBeeToken', 'plantFlower', 'chooseDiscForFlower', 'chooseWildflowerType'
+            'chooseBeeToken', 'plantFlower', 'chooseDiscForApiary', 'chooseDiscForFlower', 'chooseWildflowerType'
           ]
         .includes(a.name)),
         closeIf: actions => actions.some(a => 
@@ -228,6 +228,11 @@ render(setup, {
       </div>
     ) });
 
+    game.all(ApiaryConvert).appearance({ render: x => ( 
+      <div className='ApiaryConvert'>
+      </div>
+    ) });
+
     game.all(PlayerScore).appearance({ render: x => ( 
       <div className='PlayerScore'>
         <svg width="100%" height="100%" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
@@ -239,10 +244,20 @@ render(setup, {
     game.all(BeeSpace).appearance({ render: x => ( 
       <div className='BeeSpace'>
         <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="50" cy="50" r="45" stroke="black" strokeWidth="4" fillOpacity="0" />
+            <circle cx="50" cy="50" r="45" stroke="blue" strokeWidth="4" fill="black" fillOpacity=".2" strokeOpacity="0" />
           </svg>
       </div>
     ) });
+
+    game.all(BeeSpace).layout(BeeToken, {
+      rows: 1, columns: 1,
+      gap: {x: 0, y: 0},
+      area: {left: 8, top: 8, width: 84, height: 84}
+    });
+
+    game.all(ApiaryCard).layout(ApiaryConvert, {
+      area: {left: 20, top: 70, width: 60, height: 20}
+    });
 
     $.flowerDeck.appearance({ render: x => null });
     $.honeyDeck.appearance({ render: x => null });
@@ -257,6 +272,7 @@ render(setup, {
     game.all(PlayerSpace).appearance({ render: x => null });
     game.all(PlayersSpace).appearance({ render: x => null });
     game.all(DiscSpace).appearance({ render: x => null });    
+    // game.all(ApiaryConvert).appearance({ render: x => null });    
 
     game.layout('flowerDie', { area: { left: 82, top: 2, width: 6, height: 6 }});
     useD6(game);
