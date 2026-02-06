@@ -643,8 +643,8 @@ export class MyGame extends Game<MyGame, BeeGamePlayer> {
 
   public checkForGameEnd() {
     this.players.forEach(x => {      
-      if(x.space.all(HoneyCard).length + x.space.all(FlowerCard).length >= 12) {
-      // if(x.space.all(HoneyCard).length + x.space.all(FlowerCard).length >= 5) {
+      // if(x.space.all(HoneyCard).length + x.space.all(FlowerCard).length >= 12) {
+      if(x.space.all(HoneyCard).length + x.space.all(FlowerCard).length >= 5) {
         this.gameOver = true;
       }
     });
@@ -932,13 +932,18 @@ function setupGame(game: MyGame) {
   arrangementDeck.create(ArrangementCard, 'angled-planting', {scoring: ArrangementScoring.AngledPlanting});
   arrangementDeck.create(ArrangementCard, 'mint-massing', {scoring: ArrangementScoring.MintMassing});
   arrangementDeck.create(ArrangementCard, 'mixed-forage', {scoring: ArrangementScoring.MixedForage});
-  arrangementDeck.create(ArrangementCard, 'garden-abundance', {scoring: ArrangementScoring.GardenAbundance});
+  const abundance = arrangementDeck.create(ArrangementCard, 'garden-abundance', {scoring: ArrangementScoring.GardenAbundance});
 
   arrangementDeck.shuffle();
   arrangementDeck.topN(3, ArrangementCard).forEach(x => {
     x.faceUp = true;
     x.putInto($.arrangements);
   });
+
+  // move arrangements to last
+  if ($.arrangements.has(abundance)) {
+    abundance.putInto($.arrangements, {position: 2});
+  }
 }
 
 export default createGame(BeeGamePlayer, MyGame, game => {
@@ -1219,6 +1224,8 @@ export default createGame(BeeGamePlayer, MyGame, game => {
       { skipIf: 'never'}
     ).do(({choice, wildflower}) => {
        wildflower.type = choice;
+       game.message(`{{player}} assigned {{choice}} to {{wildflower}}.`, 
+        {player: player, choice: choice, wildflower: wildflower});
     }),
 
     convertDiscs: (player) => action({
@@ -1263,18 +1270,22 @@ export default createGame(BeeGamePlayer, MyGame, game => {
     ])}),    
 
     // players with wild flowers need to choose their types
-    eachPlayer({
-      name: 'turn', do: [
-        ({turn}) => turn.setBaseScore(),
-        forEach({ name: 'arrangement', collection: () => $.arrangements.all(ArrangementCard), do: [
-          forEach({ name: 'flower', collection: ({turn}) => turn.space.all(FlowerCard, {wild: true}), do: [
-            ({arrangement}) => game.nextArranementName = arrangement.scoring,
-            ({flower}) => game.followUp({name: 'chooseWildflowerType', args: {wildflower: flower}}),
-          ]}),
-          ({turn, arrangement}) => turn.addArrangementScore(arrangement, true),
+    eachPlayer({name: 'turn', do: [
+      ({turn}) => turn.setBaseScore()
+    ]}),
+    // score the arrangements 1 at a time (this matters when there are wildflowers for abundance)
+    forEach({ name: 'arrangement', collection: () => $.arrangements.all(ArrangementCard), do: [    
+      eachPlayer({name: 'turn', do: [
+        forEach({ name: 'flower', collection: ({turn}) => turn.space.all(FlowerCard, {wild: true}), do: [
+          ({arrangement}) => game.nextArranementName = arrangement.scoring,
+          ({flower}) => game.followUp({name: 'chooseWildflowerType', args: {wildflower: flower}}),
         ]}),
-      ],
-    }),
+        ({arrangement}) => game.message('Finished assigning wildflowers for ' + arrangement),
+      ]}),
+      eachPlayer({name: 'turn', do: [
+        ({turn, arrangement}) => turn.addArrangementScore(arrangement, true),
+      ]}),
+    ]}),
 
     () => game.announceWinner(),
   );
