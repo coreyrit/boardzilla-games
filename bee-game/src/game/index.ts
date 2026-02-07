@@ -598,7 +598,7 @@ export class BeeToken extends Piece<MyGame> {
       case BeeAbility.Zephyr:
       case BeeAbility.ZephyrAndApiary:
         $.field.all(FlowerCard).forEach(x => {
-          if(x.all(Disc).length == 0 && !x.wild) {
+          if(!x.wild && x.all(Disc).length == 0) {
             $.pool.first(Disc, {type: x.type})!.putInto(x);
           }
         })
@@ -1009,24 +1009,25 @@ export default createGame(BeeGamePlayer, MyGame, game => {
       token.performAbility(player);
 
       // figure out which flowers the bees map to
-      let discs = [];
+      let flowers = [];
       for(let i = 0; i < token.beeCount; i++) {
         switch(space.side) {
           case BeeSpaceSide.Top:
-            discs.push(game.first(FieldSpace, {row: 1+i, column: space.index})!.first(FlowerCard)!.first(Disc)!);
+            flowers.push(game.first(FieldSpace, {row: 1+i, column: space.index})!.first(FlowerCard)!);
             break;
           case BeeSpaceSide.Bottom:
-            discs.push(game.first(FieldSpace, {row: 3-i, column: space.index})!.first(FlowerCard)!.first(Disc)!);
+            flowers.push(game.first(FieldSpace, {row: 3-i, column: space.index})!.first(FlowerCard)!);
             break;
           case BeeSpaceSide.Left:
-            discs.push(game.first(FieldSpace, {row: space.index, column: 1+i})!.first(FlowerCard)!.first(Disc)!);
+            flowers.push(game.first(FieldSpace, {row: space.index, column: 1+i})!.first(FlowerCard)!);
             break;
           case BeeSpaceSide.Right:
-            discs.push(game.first(FieldSpace, {row: space.index, column: 3-i})!.first(FlowerCard)!.first(Disc)!);
+            flowers.push(game.first(FieldSpace, {row: space.index, column: 3-i})!.first(FlowerCard)!);
             break;
         }   
       }
 
+      const discs = flowers.flatMap(x => x.all(Disc));
       discs.forEach(d => {
         d.putInto(player.space.first(DiscSpace)!);
       })
