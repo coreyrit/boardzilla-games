@@ -19,18 +19,18 @@ export class BeeGamePlayer extends Player<MyGame, BeeGamePlayer> {
 
   public setScore() {
     let score = 0;
-    score += this.getFlowerScore();
-    score += this.getBeeScore();
-    score += this.getHoneyScore();
+    score += this.game.getFlowerScore(this.name, this.space);
+    score += this.game.getBeeScore(this.name, this.space);
+    score += this.game.getHoneyScore(this.name, this.space);
     score += this.getArrangementScore();
     this.space.first(PlayerScore)!.score = score;
   }
 
   public setBaseScore() {
     let score = 0;
-    score += this.getFlowerScore(true);
-    score += this.getBeeScore(true);
-    score += this.getHoneyScore(true);
+    score += this.game.getFlowerScore(this.name, this.space, true);
+    score += this.game.getBeeScore(this.name, this.space, true);
+    score += this.game.getHoneyScore(this.name, this.space, true);
     score += this.getLeftoverScore(true);
     this.space.first(PlayerScore)!.score = score;
   }
@@ -44,83 +44,11 @@ export class BeeGamePlayer extends Player<MyGame, BeeGamePlayer> {
     this.space.first(PlayerScore)!.score = score;
   }
 
-
-  public getFlowerScore(log : boolean = false) : number {
-    let score = 0;
-    
-    // get score for flowers
-    this.space.all(FlowerCard).forEach(x => {
-      switch(x.scoring) {
-        case FlowerScoring.VP1:
-          score += 1;
-          break;
-        case FlowerScoring.VP2:
-          score += 2;
-          break;
-        case FlowerScoring.Per3DandelionVP2:
-          score += 2 * Math.floor((this.space.all(FlowerCard, {type: FlowerType.Dandelion}).length / 3));
-          break;
-        case FlowerScoring.Per3LavenderVP2:
-          score += 2 * Math.floor((this.space.all(FlowerCard, {type: FlowerType.Lavender}).length / 3));
-          break;
-        case FlowerScoring.Per3MintVP2:
-          score += 2 * Math.floor((this.space.all(FlowerCard, {type: FlowerType.Mint}).length / 3));
-          break;
-        case FlowerScoring.PerDandelionHoneyVP1:
-          score += this.space.all(HoneyCard, {faceUp: true, type: FlowerType.Dandelion}).length;;
-          break;
-        case FlowerScoring.PerLavenderHoneyVP1:
-          score += this.space.all(HoneyCard, {faceUp: true, type: FlowerType.Lavender}).length;;
-          break;
-        case FlowerScoring.PerMintHoneyVP1:
-          score += this.space.all(HoneyCard, {faceUp: true, type: FlowerType.Mint}).length;;
-          break;
-        default:
-          break;
-      }      
-    });
-
-    if(log) this.game.message(this.name + ' scored ' + score + ' points for flowers.');
-    return score;
-  }
-
-  public getBeeScore(log : boolean = false) : number {
-    let score = 0;
-    // get score for bees    
-    this.space.all(BeeToken).concat(this.game.all(BeeSpace).all(BeeToken, {player: this})).forEach(x => {
-      score += x.beeVP;      
-    });
-    if(log) this.game.message(this.name + ' scored ' + score + ' points for bees.');
-    return score;
-  }
-
   public getLeftoverScore(log : boolean = false) : number {
     const score = Math.floor(
       (this.space.all(ApiaryCard).all(Disc).length + this.space.all(LarvaHex).length) / 2
     );
     if(log) this.game.message(this.name + ' scored ' + score + ' points for leftovers.');
-    return score;
-  }
-
-  public getHoneyScore(log : boolean = false) : number {
-    let score = 0;
-
-    // get score for honey
-    [FlowerType.Mint, FlowerType.Dandelion, FlowerType.Lavender].forEach( x => {
-      const honeyCount = this.space.all(HoneyCard, {faceUp: true, type: x}).length;
-      const honeyScore = honeyCount > 3 ? this.getHoneySetScore(3) + this.getHoneySetScore(honeyCount-3) : this.getHoneySetScore(honeyCount);
-      score += honeyScore;
-      if(log) this.game.message(this.name + ' scored ' + honeyScore + ' points for ' + x + ' honey.');
-    });
-
-    const commonHoney = this.space.all(HoneyCard, {faceUp: false}).length * 3;
-    score += commonHoney;
-    if(log) this.game.message(this.name + ' scored ' + commonHoney + ' points for common honey.');
-
-    const rareHoney = this.space.all(HoneyCard, {faceUp: true, scoring: HoneyScoring.VP4}).length * 4;
-    score += rareHoney;
-    if(log) this.game.message(this.name + ' scored ' + rareHoney + ' points for rare honey.');
-    
     return score;
   }
 
@@ -176,18 +104,6 @@ export class BeeGamePlayer extends Player<MyGame, BeeGamePlayer> {
         return 0;
       }
     }
-  }
-
-  public getHoneySetScore(count : number) : number {
-    switch(count) {
-      case 1:
-        return 3;
-      case 2:
-        return 7;
-      case 3:
-        return 12;
-    }
-    return 0;
   }
 
   public reset() {
@@ -330,6 +246,10 @@ export class FlowerColumn extends Space<MyGame> {
   public override toString(): string {
     return this.first(FlowerCard)!.type + ' Column';
   }
+}
+
+export class FlowerStack extends Space<MyGame> {
+
 }
 
 export class FieldSpace extends Space<MyGame> {
@@ -632,6 +552,94 @@ export class MyGame extends Game<MyGame, BeeGamePlayer> {
   gameOver : boolean = false;
   nextArranementName: string = '';
 
+  public getFlowerScore(name: string, space: PlayerSpace, log : boolean = false) : number {
+    let score = 0;
+    
+    // get score for flowers
+    space.all(FlowerCard).forEach(x => {
+      switch(x.scoring) {
+        case FlowerScoring.VP1:
+          score += 1;
+          break;
+        case FlowerScoring.VP2:
+          score += 2;
+          break;
+        case FlowerScoring.Per3DandelionVP2:
+          score += 2 * Math.floor((space.all(FlowerCard, {type: FlowerType.Dandelion}).length / 3));
+          break;
+        case FlowerScoring.Per3LavenderVP2:
+          score += 2 * Math.floor((space.all(FlowerCard, {type: FlowerType.Lavender}).length / 3));
+          break;
+        case FlowerScoring.Per3MintVP2:
+          score += 2 * Math.floor((space.all(FlowerCard, {type: FlowerType.Mint}).length / 3));
+          break;
+        case FlowerScoring.PerDandelionHoneyVP1:
+          score += space.all(HoneyCard, {faceUp: true, type: FlowerType.Dandelion}).length;;
+          break;
+        case FlowerScoring.PerLavenderHoneyVP1:
+          score += space.all(HoneyCard, {faceUp: true, type: FlowerType.Lavender}).length;;
+          break;
+        case FlowerScoring.PerMintHoneyVP1:
+          score += space.all(HoneyCard, {faceUp: true, type: FlowerType.Mint}).length;;
+          break;
+        default:
+          break;
+      }      
+    });
+
+    if(log) this.message(name + ' scored ' + score + ' points for flowers.');
+    return score;
+  }
+
+  public getBeeScore(name: string, space: PlayerSpace, log : boolean = false) : number {
+    let score = 0;
+    const bees = space.all(BeeToken);
+    if(name != 'AI') {
+      const player = this.players.filter(x => x.name == name)[0];
+      bees.concat(this.all(BeeSpace).all(BeeToken, {player: player}));
+    }
+    // get score for bees
+    bees.forEach(x => {
+      score += x.beeVP;      
+    });
+    if(log) this.message(name + ' scored ' + score + ' points for bees.');
+    return score;
+  }
+
+  public getHoneyScore(name: string, space: PlayerSpace, log : boolean = false) : number {
+    let score = 0;
+
+    // get score for honey
+    [FlowerType.Mint, FlowerType.Dandelion, FlowerType.Lavender].forEach( x => {
+      const honeyCount = space.all(HoneyCard, {faceUp: true, type: x}).length;
+      const honeyScore = honeyCount > 3 ? this.getHoneySetScore(3) + this.getHoneySetScore(honeyCount-3) : this.getHoneySetScore(honeyCount);
+      score += honeyScore;
+      if(log) this.message(name + ' scored ' + honeyScore + ' points for ' + x + ' honey.');
+    });
+
+    const commonHoney = space.all(HoneyCard, {faceUp: false}).length * 3;
+    score += commonHoney;
+    if(log) this.message(name + ' scored ' + commonHoney + ' points for common honey.');
+
+    const rareHoney = space.all(HoneyCard, {faceUp: true, scoring: HoneyScoring.VP4}).length * 4;
+    score += rareHoney;
+    if(log) this.message(name + ' scored ' + rareHoney + ' points for rare honey.');
+    
+    return score;
+  }
+
+  public getHoneySetScore(count : number) : number {
+    switch(count) {
+      case 1:
+        return 3;
+      case 2:
+        return 7;
+      case 3:
+        return 12;
+    }
+    return 0;
+  }
+
   public drawFlowerCard() : FlowerCard {
     const flower = $.flowerDeck.top(FlowerCard)!;
     flower.faceUp = true;      
@@ -706,6 +714,52 @@ export class MyGame extends Game<MyGame, BeeGamePlayer> {
         $.pool.first(Disc, {type: FlowerType.Lavender})!.putInto(apiary);
         break;  
     }
+  }
+
+  public soloTurn() {
+    const aiSpace = this.game.first(PlayerSpace, {name: 'playerSpaceAI'})!;
+    const die = this.game.first(D6)!;
+    die.roll();
+    switch(die.current) {
+      // larva
+      case 1:
+      case 5:
+        $.honey.first(HoneyCard)!.putInto(aiSpace)
+        const bee = aiSpace.first(BeeToken, {upgraded: false})!;
+        bee.upgraded = true;
+        bee.beeVP = bee.upgradedBeeVP;
+        break;
+      // yellow
+      case 2:
+        $.field.all(FlowerCard, {type: FlowerType.Dandelion}).filter(x => x.all(Disc).length == 0).putInto(aiSpace.first(FlowerStack)!);
+        $.field.all(Disc, {type: FlowerType.Dandelion}).putInto($.pool);
+        break;
+      // any
+      case 3:
+        $.field.all(FlowerCard).filter(x => x.all(Disc).length == 0).putInto(aiSpace.first(FlowerStack)!);
+        $.field.all(Disc).putInto($.pool);
+        break;
+      // purple
+      case 4:
+        $.field.all(FlowerCard, {type: FlowerType.Lavender}).filter(x => x.all(Disc).length == 0).putInto(aiSpace.first(FlowerStack)!);
+        $.field.all(Disc, {type: FlowerType.Lavender}).putInto($.pool);
+        break;  
+      // green
+      case 6:
+        $.field.all(FlowerCard, {type: FlowerType.Mint}).filter(x => x.all(Disc).length == 0).putInto(aiSpace.first(FlowerStack)!);
+        $.field.all(Disc, {type: FlowerType.Mint}).putInto($.pool);
+        break;
+    }
+  }
+
+  public setSoloScore() {
+    const aiSpace = this.game.first(PlayerSpace, {name: 'playerSpaceAI'})!;
+    let score = 0;
+    // try only scoring 1 pt per flower card
+    score += aiSpace.all(FlowerCard).length; //this.game.getFlowerScore('AI', aiSpace);
+    score += this.game.getBeeScore('AI', aiSpace);
+    score += this.game.getHoneyScore('AI', aiSpace);
+    aiSpace.first(PlayerScore)!.score = score;
   }
 }
 
@@ -833,6 +887,38 @@ function setupGame(game: MyGame) {
     mint.create(ApiaryConvert, 'apiary-card-mint-convert-' + i);
   }
 
+  if(game.players.length == 1) {
+    console.log('creating ai space')
+    const playerSpace = playersSpace.create(PlayerSpace, 'playerSpaceAI');
+    playerSpace.create(PlayerScore, 'score-2');
+    playerSpace.create(DiscSpace, 'discSpace-2');
+
+    playerSpace.create(FlowerStack, 'flowerStackAI');
+
+    const bee1 = playerSpace.create(BeeToken, 'bee-token-two-bee-2', {
+      oneTimeUse: false, upgraded: false,
+      beeCount: 2, beeVP: 0, ability: BeeAbility.None,
+      upgradedBeeCount: 3, upgradedBeeVP: 1, upgradedAbility: BeeAbility.None});
+    const bee2 = playerSpace.create(BeeToken, 'bee-token-zephyr-bee-2', {
+      oneTimeUse: false, upgraded: false,
+      beeCount: 2, beeVP: 0, ability: BeeAbility.ZephyrAndApiary,
+      upgradedBeeCount: 2, upgradedBeeVP: 1, upgradedAbility: BeeAbility.Zephyr});
+    const bee3 = playerSpace.create(BeeToken, 'bee-token-roll-bee-2', {
+      oneTimeUse: false, upgraded: false,
+      beeCount: 1, beeVP: 0, ability: BeeAbility.RollDie,
+      upgradedBeeCount: 1, upgradedBeeVP: 1, upgradedAbility: BeeAbility.ChooseDisc});
+
+    playerSpace.create(BeeToken, 'bee-token-player-bee-2', {
+      oneTimeUse: true, upgraded: false,
+      // beeCount: 1, beeVP: 0, ability: BeeAbility.RollDie,
+      beeCount: 2, beeVP: 0, ability: BeeAbility.None,
+      upgradedBeeCount: 0, upgradedBeeVP: 2, upgradedAbility: BeeAbility.RollDie});
+
+    for(var j = 0; j < 4; j++) {
+      pool.first(BeeToken, {beeCount: 3})!.putInto(playerSpace);
+    }
+  }
+
   // create the honey
   const honeyDeck = game.create(Space, 'honeyDeck');
   honeyDeck.create(HoneyCard, 'honey-card-1', {type: FlowerType.Mint, cost: [FlowerType.Mint, FlowerType.Mint, FlowerType.Mint, FlowerType.Mint, FlowerType.Mint], scoring: HoneyScoring.VP3_7_12});
@@ -937,7 +1023,11 @@ honeyDeck.create(HoneyCard, 'honey-card-12', {type: FlowerType.Dandelion, cost: 
   arrangementDeck.create(ArrangementCard, 'angled-planting', {scoring: ArrangementScoring.AngledPlanting});
   arrangementDeck.create(ArrangementCard, 'mint-massing', {scoring: ArrangementScoring.MintMassing});
   arrangementDeck.create(ArrangementCard, 'mixed-forage', {scoring: ArrangementScoring.MixedForage});
-  const abundance = arrangementDeck.create(ArrangementCard, 'garden-abundance', {scoring: ArrangementScoring.GardenAbundance});
+
+  let abundance = null;
+  if(game.players.length > 1) {
+    abundance = arrangementDeck.create(ArrangementCard, 'garden-abundance', {scoring: ArrangementScoring.GardenAbundance});
+  }
 
   arrangementDeck.shuffle();
   arrangementDeck.topN(3, ArrangementCard).forEach(x => {
@@ -945,8 +1035,9 @@ honeyDeck.create(HoneyCard, 'honey-card-12', {type: FlowerType.Dandelion, cost: 
     x.putInto($.arrangements);
   });
 
+
   // move arrangements to last
-  if ($.arrangements.has(abundance)) {
+  if (abundance != null && $.arrangements.has(abundance)) {
     abundance.putInto($.arrangements, {position: 2});
   }
 }
@@ -1272,6 +1363,15 @@ export default createGame(BeeGamePlayer, MyGame, game => {
           ({turn}) => turn.setScore(),
         ],        
       }),
+      
+      // solo play
+      ifElse({if: () => game.players.length == 1, do: [
+        () => game.soloTurn(),
+        () => game.refillField(),
+        () => game.refillHoney(),
+        () => game.setSoloScore(),
+      ]}),
+
       () => game.checkForGameEnd(),        
     ])}),    
 

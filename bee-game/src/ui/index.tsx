@@ -1,6 +1,6 @@
 import React from 'react';
 import { Piece, render, Space } from '@boardzilla/core';
-import { ApiaryCard, ApiaryConvert, ArrangementCard, BeeSpace, BeeToken, Disc, DiscSpace, FieldSpace, FirstPlayerToken, FlowerCard, FlowerColumn, HoneyCard, LarvaHex, MyGame, PlayerScore, PlayerSpace, PlayersSpace, default as setup } from '../game/index.js';
+import { ApiaryCard, ApiaryConvert, ArrangementCard, BeeSpace, BeeToken, Disc, DiscSpace, FieldSpace, FirstPlayerToken, FlowerCard, FlowerColumn, FlowerStack, HoneyCard, LarvaHex, MyGame, PlayerScore, PlayerSpace, PlayersSpace, default as setup } from '../game/index.js';
 import { D6, useD6 } from '@boardzilla/core/components';
 
 import './style.scss';
@@ -48,6 +48,22 @@ render(setup, {
         index++;
       });
 
+      if(game.players.length == 1) {
+        tabSpaces['player1'] = game.first(PlayerSpace, {name: 'playerSpaceAI'})!;
+        const tab = (
+          <div>          
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" color="black">            
+              <rect x="0" y="0" width="100" height="100" fill='currentColor'/>
+            </svg>
+            <div className='playerTab'>
+              AI
+            </div>
+          </div>
+        );
+        tabDefs['player' + index]  = tab;
+        index++;
+      }
+
     $.playersSpace.layoutAsTabs(tabSpaces,
       { area: { left: 0, top: 10 , width: 100, height: 100 }, tabDirection: 'up', tabs: tabDefs,
       setTabTo: actions => {
@@ -86,6 +102,16 @@ render(setup, {
       gap: {x: 1, y: 0},
       area: {left: 15, top: 12, width: 50, height: 65}
     });
+
+    game.all(PlayerSpace).layout(FlowerStack, {
+      area: {left: 40, top: 12, width: 16, height: 25}
+    });
+
+    game.all(FlowerStack).layout(FlowerCard, {
+      rows: {max: 1},
+      offsetColumn: {x: 0.25, y: 0.25},
+      direction: 'ltr',
+    })
 
     game.all(PlayerSpace).layout(LarvaHex, {
       rows: 1, columns: 2,
@@ -268,6 +294,7 @@ render(setup, {
     $.honey.appearance({ render: x => null })
 
     game.all(FlowerColumn).appearance({ render: x => null });
+    game.all(FlowerStack).appearance({ render: x => null });
     game.all(FieldSpace).appearance({ render: x => null });
     game.all(PlayerSpace).appearance({ render: x => null });
     game.all(PlayersSpace).appearance({ render: x => null });
