@@ -110,8 +110,8 @@ export function buildGame(game: MyGame) {
     const availableTokens = playerBoard.create(AvailableTokenSpace, 'availableTokens' + i);
     const unavailableTokens = playerBoard.create(UnavailableTokenSpace, 'unavailableTokens' + i);
 
-    availableTokens.create(PowerToken, 'token0-' + i, {val: 0, ab: TokenAbility.None});
-    availableTokens.create(PowerToken, 'token1-' + i, {val: 1, ab: TokenAbility.None});
+    availableTokens.create(PowerToken, 'token1a-' + i, {val: 1, ab: TokenAbility.A});
+    availableTokens.create(PowerToken, 'token1b-' + i, {val: 1, ab: TokenAbility.B});
     availableTokens.create(PowerToken, 'token2a-' + i, {val: 2, ab: TokenAbility.A});
     availableTokens.create(PowerToken, 'token2b-' + i, {val: 2, ab: TokenAbility.B});
     availableTokens.create(PowerToken, 'token3a-' + i, {val: 3, ab: TokenAbility.A});

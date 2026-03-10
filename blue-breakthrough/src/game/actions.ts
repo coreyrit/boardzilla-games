@@ -79,18 +79,48 @@ export class Actions {
       prompt: 'Publish',
       condition: game.getPlayerToken(player, game.currentAction).ability() == TokenAbility.Publish
     }).do(() => {
+      switch(game.currentAction) {
+        case TokenAction.Funding: {
+          player.scorePoints(game.round, "Funding with ability");
+          break;
+        }
+        case TokenAction.Resources: {
+          if(player.space.first(ResourceSpace)!.all(ResourceCube).length > 0) {
+            game.followUp({name: 'convertRoundCube'});
+          }
+          break;
+        }
+        case TokenAction.Upgrade: {
+          break;
+        }
+      }
       player.space.first(PowerTokenSpace, {action: game.currentAction})!.complete = true;
     }),
 
     recall: (player) => action({
-      prompt: 'Publish',
+      prompt: 'Recall',
       condition: game.getPlayerToken(player, game.currentAction).ability() == TokenAbility.Recall
     }).do(() => {
+      switch(game.currentAction) {
+        case TokenAction.Funding: {
+          player.scorePoints(game.round, "Funding with ability");
+          break;
+        }
+        case TokenAction.Resources: {
+          if(player.space.first(ResourceSpace)!.all(ResourceCube).length > 0) {
+            game.followUp({name: 'convertRoundCube'});
+          }
+          break;
+        }
+        case TokenAction.Upgrade: {
+          break;
+        }
+      }
       player.space.first(PowerTokenSpace, {action: game.currentAction})!.complete = true;
     }),
 
     forbidden: (player) => action({
-      prompt: 'Publish',
+      prompt: 'Forbidden',
       condition: game.getPlayerToken(player, game.currentAction).ability() == TokenAbility.Forbidden
     }).do(() => {
       player.space.first(PowerTokenSpace, {action: game.currentAction})!.complete = true;
@@ -151,7 +181,7 @@ export class Actions {
       { skipIf: 'never' }
     ).do(({ token }) => {
       // player.scorePoints(player.space.first(UnavailableTokenSpace)!.all(PowerToken).length);
-      player.scorePoints(game.round, "Recall");
+      // player.scorePoints(game.round, "Recall");
       token.showOnlyTo(player);
       token.putInto(player.space.first(AvailableTokenSpace)!);
     }),
@@ -168,6 +198,27 @@ export class Actions {
         funding.putInto(game.first(Supply)!);
         this.powers.afterDiscardingFunding(player);
       }
+    }),
+
+    convertRoundCube: (player) => action({
+      prompt: 'Choose Cube'
+    }).chooseOnBoard(
+      'cube', player.space.first(ResourceSpace)!.all(ResourceCube),
+      { skipIf: 'never' }
+    ).do(({cube}) => {
+      const supply = game.first(Supply)!;
+      cube.putInto(supply);
+      game.followUp({name: 'chooseRoundCube'});
+    }),
+
+    chooseRoundCube: (player) => action({
+      prompt: "Gain Round Cube"
+    }).chooseFrom(
+      "choice", ['🟧','🟫','⬛','⬜','🟦','🟥','🟨'].slice(0, game.round),
+      { skipIf: 'never' }
+    ).do(({choice}) => {
+      game.first(Supply)!.first(ResourceCube, {color: game.colorFromSymbol(choice)})!
+        .putInto(player.space.first(ResourceSpace)!);
     }),
 
     chooseResources: (player) => action({
@@ -212,7 +263,7 @@ export class Actions {
         }
       }
 
-      player.scorePoints(this.letters.discardedCubePoints(player, plate.all(ResourceCube).length), "Gather Resources");
+      // player.scorePoints(this.letters.discardedCubePoints(player, plate.all(ResourceCube).length), "Gather Resources");
 
       plate.all(ResourceCube).forEach( c=> c.putInto(game.first(Supply)!) );
     }),
@@ -222,17 +273,17 @@ export class Actions {
       prompt: "Choose Upgrades (" + game.getPlayerToken(player, TokenAction.Upgrade).value() + ")"
     }).chooseOnBoard(
       'upgrades', game.all(UpgradeSpace).all(UpgradeCard)
-        .filter(x => x.cost-this.powers.bonusUpgradeDiscout(player)+this.letters.upgradeTax(player) <= game.getPlayerToken(player, TokenAction.Upgrade).value())
+        .filter(x => x.cost-this.powers.bonusUpgradeDiscout(player, x)+this.letters.upgradeTax(player) <= game.getPlayerToken(player, TokenAction.Upgrade).value())
         .filter(x => this.letters.upgradeAvailable(player, x)),
       { min: 1, max: 2, skipIf: 'never', validate: ({upgrades}) => {
-        const upgradeSum = upgrades.reduce((sum, x) => sum + x.cost-this.powers.bonusUpgradeDiscout(player)+this.letters.upgradeTax(player), 0)
+        const upgradeSum = upgrades.reduce((sum, x) => sum + x.cost-this.powers.bonusUpgradeDiscout(player, x)+this.letters.upgradeTax(player), 0)
         return upgradeSum <= game.getPlayerToken(player, TokenAction.Upgrade).value();
       } }
     ).do(({ upgrades }) => {
       player.purchasedUpgrades = upgrades.length;
       upgrades.forEach( c=> player.placeUpgrade(c) );
-      player.scorePoints((game.getEra() * upgrades.length) + 
-        upgrades.reduce((sum, current) => sum + this.powers.bonusUpgradePoints(current, player), 0), this.powers.bonusUpgradePointsReason(player));
+      // player.scorePoints((game.getEra() * upgrades.length) + 
+        // upgrades.reduce((sum, current) => sum + this.powers.bonusUpgradePoints(current, player), 0), this.powers.bonusUpgradePointsReason(player));
       player.space.first(PowerTokenSpace, {action: TokenAction.Upgrade})!.complete = true;
     }).message(`{{player}} bought {{upgrades}}`),  
 
@@ -267,7 +318,7 @@ export class Actions {
     ).do(({ upgrade, choice }) => {
       if(choice == 'Yes') {
         player.board.first(ReactorSpace, {type: upgrade.type})!.first(UpgradeCard)!.putInto(game.first(Supply)!);
-        upgrade.putInto(player.board.first(ReactorSpace, {type: upgrade.type})!);
+        player.putUpgradeInReactor(upgrade);
       } else {
         upgrade.putInto(game.first(Supply)!);
       }
@@ -294,7 +345,7 @@ export class Actions {
     ).do(({ pump }) => {
       const space = pump.container(ReactorSpace)!
       pump.putInto(game.first(Supply)!);
-      pump.putInto(space);
+      player.putUpgradeInReactor(pump);
     }), 
 
     chooseUpgradeFromDraw: (player) => action({

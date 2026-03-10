@@ -138,30 +138,30 @@ export class BlueBreakthroughPlayer extends Player<MyGame, BlueBreakthroughPlaye
 
     public publishPaper() : void {
       this.space.first(PublishToken, {flipped: false})!.flipped = true;
-      switch(this.space.all(PublishToken, {flipped: true}).length) {
-        case 1:
-          this.scorePoints(1, 'Publish (1)');
-          break;
-        case 2:
-          this.scorePoints(3, 'Publish (2)');
-          break;
-        case 3:
-          this.scorePoints(6, 'Publish (3)');
-          break;
-        case 4:
-          this.scorePoints(10, 'Publish (4)');
-          break;
-        case 5:
-          this.scorePoints(15, 'Publish (5)');
-          break;
-      }
+      // switch(this.space.all(PublishToken, {flipped: true}).length) {
+      //   case 1:
+      //     this.scorePoints(1, 'Publish (1)');
+      //     break;
+      //   case 2:
+      //     this.scorePoints(3, 'Publish (2)');
+      //     break;
+      //   case 3:
+      //     this.scorePoints(6, 'Publish (3)');
+      //     break;
+      //   case 4:
+      //     this.scorePoints(10, 'Publish (4)');
+      //     break;
+      //   case 5:
+      //     this.scorePoints(15, 'Publish (5)');
+      //     break;
+      // }
     }
     
     public getScore() : number {
       return this.score;
     }
 
-    public placeUpgrade(upgrade: UpgradeCard) : void {
+    public placeUpgrade(upgrade: UpgradeCard) : void {    
       for(const player of this.game.players) {
         if(player != this && player.hasFunding(FundingName.PatentLicense) && player.space.all(UpgradeCard, {type: upgrade.type}).length > 0) {
           player.scorePoints(1, FundingName.PatentLicense);
@@ -173,6 +173,18 @@ export class BlueBreakthroughPlayer extends Player<MyGame, BlueBreakthroughPlaye
       } else {
         this.finishPlacingUpgrade(upgrade);
       }
+    }
+
+    public putUpgradeInReactor(upgrade: UpgradeCard) : void {
+      // is this the first time for this type?
+      const matches = this.game.all(PlayerBoard).all(ReactorSpace, {type: upgrade.type}).filter(x => x.all(UpgradeCard).length == 0).length;
+
+      if(matches) {
+        this.game.followUp({name: 'chooseRoundCube', args: {upgrade: upgrade}});
+      }
+      
+      upgrade.putInto(this.board.all(ReactorSpace, {type: upgrade.type})
+        .filter(x => x.all(UpgradeCard).length == 0)[0]);
     }
 
     public finishPlacingUpgrade(upgrade: UpgradeCard) : void {
@@ -195,7 +207,7 @@ export class BlueBreakthroughPlayer extends Player<MyGame, BlueBreakthroughPlaye
       if(space!.all(UpgradeCard).length > 0) {
         this.game.followUp({name: 'discardUpgrade', args: {upgrade: upgrade}});
       } else {
-        upgrade.putInto(space!);
+        this.putUpgradeInReactor(upgrade);
       }
     }
 
@@ -434,7 +446,8 @@ export class MyGame extends Game<MyGame, BlueBreakthroughPlayer> {
           break;
       }
 
-      if(bestToken == null || [TokenAbility.Publish, TokenAbility.Recall, TokenAbility.Forbidden].includes(bestToken.ability())) {
+      // if(bestToken == null || [TokenAbility.Publish, TokenAbility.Recall, TokenAbility.Forbidden].includes(bestToken.ability())) {
+      if(bestToken == null || [TokenAbility.Forbidden].includes(bestToken.ability())) {
         bestToken = token; bestValue = tokenValue; nextPlayer = p; bestScore = playerScore; bestSum = tokenSum; bestPriority = distance;
         // this.game.message("Initializing turn: " + nextPlayer);
       } else {

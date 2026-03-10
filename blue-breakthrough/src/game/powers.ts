@@ -169,8 +169,14 @@ export class FundingPowers {
         return player.hasFunding(FundingName.CubeDraw) ? 1 : 0;
     }
 
-    public bonusUpgradeDiscout(player: BlueBreakthroughPlayer) : number {
-        return player.hasFunding(FundingName.SharedUpgrade) ? 1 : 0;
+    public bonusUpgradeDiscout(player: BlueBreakthroughPlayer, upgrade: UpgradeCard) : number {
+        var discount = 0;
+        const matches = this.game.all(PlayerBoard).all(ReactorSpace, {type: upgrade.type}).filter(x => x.all(UpgradeCard).length > 0).length;
+        if(matches > 0) {
+            discount++;
+        }
+        discount += player.hasFunding(FundingName.SharedUpgrade) ? 1 : 0;
+        return discount;
     }
 
     public bonusUpgradePoints(upgrade: UpgradeCard, player: BlueBreakthroughPlayer) : number {

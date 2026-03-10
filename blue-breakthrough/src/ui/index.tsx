@@ -42,7 +42,7 @@ render(setup, {
       { area: { left: 0, top: 10, width: 100, height: 90 }, openDirection: 'up', tab: 'Players',
         openIf: actions => actions.some(a => 
           [
-            'flipLED', 'placeToken', 'recallToken', 'revisedReportingStandards', "moraleComitteeInitiative"
+            'flipLED', 'convertRoundCube', 'placeToken', 'recallToken', 'revisedReportingStandards', "moraleComitteeInitiative"
           ]
         .includes(a.name)),
         closeIf: actions => actions.some(a => 
@@ -261,9 +261,9 @@ render(setup, {
             <circle cx="17%" cy="12%" r="10%" fill='yellow' stroke="black" strokeWidth="1" />
 
             <text x="17%" y="12%" text-anchor="middle" dominant-baseline="middle" 
-              fill={game.players.current() != null && powers.bonusUpgradeDiscout(game.players.current()!) > 0 ? "red" : "black"} font-size="60%">
+              fill={game.players.current() != null && powers.bonusUpgradeDiscout(game.players.current()!, x) > 0 ? "red" : "black"} font-size="60%">
               {x.cost - 
-                (game.players.current() != null ? powers.bonusUpgradeDiscout(game.players.current()!): 0) + 
+                (game.players.current() != null ? powers.bonusUpgradeDiscout(game.players.current()!, x): 0) + 
                 (game.players.current() != null ? letters.upgradeTax(game.players.current()!) : 0)}
             </text>
 
