@@ -85,12 +85,15 @@ export class Actions {
           break;
         }
         case TokenAction.Resources: {
-          if(player.space.first(ResourceSpace)!.all(ResourceCube).length > 0) {
-            game.followUp({name: 'convertRoundCube'});
+          if(player.finalScore() >= game.getEra()) {
+            game.followUp({name: 'purchaseRoundCube'});
           }
           break;
         }
         case TokenAction.Upgrade: {
+          if($.mainBoard.all(UpgradeCard).filter(x => x.mayUse(player)).length > 0) {
+            game.followUp({name: 'useMarketUpgrade'});
+          }
           break;
         }
       }
@@ -107,12 +110,15 @@ export class Actions {
           break;
         }
         case TokenAction.Resources: {
-          if(player.space.first(ResourceSpace)!.all(ResourceCube).length > 0) {
-            game.followUp({name: 'convertRoundCube'});
+          if(player.finalScore() >= game.getEra()) {
+            game.followUp({name: 'purchaseRoundCube'});
           }
           break;
         }
         case TokenAction.Upgrade: {
+          if($.mainBoard.all(UpgradeCard).filter(x => x.mayUse(player)).length > 0) {
+            game.followUp({name: 'useMarketUpgrade'});
+          }
           break;
         }
       }
@@ -200,15 +206,16 @@ export class Actions {
       }
     }),
 
-    convertRoundCube: (player) => action({
-      prompt: 'Choose Cube'
-    }).chooseOnBoard(
-      'cube', player.space.first(ResourceSpace)!.all(ResourceCube),
-      { skipIf: 'never' }
-    ).do(({cube}) => {
-      const supply = game.first(Supply)!;
-      cube.putInto(supply);
-      game.followUp({name: 'chooseRoundCube'});
+    purchaseRoundCube: (player) => action({
+      prompt: 'Purchase round cube?',
+    }).chooseFrom(
+      "choice", ['Yes', 'No'],
+      { skipIf: 'never'}
+    ).do(({choice}) => {
+      if(choice == 'Yes') {
+        player.scorePoints(-game.getEra(), 'Purchase round cube');
+        this.game.followUp({name: 'chooseRoundCube'});
+      }
     }),
 
     chooseRoundCube: (player) => action({

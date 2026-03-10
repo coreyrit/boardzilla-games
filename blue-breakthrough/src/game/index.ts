@@ -497,6 +497,30 @@ export class MyGame extends Game<MyGame, BlueBreakthroughPlayer> {
     var highScore: number = 0;
 
     this.players.forEach(x => {
+      // score end game points for upgrades
+      x.space.all(UpgradeCard).forEach(upgrade => {
+        x.scorePoints(upgrade.stage, upgrade.name);
+      })
+
+      // score end game points for published papers
+      switch(x.space.all(PublishToken, {flipped: true}).length) {
+        case 1:
+          x.scorePoints(2, 'Publish (1)');
+          break;
+        case 2:
+          x.scorePoints(4, 'Publish (2)');
+          break;
+        case 3:
+          x.scorePoints(8, 'Publish (3)');
+          break;
+        case 4:
+          x.scorePoints(16, 'Publish (4)');
+          break;
+        case 5:
+          x.scorePoints(32, 'Publish (5)');
+          break;
+      }
+
       if(x.finalScore() > highScore) {
         winners = [x];
         highScore = x.finalScore();

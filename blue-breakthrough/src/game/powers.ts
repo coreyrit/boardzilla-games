@@ -150,6 +150,10 @@ export class FundingPowers {
     }
 
     public bonusResourceDiscount(player: BlueBreakthroughPlayer, upgrade: UpgradeCard) : number {
+        // no discount on market upgrades
+        if($.mainBoard.all(UpgradeCard).includes(upgrade)) {
+            return 0;
+        }
         return (upgrade.input.length == 2 && player.hasFunding(FundingName.EfficiencyAudit)) ? 1 : 0;
     }
 
@@ -319,8 +323,19 @@ export class FundingPowers {
                cube.putInto(player.space.first(ResourceSpace)!);
             }),
 
+            useMarketUpgrade: (player) => action({
+                prompt: 'Use market upgrade?',
+            }).chooseFrom(
+                "choice", ['Yes', 'No'],
+                { skipIf: 'never'}
+            ).do(({choice}) => {
+                if(choice == 'Yes') {
+                    this.game.followUp({name: 'useOverclockedReactor'});
+                }
+            }),
+
             useOverclockedReactor: (player) => action({
-                prompt: FundingName.OverclockedReactor,
+                prompt: 'Use market upgrade', //FundingName.OverclockedReactor,
                 // condition: player.hasFunding(FundingName.OverclockedReactor)
             }).chooseOnBoard(
                 'upgrade', $.mainBoard.all(UpgradeCard).filter(x => x.mayUse(player)),
