@@ -289,8 +289,8 @@ export class Actions {
     ).do(({ upgrades }) => {
       player.purchasedUpgrades = upgrades.length;
       upgrades.forEach( c=> player.placeUpgrade(c) );
-      // player.scorePoints((game.getEra() * upgrades.length) + 
-        // upgrades.reduce((sum, current) => sum + this.powers.bonusUpgradePoints(current, player), 0), this.powers.bonusUpgradePointsReason(player));
+      player.scorePoints(/*game.getEra() * upgrades.length) +*/ 
+        upgrades.reduce((sum, current) => sum + this.powers.bonusUpgradePoints(current, player), 0), this.powers.bonusUpgradePointsReason(player));
       player.space.first(PowerTokenSpace, {action: TokenAction.Upgrade})!.complete = true;
     }).message(`{{player}} bought {{upgrades}}`),  
 
@@ -311,7 +311,7 @@ export class Actions {
       } else {
         const upgrade = upgradeSpace.first(UpgradeCard)!;
         player.placeUpgrade(upgrade);
-        player.scorePoints(game.getEra() + this.powers.bonusUpgradePoints(upgrade, player), "Upgrade");      
+        player.scorePoints(/*game.getEra() +*/ this.powers.bonusUpgradePoints(upgrade, player), "Upgrade");      
         player.space.first(PowerTokenSpace, {action: TokenAction.Upgrade})!.complete = true;
         game.message(`{{player}} drew {{upgrade}}.`, {player: player, upgrade: upgrade})
       }
@@ -325,7 +325,7 @@ export class Actions {
     ).do(({ upgrade, choice }) => {
       if(choice == 'Yes') {
         player.board.first(ReactorSpace, {type: upgrade.type})!.first(UpgradeCard)!.putInto(game.first(Supply)!);
-        player.putUpgradeInReactor(upgrade);
+        player.putUpgradeInReactor(upgrade, false);
       } else {
         upgrade.putInto(game.first(Supply)!);
       }
@@ -362,7 +362,7 @@ export class Actions {
       { skipIf: 'never' }
     ).do(({upgrade}) => {
       player.placeUpgrade(upgrade);
-      player.scorePoints(game.getEra() + this.powers.bonusUpgradePoints(upgrade, player));      
+      player.scorePoints(/*game.getEra() +*/ this.powers.bonusUpgradePoints(upgrade, player));      
       player.space.first(PowerTokenSpace, {action: TokenAction.Upgrade})!.complete = true;
 
       this.game.first(DrawUpgradeSpace)!.all(UpgradeCard).forEach(x => x.putInto(this.game.first(Supply)!));

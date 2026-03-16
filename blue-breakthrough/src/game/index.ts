@@ -175,11 +175,14 @@ export class BlueBreakthroughPlayer extends Player<MyGame, BlueBreakthroughPlaye
       }
     }
 
-    public putUpgradeInReactor(upgrade: UpgradeCard) : void {
+    public putUpgradeInReactor(upgrade: UpgradeCard, first : boolean = true) : void {
       // is this the first time for this type?
-      const matches = this.game.all(PlayerBoard).all(ReactorSpace, {type: upgrade.type}).filter(x => x.all(UpgradeCard).length == 0).length;
+      const matchAny = this.game.all(PlayerBoard).all(ReactorSpace, {type: upgrade.type}).filter(x => x.all(UpgradeCard).length > 0).length > 0;
 
-      if(matches) {
+      this.game.message('first for ' + upgrade.type + ' = ' + first)
+      this.game.message('matchAny for ' + upgrade.type + ' = ' + matchAny)
+
+      if(first && !matchAny) {
         this.game.followUp({name: 'chooseRoundCube', args: {upgrade: upgrade}});
       }
       

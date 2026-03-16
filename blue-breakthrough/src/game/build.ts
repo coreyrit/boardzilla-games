@@ -216,6 +216,7 @@ export function buildGame(game: MyGame) {
   const upgradeDeck = game.create(UpgradeDeck, "upgradeDeck");
   for (const upgradeCard of upgradeCards) {
     const card = upgradeDeck.create(UpgradeCard, upgradeCard.name!.replace(' ', '_'), upgradeCard);
+    card.cost = card.cost == 4 ? 4 : card.cost+1;
     card.initialize();
   }
   upgradeDeck.shuffle();
