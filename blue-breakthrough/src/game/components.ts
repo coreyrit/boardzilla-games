@@ -100,6 +100,7 @@ export class FundingSpace extends Space<MyGame> {
 }
 
 export class UpgradeSpace extends Space<MyGame> {
+  public column: number;
   public index: number;
 }
 
@@ -200,7 +201,7 @@ export class UpgradeCard extends Piece<MyGame> {
     }
   }
 
-  public mayUse(player: BlueBreakthroughPlayer, ignoreCost: boolean = false) : boolean {
+  public mayUse(player: BlueBreakthroughPlayer, ignoreCost: boolean = false, roundCube: boolean = false) : boolean {
     const letters = new LetterEffects(this.game);
     const powers = new FundingPowers(this.game);
 
@@ -225,17 +226,32 @@ export class UpgradeCard extends Piece<MyGame> {
     if(ignoreCost) {
       return true;
     }
-
+  
     let requirementsMet: number = 0;
     const playerCubes = player.space.first(ResourceSpace)!.all(ResourceCube);
+    var tempCubes = playerCubes.map( x => x.color );
+
     for(const color of this.input) {
-      if((color != CubeColor.Any && !playerCubes.map( x => x.color ).includes(color)) || playerCubes.length == 0) {
+      if((color != CubeColor.Any && !tempCubes.includes(color)) || playerCubes.length == 0) {
         
       } else {
         requirementsMet++;
+        if(color != CubeColor.Any) {
+          const index = tempCubes.indexOf(color, 0);
+          tempCubes.splice(index, 1);
+        }
       }
     }
-    return requirementsMet >= (this.input.length - powers.bonusResourceDiscount(player, this));
+
+    if(roundCube && !player.hasRoundCube(tempCubes)) {
+      return false;
+    } else {
+      if(this.input.includes(CubeColor.Any) &&
+         tempCubes.length < (roundCube ? 2 : 1) - powers.bonusResourceDiscount(player, this)) {
+          return false;
+      }
+      return requirementsMet >= (this.input.length - powers.bonusResourceDiscount(player, this));
+    }
   }
 
   public typeName() : string {

@@ -106,6 +106,19 @@ export class BlueBreakthroughPlayer extends Player<MyGame, BlueBreakthroughPlaye
       }
     }
 
+    public hasRoundCube(cubes: CubeColor[]) : boolean {
+      const roundCubes = ['🟧','🟫','⬛','⬜','🟦','🟥','🟨'].slice(0, this.game.round);
+      // const resourceSpace = this.space.first(ResourceSpace)!;
+      var ret : boolean = false;
+      roundCubes.forEach(x => {
+        const cubeColor = this.game.colorFromSymbol(x);
+        if(cubes.includes(cubeColor)) {
+          ret = true;
+        }
+      })
+      return ret;
+    }
+
     public scorePoints(points: number, reason: string = "") {
       if(reason != "") {
         this.game.message(`{{player}} scores <b>{{points}}</b> points for <b>{{reason}}</b>.`, {player: this, points: points, reason: reason})
@@ -389,6 +402,22 @@ export class MyGame extends Game<MyGame, BlueBreakthroughPlayer> {
   }
 
   public fillUpgrades(round: number) {
+    // always remove the first 2 cards    
+    this.all(UpgradeSpace, {index: 1}).all(UpgradeCard).putInto(this.first(Supply)!);
+
+    // slide the rest up
+    var i = 0;
+    for(var i = 4; i >= 2; i--) {
+      for(var c = 1; c <= 2; c++) {
+        const mySpace = this.first(UpgradeSpace, {column: c, index: i})!;
+        const aboveSpace = this.first(UpgradeSpace, {column: c, index: i-1})!;
+
+        if(mySpace.all(UpgradeCard).length > 0 && aboveSpace.all(UpgradeCard).length == 0) {
+          mySpace.first(UpgradeCard)!.putInto(aboveSpace);
+        }
+      }      
+    }
+
     // clear previous cards first
     for(const space of this.all(UpgradeSpace)) {
       for(const card of space.all(UpgradeCard, {stage: this.getStage(round)-1})) {

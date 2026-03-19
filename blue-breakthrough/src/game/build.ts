@@ -192,8 +192,8 @@ export function buildGame(game: MyGame) {
   for(var i = 1; i <= 4; i++) {
     const plate = mainBoard.create(CubePlate, "cubePlate" + i, {index: i})
     const funding = mainBoard.create(FundingSpace, "funding" + i, {index: i})
-    const upgradeA = mainBoard.create(UpgradeSpace, "upgrade" + i + "-a", {index: i})
-    const upgradeB = mainBoard.create(UpgradeSpace, "upgrade" + i + "-b", {index: i})
+    const upgradeA = mainBoard.create(UpgradeSpace, "upgrade" + i + "-a", {column: 1, index: i})
+    const upgradeB = mainBoard.create(UpgradeSpace, "upgrade" + i + "-b", {column: 2, index: i})
   }
 
   const colors: CubeColor[] = [CubeColor.Orange, CubeColor.Brown, CubeColor.Blue, CubeColor.White, 

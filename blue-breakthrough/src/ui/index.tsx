@@ -47,7 +47,7 @@ render(setup, {
         .includes(a.name)),
         closeIf: actions => actions.some(a => 
           [
-            'chooseFunding', 'chooseFundingFromDraw', 'useOverclockedReactor'
+            'chooseFunding', 'chooseFundingFromDraw', 'useOverclockedReactor', 'payToUseMarketUpgrade'
           ]
           .includes(a.name),
           ),

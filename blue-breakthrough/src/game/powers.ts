@@ -330,12 +330,23 @@ export class FundingPowers {
                 { skipIf: 'never'}
             ).do(({choice}) => {
                 if(choice == 'Yes') {
-                    this.game.followUp({name: 'useOverclockedReactor'});
+                    this.game.followUp({name: 'payToUseMarketUpgrade'});
                 }
             }),
 
+            payToUseMarketUpgrade: (player) => action({
+                prompt: 'Use market upgrade',
+            }).chooseOnBoard(
+                'upgrade', $.mainBoard.all(UpgradeCard).filter(x => x.mayUse(player, false, true)),
+                { skipIf: 'never' }
+            ).do(({upgrade}) => {
+               player.useUpgrade(upgrade);
+               upgrade.rotation = 0;
+               this.game.followUp({name: 'spendRoundCube', args: {upgrade: upgrade}});
+            }),
+
             useOverclockedReactor: (player) => action({
-                prompt: 'Use market upgrade', //FundingName.OverclockedReactor,
+                prompt: FundingName.OverclockedReactor,
                 // condition: player.hasFunding(FundingName.OverclockedReactor)
             }).chooseOnBoard(
                 'upgrade', $.mainBoard.all(UpgradeCard).filter(x => x.mayUse(player)),

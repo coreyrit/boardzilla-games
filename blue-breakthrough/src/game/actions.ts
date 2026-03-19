@@ -91,7 +91,7 @@ export class Actions {
           break;
         }
         case TokenAction.Upgrade: {
-          if($.mainBoard.all(UpgradeCard).filter(x => x.mayUse(player)).length > 0) {
+          if($.mainBoard.all(UpgradeCard).filter(x => x.mayUse(player, false, true)).length > 0) {
             game.followUp({name: 'useMarketUpgrade'});
           }
           break;
@@ -116,7 +116,7 @@ export class Actions {
           break;
         }
         case TokenAction.Upgrade: {
-          if($.mainBoard.all(UpgradeCard).filter(x => x.mayUse(player)).length > 0) {
+          if($.mainBoard.all(UpgradeCard).filter(x => x.mayUse(player, false, true)).length > 0) {
             game.followUp({name: 'useMarketUpgrade'});
           }
           break;
@@ -190,6 +190,18 @@ export class Actions {
       // player.scorePoints(game.round, "Recall");
       token.showOnlyTo(player);
       token.putInto(player.space.first(AvailableTokenSpace)!);
+    }),
+
+    spendRoundCube: (player) => action<{upgrade: UpgradeCard}>({
+      prompt: "Spend Round Cube"
+    }).chooseOnBoard(
+      "choice", ({upgrade}) => player.space.first(ResourceSpace)!.all(ResourceCube)
+      .slice(0, player.space.first(ResourceSpace)!.all(ResourceCube).length - upgrade.output.length)
+      .filter(x => ['🟧','🟫','⬛','⬜','🟦','🟥','🟨'].slice(0, game.round).includes(this.game.symbolFromColor(x.color)))
+      ,
+      { skipIf: 'never' }
+    ).do(({choice}) => {
+      choice.putInto(game.first(Supply)!);
     }),
 
     chooseAnyResource: (player) => action<{funding: FundingCard}>({
