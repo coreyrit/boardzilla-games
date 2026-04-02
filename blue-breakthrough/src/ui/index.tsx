@@ -42,7 +42,7 @@ render(setup, {
       { area: { left: 0, top: 10, width: 100, height: 90 }, openDirection: 'up', tab: 'Players',
         openIf: actions => actions.some(a => 
           [
-            'flipLED', 'purchaseRoundCube', 'placeToken', 'recallToken', 'revisedReportingStandards', "moraleComitteeInitiative"
+            'flipLED', 'purchaseRoundCube', 'placeToken', 'recallToken', 'revisedReportingStandards', "moraleComitteeInitiative", "convert2to1"
           ]
         .includes(a.name)),
         closeIf: actions => actions.some(a => 

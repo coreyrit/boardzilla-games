@@ -91,8 +91,9 @@ export class Actions {
           break;
         }
         case TokenAction.Upgrade: {
-          if($.mainBoard.all(UpgradeCard).filter(x => x.mayUse(player, false, true)).length > 0) {
-            game.followUp({name: 'useMarketUpgrade'});
+          // if($.mainBoard.all(UpgradeCard).filter(x => x.mayUse(player, false, true)).length > 0) {
+          if(player.space.all(ResourceSpace).all(ResourceCube).length >= 2) {
+            game.followUp({name: 'askConvert2to1'});
           }
           break;
         }
@@ -116,8 +117,9 @@ export class Actions {
           break;
         }
         case TokenAction.Upgrade: {
-          if($.mainBoard.all(UpgradeCard).filter(x => x.mayUse(player, false, true)).length > 0) {
-            game.followUp({name: 'useMarketUpgrade'});
+          // if($.mainBoard.all(UpgradeCard).filter(x => x.mayUse(player, false, true)).length > 0) {
+          if(player.space.all(ResourceSpace).all(ResourceCube).length >= 2) {
+            game.followUp({name: 'askConvert2to1'});
           }
           break;
         }

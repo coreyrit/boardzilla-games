@@ -323,6 +323,27 @@ export class FundingPowers {
                cube.putInto(player.space.first(ResourceSpace)!);
             }),
 
+            askConvert2to1: (player) => action({
+                prompt: 'Convert 2 cubes to 1?',
+            }).chooseFrom(
+                "choice", ['Yes', 'No'],
+                { skipIf: 'never'}
+            ).do(({choice}) => {
+                if(choice == 'Yes') {
+                    this.game.followUp({name: 'convert2to1'});
+                }
+            }),
+
+            convert2to1: (player) => action({
+                prompt: "Choose cubes",
+            }).chooseOnBoard(
+                'cubes', player.space.all(ResourceSpace).all(ResourceCube),
+                { skipIf: 'never', number: 2 }
+            ).do(({cubes}) => {
+                cubes.forEach(x => x.putInto(game.first(Supply)!));
+                this.game.followUp({name: 'chooseAnyResource'});
+            }),
+
             useMarketUpgrade: (player) => action({
                 prompt: 'Use market upgrade?',
             }).chooseFrom(
