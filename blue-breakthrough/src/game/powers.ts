@@ -44,11 +44,18 @@ export class FundingPowers {
     }
 
     public actionsAfterTesting() : string[] {
-        return ["useMiniStorage", "usePowerRefund", "skip"]
+        return [
+            // "useMiniStorage", 
+            "usePowerRefund", 
+            "skip"
+        ]
     }
 
     public actionsAfterUpgrades() : string[] {
-        return ["useInvestorBonus", "skip"]
+        return [
+            //"useInvestorBonus", 
+            "skip"
+        ]
     }
 
     public afterDiscardingFunding(player: BlueBreakthroughPlayer) {
@@ -60,7 +67,7 @@ export class FundingPowers {
     }
 
     public usingUpgrade(player: BlueBreakthroughPlayer, upgrade: UpgradeCard) {
-        if(player.hasFunding(FundingName.PreciseTools)) {
+        if(upgrade.type != UpgradeType.trap && player.hasFunding(FundingName.PreciseTools)) {
           this.game.followUp({name: 'usePrecisionTools', args: {upgrade: upgrade}});
         }
     }
@@ -71,8 +78,8 @@ export class FundingPowers {
             return false;
         }
 
-        switch(funding.name) {
-            case FundingName.LoanedTechnician:
+        switch(funding.name) {          
+          case FundingName.LoanedTechnician:
             this.game.followUp({name: 'useLoanedTechnicial'});
             return true;
           case FundingName.ReagentVoucher:
@@ -114,6 +121,9 @@ export class FundingPowers {
           case FundingName.VictoryResearch:
             player.scorePoints(5, FundingName.VictoryResearch);
             return true;
+          case FundingName.InvestorBonus:
+            player.scorePoints(2 * player.space.all(UpgradeCard).length, FundingName.InvestorBonus)
+            return true;
           case FundingName.PowerSwap:
             player.space.first(UnavailableTokenSpace)!.all(PowerToken).forEach(x => {
                 x.showOnlyTo(player);
@@ -138,14 +148,14 @@ export class FundingPowers {
     }
 
     public handleExtraCube(player: BlueBreakthroughPlayer, cube: ResourceCube) {
-        if(player.hasFunding(FundingName.ExtraTrapSlot)) {
-            cube.putInto(this.game.first(FundingCard, FundingName.ExtraTrapSlot)!);
+        if(player.hasFunding(FundingName.MiniStorage)) {
+            cube.putInto(this.game.first(FundingCard, FundingName.MiniStorage)!);
         }
     }
 
     public handleLeftoverCubes(player: BlueBreakthroughPlayer, cubes: ResourceCube[]) {
         if(player.hasFunding(FundingName.StorageInsurance)) {
-            player.scorePoints(cubes.length * 2, FundingName.StorageInsurance);
+            player.scorePoints(cubes.length * 1, FundingName.StorageInsurance);
         }
     }
 
@@ -162,7 +172,7 @@ export class FundingPowers {
     }
 
     public bonusStorage(player: BlueBreakthroughPlayer) : number {
-        return player.hasFunding(FundingName.ExtraTrapSlot) ? 1 : 0;
+        return player.hasFunding(FundingName.MiniStorage) ? 1 : 0;
     }
 
     public bonusGainResource(player: BlueBreakthroughPlayer) : number {
@@ -170,7 +180,7 @@ export class FundingPowers {
     }
 
     public bonusPlateSelection(player: BlueBreakthroughPlayer) : number {
-        return player.hasFunding(FundingName.CubeDraw) ? 1 : 0;
+        return player.hasFunding(FundingName.CubeDraw) && this.game.getPlayerToken(player, TokenAction.Resources).value() == 4 ? 1 : 0;
     }
 
     public bonusUpgradeDiscout(player: BlueBreakthroughPlayer, upgrade: UpgradeCard) : number {
@@ -239,19 +249,19 @@ export class FundingPowers {
                 upgrade.rotation = 0; 
             }),
 
-            useMiniStorage: (player) => action({
-                prompt: FundingName.MiniStorage,
-                condition: player.hasFunding(FundingName.MiniStorage) &&
-                    player.space.all(FundingCard, {name: FundingName.MiniStorage}).all(ResourceCube).length < 2,
-            }).chooseOnBoard(
-                'cubes', player.space.first(ResourceSpace)!.all(ResourceCube).filter(x => [CubeColor.Blue, CubeColor.White].includes(x.color)),
-                { min: 0, max: 2, skipIf: 'never' }
-            ).do(({ cubes }) => {
-                const card = player.space.first(FundingCard, {name: FundingName.MiniStorage});
-                if(card != undefined) {
-                    cubes.forEach(x => x.putInto(card!));
-                }
-            }),
+            // useMiniStorage: (player) => action({
+            //     prompt: FundingName.MiniStorage,
+            //     condition: player.hasFunding(FundingName.MiniStorage) &&
+            //         player.space.all(FundingCard, {name: FundingName.MiniStorage}).all(ResourceCube).length < 2,
+            // }).chooseOnBoard(
+            //     'cubes', player.space.first(ResourceSpace)!.all(ResourceCube).filter(x => [CubeColor.Blue, CubeColor.White].includes(x.color)),
+            //     { min: 0, max: 2, skipIf: 'never' }
+            // ).do(({ cubes }) => {
+            //     const card = player.space.first(FundingCard, {name: FundingName.MiniStorage});
+            //     if(card != undefined) {
+            //         cubes.forEach(x => x.putInto(card!));
+            //     }
+            // }),
 
             useTemporarySlot: (player) => action<{upgrade: UpgradeCard}>({
                 prompt: FundingName.TemporarySlot,
@@ -309,7 +319,7 @@ export class FundingPowers {
             ).do(({cube}) => {
                 const supply = game.first(Supply)!;
                 cube.putInto(supply);
-                game.followUp({name: 'chooseAnyResource'});
+                game.followUp({name: 'chooseRoundCube'});
             }),
 
             useResearchCollaboration: (player) => action({
@@ -432,13 +442,13 @@ export class FundingPowers {
                 player.useUpgrade(upgrade, false);
             }),
 
-            useInvestorBonus: (player) => action({
-                prompt: FundingName.InvestorBonus,
-                condition: player.hasFunding(FundingName.InvestorBonus) && player.purchasedUpgrades > 0
-            }).do(() => {
-                player.scorePoints(player.purchasedUpgrades * 4, FundingName.InvestorBonus);
-                player.space.first(FundingCard, FundingName.InvestorBonus)!.rotation = 90;          
-            }),
+            // useInvestorBonus: (player) => action({
+            //     prompt: FundingName.InvestorBonus,
+            //     condition: player.hasFunding(FundingName.InvestorBonus) && player.purchasedUpgrades > 0
+            // }).do(() => {
+            //     player.scorePoints(player.purchasedUpgrades * 4, FundingName.InvestorBonus);
+            //     player.space.first(FundingCard, FundingName.InvestorBonus)!.rotation = 90;          
+            // }),
 
             useMaintenanceDelay: (player) => action({
                 prompt: FundingName.MaintenanceDelay,

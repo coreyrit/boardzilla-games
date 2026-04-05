@@ -82,6 +82,13 @@ export class BlueBreakthroughPlayer extends Player<MyGame, BlueBreakthroughPlaye
         for(const color of upgrade.output) {
           if(color != CubeColor.Any) {
             supply.first(ResourceCube, {color: color})!.putInto(resources);
+
+            if(upgrade.type == UpgradeType.trap && 
+              this.space.all(UpgradeCard).includes(upgrade) && 
+              this.hasFunding(FundingName.ExtraTrapSlot)) {
+                // gain an extra output
+                supply.first(ResourceCube, {color: color})!.putInto(resources);
+            }
           }
         }
         if(upgrade.output.includes(CubeColor.Any)) {
@@ -177,7 +184,7 @@ export class BlueBreakthroughPlayer extends Player<MyGame, BlueBreakthroughPlaye
     public placeUpgrade(upgrade: UpgradeCard) : void {    
       for(const player of this.game.players) {
         if(player != this && player.hasFunding(FundingName.PatentLicense) && player.space.all(UpgradeCard, {type: upgrade.type}).length > 0) {
-          player.scorePoints(1, FundingName.PatentLicense);
+          player.scorePoints(2, FundingName.PatentLicense);
         }
       }
 
@@ -457,7 +464,10 @@ export class MyGame extends Game<MyGame, BlueBreakthroughPlayer> {
     let bestSum: number = -1;
     let bestPriority: number = -1;
 
-    playersRemaining.forEach( p=> {
+    //playersRemaining.forEach( p=> {
+    for(var i = 0; i < playersRemaining.length; i++) {
+      const p = playersRemaining[i];
+
       const token = p.board.first(PowerTokenSpace, {action: action})!.first(PowerToken)!
       
       const tokenValue = token.value() + (action == TokenAction.Funding ? p.fundingBoost : 0);
@@ -465,47 +475,60 @@ export class MyGame extends Game<MyGame, BlueBreakthroughPlayer> {
       const distance = this.getPriorityDistance(p);
       const tokenSum = p.board.all(PowerTokenSpace).reduce((sum, x) => sum + x.first(PowerToken)!.value(), 0);
 
-      let secondTieBreaker: boolean = false;
-      switch(action) {
-        case TokenAction.Funding:
-          secondTieBreaker = playerScore > bestScore;
-          break;
-        case TokenAction.Resources:
-          secondTieBreaker = tokenSum < bestSum;
-          break;
-        case TokenAction.Upgrade:
-          secondTieBreaker = tokenSum > bestSum;
-          break;
+      // jump the line!
+      if(action == TokenAction.Resources && p.hasFunding(FundingName.CubeDraw) && token.value() == 4) {
+        return p;
       }
-
-      // if(bestToken == null || [TokenAbility.Publish, TokenAbility.Recall, TokenAbility.Forbidden].includes(bestToken.ability())) {
-      if(bestToken == null || [TokenAbility.Forbidden].includes(bestToken.ability())) {
-        bestToken = token; bestValue = tokenValue; nextPlayer = p; bestScore = playerScore; bestSum = tokenSum; bestPriority = distance;
-        // this.game.message("Initializing turn: " + nextPlayer);
+      
+      if(playersRemaining.length > 1 && action == TokenAction.Upgrade && p.hasFunding(FundingName.SharedUpgrade) && token.value() > 0) {
+        // must go last!        
+      } 
+      else if(playersRemaining.length > 1 && action == TokenAction.Resources && p.hasFunding(FundingName.MarketSurge) && token.value() > 0) {
+        // must go last!        
       } else {
-        // first check token value
-        if(action == TokenAction.Funding ? tokenValue > bestValue : tokenValue < bestValue) {
+
+        let secondTieBreaker: boolean = false;
+        switch(action) {
+          case TokenAction.Funding:
+            secondTieBreaker = playerScore > bestScore;
+            break;
+          case TokenAction.Resources:
+            secondTieBreaker = tokenSum < bestSum;
+            break;
+          case TokenAction.Upgrade:
+            secondTieBreaker = tokenSum > bestSum;
+            break;
+        }
+
+        // if(bestToken == null || [TokenAbility.Publish, TokenAbility.Recall, TokenAbility.Forbidden].includes(bestToken.ability())) {
+        if(bestToken == null || [TokenAbility.Forbidden].includes(bestToken.ability())) {
           bestToken = token; bestValue = tokenValue; nextPlayer = p; bestScore = playerScore; bestSum = tokenSum; bestPriority = distance;
-          // this.game.message("Highest value: " + nextPlayer);
-        } 
-        // then check abilities if tied
-        else if(tokenValue == bestValue && 
-            token.ability() == TokenAbility.A && bestToken.ability() == TokenAbility.B) {
-          bestToken = token; bestValue = tokenValue; nextPlayer = p; bestScore = playerScore; bestSum = tokenSum; bestPriority = distance;
-          // this.game.message("A vs B: " + nextPlayer);
-        } 
-        // then second tie-breakerif still tied
-        else if(tokenValue == bestValue && token.ability() == bestToken.ability() && secondTieBreaker) {
-          bestToken = token; bestValue = tokenValue; nextPlayer = p; bestScore = playerScore; bestSum = tokenSum; bestPriority = distance;
-          // this.game.message("2nd tie-breaker: " + nextPlayer);
-        }         
-        // final tie goes to priority pawn
-        else if(tokenValue == bestValue && token.ability() == bestToken.ability() && !secondTieBreaker && distance < bestPriority) {
-          bestToken = token; bestValue = tokenValue; nextPlayer = p; bestScore = playerScore; bestSum = tokenSum; bestPriority = distance;
-          // this.game.message("Priority: " + nextPlayer);
+          // this.game.message("Initializing turn: " + nextPlayer);
+        } else {
+          // first check token value
+          if(action == TokenAction.Funding ? tokenValue > bestValue : tokenValue < bestValue) {
+            bestToken = token; bestValue = tokenValue; nextPlayer = p; bestScore = playerScore; bestSum = tokenSum; bestPriority = distance;
+            // this.game.message("Highest value: " + nextPlayer);
+          } 
+          // then check abilities if tied
+          else if(tokenValue == bestValue && 
+              token.ability() == TokenAbility.A && bestToken.ability() == TokenAbility.B) {
+            bestToken = token; bestValue = tokenValue; nextPlayer = p; bestScore = playerScore; bestSum = tokenSum; bestPriority = distance;
+            // this.game.message("A vs B: " + nextPlayer);
+          } 
+          // then second tie-breakerif still tied
+          else if(tokenValue == bestValue && token.ability() == bestToken.ability() && secondTieBreaker) {
+            bestToken = token; bestValue = tokenValue; nextPlayer = p; bestScore = playerScore; bestSum = tokenSum; bestPriority = distance;
+            // this.game.message("2nd tie-breaker: " + nextPlayer);
+          }
+          // final tie goes to priority pawn
+          else if(tokenValue == bestValue && token.ability() == bestToken.ability() && !secondTieBreaker && distance < bestPriority) {
+            bestToken = token; bestValue = tokenValue; nextPlayer = p; bestScore = playerScore; bestSum = tokenSum; bestPriority = distance;
+            // this.game.message("Priority: " + nextPlayer);
+          }
         }
       }
-    })
+    }
 
     // this.game.message("Next turn: " + nextPlayer);
     return nextPlayer!;
