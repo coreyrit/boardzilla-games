@@ -24,7 +24,7 @@ export enum LetterName {
 }
 
 export const letterCards: Partial<LetterCard>[] = [
-    {name: LetterName.SupplierDelay,	effect: "Discarding leftover cubes when gaining resources loses points per cube instead of earning."},
+    {name: LetterName.SupplierDelay,	effect: "During the gain resources action, pay 1 ⭐ per resource gained."},
     {name: LetterName.MoraleComitteeInitiative,	effect: "Each player may spend 3 ⭐ to gain any cube to start the round or lose 1 ⭐."},
     {name: LetterName.RevisedReportingStandards,	effect: "All players must choose one upgrade on their board that cannot be used this round."},
     {name: LetterName.InternalCompetitionPolicy,	effect: "Players may only use upgrade types that all players have (e.g. exhaust allowed only if all players have exhaust upgrades)"},
@@ -77,9 +77,9 @@ export class LetterEffects {
         return 4;
     }
 
-    discardedCubePoints(player: BlueBreakthroughPlayer, count : number) : number {
-        return this.game.hasLetter(LetterName.SupplierDelay) && !player.letterImmune ? -1 * count : count;
-    }
+    // discardedCubePoints(player: BlueBreakthroughPlayer, count : number) : number {
+    //     return this.game.hasLetter(LetterName.SupplierDelay) && !player.letterImmune ? -1 * count : count;
+    // }
 
 
     upgradeForbidden(player: BlueBreakthroughPlayer, upgrade: UpgradeCard) : boolean {

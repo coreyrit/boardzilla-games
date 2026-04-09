@@ -286,6 +286,10 @@ export class Actions {
 
       // player.scorePoints(this.letters.discardedCubePoints(player, plate.all(ResourceCube).length), "Gather Resources");
 
+      if(this.game.hasLetter(LetterName.SupplierDelay) && !player.letterImmune) {
+        player.scorePoints(plate.all(ResourceCube).length * -1, LetterName.SupplierDelay)
+      }
+
       plate.all(ResourceCube).forEach( c=> c.putInto(game.first(Supply)!) );
     }),
 
