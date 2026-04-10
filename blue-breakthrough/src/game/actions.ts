@@ -56,7 +56,13 @@ export class Actions {
     }).chooseOnBoard(
       'token', player.board.first(AvailableTokenSpace)!.all(PowerToken),
       { skipIf: 'never' }
-    ).chooseOnBoard(
+    ).do(({ token }) => {
+      game.followUp({name: 'placeTokenSpace', args: {token: token}});
+    }),
+
+    placeTokenSpace: (player) => action<{token: PowerToken}>({
+      prompt: 'Place Token'
+    }).chooseOnBoard(
       'space', player.board.all(PowerTokenSpace).filter(x => x.all(PowerToken).length == 0),
       { skipIf: 'never' }
     ).do(({ token, space }) => {

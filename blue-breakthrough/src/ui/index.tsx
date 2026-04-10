@@ -60,11 +60,15 @@ render(setup, {
 
       game.layoutAsDrawer($.letters as Space<MyGame>, 
       { area: { left: 60, top: 0, width: 40, height: 24 }, openDirection: 'down', tab: 'Letter',
-        openIf: actions => actions.some(a => 
-          [
-            'reactToLetter'
-          ]
-        .includes(a.name)),
+        openIf: actions =>
+          game.first(LetterSpace)!.all(LetterCard).length > 0 &&
+          game.players.allCurrent().some(player => player.board.all(PowerTokenSpace).all(PowerToken).length == 0) &&
+          actions.some(a =>
+            [
+              'placeToken',
+            ]
+            .includes(a.name),
+          ),
       });
       $.letters.layout(LetterCard, {columns: 1, rows: 1, gap: {x:0, y: 0}, scaling: 'fill'})
 
