@@ -1,0 +1,108 @@
+#play-area {
+  background:
+    linear-gradient(180deg, #16333b 0%, #0f2228 35%, #09161b 100%);
+  color: #f6ead3;
+  font-family: "Avenir Next", "Trebuchet MS", sans-serif;
+}
+
+@keyframes selectablePulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 244, 120, 0.85);
+  }
+  100% {
+    box-shadow: 0 0 0 0.9rem rgba(255, 244, 120, 0);
+  }
+}
+
+.sheet-card {
+  border-radius: 0;
+  overflow: hidden;
+}
+
+.goal-card {
+  position: relative;
+  overflow: visible;
+  z-index: 20;
+}
+
+.goal-card > .sheet-card-face {
+  transition: transform 0.18s ease;
+  transform-origin: center center;
+}
+
+.goal-card:hover > .sheet-card-face {
+  transform: scale(2.2);
+}
+
+.sheet-card-face {
+  width: 100%;
+  height: 100%;
+  border: 2px solid rgba(255, 244, 214, 0.5);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.rotated-hand-card {
+  transform: rotate(180deg);
+}
+
+.mirrored-fire-card {
+  transform: scaleX(-1);
+}
+
+.mirrored-fire-card.rotated-hand-card {
+  transform: rotate(180deg) scaleX(-1);
+}
+
+.card-art {
+  width: 100%;
+  height: 100%;
+}
+
+.card-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  text-align: center;
+  font-size: 0.75rem;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.fire-edge-space {
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 244, 214, 0.12);
+}
+
+.fire-edge-face {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  border: 3px dashed rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.active-reveal-edge {
+  background: rgba(255, 212, 90, 0.28);
+  border-color: #ffd45a;
+}
+
+#game .selectable > .sheet-card-face,
+#game .selectable > .fire-edge-face {
+  outline: 4px solid #fff478;
+  outline-offset: -4px;
+  animation: selectablePulse 0.9s ease-in-out infinite alternate;
+}
+
+#game .selectable:hover > .sheet-card-face,
+#game .selectable:hover > .fire-edge-face {
+  outline-color: #ff9f43;
+  background-color: rgba(255, 159, 67, 0.18);
+}
+
+#game .selected > .sheet-card-face,
+#game .selected > .fire-edge-face {
+  outline: 4px solid #ff6b35;
+  outline-offset: -4px;
+}

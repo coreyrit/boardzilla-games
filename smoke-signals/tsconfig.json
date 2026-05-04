@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "es2020",
+    "module": "nodenext",
+    "esModuleInterop": true,
+    "sourceMap": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "jsx": "react",
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "incremental": true,
+    "strict": false
+  },
+  "include": ["src", "./index.d.ts"],
+  "exclude": ["**/node_modules", "**/.*/"]
+}
