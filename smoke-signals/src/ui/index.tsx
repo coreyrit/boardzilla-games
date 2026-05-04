@@ -243,29 +243,33 @@ render(setup, {
     });
 
     game.all(BlanketCard).appearance({
-      className: 'sheet-card',
+      className: 'sheet-card blanket-card',
       aspectRatio: 375 / 525,
       render: card => {
         const art = card.isVisible() ? artForCard(card) : blanketBackArtFor(card);
         const orientationClass = blanketOrientationClass(card, isFirstViewer);
 
         return (
-          <div className={`sheet-card-face ${orientationClass}`.trim()}>
-            {art ? <div className="card-art" style={spriteStyle(art)} /> : <div className="card-fallback">{card.name}</div>}
+          <div className="hover-zoom-shell">
+            <div className={`sheet-card-face ${orientationClass}`.trim()}>
+              {art ? <div className="card-art" style={spriteStyle(art)} /> : <div className="card-fallback">{card.name}</div>}
+            </div>
           </div>
         );
       },
     });
 
     game.all(FireCard).appearance({
-      className: 'sheet-card',
+      className: 'sheet-card fire-card',
       aspectRatio: 375 / 525,
       render: card => {
         const art = artForCard(card);
 
         return (
-          <div className="sheet-card-face" style={fireTransformStyle(card, isFirstViewer)}>
-            {art ? <div className="card-art" style={spriteStyle(art)} /> : <div className="card-fallback">{card.name}</div>}
+          <div className="hover-zoom-shell">
+            <div className="sheet-card-face" style={fireTransformStyle(card, isFirstViewer)}>
+              {art ? <div className="card-art" style={spriteStyle(art)} /> : <div className="card-fallback">{card.name}</div>}
+            </div>
           </div>
         );
       },
@@ -278,8 +282,10 @@ render(setup, {
         const art = artForCard(card);
 
         return (
-          <div className="sheet-card-face">
-            {art ? <div className="card-art" style={spriteStyle(art)} /> : <div className="card-fallback">{card.name}</div>}
+          <div className="hover-zoom-shell">
+            <div className="sheet-card-face">
+              {art ? <div className="card-art" style={spriteStyle(art)} /> : <div className="card-fallback">{card.name}</div>}
+            </div>
           </div>
         );
       },
@@ -292,8 +298,10 @@ render(setup, {
         const art = artForCard(card);
 
         return (
-          <div className="sheet-card-face">
-            {art ? <div className="card-art" style={spriteStyle(art)} /> : <div className="card-fallback">{card.name}</div>}
+          <div className="hover-zoom-shell">
+            <div className="sheet-card-face">
+              {art ? <div className="card-art" style={spriteStyle(art)} /> : <div className="card-fallback">{card.name}</div>}
+            </div>
           </div>
         );
       },

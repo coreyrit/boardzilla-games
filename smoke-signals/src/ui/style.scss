@@ -19,19 +19,31 @@
   overflow: hidden;
 }
 
+.blanket-card,
+.fire-card,
 .goal-card {
   position: relative;
   overflow: visible;
   z-index: 20;
 }
 
-.goal-card > .sheet-card-face {
+.hover-zoom-shell {
+  width: 100%;
+  height: 100%;
   transition: transform 0.18s ease;
   transform-origin: center center;
 }
 
-.goal-card:hover > .sheet-card-face {
+.blanket-card:hover > .hover-zoom-shell,
+.fire-card:hover > .hover-zoom-shell,
+.goal-card:hover > .hover-zoom-shell {
   transform: scale(2.2);
+}
+
+.blanket-card:hover,
+.fire-card:hover,
+.goal-card:hover {
+  z-index: 200;
 }
 
 .sheet-card-face {
@@ -89,6 +101,7 @@
 }
 
 #game .selectable > .sheet-card-face,
+#game .selectable > .hover-zoom-shell > .sheet-card-face,
 #game .selectable > .fire-edge-face {
   outline: 4px solid #fff478;
   outline-offset: -4px;
@@ -96,12 +109,14 @@
 }
 
 #game .selectable:hover > .sheet-card-face,
+#game .selectable:hover > .hover-zoom-shell > .sheet-card-face,
 #game .selectable:hover > .fire-edge-face {
   outline-color: #ff9f43;
   background-color: rgba(255, 159, 67, 0.18);
 }
 
 #game .selected > .sheet-card-face,
+#game .selected > .hover-zoom-shell > .sheet-card-face,
 #game .selected > .fire-edge-face {
   outline: 4px solid #ff6b35;
   outline-offset: -4px;

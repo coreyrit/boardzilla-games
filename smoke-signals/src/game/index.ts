@@ -58,6 +58,7 @@ export class SmokeSignalsGame extends Game<SmokeSignalsGame, SmokeSignalsPlayer>
   challengeNumber: number;
   goalSatisfied?: boolean;
   initialSmokeState?: SmokeSnapshot[];
+  chosenStartingPlayer?: SmokeSignalsPlayer;
   attempts = 0;
   readonly maxAttempts = 3;
 
@@ -146,6 +147,7 @@ export class SmokeSignalsGame extends Game<SmokeSignalsGame, SmokeSignalsPlayer>
     this.resetSmokes();
     this.currentRevealEdge = undefined;
     this.clearPendingGoldAction();
+    this.chosenStartingPlayer = undefined;
     this.goalSatisfied = false;
     this.phase = 'placement';
   }
@@ -540,6 +542,17 @@ export default createGame(SmokeSignalsPlayer, SmokeSignalsGame, game => {
   });
 
   game.defineActions({
+    chooseStartingPlayer: () => action({
+      prompt: 'Choose who goes first this attempt.',
+    }).choose(
+      'startingPlayer',
+      'select',
+      () => game.players,
+      { skipIf: 'never' }
+    ).do(({ startingPlayer }) => {
+      game.chosenStartingPlayer = startingPlayer;
+      game.message('{{player}} goes first this attempt.', { player: startingPlayer });
+    }),
     placeBlanketCard: (player) => action({
       prompt: "Choose Blanket Card"
     }).chooseOnBoard(
@@ -675,6 +688,11 @@ export default createGame(SmokeSignalsPlayer, SmokeSignalsGame, game => {
     whileLoop({
       while: () => !game.goalSatisfied && game.attempts < game.maxAttempts,
       do: [
+        playerActions({
+          name: 'choose-starting-player',
+          players: () => game.players,
+          actions: ['chooseStartingPlayer'],
+        }),
         forLoop({
           name: 'round',
           initial: 1,
@@ -683,6 +701,7 @@ export default createGame(SmokeSignalsPlayer, SmokeSignalsGame, game => {
           do: [
             eachPlayer({
               name: "player",
+              startingPlayer: () => game.chosenStartingPlayer ?? game.players[0],
               do: playerActions({
                 actions: ['placeBlanketCard'],
               }),
