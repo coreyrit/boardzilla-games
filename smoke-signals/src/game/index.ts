@@ -399,6 +399,23 @@ function createA1(game: SmokeSignalsGame) {
   game.create(FireEdge, 'fireEdgeTop' + nextTopEdgeIndex(game), { edge: Edge.Top, index: nextTopEdgeIndex(game), restriction: Restriction.Black });
   game.create(FireEdge, 'fireEdgeBottom' + nextBottomEdgeIndex(game), { edge: Edge.Bottom, index: nextBottomEdgeIndex(game) });
 }
+function createA2(game: SmokeSignalsGame) {
+  const a = game.create(FireCard, 'fire-card-a2', {action: FireCardAction.SwapRed});
+  a.rotation = 180;
+  game.create(FireEdge, 'fireEdgeTop' + nextTopEdgeIndex(game), { edge: Edge.Top, index: nextTopEdgeIndex(game) });
+  game.create(FireEdge, 'fireEdgeBottom' + nextBottomEdgeIndex(game), { edge: Edge.Bottom, index: nextBottomEdgeIndex(game), restriction: Restriction.Black });
+}
+function createA3(game: SmokeSignalsGame) {
+  const a = game.create(FireCard, 'fire-card-a3', {action: FireCardAction.RotateWhite});
+  game.create(FireEdge, 'fireEdgeTop' + nextTopEdgeIndex(game), { edge: Edge.Top, index: nextTopEdgeIndex(game) });
+  game.create(FireEdge, 'fireEdgeBottom' + nextBottomEdgeIndex(game), { edge: Edge.Bottom, index: nextBottomEdgeIndex(game) });
+}
+function createA4(game: SmokeSignalsGame) {
+  const a = game.create(FireCard, 'fire-card-a4', {action: FireCardAction.RotateWhite});
+  a.rotation = 180;
+  game.create(FireEdge, 'fireEdgeTop' + nextTopEdgeIndex(game), { edge: Edge.Top, index: nextTopEdgeIndex(game) });
+  game.create(FireEdge, 'fireEdgeBottom' + nextBottomEdgeIndex(game), { edge: Edge.Bottom, index: nextBottomEdgeIndex(game) });
+}
 function createB1(game: SmokeSignalsGame) {
   game.create(FireCard, 'fire-card-b1', {action: FireCardAction.SwapOrange});
   game.create(FireEdge, 'fireEdgeTop' + nextTopEdgeIndex(game), { edge: Edge.Top, index: nextTopEdgeIndex(game) });
@@ -415,9 +432,25 @@ function createB3(game: SmokeSignalsGame) {
   game.create(FireEdge, 'fireEdgeTop' + nextTopEdgeIndex(game), { edge: Edge.Top, index: nextTopEdgeIndex(game) });
   game.create(FireEdge, 'fireEdgeBottom' + nextBottomEdgeIndex(game), { edge: Edge.Bottom, index: nextBottomEdgeIndex(game), restriction: Restriction.White });
 }
+function createB4(game: SmokeSignalsGame) {
+  const b = game.create(FireCard, 'fire-card-b4', {action: FireCardAction.RotateBlack});
+  b.rotation = 180;
+  game.create(FireEdge, 'fireEdgeTop' + nextTopEdgeIndex(game), { edge: Edge.Top, index: nextTopEdgeIndex(game), restriction: Restriction.White });
+  game.create(FireEdge, 'fireEdgeBottom' + nextBottomEdgeIndex(game), { edge: Edge.Bottom, index: nextBottomEdgeIndex(game) });
+}
+function createC1(game: SmokeSignalsGame) {
+  const c = game.create(FireCard, 'fire-card-c1', {action: FireCardAction.SwapYellow});
+  game.create(FireEdge, 'fireEdgeTop' + nextTopEdgeIndex(game), { edge: Edge.Top, index: nextTopEdgeIndex(game) });
+  game.create(FireEdge, 'fireEdgeBottom' + nextBottomEdgeIndex(game), { edge: Edge.Bottom, index: nextBottomEdgeIndex(game) });
+}
 function createC2(game: SmokeSignalsGame) {
   const c = game.create(FireCard, 'fire-card-c2', {action: FireCardAction.SwapYellow});
   c.rotation = 180;
+  game.create(FireEdge, 'fireEdgeTop' + nextTopEdgeIndex(game), { edge: Edge.Top, index: nextTopEdgeIndex(game) });
+  game.create(FireEdge, 'fireEdgeBottom' + nextBottomEdgeIndex(game), { edge: Edge.Bottom, index: nextBottomEdgeIndex(game) });
+}
+function createC3(game: SmokeSignalsGame) {
+  const c = game.create(FireCard, 'fire-card-c3', {action: FireCardAction.Peek});
   game.create(FireEdge, 'fireEdgeTop' + nextTopEdgeIndex(game), { edge: Edge.Top, index: nextTopEdgeIndex(game) });
   game.create(FireEdge, 'fireEdgeBottom' + nextBottomEdgeIndex(game), { edge: Edge.Bottom, index: nextBottomEdgeIndex(game) });
 }
@@ -426,6 +459,17 @@ function createC4(game: SmokeSignalsGame) {
   c.rotation = 180;
   game.create(FireEdge, 'fireEdgeTop' + nextTopEdgeIndex(game), { edge: Edge.Top, index: nextTopEdgeIndex(game) });
   game.create(FireEdge, 'fireEdgeBottom' + nextBottomEdgeIndex(game), { edge: Edge.Bottom, index: nextBottomEdgeIndex(game) });
+}
+function createD1(game: SmokeSignalsGame) {
+  const d = game.create(FireCard, 'fire-card-d1', {action: FireCardAction.SwapGreen});
+  game.create(FireEdge, 'fireEdgeTop' + nextTopEdgeIndex(game), { edge: Edge.Top, index: nextTopEdgeIndex(game), restriction: Restriction.TwoCards});
+  game.create(FireEdge, 'fireEdgeBottom' + nextBottomEdgeIndex(game), { edge: Edge.Bottom, index: nextBottomEdgeIndex(game)});
+}
+function createD2(game: SmokeSignalsGame) {
+  const d = game.create(FireCard, 'fire-card-d2', {action: FireCardAction.SwapGreen});
+  d.rotation = 180;
+  game.create(FireEdge, 'fireEdgeTop' + nextTopEdgeIndex(game), { edge: Edge.Top, index: nextTopEdgeIndex(game)});
+  game.create(FireEdge, 'fireEdgeBottom' + nextBottomEdgeIndex(game), { edge: Edge.Bottom, index: nextBottomEdgeIndex(game), restriction: Restriction.TwoCards});
 }
 function createD3(game: SmokeSignalsGame) {
   const d = game.create(FireCard, 'fire-card-d3', {action: FireCardAction.Repeat});
@@ -483,6 +527,42 @@ function setupChallenge(game: SmokeSignalsGame, num: number) {
       createB2(game); createA1(game); createD3(game); createC4(game);
       createYellow(game); createRed(game, true); createGreen(game); createOrange(game, true);
       break;
+    case 4:
+      createA2(game); createC3(game); createB1(game); createD4(game);
+      createOrange(game, true); createYellow(game); createRed(game, true); createGreen(game);
+      break;
+    case 5:
+      createD1(game); createB2(game); createA3(game); createC4(game);
+      createGreen(game); createYellow(game, true); createOrange(game); createRed(game, true);
+      break;
+    case 6:
+      createC4(game); createA2(game); createD3(game); createB1(game);
+      createRed(game, true); createOrange(game); createGreen(game, true); createYellow(game);
+      break;
+    case 7:
+      createB4(game); createD2(game); createC1(game); createA3(game);
+      createOrange(game); createRed(game, true); createYellow(game, true); createGreen(game);
+      break;
+    case 8:
+      createD1(game); createA4(game); createB3(game); createC2(game);
+      createGreen(game, true); createYellow(game); createRed(game); createOrange(game, true);
+      break;
+    case 9:
+      createC3(game); createB4(game); createA2(game); createD1(game);
+      createGreen(game); createOrange(game, true); createYellow(game); createRed(game, true);
+      break;
+    case 10:
+      createD2(game); createA4(game); createC3(game); createB1(game);
+      createYellow(game, true); createRed(game); createGreen(game, true); createOrange(game);
+      break;
+    case 11:
+      createB4(game); createC2(game); createD1(game); createA3(game);
+      createRed(game); createGreen(game, true); createOrange(game); createYellow(game, true);
+      break;
+    case 12:
+      createC1(game); createD2(game); createA4(game); createB3(game);
+      createOrange(game, true); createGreen(game); createRed(game, true); createYellow(game);
+      break;
   }
 }
 
@@ -499,6 +579,56 @@ function checkChallengeGoal(game: SmokeSignalsGame, num: number) : boolean {
       return game.all(SmokeCard).indexOf(game.first(SmokeCard, { color: SmokeColor.Orange })!) == 0 &&
              game.all(SmokeCard).indexOf(game.first(SmokeCard, { color: SmokeColor.Red })!) == 3 &&
               game.all(SmokeCard, { rotation: 0 }).length == 2;
+    case 4:
+      return game.all(SmokeCard).indexOf(game.first(SmokeCard, { color: SmokeColor.Green })!) == 1 &&
+             game.all(SmokeCard).indexOf(game.first(SmokeCard, { color: SmokeColor.Red })!) == 2 &&
+              game.first(SmokeCard, { color: SmokeColor.Orange })!.rotation === 90;
+    case 5:
+      return game.all(SmokeCard).indexOf(game.first(SmokeCard, { color: SmokeColor.Yellow })!) <
+             game.all(SmokeCard).indexOf(game.first(SmokeCard, { color: SmokeColor.Green })!) &&
+              game.all(SmokeCard, { rotation: 90 }).length == 2;
+    case 6:
+      return game.all(SmokeCard).indexOf(game.first(SmokeCard, { color: SmokeColor.Orange })!) == 0 &&
+             game.all(SmokeCard).indexOf(game.first(SmokeCard, { color: SmokeColor.Yellow })!) == 1 &&
+             game.first(SmokeCard, { color: SmokeColor.Green })!.rotation === 0 &&
+              game.all(SmokeCard, { rotation: 0 }).length == 3;
+    case 7:
+      return game.all(SmokeCard).indexOf(game.first(SmokeCard, { color: SmokeColor.Orange })!) == 1 &&
+             game.all(SmokeCard).indexOf(game.first(SmokeCard, { color: SmokeColor.Green })!) == 3 &&
+             game.first(SmokeCard, { color: SmokeColor.Red })!.rotation === 90 &&
+              game.all(SmokeCard, { rotation: 90 }).length == 2;
+    case 8:
+      return game.all(SmokeCard).indexOf(game.first(SmokeCard, { color: SmokeColor.Red })!) == 0 &&
+             game.all(SmokeCard).indexOf(game.first(SmokeCard, { color: SmokeColor.Green })!) == 1 &&
+             game.all(SmokeCard).indexOf(game.first(SmokeCard, { color: SmokeColor.Yellow })!) == 2 &&
+             game.all(SmokeCard).indexOf(game.first(SmokeCard, { color: SmokeColor.Orange })!) == 3 &&
+              game.all(SmokeCard, { rotation: 0 }).length == 2;
+    case 9:
+      return game.all(SmokeCard).indexOf(game.first(SmokeCard, { color: SmokeColor.Yellow })!) == 1 &&
+             game.all(SmokeCard).indexOf(game.first(SmokeCard, { color: SmokeColor.Red })!) == 3 &&
+              game.first(SmokeCard, { color: SmokeColor.Yellow })!.rotation === 0 &&
+              game.first(SmokeCard, { color: SmokeColor.Orange })!.rotation === 90;
+    case 10:
+      return game.all(SmokeCard).indexOf(game.first(SmokeCard, { color: SmokeColor.Orange })!) == 0 &&
+             game.all(SmokeCard).indexOf(game.first(SmokeCard, { color: SmokeColor.Green })!) == 1 &&
+             game.all(SmokeCard).indexOf(game.first(SmokeCard, { color: SmokeColor.Red })!) == 2 &&
+             game.all(SmokeCard).indexOf(game.first(SmokeCard, { color: SmokeColor.Yellow })!) == 3 &&
+              game.all(SmokeCard, { rotation: 90 }).length == 3;
+    case 11:
+      return game.all(SmokeCard).indexOf(game.first(SmokeCard, { color: SmokeColor.Green })!) == 0 &&
+             game.all(SmokeCard).indexOf(game.first(SmokeCard, { color: SmokeColor.Orange })!) == 3 &&
+              game.first(SmokeCard, { color: SmokeColor.Green })!.rotation === 0 &&
+              game.all(SmokeCard, { rotation: 0 }).length == 2;
+    case 12:
+      return game.all(SmokeCard).indexOf(game.first(SmokeCard, { color: SmokeColor.Orange })!) == 0 &&
+             game.all(SmokeCard).indexOf(game.first(SmokeCard, { color: SmokeColor.Yellow })!) == 1 &&
+             game.all(SmokeCard).indexOf(game.first(SmokeCard, { color: SmokeColor.Green })!) == 2 &&
+             game.all(SmokeCard).indexOf(game.first(SmokeCard, { color: SmokeColor.Red })!) == 3 &&
+              game.first(SmokeCard, { color: SmokeColor.Orange })!.rotation === 0 &&
+              game.first(SmokeCard, { color: SmokeColor.Yellow })!.rotation === 90 &&
+              game.first(SmokeCard, { color: SmokeColor.Green })!.rotation === 90 &&
+              game.first(SmokeCard, { color: SmokeColor.Red })!.rotation === 90;
+
   }
   return false;
 }

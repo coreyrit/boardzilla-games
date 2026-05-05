@@ -76,6 +76,18 @@ const goalArt: Record<string, SheetPos> = {
   'goal-1': { sheet: page2Front, col: 2, row: 1 },
   'goal-2': { sheet: page2Front, col: 2, row: 1 },
   'goal-3': { sheet: page2Front, col: 2, row: 1 },
+
+  'goal-4': { sheet: page2Front, col: 0, row: 2 },
+  'goal-5': { sheet: page2Front, col: 0, row: 2 },
+  'goal-6': { sheet: page2Front, col: 0, row: 2 },
+
+  'goal-7': { sheet: page2Front, col: 1, row: 2 },
+  'goal-8': { sheet: page2Front, col: 1, row: 2 },
+  'goal-9': { sheet: page2Front, col: 1, row: 2 },
+
+  'goal-10': { sheet: page2Front, col: 2, row: 2 },
+  'goal-11': { sheet: page2Front, col: 2, row: 2 },
+  'goal-12': { sheet: page2Front, col: 2, row: 2 },
 };
 
 function spriteStyle(pos: SheetPos) {
