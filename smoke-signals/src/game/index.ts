@@ -132,6 +132,7 @@ export class SmokeSignalsGame extends Game<SmokeSignalsGame, SmokeSignalsPlayer>
   }
 
   prepareNextRound() {
+    this.game.all(BlanketCard).forEach(card => card.rotation = 0);
     this.players.forEach(player => {
       const space = this.playerSpace(player);
 
@@ -244,8 +245,8 @@ export class SmokeSignalsGame extends Game<SmokeSignalsGame, SmokeSignalsPlayer>
           case FireCardAction.Repeat:
             this.queueGoldAction('repeatBlanketAction');
             break;
-          case FireCardAction.Peek:
-            this.queueGoldAction('peekBlanket');
+          case FireCardAction.Cancel:
+            this.queueGoldAction('cancelBlanketAction');
             break;
         }
     }
@@ -285,7 +286,7 @@ export enum FireCardAction {
   RotateBlack,
   RotateWhite,
   Repeat,
-  Peek
+  Cancel
 }
 
 export enum SmokeColor {
@@ -450,14 +451,14 @@ function createC2(game: SmokeSignalsGame) {
   game.create(FireEdge, 'fireEdgeBottom' + nextBottomEdgeIndex(game), { edge: Edge.Bottom, index: nextBottomEdgeIndex(game) });
 }
 function createC3(game: SmokeSignalsGame) {
-  const c = game.create(FireCard, 'fire-card-c3', {action: FireCardAction.Peek});
+  const c = game.create(FireCard, 'fire-card-c3', {action: FireCardAction.Cancel});
   game.create(FireEdge, 'fireEdgeTop' + nextTopEdgeIndex(game), { edge: Edge.Top, index: nextTopEdgeIndex(game) });
-  game.create(FireEdge, 'fireEdgeBottom' + nextBottomEdgeIndex(game), { edge: Edge.Bottom, index: nextBottomEdgeIndex(game) });
+  game.create(FireEdge, 'fireEdgeBottom' + nextBottomEdgeIndex(game), { edge: Edge.Bottom, index: nextBottomEdgeIndex(game), restriction: Restriction.NoGold });
 }
 function createC4(game: SmokeSignalsGame) {
-  const c = game.create(FireCard, 'fire-card-c4', {action: FireCardAction.Peek});
+  const c = game.create(FireCard, 'fire-card-c4', {action: FireCardAction.Cancel});
   c.rotation = 180;
-  game.create(FireEdge, 'fireEdgeTop' + nextTopEdgeIndex(game), { edge: Edge.Top, index: nextTopEdgeIndex(game) });
+  game.create(FireEdge, 'fireEdgeTop' + nextTopEdgeIndex(game), { edge: Edge.Top, index: nextTopEdgeIndex(game), restriction: Restriction.NoGold });
   game.create(FireEdge, 'fireEdgeBottom' + nextBottomEdgeIndex(game), { edge: Edge.Bottom, index: nextBottomEdgeIndex(game) });
 }
 function createD1(game: SmokeSignalsGame) {
@@ -797,17 +798,17 @@ export default createGame(SmokeSignalsPlayer, SmokeSignalsGame, game => {
       game.message('Activate Gold.');
       game.performBlanketAction(blanket);
     }),
-    peekBlanket: (player) => action({
-      prompt: 'Choose a blanket card to peek.',
-      condition: () => game.pendingGoldAction === 'peekBlanket',
+    cancelBlanketAction: (player) => action({
+      prompt: 'Choose a blanket card to cancel.',
+      condition: () => game.pendingGoldAction === 'cancelBlanketAction',
     }).chooseOnBoard(
-      'blanket',
-      () => game.all(BlanketCard).filter(x => !x.isVisibleTo(player)),
+      'edge',
+      () => game.all(FireEdge).filter(x => !x.first(BlanketCard)!.isVisible()),
       { skipIf: 'never' }
-    ).do(({ blanket }) => {
+    ).do(({ edge }) => {
       game.clearPendingGoldAction();
       game.message('Activate Gold.');
-      blanket.showOnlyTo(player);
+      edge.all(BlanketCard).forEach(x => x.rotation = 90);
     }),
   });
 
@@ -860,6 +861,7 @@ export default createGame(SmokeSignalsPlayer, SmokeSignalsGame, game => {
                 const edge = game.revealOrder()[revealStep];
                 return edge ? game.revealPlayerForEdge(edge) : game.players[0];
               },
+              condition: ({revealStep}) => game.revealOrder()[revealStep].first(BlanketCard)?.rotation === 0,
               actions: ['revealCurrentEdge'],
             }),
             playerActions({
@@ -868,7 +870,8 @@ export default createGame(SmokeSignalsPlayer, SmokeSignalsGame, game => {
                 const edge = game.revealOrder()[revealStep];
                 return edge ? game.revealPlayerForEdge(edge) : game.players[0];
               },
-              condition: () => (game.currentRevealEdgeSpace()?.all(BlanketCard).length ?? 0) === 2,
+              condition: () => (game.currentRevealEdgeSpace()?.all(BlanketCard).length ?? 0) === 2 && 
+                game.currentRevealEdgeSpace()?.first(BlanketCard)?.rotation === 0,
               actions: ['activateRevealedBlanket'],
             }),
             playerActions({
@@ -935,13 +938,13 @@ export default createGame(SmokeSignalsPlayer, SmokeSignalsGame, game => {
               actions: ['repeatBlanketAction'],
             }),
             playerActions({
-              name: 'resolve-peek-gold-action',
+              name: 'resolve-cancel-gold-action',
               player: ({ revealStep }) => {
                 const edge = game.revealOrder()[revealStep];
                 return edge ? game.revealPlayerForEdge(edge) : game.players[0];
               },
-              condition: () => game.pendingGoldAction === 'peekBlanket',
-              actions: ['peekBlanket'],
+              condition: () => game.pendingGoldAction === 'cancelBlanketAction',
+              actions: ['cancelBlanketAction'],
             }),
           ],
         }),
