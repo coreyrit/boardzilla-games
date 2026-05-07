@@ -1310,7 +1310,7 @@ export default createGame(SUVPlayer, MyGame, game => {
 
           // 6. Venus Side Effect
           eachPlayer({name: 'turn', startingPlayer: player => game.players[1], continueUntil: (p) => p == game.players[0], do: [
-            ifElse({if: ({turn}) => turn != turn.trust, do: [
+            ifElse({if: ({turn}) => turn.trust, do: [
               playerActions({ actions: ['venusSideEffect']}),
             ]})
           ]}),
