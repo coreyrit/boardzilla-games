@@ -353,8 +353,10 @@ export class FireEdge extends Space<SmokeSignalsGame, SmokeSignalsPlayer> {
     // check two card requirement
     // this is tricky - basically nothing BUT the 2 card location is allowed once
     // a side has 4 cards on it
+    const twoCardsEdge = sideEdges.first(FireEdge, { restriction: Restriction.TwoCards });
     if (sideEdges.all(BlanketCard).length === 4 &&
-       sideEdges.filter(edge => edge.restriction === Restriction.TwoCards).length === 1 &&
+       twoCardsEdge &&
+       twoCardsEdge.all(BlanketCard).length < 2 &&
        currentRestriction !== Restriction.TwoCards) {
       return false;
     } 
