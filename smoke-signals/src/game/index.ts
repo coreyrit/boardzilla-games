@@ -237,10 +237,18 @@ export class SmokeSignalsGame extends Game<SmokeSignalsGame, SmokeSignalsPlayer>
             this.queueGoldAction('swapGreenSmoke');
             break;
           case FireCardAction.RotateBlack:
-            this.queueGoldAction('rotateBlackCloud');
+            if (this.all(SmokeCard, { rotation: 90 }).length > 0) {
+              this.queueGoldAction('rotateBlackCloud');
+            } else {
+              this.message('Activate Gold. No black cloud to rotate.');
+            }
             break;
           case FireCardAction.RotateWhite:
-            this.queueGoldAction('rotateWhiteCloud');
+            if (this.all(SmokeCard, { rotation: 0 }).length > 0) {
+              this.queueGoldAction('rotateWhiteCloud');
+            } else {
+              this.message('Activate Gold. No white cloud to rotate.');
+            }
             break;
           case FireCardAction.Repeat:
             this.queueGoldAction('repeatBlanketAction');
