@@ -83,6 +83,24 @@ export class SmokeSignalsGame extends Game<SmokeSignalsGame, SmokeSignalsPlayer>
       : undefined;
   }
 
+  repeatableBlankets() {
+    const currentEdge = this.currentRevealEdgeSpace();
+    const currentEdgeBlankets = currentEdge ? new Set(currentEdge.all(BlanketCard)) : new Set<BlanketCard>();
+
+    return this.all(BlanketCard).filter(card =>
+      card.isVisible() &&
+      card.rotation === 0 &&
+      !currentEdgeBlankets.has(card)
+    );
+  }
+
+  cancellableEdges() {
+    return this.all(FireEdge).filter(edge => {
+      const blanket = edge.first(BlanketCard);
+      return !!blanket && !blanket.isVisible();
+    });
+  }
+
   queueGoldAction(actionName: string) {
     this.pendingGoldAction = actionName;
   }
@@ -251,10 +269,18 @@ export class SmokeSignalsGame extends Game<SmokeSignalsGame, SmokeSignalsPlayer>
             }
             break;
           case FireCardAction.Repeat:
-            this.queueGoldAction('repeatBlanketAction');
+            if (this.repeatableBlankets().length > 0) {
+              this.queueGoldAction('repeatBlanketAction');
+            } else {
+              this.message('Activate Gold. No revealed blanket action to repeat.');
+            }
             break;
           case FireCardAction.Cancel:
-            this.queueGoldAction('cancelBlanketAction');
+            if (this.cancellableEdges().length > 0) {
+              this.queueGoldAction('cancelBlanketAction');
+            } else {
+              this.message('Activate Gold. No unrevealed blanket action to cancel.');
+            }
             break;
         }
     }
@@ -801,7 +827,7 @@ export default createGame(SmokeSignalsPlayer, SmokeSignalsGame, game => {
       condition: () => game.pendingGoldAction === 'repeatBlanketAction',
     }).chooseOnBoard(
       'blanket',
-      () => game.all(BlanketCard).filter(x => x.isVisible()),
+      () => game.repeatableBlankets(),
       { skipIf: 'never' }
     ).do(({ blanket }) => {
       game.clearPendingGoldAction();
@@ -813,7 +839,7 @@ export default createGame(SmokeSignalsPlayer, SmokeSignalsGame, game => {
       condition: () => game.pendingGoldAction === 'cancelBlanketAction',
     }).chooseOnBoard(
       'edge',
-      () => game.all(FireEdge).filter(x => !x.first(BlanketCard)!.isVisible()),
+      () => game.cancellableEdges(),
       { skipIf: 'never' }
     ).do(({ edge }) => {
       game.clearPendingGoldAction();
